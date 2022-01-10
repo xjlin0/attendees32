@@ -7,7 +7,7 @@ FROM python:${PYTHON_VERSION} as python
 
 # Python build stage
 FROM python as python-build-stage
-
+#RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list
 ARG BUILD_ENVIRONMENT=production
 
 # Install apt packages
@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # dependencies for building Python packages
   build-essential \
   # psycopg2 dependencies
-  libpq-dev
+  libpq-dev curl vim wget python3-dateutil git less gdal-bin
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements .
@@ -46,7 +46,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # psycopg2 dependencies
   libpq-dev \
   # Translations dependencies
-  gettext \
+  gettext curl vim wget python3-dateutil git less gdal-bin \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
