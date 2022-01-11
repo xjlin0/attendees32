@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  All attendees
+{% endblock title %}
+
+{% block extra_css %}
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.common.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.light.compact.css' %}"
+        onload="this.rel='stylesheet'">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'devextreme/dx.all.min.js' %}"
+          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/persons/attendees_list_view.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+
+  <div class="d-flex justify-content-between">
+    <div class="d-flex">
+      <h3>
+        Attendees and activities:
+      </h3>
+    </div>
+    <div class="meet-tag-box">
+    </div>
+    <div class="d-flex">
+      {% if allowed_to_create_attendee %}
+        <a class="add-attendee d-flex align-items-center btn btn-outline-success btn-xs"
+           title="add a new attendee"
+           role="button"
+           href="{{create_attendee_urn}}">
+          +Add Attendee
+        </a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <form class="d-flex flex-wrap attendees-filter"
+        data-url="{{request.get_full_path}}">
+
+    <div class="form-group d-flex flex-column col-6">
+    </div>
+
+    <div class="form-group d-flex flex-column col-6">
+
+    </div>
+
+  </form>
+
+  <div class="dataAttendees"
+      data-family-attendances-urn="{{family_attendances_urn}}"
+      data-available-meets="{{available_meets_json}}"
+      data-divisions-endpoint="{{divisions_endpoint}}"
+      data-attendee-urn="{{attendee_urn}}"
+      >
+  </div>
+{% endblock content %}

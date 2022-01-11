@@ -2,7 +2,7 @@
 
 set -o errexit
 set -o nounset
-sleep 3  # not needed after docker-compose 1.29 to support depends_on condition of service_completed_successfully
+sleep 5  # not needed after docker-compose 1.29 to support depends_on condition of service_completed_successfully
 
 rm -f './celerybeat.pid'
 celery -A config.celery_app beat -l INFO

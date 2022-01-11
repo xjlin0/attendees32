@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  All gatherings
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.common.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.light.compact.css' %}"
+        onload="this.rel='stylesheet'">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'devextreme/dx.all.min.js' %}"
+          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/occasions/gatherings_list_view.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+<div class="gathering-container">
+  <div class="d-flex justify-content-between">
+    <div class="d-flex">
+      <h3>
+        Gathering list
+      </h3>
+    </div>
+    <div class="">
+      <div id="custom-control-filter-meets-checkbox">
+      </div>
+    </div>
+    <div id="custom-control-edit-switch">
+    </div>
+    <div class="d-flex">
+      <div id="generate-gatherings">
+      </div>
+    </div>
+  </div>
+
+  <form class="filters-dxform"
+       data-content-type-models-endpoint="{{content_type_models_endpoint}}"
+       data-gatherings-endpoint="{{gatherings_endpoint}}"
+       data-series-gatherings-endpoint="{{series_gatherings_endpoint}}"
+       data-meets-endpoint-by-id="{{meets_endpoint_by_id}}"
+       data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
+    {% csrf_token %}
+  </form>
+
+  <div class="gathering-datagrids">
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,13 @@
+# order matters
+from .attendee import AttendeeSerializer
+from .attendee_minimal_serializer import AttendeeMinimalSerializer
+from .attending import AttendingSerializer
+from .attending_attendee_serializer import AttendingAttendeeSerializer
+from .attendingmeet_etc_serializer import AttendingMeetEtcSerializer
+from .category_serializer import CategorySerializer
+# from .relationship_serializer import RelationshipSerializer
+from .folk_attendee_serializer import FolkAttendeeSerializer
+from .folk_serializer import FolkSerializer
+from .past_serializer import PastSerializer
+from .registration_serializer import RegistrationSerializer
+from .relation_serializer import RelationSerializer

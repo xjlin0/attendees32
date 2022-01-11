@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  leader list
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="preload"
+        as="style"
+        href="{% static '/admin/css/vendor/select2/select2.min.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'select2-bootstrap4-theme/select2-bootstrap4.min.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.common.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.light.compact.css' %}"
+        onload="this.rel='stylesheet'">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'devextreme/dx.all.min.js' %}"
+          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static '/admin/js/vendor/select2/select2.full.min.js' %}"
+          integrity="sha256-/IUDRcglIrROpUfaxqKxg4kthVduVKB0mvd7PwtlmAk="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/persons/datagrid_assembly_data_attendings.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+
+  <h3>
+    Attending of people by groups (prefiltered by assembly, but data managers need to see all instead)
+  </h3>
+
+  <form class="d-flex flex-wrap attendings-filter"
+        data-url="{{request.get_full_path}}">
+
+    <div class="form-group d-flex flex-column col-6">
+      <label class="control-label"
+             for="filter-meets">
+        Select activities(meets):
+      </label>
+      <div class="input-group for-select-all">
+        <select class="form-control filter-meets basic-multiple is-invalid search-filters"
+                data-placeholder="Select at least one meet or no results will be shown"
+                data-allow-clear="true"
+                id="filter-meets"
+                name="meets"
+                multiple="multiple">
+          {% for meet in available_meets %}
+            <option value="{{meet.slug}}"
+                    title="{{meet.slug}}">
+              {{meet.display_name}}
+            </option>
+          {% endfor %}
+        </select>
+        <div class="input-group-append"
+             title="select all items">
+          <div class="input-group-text">
+            <input type="checkbox"
+                   autocomplete="off"
+                   class="select-all">
+            all
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group d-flex flex-column col-6">
+      <label class="control-label"
+             for="filter-characters">
+        Select characters:
+      </label>
+      <div class="input-group for-select-all">
+        <select class="form-control filter-characters basic-multiple search-filters"
+                data-placeholder="Select at least one character or no results will be shown"
+                data-allow-clear="true"
+                id="filter-characters"
+                name="meets"
+                multiple="multiple">
+          {% for character in available_characters %}
+            <option value="{{character.slug}}"
+                    title="{{character.slug}}">
+              {{character.display_name}}
+            </option>
+          {% endfor %}
+        </select>
+        <div class="input-group-append"
+             title="select all items">
+          <div class="input-group-text">
+            <input type="checkbox"
+                   autocomplete="off"
+                   class="select-all">
+            all
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+  <div class="attendings"
+      data-available-meets="{{available_meets_json}}"
+      data-available-characters="{{available_characters_json}}"
+      data-divisions-endpoint="{{divisions_endpoint}}"
+      data-teams-endpoint="{{teams_endpoint}}"
+      data-gatherings-endpoint="{{gatherings_endpoint}}"
+      data-characters-endpoint="{{characters_endpoint}}"
+      data-attendings-endpoint="{{attendings_endpoint}}"
+      data-attendees-endpoint="{{attendees_endpoint}}"
+      data-attendances-endpoint="{{attendances_endpoint}}">
+  </div>
+{% endblock content %}

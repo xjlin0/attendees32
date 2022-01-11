@@ -74,12 +74,23 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "rest_framework",
     "rest_framework.authtoken",
+    "django_summernote",
     "corsheaders",
+    "schedule",
+    "mptt",
+    "django_json_widget",
+    "private_storage",
+    # "django_readonly_field",
+    "address",
+    # "reversion",  # django-pghistory can version a superset of models
 ]
 
 LOCAL_APPS = [
     "attendees.users",
     # Your stuff: custom apps go here
+    "attendees.whereabouts.apps.WhereaboutsConfig",
+    "attendees.persons.apps.PersonsConfig",
+    "attendees.occasions.apps.OccasionsConfig",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -160,6 +171,10 @@ STATICFILES_FINDERS = [
 MEDIA_ROOT = str(APPS_DIR / "media")
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = "/media/"
+# django-private-storage
+PRIVATE_STORAGE_ROOT = str(APPS_DIR / "media/private-media")
+PRIVATE_STORAGE_AUTH_FUNCTION = "private_storage.permissions.allow_staff"
+# PRIVATE_STORAGE_SERVER = 'apache'  # add this in local causes uploaded files looks blank
 
 # TEMPLATES
 # ------------------------------------------------------------------------------
@@ -184,6 +199,8 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "attendees.users.context_processors.allauth_settings",
+                # "attendees.utils.context_processors.settings_context",
+                # "attendees.context_processors.common_variables",
             ],
         },
     }
@@ -225,7 +242,7 @@ EMAIL_TIMEOUT = 5
 # ADMIN
 # ------------------------------------------------------------------------------
 # Django Admin URL.
-ADMIN_URL = "admin/"
+ADMIN_URL = env("DJANGO_ADMIN_URL", default="admin123/")
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [("""Jack Jack""", "xjlin0@gmail.com")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -303,6 +320,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        # 'rest_framework.permissions.IsAuthenticated',
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
@@ -311,3 +329,5 @@ REST_FRAMEWORK = {
 CORS_URLS_REGEX = r"^/api/.*$"
 # Your stuff...
 # ------------------------------------------------------------------------------
+CLIENT_DEFAULT_TIME_ZONE = "America/Los_Angeles"
+GOOGLE_API_KEY = "AIzaSyD--your-google-maps-key-SjQBE"  # For django-address: environment variable will override it

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  Attendee Update
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="preload"
+        as="style"
+        href="{% static 'css/project.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.common.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.light.compact.css' %}"
+        onload="this.rel='stylesheet'">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'devextreme/dx.all.min.js' %}"
+          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/persons/attendee_update_view.js' %}">
+  </script>
+{% endblock extra_head %}
+
+{% block content %}
+<div class="nav-buttons d-flex justify-content-between">
+  <div class="d-flex">
+    <h3 class="page-title">
+      Fetching attendee details ...
+    </h3>
+  </div>
+  <div class="spinner-border"
+       role="status">
+    <span class="sr-only">
+      Loading...
+    </span>
+  </div>
+  <div class="d-flex align-items-center form-actions">
+      {% if show_create_attendee %}
+        <div class="dropdown">
+          <button class="btn btn-outline-success btn-xs dropdown-toggle"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false">
+            +Add Person
+          </button>
+          <div class="dropdown-menu dropdown-menu-right"
+               aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item add-new-attendee btn btn-outline-success btn-xs"
+               title="add a new person WITHOUT families"
+               role="button"
+               href="new?familyName=without">
+              Add an unrelated person without families
+            </a>
+          </div>
+        </div>
+      {% endif %}
+      {% if targeting_attendee_id != 'new' %}
+        <div class="custom-switch button btn btn-outline-primary"
+             title="Click toggle to switch editing modes of the entire page">
+          <input type="checkbox"
+                 class="custom-control-input"
+                 id="custom-control-edit-checkbox">
+          <label class="custom-control-label"
+                 for="custom-control-edit-checkbox">
+            Editing
+          </label>
+        </div>
+      {% endif %}
+  </div>
+</div>
+
+<div class="form-container">
+  <form id="attendee-update-form"
+        method="POST">
+    <input type="hidden"
+           name="attendee-id"
+           value="{{ targeting_attendee_id}}">
+    {% csrf_token %}
+    <div class="datagrid-attendee-update"
+         data-attendee-contenttype-id="{{attendee_contenttype_id}}"
+         data-family-contenttype-id="{{folk_contenttype_id}}"
+         data-empty-image-link="{{empty_image_link}}"
+         data-meets-endpoint="{{meets_endpoint}}"
+         data-attendingmeets-endpoint="{{attendingmeets_endpoint}}"
+         data-characters-endpoint="{{characters_endpoint}}"
+         data-divisions-endpoint="{{divisions_endpoint}}"
+         data-addresses-endpoint="{{addresses_endpoint}}"
+         data-states-endpoint="{{states_endpoint}}"
+         data-relations-endpoint="{{relations_endpoint}}"
+         data-relationships-endpoint="{{relationships_endpoint}}"
+         data-pasts-endpoint="{{pasts_endpoint}}"
+         data-categories-endpoint="{{categories_endpoint}}"
+         data-registrations-endpoint="{{registrations_endpoint}}"
+         data-related-attendees-endpoint="{{related_attendees_endpoint}}"
+         data-attendee-families-endpoint="{{attendee_families_endpoint}}"
+         data-attendings-endpoint="{{attendings_endpoint}}"
+         data-assemblies-endpoint="{{assemblies_endpoint}}"
+         data-attendee-endpoint="{{attendee_endpoint}}"
+         data-family-attendees-endpoint="{{family_attendees_endpoint}}"
+         data-family-category-id="{{family_category_id}}"
+         data-divisions="{{divisions}}"
+         data-attendee-search="{{attendee_search}}"
+         data-attendee-urn="{{attendee_urn}}"
+         >
+    </div>
+  </form>
+  <form id="attending-update-popup-form"
+        action="/persons/api/attendee_attendings/"
+        method="post">
+    <div class="popup-attending-update">
+    </div>
+  </form>
+  <form id="popup-more-contacts-form">
+    <div class="popup-more-contacts">
+    </div>
+  </form>
+  <form id="place-update-popup-form"
+        action="/whereabouts/api/datagrid_data_place/"
+        method="post">
+    <div class="popup-place-update">
+    </div>
+  </form>
+  <form id="family-attr-update-popup-form"
+        action="/persons/api/attendee_families/"
+        method="post">
+    <div class="popup-family-attr-update">
+    </div>
+  </form>
+</div>
+{% endblock content %}

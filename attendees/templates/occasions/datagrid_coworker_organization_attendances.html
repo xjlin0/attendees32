@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  leader list
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="preload"
+        as="style"
+        href="{% static 'tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static '/admin/css/vendor/select2/select2.min.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'select2-bootstrap4-theme/select2-bootstrap4.min.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.common.css' %}"
+        onload="this.rel='stylesheet'">
+
+  <link rel="preload"
+        as="style"
+        href="{% static 'devextreme/dx.light.compact.css' %}"
+        onload="this.rel='stylesheet'">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'moment.js/moment.min.js' %}"
+          integrity="sha384-sIzeKWIAHvT0Vm8QbfLCqZwBG0WMCkWVAOYd/330YSNeeQ1Y57N3T9lQz5Ry/EHH">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.js' %}"
+          integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'devextreme/dx.all.min.js' %}"
+          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static '/admin/js/vendor/select2/select2.full.min.js' %}"
+          integrity="sha256-/IUDRcglIrROpUfaxqKxg4kthVduVKB0mvd7PwtlmAk="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/occasions/datagrid_coworker_organization_attendances.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+
+  {% if True %} <!--If user is coworker/admin of the organization-->
+    <h3>
+      My ongoing activities with coworkers
+    </h3>
+
+    <form class="d-flex flex-wrap organization-attendances-filter"
+          data-url="{{request.get_full_path}}">
+
+      <div class="form-group col-3"
+           title="Shown in {{timezone_name}} timezone">
+        <label class="control-label"
+             for="filter-start-date">
+          Filter from:
+        </label>
+        <div class="input-group date datetimepickers"
+             id="filter-start-date"
+             data-target-input="nearest">
+          <input name="start"
+                 type="text"
+                 class="form-control datetimepicker-input filter-start-date"
+                 data-target="#filter-start-date"/>
+          <div class="input-group-append"
+               data-target="#filter-start-date"
+               data-toggle="datetimepicker">
+            <div class="input-group-text">
+              <i class="fa fa-calendar"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group col-3"
+           title="Shown in {{timezone_name}} timezone">
+        <label class="control-label"
+               for="filter-finish-date">
+          Filter till (excluded):
+        </label>
+        <div class="input-group date datetimepickers"
+             id="filter-finish-date"
+             data-target-input="nearest">
+          <input name="finish"
+                 type="text"
+                 class="form-control datetimepicker-input filter-finish-date"
+                 data-target="#filter-finish-date"/>
+          <div class="input-group-append"
+               data-target="#filter-finish-date"
+               data-toggle="datetimepicker">
+            <div class="input-group-text">
+              <i class="fa fa-calendar"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group d-flex flex-column col-6">
+        <label class="control-label"
+               for="filter-meets">
+          Select activities(meets):
+        </label>
+        <div class="input-group for-select-all">
+          <select class="form-control filter-meets basic-multiple search-filters"
+                  data-placeholder="No meets! did you select/register any?"
+                  data-allow-clear="true"
+                  id="filter-meets"
+                  name="meets"
+                  multiple="multiple">
+            {% for meet in available_meets %}
+              <option value="{{meet.slug}}"
+                      title="{{meet.slug}}"
+                      selected="selected">
+                {{meet.display_name}}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="input-group-append"
+               title="select all items">
+            <div class="input-group-text">
+              <input type="checkbox"
+                     autocomplete="off"
+                     class="select-all">
+              all
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="organization-attendances"
+        data-teams-endpoint="{{teams_endpoint}}"
+        data-gatherings-endpoint="{{gatherings_endpoint}}"
+        data-characters-endpoint="{{characters_endpoint}}"
+        data-attendings-endpoint="{{attendings_endpoint}}"
+        data-attendances-endpoint="{{attendances_endpoint}}">
+    </div>
+  {% endif %}
+{% endblock content %}
