@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
-
+from django.conf import settings
 from attendees.persons.models import Attendee, Attending
 from attendees.persons.serializers.attending_minimal_serializer import (
     AttendingMinimalSerializer,
@@ -14,13 +14,16 @@ from attendees.persons.services import AttendingService
 
 class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
     """
-    API endpoint that allows Attending of an attendee to be viewed or edited.
+    API endpoint that allows Attending of a target attendee to be viewed or edited.
+    Target attendee is specified by http header x-target-attendee-id or current user's attendee
     """
 
     serializer_class = AttendingMinimalSerializer
 
     def get_queryset(self):
-        target_attendee = get_object_or_404(
+        target_attendee = get_object_or_404(  # for DRF UI
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID", self.request.user.attendee_uuid_str())
+        ) if settings.DEBUG else get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         current_user_organization = self.request.user.organization

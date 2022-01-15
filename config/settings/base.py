@@ -326,6 +326,8 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.IsAuthenticated',
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    'DEFAULT_PAGINATION_CLASS': 'attendees.persons.paginators.CustomStorePagination',
+    'PAGE_SIZE': 20,
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup

@@ -140,7 +140,7 @@ def post_save_handler_for_attendee_to_folk_and_attending(sender, **kwargs):
             f"{created_attendee.infos['names']['original']} general relationship",
             Attendee.NON_FAMILY_CATEGORY,
             Attendee.HIDDEN_ROLE,
-        )
+        )  # Todo 20211124: create family and relationship folks after save
 
         if "importer" not in created_attendee.infos.get(
             "created_reason", ""
@@ -160,4 +160,4 @@ def post_save_handler_for_attendee_to_folk_and_attending(sender, **kwargs):
                 filters={"attendee": created_attendee, "is_removed": False},
                 defaults=defaults,
             )
-            # Todo 20211124: create family and relationship folks after save
+
