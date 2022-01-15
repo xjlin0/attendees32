@@ -6,6 +6,15 @@ IPYTHONDIR=/app/.ipython
 # ------------------------------------------------------------------------------
 REDIS_URL=redis://redis:6379/0
 
+# Email
+# ------------------------------------------------------------------------------
+DJANGO_SERVER_EMAIL=
+
+SENDGRID_API_KEY=YOUR_KEY
+DJANGO_DEFAULT_FROM_EMAIL=your@mail.com
+#SENDGRID_GENERATE_MESSAGE_ID=True
+#SENDGRID_MERGE_FIELD_FORMAT=None
+
 # Celery
 # ------------------------------------------------------------------------------
 
