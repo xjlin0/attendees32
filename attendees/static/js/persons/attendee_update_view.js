@@ -3474,7 +3474,7 @@ Attendees.datagridUpdate = {
                   const d = new $.Deferred();
                   $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts.filter)
                     .done((result) => {
-                      if (Attendees.datagridUpdate.meetCharacters === null) {
+                      if (result.data && Attendees.datagridUpdate.meetCharacters === null) {
                         Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
                       }  // cache the every meet's major characters for later use
                       d.resolve(result);
