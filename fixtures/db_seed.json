@@ -889,7 +889,7 @@
       "infos": {
         "role": "tab",
         "class": "nav-link dropdown-toggle",
-        "data-toggle": "dropdown",
+        "data-bs-toggle": "dropdown",
         "aria-expanded": "false",
         "aria-haspopup": "true"
       },
@@ -967,7 +967,7 @@
       "infos": {
         "role": "tab",
         "class": "nav-link dropdown-toggle",
-        "data-toggle": "dropdown",
+        "data-bs-toggle": "dropdown",
         "aria-expanded": "false",
         "aria-haspopup": "true"
       },
@@ -1117,7 +1117,7 @@
       "infos": {
         "role": "tab",
         "class": "nav-link dropdown-toggle",
-        "data-toggle": "dropdown",
+        "data-bs-toggle": "dropdown",
         "aria-expanded": "false",
         "aria-haspopup": "true"
       },

@@ -51,7 +51,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ROOT_URLCONF = "config.urls"
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = "config.wsgi.application"
-
+PROJECT_NAME = "Attendees"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
@@ -158,7 +158,10 @@ STATIC_ROOT = str(ROOT_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = [str(APPS_DIR / "static")]
+STATICFILES_DIRS = [
+    str(APPS_DIR / "static"),
+    str(ROOT_DIR / "libraries"),
+]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -199,8 +202,8 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "attendees.users.context_processors.allauth_settings",
-                # "attendees.utils.context_processors.settings_context",
-                # "attendees.context_processors.common_variables",
+                "attendees.utils.context_processors.settings_context",
+                "attendees.context_processors.common_variables",
             ],
         },
     }
@@ -297,7 +300,7 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # django-allauth
 # ------------------------------------------------------------------------------
-ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
+ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", False)
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = "username"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html

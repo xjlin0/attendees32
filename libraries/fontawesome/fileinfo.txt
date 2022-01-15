@@ -1,0 +1,1 @@
+// solid.min.js fontawesome.min.js 5.8.2 JS version free solid only

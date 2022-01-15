@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import opencc
 from django.conf import settings
@@ -94,13 +94,42 @@ class Attendee(UUIDModel, Utility, TimeStampedModel, SoftDeletableModel):
     @property
     def related_ones(self):  # Todo: need filter on folkattendee finish_date?
         return self.__class__.objects.filter(folks__in=self.folks.all()).distinct()
-        # self.__class__.filter(
-        #     folkattendee__folk__in=self.folks.all(),
-        # )
 
     @property
     def families(self):
         return self.folks.filter(category=self.FAMILY_CATEGORY)
+
+    # def related_ones(self, only_current=True, only_active=True, folk_category_limit_to=None):
+    #     """
+    #     :param only_current: if false, it will include expired folkattendee by existing finish date
+    #     :param only_active: if false, it will include deleted folkattendees and folks
+    #     :param folk_category_limit_to: to filter for a single int category id of folk
+    #     :return: Attendee queryset
+    #     """
+    #     folk_filter = {}
+    #
+    #     if folk_category_limit_to:
+    #         folk_filter['category'] = folk_category_limit_to
+    #
+    #     if only_active:
+    #         folk_filter['is_removed'] = False
+    #
+    #     filters = Q(
+    #         folkattendee__folk__in=self.folks.filter(**folk_filter)
+    #     )
+    #
+    #     if only_active:  # cannot combine with above
+    #         filters = filters & Q(folkattendee__is_removed=False)
+    #
+    #     if only_current:
+    #         expire_filter = (
+    #             Q(folkattendee__finish__isnull=True)
+    #             |
+    #             Q(folkattendee__finish__gte=datetime.now(timezone.utc))
+    #         )
+    #         filters = filters & expire_filter
+    #
+    #     return self.__class__.objects.filter(filters).distinct()
 
     @property
     def all_related_members(self):

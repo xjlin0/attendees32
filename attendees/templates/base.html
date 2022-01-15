@@ -1,4 +1,5 @@
-{% load static i18n compress%}<!DOCTYPE html>
+{% load static i18n compress mptt_tags user_extras %}
+<!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
@@ -6,71 +7,190 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>{% block title %}Attendees{% endblock title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Attendees in Django 3.2">
+    <meta name="description" content="Activities/Attendees Management">
     <meta name="author" content="Jack Jack">
 
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
 
     {% block css %}
     <!-- Latest compiled and minified Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" integrity="sha512-GQGU0fMMi238uA+a/bdWJfpUGKUkBdgfFdgBm72SUQ6BeyWjoY/ton0tEjH+OSH9iP4Dfh+7HM0I9f5eR0L/4w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- Your stuff: Third-party CSS libraries go here -->{% compress css %}
+<!--    <link rel="stylesheet" -->
+<!--          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" -->
+<!--          integrity="sha512-GQGU0fMMi238uA+a/bdWJfpUGKUkBdgfFdgBm72SUQ6BeyWjoY/ton0tEjH+OSH9iP4Dfh+7HM0I9f5eR0L/4w==" -->
+<!--          crossorigin="anonymous" -->
+<!--          referrerpolicy="no-referrer" /> -->
+
+      <link rel="preload"
+            as="style"
+            href="{% static 'bootstrap/bootstrap.min.css' %}"
+            onload="this.rel='stylesheet'">
+    <!-- Your stuff: Third-party CSS libraries go here -->
+    {% compress css %}
     <!-- This file stores project-specific CSS -->
-    <link href="{% static 'css/project.css' %}" rel="stylesheet">{% endcompress %}
-    {% endblock %}
+        <link rel="preload"
+          as="style"
+          href="{% static 'css/project.css' %}"
+          onload="this.rel='stylesheet'">
+
+    {% block extra_css %}
+    {% endblock extra_css%}
+
+    {% endcompress css %}
+    {% endblock css%}
     <!-- Le javascript
     ================================================== -->
     {# Placed at the top of the document so pages load faster with defer #}
     {% block javascript %}
       <!-- Bootstrap JS -->
-      <script defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js" integrity="sha512-OvBgP9A2JBgiRad/mM36mkzXSXaJE9BEIENnVEmeZdITvwT09xnxLtT4twkCa8m/loMbPHsvPl0T8lRGVBwjlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!--      <script defer-->
+<!--              src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js" -->
+<!--              integrity="sha512-OvBgP9A2JBgiRad/mM36mkzXSXaJE9BEIENnVEmeZdITvwT09xnxLtT4twkCa8m/loMbPHsvPl0T8lRGVBwjlQ==" -->
+<!--              crossorigin="anonymous" -->
+<!--              referrerpolicy="no-referrer"> -->
+<!--      </script> -->
+      <script defer
+              src="{% static 'jquery/jquery-3.6.0.min.js' %}"
+              integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+              crossorigin="anonymous">
+      </script>
+      <script defer
+              src="{% static 'popper/popper.min.js' %}"
+              integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+              crossorigin="anonymous">
+      </script>
+      <script defer
+              src="{% static 'bootstrap/bootstrap.min.js' %}"
+              integrity="sha512-OvBgP9A2JBgiRad/mM36mkzXSXaJE9BEIENnVEmeZdITvwT09xnxLtT4twkCa8m/loMbPHsvPl0T8lRGVBwjlQ=="
+              crossorigin="anonymous">
+      </script>
+      <script defer
+              src="{% static 'fontawesome/solid.min.js' %}"
+              integrity="sha384-+2/MEhV42Ne5nONkjLVCZFGh5IaEQmfXyvGlsibBiATelTFbVGoLB1sqhczi0hlf"
+              crossorigin="anonymous">
+      </script>
+      <script defer
+              src="{% static 'fontawesome/fontawesome.min.js' %}"
+              integrity="sha384-Ia7KZbX22R7DDSbxNmxHqPQ15ceNzg2U4h5A8dy3K47G2fV1k658BTxXjp7rdhXa"
+              crossorigin="anonymous">
+      </script>
       <!-- Your stuff: Third-party javascript libraries go here -->
 
-      <!-- place project specific Javascript in this file -->{% compress js %}
-      <script defer src="{% static 'js/project.js' %}"></script>{% endcompress %}
+      <!-- place project specific Javascript in this file -->
+
+    {% compress js %}
+      <script defer
+              src="{% static 'js/shared/base.js' %}">
+      </script>
+      <script defer
+              src="{% static 'js/shared/utilities.js' %}">
+      </script>
+    {% endcompress js %}
 
     {% endblock javascript %}
 
   </head>
 
-  <body>
+  <body data-user-api-allowed-url-names="{{user_api_allowed_url_name}}"
+        data-user-attendee-id="{{user_attendee_id}}">
 
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <div class="container-fluid">
-          <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <button class="navbar-toggler navbar-toggler-right"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#navbarSupportedContent"
+                  aria-controls="navbarSupportedContent"
+                  aria-expanded="false"
+                  aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <a class="navbar-brand" href="{% url 'home' %}">Attendees</a>
+          <a class="navbar-brand"
+             href="{% url 'home' %}">
+            {{ user_organization_name }}
+          </a>
 
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <div class="collapse navbar-collapse"
+               id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item active">
-                <a class="nav-link" href="{% url 'home' %}">Home <span class="visually-hidden">(current)</span></a>
+                <a class="nav-link"
+                   href="{% url 'home' %}">
+                  Home
+                  <span class="visually-hidden">(current)</span>
+                </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'about' %}">About</a>
+                <a class="nav-link"
+                   href="{% url 'about' %}">
+                  About
+                </a>
               </li>
               {% if request.user.is_authenticated %}
+                {% recursetree main_menus %}
+                  {% if node.is_root_node %}
+                    <li class="nav-item dropdown parent">
+                  {% endif %}
+                    {% if node.html_type == 'a' %}
+                      <a href="{% convert_urn node.urn %}"
+                         {% for key, value in node.infos.items %}
+                           {{key}}="{{value}}"
+                         {% endfor %}
+                         data-menu-id="{{node.id}}">
+                        {% blocktrans with menu_display_name=node.display_name %}
+                          {{ menu_display_name }}
+                        {% endblocktrans %}
+                      </a>
+                    {% elif node.html_type == 'div'  %}
+                      <div data-menu-id="{{node.id}}"
+                        {% for key, value in node.infos.items %}
+                          {{key}}="{{value}}"
+                        {% endfor %}>
+                      </div>
+                    {% endif %}
+
+                    {% if not node.is_leaf_node %}
+                      <div class="dropdown-menu children">
+                        {{ children }}
+                      </div>
+                    {% endif %}
+                  {% if node.is_root_node %}
+                    </li>
+                  {% endif %}
+                {% endrecursetree %}
                 <li class="nav-item">
                   {# URL provided by django-allauth/account/urls.py #}
-                  <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% translate "My Profile" %}</a>
+                  <a class="nav-link"
+                     href="{% url 'users:detail' request.user.username  %}">
+                    {{ request.user.name|default:"User" }}{% trans "'s Profile" %}
+                  </a>
                 </li>
                 <li class="nav-item">
                   {# URL provided by django-allauth/account/urls.py #}
-                  <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+                  <a class="nav-link"
+                     href="{% url 'account_logout' %}">
+                    {% translate "Sign Out" %}
+                  </a>
                 </li>
               {% else %}
                 {% if ACCOUNT_ALLOW_REGISTRATION %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
-              </li>
-              {% endif %}
+                  <li class="nav-item">
+                    {# URL provided by django-allauth/account/urls.py #}
+                    <a id="sign-up-link"
+                       class="nav-link"
+                       href="{% url 'account_signup' %}">
+                      {% translate "Sign Up" %}
+                    </a>
+                  </li>
+                {% endif %}
                 <li class="nav-item">
                   {# URL provided by django-allauth/account/urls.py #}
-                  <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
+                  <a id="log-in-link"
+                     class="nav-link"
+                     href="{% url 'account_login' %}">
+                    {% translate "Sign In" %}
+                  </a>
                 </li>
               {% endif %}
             </ul>
@@ -86,13 +206,17 @@
         {% for message in messages %}
           <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
           </div>
         {% endfor %}
       {% endif %}
 
       {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
+        <p>Please log out when finish!</p>
       {% endblock content %}
 
     </div> <!-- /container -->
