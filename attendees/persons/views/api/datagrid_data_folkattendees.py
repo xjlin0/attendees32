@@ -30,7 +30,7 @@ class ApiDatagridDataFolkAttendeesViewsSet(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         target_folkattendee_id = self.kwargs.get("pk")
-        category = self.request.query_params.get("category")
+        category = self.request.query_params.get("categoryId")
 
         if target_folkattendee_id:
             return FolkAttendee.objects.filter(pk=target_folkattendee_id)

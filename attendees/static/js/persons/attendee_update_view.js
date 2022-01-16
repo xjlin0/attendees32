@@ -424,7 +424,7 @@ Attendees.datagridUpdate = {
                 'data-object-name': Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original,
               });
               const personalPlaces = Attendees.datagridUpdate.attendeeFormConfigs.formData.places || [];
-              const familyattendees = Attendees.datagridUpdate.attendeeFormConfigs.formData.familyattendee_set || [];
+              const familyattendees = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set || [];
               let $personalLi = $('<li>', {class: 'list-group-item', text: 'Personal'}).append($personalNewButton);
 
               personalPlaces.forEach(place => {
@@ -443,34 +443,36 @@ Attendees.datagridUpdate = {
               let $places = $placeUl.append($personalLi);
 
               familyattendees.forEach(familyattendee => {
-                const family = familyattendee.family;
-                const $familyNewButton = Attendees.datagridUpdate.familyButtonFactory({
-                  ...newButtonAttrs,
-                  'data-desc': 'family address (' + family.display_name + ')',
-                  'data-content-type': familyContentTypeId,
-                  'data-object-id': family.id,
-                  'data-object-name': family.display_name,
-                });
-
-                let $familyLi = $('<li>', {
-                  class: 'list-group-item ' + family.id,
-                  text: family.display_name,
-                }).append($familyNewButton);
-
-                familyattendee.family.places.forEach(place => {
-                  const addressName = (place.street || '').replace(', USA', '');
-                  const $button = Attendees.datagridUpdate.familyButtonFactory({
-                    // type: 'button',
-                    'data-desc': family.display_name + ' family address (' + place.street + ')',
-                    class: 'btn-outline-success place-button btn button btn-sm',
-                    value: place.id,
-                    text: (place.display_name && !addressName.includes(place.display_name) ? place.display_name + ': ' : '') + addressName,
+                const family = familyattendee.folk;
+                if (family && family.category === 0) {
+                  const $familyNewButton = Attendees.datagridUpdate.familyButtonFactory({
+                    ...newButtonAttrs,
+                    'data-desc': 'family address (' + family.display_name + ')',
+                    'data-content-type': familyContentTypeId,
                     'data-object-id': family.id,
                     'data-object-name': family.display_name,
                   });
-                  $familyLi = $familyLi.append($button);
-                });
-                $places = $places.append($familyLi);
+
+                  let $familyLi = $('<li>', {
+                    class: 'list-group-item ' + family.id,
+                    text: family.display_name,
+                  }).append($familyNewButton);
+
+                  familyattendee.folk.places.forEach(place => {
+                    const addressName = (place.street || '').replace(', USA', '');
+                    const $button = Attendees.datagridUpdate.familyButtonFactory({
+                      // type: 'button',
+                      'data-desc': family.display_name + ' family address (' + place.street + ')',
+                      class: 'btn-outline-success place-button btn button btn-sm',
+                      value: place.id,
+                      text: (place.display_name && !addressName.includes(place.display_name) ? place.display_name + ': ' : '') + addressName,
+                      'data-object-id': family.id,
+                      'data-object-name': family.display_name,
+                    });
+                    $familyLi = $familyLi.append($button);
+                  });
+                  $places = $places.append($familyLi);
+                }
               });
               itemElement.append($places);
             },
@@ -2420,7 +2422,7 @@ Attendees.datagridUpdate = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, {category: categoryId}),
+              load: () => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, {categoryId: categoryId}),
               byKey: (key) => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/'),
             }),
           },
@@ -2561,11 +2563,11 @@ Attendees.datagridUpdate = {
         store: new DevExpress.data.CustomStore({
           key: 'id',
           load: () => {
-            return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {category: categoryId});
+            return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {categoryId: categoryId});
           },
           byKey: (key) => {
             const d = new $.Deferred();
-            $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {familyattendee_id: key, category: categoryId})
+            $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {familyattendee_id: key, categoryId: categoryId})
               .done((result) => {
                 d.resolve(result.data);
               });

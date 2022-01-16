@@ -1596,6 +1596,7 @@
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_meet_to_past_category": {
+            "9": 5,
             "16": 5,
             "17": 4
           },

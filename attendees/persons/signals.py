@@ -99,7 +99,7 @@ def post_save_handler_for_attendingmeet_to_create_past(sender, **kwargs):
                     "when": None,  # AttendingMeet's start may not be actual date
                     "infos": {
                         **Utility.relationship_infos(),
-                        "comment": "Auto created by AttendingMeet importer signal",
+                        "comment": "Auto created by AttendingMeet signal",
                     },
                 }
 
