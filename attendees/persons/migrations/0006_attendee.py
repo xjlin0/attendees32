@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('gender', models.CharField(choices=GenderEnum.choices(), default=GenderEnum.UNSPECIFIED, max_length=11)),
                 ('photo', PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='attendee_portrait', verbose_name='Photo')),
                 # ('progressions', models.JSONField(blank=True, default=dict, help_text='Example: {"Christian": true, "baptized": {"time": "12/31/2020", "place":"SF"}}. Please keep {} here even no data', null=True)),
-                ('infos', models.JSONField(blank=True, null=True, default=Utility.attendee_infos, help_text='Example: {"fixed": {"food_pref": "peanut allergy", "nick_name": "John"}}. Please keep {} here even no data')),
+                ('infos', models.JSONField(blank=True, default=Utility.attendee_infos, help_text=('Example: {"fixed": {"food_pref": "peanut allergy", "nick_name": "John"}}.Please keep {} here even no data'), null=True)),
             ],
             options={
                 'db_table': 'persons_attendees',

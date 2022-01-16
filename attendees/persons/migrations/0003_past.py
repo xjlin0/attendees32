@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                 ('when', models.DateTimeField(blank=True, default=attendees.persons.models.utility.Utility.now_with_timezone, null=True)),
                 ('finish', models.DateTimeField(blank=True, null=True)),
                 ('display_name', models.CharField(blank=True, max_length=50, null=True)),
-                ('infos', models.JSONField(blank=True, default=attendees.persons.models.utility.Utility.relationship_infos, help_text='Example: {"show_secret": {"attendee1id": true, "attendee2id": false}}. Please keep {} here even no data', null=True)),
+                ('infos', models.JSONField(blank=True, default=attendees.persons.models.utility.Utility.relationship_infos, help_text=('Example: {"show_secret": {"attendee1id": true, "attendee2id": false}}.Please keep {} here even no data',), null=True)),
             ],
             options={
                 'db_table': 'persons_pasts',

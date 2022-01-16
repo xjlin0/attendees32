@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('is_removed', models.BooleanField(default=False)),
                 ('assembly', models.ForeignKey(null=True, on_delete=models.deletion.SET_NULL, to='occasions.Assembly')),
                 ('registrant', models.ForeignKey(null=True, on_delete=models.deletion.SET_NULL, to='persons.Attendee')),
-                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"price": "150.75", "donation": "85.00", "credit": "35.50", "apply_type": "online", "apply_key": "001"}. Please keep {} here even no data', null=True)),
+                ('infos', models.JSONField(blank=True, default=dict, help_text=('Example: {"price": "150.75", "donation": "85.00", "credit": "35.50", "apply_type": "online","apply_key": "001"}. Please keep {} here even no data',), null=True)),
             ],
             options={
                 'db_table': 'persons_registrations',
