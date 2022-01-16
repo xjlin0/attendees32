@@ -11,3 +11,27 @@
   background-color: #f2dede;
   border-color: #eed3d7;
 }
+
+div.bootstrap-datetimepicker-widget.dropdown-menu {
+  width: auto;
+}  /* for datetime picker */
+
+img.attendee-photo-img {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  width: 7rem;
+}
+
+img.attendee-photo-img:hover {
+  box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+}
+
+div.dx-popup-normal div.dx-box-item-content {
+  max-width: 98%;
+}  /* for editor items in dxform in dxpopup of attendingmeet to avoid scroll bar */
+
+div.dx-fileuploader-input-label {
+  height: 0px;
+  visibility: hidden;
+}  /* to remove "or Drop File here" under dxFileUploader */
