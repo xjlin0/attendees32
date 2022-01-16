@@ -41,25 +41,32 @@ class DatagridCoworkerOrganizationAttendancesListView(
                 # chosen_character_slugs = self.request.GET.getlist('characters', [])
                 # context.update({'chosen_character_slugs': chosen_character_slugs})
                 context.update(
-                    {"teams_endpoint": "/occasions/api/organization_meet_teams/"}
+                    {
+                        "target_attendee_id": self.request.user.attendee_uuid_str,
+                        "teams_endpoint": "/occasions/api/organization_meet_teams/",
+                        "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
+                        "characters_endpoint": "/occasions/api/user_assembly_characters/",
+                        "attendings_endpoint": "/persons/api/user_meet_attendings/",
+                        "attendances_endpoint": "/occasions/api/coworker_organization_attendances/",
+                    }
                 )
                 # context.update({'attendees_endpoint': '/persons/api/organization_attendees/'})
-                context.update(
-                    {
-                        "gatherings_endpoint": "/occasions/api/organization_team_gatherings/"
-                    }
-                )
-                context.update(
-                    {"characters_endpoint": "/occasions/api/user_assembly_characters/"}
-                )
-                context.update(
-                    {"attendings_endpoint": "/persons/api/user_meet_attendings/"}
-                )
-                context.update(
-                    {
-                        "attendances_endpoint": "/occasions/api/coworker_organization_attendances/"
-                    }
-                )
+                # context.update(
+                #     {
+                #         "gatherings_endpoint": "/occasions/api/organization_team_gatherings/"
+                #     }
+                # )
+                # context.update(
+                #     {"characters_endpoint": "/occasions/api/user_assembly_characters/"}
+                # )
+                # context.update(
+                #     {"attendings_endpoint": "/persons/api/user_meet_attendings/"}
+                # )
+                # context.update(
+                #     {
+                #         "attendances_endpoint": "/occasions/api/coworker_organization_attendances/"
+                #     }
+                # )
                 return render(self.request, self.get_template_names()[0], context)
         else:
             time.sleep(2)

@@ -1,5 +1,5 @@
 import time
-
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
@@ -26,7 +26,9 @@ class ApiUserAssemblyCharactersViewSet(LoginRequiredMixin, viewsets.ModelViewSet
         """
         current_user = self.request.user
         current_user_organization = current_user.organization
-        target_attendee = get_object_or_404(
+        target_attendee = get_object_or_404(  # for DRF UI
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID", self.request.user.attendee_uuid_str())
+        ) if settings.DEBUG else get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
 

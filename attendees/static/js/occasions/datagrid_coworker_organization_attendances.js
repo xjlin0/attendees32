@@ -154,7 +154,7 @@ Attendees.organizationAttendances = {
   },
 
   setDefaults: () => {
-    const locale = "en-us"
+    const locale = "en-us";
     const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
     const timeOptions = { hour12: true, hour: '2-digit', minute:'2-digit' };
     const defaultFilterStartDate = new Date();
@@ -163,6 +163,11 @@ Attendees.organizationAttendances = {
     defaultFilterFinishDate.setMonth(defaultFilterFinishDate.getMonth() + 1);
     $('input.filter-start-date').val(defaultFilterStartDate.toLocaleDateString(locale, dateOptions) + ' ' + defaultFilterStartDate.toLocaleTimeString(locale, timeOptions));
     $('input.filter-finish-date').val(defaultFilterFinishDate.toLocaleDateString(locale, dateOptions) + ' ' + defaultFilterFinishDate.toLocaleTimeString(locale, timeOptions));
+    $.ajaxSetup({
+      headers: {
+        'X-Target-Attendee-Id': $('div.organization-attendances').data('target-attendee-id'),
+      }
+    });
 //    document.getElementById('filter-meets').value = [];
   }, // https://stackoverflow.com/a/50000889
 
@@ -183,7 +188,7 @@ Attendees.organizationAttendances = {
         }
     );
   },
-}
+};
 
 $(document).ready(() => {
   Attendees.organizationAttendances.init();
