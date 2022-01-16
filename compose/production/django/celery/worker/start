@@ -3,6 +3,6 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-sleep 10  # not needed after docker-compose 1.29 to support depends_on condition of service_completed_successfully
+# sleep 10  # not needed after docker-compose 1.29 to support depends_on condition of service_completed_successfully
 
 exec celery -A config.celery_app worker -l INFO
