@@ -1,6 +1,5 @@
 import csv, os, pytz, re
 from datetime import datetime, timedelta
-from itertools import permutations
 from glob import glob
 from pathlib import Path
 
