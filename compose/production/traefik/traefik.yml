@@ -31,7 +31,7 @@ certificatesResolvers:
 http:
   routers:
     web-secure-router:
-      rule: "Host(`chineseforchristchurch.org`) || Host(`www.chineseforchristchurch.org`)"
+      rule: "Host(`chineseforchristchurch.org`) || Host(`attendees.chineseforchristchurch.org`)"
       entryPoints:
         - web-secure
       middlewares:
@@ -42,7 +42,7 @@ http:
         certResolver: letsencrypt
 
     flower-secure-router:
-      rule: "Host(`chineseforchristchurch.org`)"
+      rule: "Host(`attendees.chineseforchristchurch.org`)"
       entryPoints:
         - flower
       service: flower

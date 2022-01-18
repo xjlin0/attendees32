@@ -1,15 +1,17 @@
+import private_storage.urls
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from django.views import defaults as default_views
-import private_storage.urls
 from django.views.generic import TemplateView
+from django.views.static import serve
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
-    re_path('^private-media/', include(private_storage.urls)),
+    re_path("^private-media/", include(private_storage.urls)),
+    re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
@@ -20,27 +22,27 @@ urlpatterns = [
     path("users/", include("attendees.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    path('summernote/', include('django_summernote.urls')),
+    path("summernote/", include("django_summernote.urls")),
     path(
-      "occasions/",
-      include(
-          "attendees.occasions.urls",
-          namespace="occasions",
-      ),
+        "occasions/",
+        include(
+            "attendees.occasions.urls",
+            namespace="occasions",
+        ),
     ),
     path(
-      "whereabouts/",
-      include(
-          "attendees.whereabouts.urls",
-          namespace="whereabouts",
-      ),
+        "whereabouts/",
+        include(
+            "attendees.whereabouts.urls",
+            namespace="whereabouts",
+        ),
     ),
     path(
-      "persons/",
-      include(
-          "attendees.persons.urls",
-          namespace="persons",
-      ),
+        "persons/",
+        include(
+            "attendees.persons.urls",
+            namespace="persons",
+        ),
     ),
 ]
 if settings.DEBUG:

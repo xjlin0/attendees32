@@ -5,30 +5,21 @@
 {% endblock title %}
 
 {% block extra_css %}
-  <link rel="preload"
+  <link rel="stylesheet"
         as="style"
-        href="{% static 'tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.css' %}"
-        onload="this.rel='stylesheet'">
+        href="{% static 'tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.css' %}">
 
-  <link rel="preload"
-        as="style"
-        href="{% static '/admin/css/vendor/select2/select2.min.css' %}"
-        onload="this.rel='stylesheet'">
+  <link rel="stylesheet"
+        href="{% static '/admin/css/vendor/select2/select2.min.css' %}">
 
-  <link rel="preload"
-        as="style"
-        href="{% static 'select2-bootstrap4-theme/select2-bootstrap4.min.css' %}"
-        onload="this.rel='stylesheet'">
+  <link rel="stylesheet"
+        href="{% static 'select2-bootstrap4-theme/select2-bootstrap4.min.css' %}">
 
-  <link rel="preload"
-        as="style"
-        href="{% static 'devextreme/dx.common.css' %}"
-        onload="this.rel='stylesheet'">
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.common.css' %}">
 
-  <link rel="preload"
-        as="style"
-        href="{% static 'devextreme/dx.light.compact.css' %}"
-        onload="this.rel='stylesheet'">
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.light.compact.css' %}">
 {% endblock extra_css %}
 
 {% block extra_head %}

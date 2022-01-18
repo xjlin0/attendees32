@@ -6,15 +6,11 @@
 
 {% block extra_css %}
 
-  <link rel="preload"
-        as="style"
-        href="{% static 'devextreme/dx.common.css' %}"
-        onload="this.rel='stylesheet'">
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.common.css' %}">
 
-  <link rel="preload"
-        as="style"
-        href="{% static 'devextreme/dx.light.compact.css' %}"
-        onload="this.rel='stylesheet'">
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.light.compact.css' %}">
 {% endblock extra_css %}
 
 {% block extra_head %}
