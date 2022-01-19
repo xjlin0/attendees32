@@ -2,9 +2,12 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
-
+import mimetypes
 import environ
 
+mimetypes.add_type('text/html', ".css", True)
+mimetypes.add_type('text/html', ".htm", True)
+mimetypes.add_type("text/css", ".css", True)
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # attendees/
 APPS_DIR = ROOT_DIR / "attendees"
