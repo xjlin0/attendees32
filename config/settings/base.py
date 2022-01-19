@@ -2,12 +2,12 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
-import mimetypes
+# import mimetypes
 import environ
 
-mimetypes.add_type('text/html', ".css", True)
-mimetypes.add_type('text/html', ".htm", True)
-mimetypes.add_type("text/css", ".css", True)
+# mimetypes.add_type('text/html', ".css", True)  # can't load css when debug=False without disabling DEBUG_TOOLBAR_CONFIG.SHOW_TOOLBAR_CALLBACK
+# mimetypes.add_type('text/html', ".htm", True)
+# mimetypes.add_type("text/css", ".css", True)
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # attendees/
 APPS_DIR = ROOT_DIR / "attendees"
