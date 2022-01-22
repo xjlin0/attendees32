@@ -59,7 +59,7 @@ if DEBUG:
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]  # noqa F405
 # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
     DEBUG_TOOLBAR_CONFIG = {
-        # 'SHOW_TOOLBAR_CALLBACK': lambda r: False,  # disables it
+        'SHOW_TOOLBAR_CALLBACK': lambda r: False,  # disables it
         "DISABLE_PANELS": ["debug_toolbar.panels.redirects.RedirectsPanel"],
         "SHOW_TEMPLATE_CONTEXT": True,
     }

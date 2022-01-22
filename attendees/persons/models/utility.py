@@ -203,15 +203,16 @@ class Utility:
                 if update and defaults:
                     for key, value in defaults.items():
                         setattr(obj, key, value)
+                    obj.save()
             else:
                 filters.update(defaults)
                 obj = klass(**filters)
                 created = True
-            obj.save()
+                obj.save()
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             print(
-                f"\nKnown bug: Utility.update_or_create_last() exception: {e} at line: {exc_tb.tb_lineno}"
+                f"\nbug: Utility.update_or_create_last() exception: {e} at line: {exc_tb.tb_lineno}"
             )
             print(f"and data of {klass} obj#{obj.id} has been saved (pk exist)")
             if excpetion_print_data:

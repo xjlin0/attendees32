@@ -517,6 +517,7 @@ def import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_sl
         except Exception as e:
             print("\nWhile importing/updating people: ", people)
             print('Cannot save import_attendees, reason: ', e)
+    AttendingMeet.objects.filter(meet=member_meet).update(category='active')  # direct SQL update won't trigger save()
     print('done!')
     return successfully_processed_count, photo_import_results  # list(filter(None.__ne__, photo_import_results))
 
@@ -836,19 +837,88 @@ def update_attendee_membership_and_other(baptized_meet, baptized_category, atten
         }
     )
 
-    is_member = False
+    is_member = Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('cfcc_member'))
     bap_date_text = None
     if attendee.infos.get('progressions', {}).get('baptized_since') or attendee.infos.get('progressions', {}).get('baptism_location'):
         bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since'))
 
-    if Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('cfcc_member')):
-        is_member = True
+    is_believer = is_member or bap_date_text or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('christian'))
+
+    if is_believer or bap_date_text or is_member:
+
+        AttendingMeet.objects.update_or_create(
+            attending=data_attending,
+            meet=believer_meet,
+            defaults={
+                'attending': data_attending,
+                'meet': believer_meet,
+                'character': believer_character,
+                'category': 'importer',  # This stop auto create Past via post-save signal
+                'start': Utility.now_with_timezone(),
+                'finish': believer_meet.finish,
+            },
+        )
+
+        defaults = {
+            'organization': data_assembly.division.organization,
+            'content_type': attendee_content_type,
+            'object_id': attendee.id,
+            'category': believer_category,
+            'display_name': '已信主 Christian',
+            "is_removed": False,
+        }
+
+        Utility.update_or_create_last(
+            Past,
+            update=False,
+            filters=defaults,
+            defaults={**defaults, "infos": {**Utility.relationship_infos(), "comment": "importer"}},  # stop auto-create
+        )
+
+    if bap_date_text or is_member:
+        member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
+        member_date_or_now = Utility.parsedate_or_now(member_date_text)
+        bap_date_or_now = Utility.parsedate_or_now(bap_date_text)
+        baptized_date_or_now = min(member_date_or_now, bap_date_or_now)
+        bap_date_or_unknown = Utility.parsedate_or_now(bap_date_text, default_date='unknown')
+
+        AttendingMeet.objects.update_or_create(
+            attending=data_attending,
+            meet=baptized_meet,
+            defaults={
+                'attending': data_attending,
+                'meet': baptized_meet,
+                'character': baptisee_character,
+                'category': 'importer',  # This stops auto create Past via post-save signal
+                'start': baptized_date_or_now,
+                'finish': baptized_meet.finish,
+            },
+        )
+
+        Past.objects.update_or_create(
+            organization=data_assembly.division.organization,
+            content_type=attendee_content_type,
+            object_id=attendee.id,
+            category=baptized_category,
+            display_name='已受洗 baptized',
+            when=None if baptized_date_or_now.date() == datetime.today().date() else baptized_date_or_now,
+            infos={
+                **Utility.relationship_infos(),
+                'comment': f'[importer] possible date: {bap_date_or_unknown}',  # importer stops auto creation of AttenddingMeet
+            },
+        )
+
+    if is_member:
+
+        # member_since_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
+        # member_since_reason = ', member since ' + member_since_text if member_since_text else ''
+
         member_since_or_now = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('member_since'))
         member_attending_meet_default = {
             'attending': data_attending,
             'meet': member_meet,
             'character': member_character,
-            'category': 'active',  # member category has to be active or inactive
+            'category': 'importer',  # member category has to be converted to active later
             'start': member_since_or_now,
             'finish': member_meet.finish,
         }
@@ -877,69 +947,6 @@ def update_attendee_membership_and_other(baptized_meet, baptized_category, atten
                     'created_reason': 'CFCCH member/directory registration from importer',
                 },
             }
-        )
-
-        # member_since_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
-        # member_since_reason = ', member since ' + member_since_text if member_since_text else ''
-
-    if bap_date_text or is_member:
-        member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
-        member_date_or_now = Utility.parsedate_or_now(member_date_text)
-        bap_date_or_now = Utility.parsedate_or_now(bap_date_text)
-        baptized_date_or_now = min(member_date_or_now, bap_date_or_now)
-        bap_date_or_unknown = Utility.parsedate_or_now(bap_date_text, default_date='unknown')
-        AttendingMeet.objects.update_or_create(
-            attending=data_attending,
-            meet=baptized_meet,
-            defaults={
-                'attending': data_attending,
-                'meet': baptized_meet,
-                'character': baptisee_character,
-                'category': 'importer',
-                'start': baptized_date_or_now,
-                'finish': baptized_meet.finish,
-            },
-        )
-
-        Past.objects.update_or_create(
-            organization=data_assembly.division.organization,
-            content_type=attendee_content_type,
-            object_id=attendee.id,
-            category=baptized_category,
-            display_name='已受洗 baptized',
-            when=None if baptized_date_or_now.date() == datetime.today().date() else baptized_date_or_now,
-            infos={
-                **Utility.relationship_infos(),
-                'comment': f'[Importer] possible date: {bap_date_or_unknown}',
-            },
-        )
-
-    if is_member or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('christian')):
-        AttendingMeet.objects.update_or_create(
-            attending=data_attending,
-            meet=believer_meet,
-            defaults={
-                'attending': data_attending,
-                'meet': believer_meet,
-                'character': believer_character,
-                'category': 'importer',
-                'start': Utility.now_with_timezone(),
-                'finish': believer_meet.finish,
-            },
-        )
-
-        defaults = {
-            'organization': data_assembly.division.organization,
-            'content_type': attendee_content_type,
-            'object_id': attendee.id,
-            'category': believer_category,
-            'display_name': '已信主 Christian',
-        }
-        Utility.update_or_create_last(
-            Past,
-            filters=defaults,
-            defaults=defaults,
-            exception_save=True,  # Somehow believer Past throw exception on first saving but persisted data seems fine
         )
 
 
