@@ -40,6 +40,7 @@ class AttendeeUpdateView(LoginRequiredMixin, RouteAndSpyGuard, UpdateView):
                 "attendee_contenttype_id": ContentType.objects.get_for_model(
                     Attendee
                 ).id,
+                "teams_endpoint": "/occasions/api/organization_meet_teams/",
                 "folk_contenttype_id": ContentType.objects.get_for_model(Folk).id,
                 "empty_image_link": f"{settings.STATIC_URL}images/empty.png",
                 "show_create_attendee": show_create_attendee,

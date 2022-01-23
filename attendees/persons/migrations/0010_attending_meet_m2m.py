@@ -9,7 +9,7 @@ import model_utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('occasions', '0005_meet'),
+        ('occasions', '0007_team'),
         ('persons', '0009_attending'),
     ]
 
@@ -26,7 +26,9 @@ class Migration(migrations.Migration):
                 ('start', models.DateTimeField(blank=False, null=False, db_index=True, default=attendees.persons.models.utility.Utility.now_with_timezone)),
                 ('finish', models.DateTimeField(blank=False, null=False, db_index=True, help_text="Required for user to filter by time")),
                 ('character', models.ForeignKey(on_delete=models.SET(0), to='occasions.Character')),
+                ('team', models.ForeignKey(blank=True, default=None, help_text='empty for main meet', null=True, on_delete=django.db.models.deletion.SET_NULL, to='occasions.Team')),
                 ('category', models.CharField(max_length=20, default='primary', blank=False, null=False, help_text='primary, secondary, etc (primary will be displayed first)')),
+                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5}. Please keep {} here even no data', null=True)),
             ],
             options={
                 'db_table': 'persons_attending_meets',
@@ -41,5 +43,9 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='attendingmeet',
             constraint=models.UniqueConstraint(fields=('attending', 'meet'), condition=models.Q(is_removed=False), name='attending_meet'),
+        ),
+        migrations.AddIndex(
+            model_name='attendingmeet',
+            index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='attendingmeet_infos_gin'),
         ),
     ]

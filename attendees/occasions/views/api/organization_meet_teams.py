@@ -20,10 +20,10 @@ class ApiOrganizationMeetTeamViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         current_user_organization = self.request.user.organization
         if current_user_organization:
-            # Todo: probably need to check if the meets belongs to the organization?
             return TeamService.by_organization_meets(
                 meet_slugs=self.request.query_params.getlist("meets[]", []),
                 organization_slug=current_user_organization.slug,
+                pk=self.kwargs.get("pk"),
             )
 
         else:

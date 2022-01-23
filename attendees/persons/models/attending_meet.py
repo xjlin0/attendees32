@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from model_utils.models import SoftDeletableModel, TimeStampedModel
 
@@ -30,7 +31,14 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
         db_index=True,
         help_text="Required for user to filter by time",
     )
-
+    team = models.ForeignKey(
+        "occasions.Team",
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="empty for main meet",
+    )
     character = models.ForeignKey(
         "occasions.Character", null=False, blank=False, on_delete=models.SET(0)
     )
@@ -40,6 +48,12 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
         blank=False,
         null=False,
         help_text="primary, secondary, etc (primary will be displayed first)",
+    )
+    infos = models.JSONField(
+        null=True,
+        blank=True,
+        default=dict,
+        help_text='Example: {"kid_points": 5}. Please keep {} here even no data',
     )
 
     def clean(self):
@@ -61,6 +75,12 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
                 condition=models.Q(is_removed=False),
                 name="attending_meet",
             )
+        ]
+        indexes = [
+            GinIndex(
+                fields=["infos"],
+                name="attendingmeet_infos_gin",
+            ),
         ]
 
     def __str__(self):

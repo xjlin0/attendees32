@@ -5064,7 +5064,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 1,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5079,7 +5081,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 2,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5094,7 +5098,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 3,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5109,7 +5115,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 6,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5124,7 +5132,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 3,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5139,7 +5149,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 7,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5154,7 +5166,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 2,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5169,7 +5183,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 6,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5184,7 +5200,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 8,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5199,7 +5217,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 15,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5214,7 +5234,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 23,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5229,7 +5251,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 22,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5244,7 +5268,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 23,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5259,7 +5285,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 22,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5274,7 +5302,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 22,
-      "category": "honor"
+      "category": "honor",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5289,7 +5319,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 15,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5304,7 +5336,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 15,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5319,7 +5353,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 23,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5334,7 +5370,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 23,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5349,7 +5387,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 22,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5364,7 +5404,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 23,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5379,7 +5421,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 15,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5394,7 +5438,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2020-02-17T19:59:59Z",
       "character": 22,
-      "category": "deleted"
+      "category": "deleted",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5409,7 +5455,9 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "character": 15,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5424,7 +5472,9 @@
       "start": "2020-06-19T21:37:02Z",
       "finish": "2020-08-19T21:37:54Z",
       "character": 16,
-      "category": "passenger"
+      "category": "passenger",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5439,7 +5489,9 @@
       "start": "2020-06-19T21:37:02Z",
       "finish": "2020-08-19T21:38:28Z",
       "character": 16,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5454,7 +5506,9 @@
       "start": "2020-06-19T21:37:02Z",
       "finish": "2020-08-19T21:38:34Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5469,7 +5523,9 @@
       "start": "2020-06-19T21:38:55Z",
       "finish": "2020-08-19T21:39:41Z",
       "character": 16,
-      "category": "passenger"
+      "category": "passenger",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5484,7 +5540,9 @@
       "start": "2020-06-19T21:38:55Z",
       "finish": "2020-08-19T21:39:37Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5499,7 +5557,9 @@
       "start": "2020-06-19T21:38:55Z",
       "finish": "2020-08-19T21:39:36Z",
       "character": 16,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5514,7 +5574,9 @@
       "start": "2020-06-19T21:42:05Z",
       "finish": "2020-08-19T21:42:44Z",
       "character": 18,
-      "category": "driver"
+      "category": "driver",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5529,7 +5591,9 @@
       "start": "2020-06-19T21:42:05Z",
       "finish": "2020-08-19T21:42:48Z",
       "character": 17,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5544,7 +5608,9 @@
       "start": "2020-06-19T21:42:05Z",
       "finish": "2020-08-19T21:43:12Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5559,7 +5625,9 @@
       "start": "2020-06-19T21:50:28Z",
       "finish": "2020-08-19T21:50:49Z",
       "character": 18,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5574,7 +5642,9 @@
       "start": "2020-06-19T21:50:28Z",
       "finish": "2020-08-19T21:51:04Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5589,7 +5659,9 @@
       "start": "2020-06-19T21:50:28Z",
       "finish": "2020-08-19T21:51:34Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5604,7 +5676,9 @@
       "start": "2020-06-19T21:58:49Z",
       "finish": "2020-08-19T21:59:54Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5619,7 +5693,9 @@
       "start": "2020-06-19T21:58:49Z",
       "finish": "2020-08-19T21:59:56Z",
       "character": 16,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5634,7 +5710,9 @@
       "start": "2020-06-19T22:15:27Z",
       "finish": "2020-08-19T22:15:58Z",
       "character": 16,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5649,7 +5727,9 @@
       "start": "2020-08-19T22:15:27Z",
       "finish": "2020-06-19T22:15:57Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5664,7 +5744,9 @@
       "start": "2020-06-19T22:21:40Z",
       "finish": "2020-08-19T22:22:30Z",
       "character": 21,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5679,7 +5761,9 @@
       "start": "2020-06-19T22:21:40Z",
       "finish": "2020-08-19T22:22:22Z",
       "character": 16,
-      "category": "secondary"
+      "category": "secondary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5694,7 +5778,9 @@
       "start": "2020-06-19T22:21:40Z",
       "finish": "2020-08-19T22:22:21Z",
       "character": 16,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5709,7 +5795,9 @@
       "start": "2020-06-19T22:53:22Z",
       "finish": "2020-08-19T23:36:48Z",
       "character": 19,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5724,7 +5812,9 @@
       "start": "2020-06-19T22:54:52Z",
       "finish": "2020-08-19T23:38:15Z",
       "character": 19,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5739,7 +5829,9 @@
       "start": "2020-06-19T22:55:24Z",
       "finish": "2020-08-19T23:38:48Z",
       "character": 20,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5754,7 +5846,9 @@
       "start": "2020-06-19T22:56:02Z",
       "finish": "2020-08-19T23:39:35Z",
       "character": 20,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5769,7 +5863,9 @@
       "start": "2020-11-16T04:09:43Z",
       "finish": "2099-11-16T04:10:50Z",
       "character": 23,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5784,7 +5880,9 @@
       "start": "2020-11-16T04:11:27Z",
       "finish": "2099-11-16T04:12:10Z",
       "character": 23,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5799,7 +5897,9 @@
       "start": "2020-11-16T04:20:14Z",
       "finish": "2099-11-16T04:20:31Z",
       "character": 23,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5814,7 +5914,9 @@
       "start": "2020-11-16T04:22:26Z",
       "finish": "2099-11-16T04:22:50Z",
       "character": 23,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5829,7 +5931,9 @@
       "start": "2020-11-16T04:23:06Z",
       "finish": "2099-11-16T04:23:22Z",
       "character": 23,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -5844,7 +5948,9 @@
       "start": "2020-11-16T04:23:51Z",
       "finish": "2099-11-16T04:24:14Z",
       "character": 23,
-      "category": "primary"
+      "category": "primary",
+      "team": null,
+      "infos": {}
     }
   },
   {
@@ -7460,7 +7566,6 @@
       "team": 1,
       "attending": 1,
       "character": 1,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {
@@ -7482,7 +7587,6 @@
       "team": null,
       "attending": 2,
       "character": 2,
-      "free": -1,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7501,7 +7605,6 @@
       "team": 1,
       "attending": 3,
       "character": 4,
-      "free": 0,
       "category": "confirmed",
       "display_order": 0,
       "infos": {}
@@ -7520,7 +7623,6 @@
       "team": null,
       "attending": 3,
       "character": 5,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7539,7 +7641,6 @@
       "team": null,
       "attending": 4,
       "character": 6,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7558,7 +7659,6 @@
       "team": null,
       "attending": 5,
       "character": 4,
-      "free": 1,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7577,7 +7677,6 @@
       "team": null,
       "attending": 6,
       "character": 7,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7596,7 +7695,6 @@
       "team": null,
       "attending": 7,
       "character": 6,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7615,7 +7713,6 @@
       "team": null,
       "attending": 8,
       "character": 8,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7634,7 +7731,6 @@
       "team": null,
       "attending": 9,
       "character": 15,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7653,7 +7749,6 @@
       "team": null,
       "attending": 12,
       "character": 15,
-      "free": 0,
       "category": "cancelled",
       "display_order": 0,
       "infos": {}
@@ -7672,8 +7767,7 @@
       "team": null,
       "attending": 13,
       "character": 15,
-      "free": 0,
-      "category": "comfirmed",
+      "category": "confirmed",
       "display_order": 0,
       "infos": {}
     }
@@ -7691,7 +7785,6 @@
       "team": null,
       "attending": 15,
       "character": 15,
-      "free": 0,
       "category": "attended",
       "display_order": 0,
       "infos": {}
@@ -7710,7 +7803,6 @@
       "team": null,
       "attending": 9,
       "character": 15,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7729,7 +7821,6 @@
       "team": null,
       "attending": 12,
       "character": 15,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7748,7 +7839,6 @@
       "team": null,
       "attending": 13,
       "character": 15,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7767,7 +7857,6 @@
       "team": null,
       "attending": 15,
       "character": 15,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7786,7 +7875,6 @@
       "team": 2,
       "attending": 18,
       "character": 19,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7805,7 +7893,6 @@
       "team": 2,
       "attending": 23,
       "character": 20,
-      "free": 0,
       "category": "attended",
       "display_order": 0,
       "infos": {}
@@ -7824,7 +7911,6 @@
       "team": 3,
       "attending": 20,
       "character": 20,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}
@@ -7843,7 +7929,6 @@
       "team": 3,
       "attending": 21,
       "character": 19,
-      "free": 0,
       "category": "scheduled",
       "display_order": 0,
       "infos": {}

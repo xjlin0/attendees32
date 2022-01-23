@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('character', models.ForeignKey(on_delete=models.SET(0), to='occasions.Character')),
                 ('gathering', models.ForeignKey(on_delete=models.SET(0), to='occasions.Gathering')),
                 ('team', models.ForeignKey(blank=True, default=None, help_text='empty for main meet', null=True, on_delete=django.db.models.deletion.SET_NULL, to='occasions.Team')),
-                ('free', models.SmallIntegerField(blank=True, default=0, help_text='multitasking: the person cannot join other gatherings if negative', null=True)),
+                # ('free', models.SmallIntegerField(blank=True, default=0, help_text='multitasking: the person cannot join other gatherings if negative', null=True)),
                 ('display_order', models.SmallIntegerField(blank=False, default=0, null=False)),
                 ('category', models.CharField(max_length=20, null=False, blank=False, default="scheduled", db_index=True, help_text="RSVPed, leave, remote, etc")),
                 ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5}. Please keep {} here even no data', null=True)),

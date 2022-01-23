@@ -3538,6 +3538,33 @@ Attendees.datagridUpdate = {
         },
       },
       {
+        dataField: 'team',
+        visible: false,
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.teamsEndpoint, searchOpts.filter);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.teamsEndpoint + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
+      },
+      {
         dataField: 'finish',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
@@ -3582,6 +3609,9 @@ Attendees.datagridUpdate = {
         },
         {
           dataField: 'start',
+        },
+        {
+          dataField: 'team',
         },
         {
           dataField: 'finish',
