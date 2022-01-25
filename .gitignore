@@ -331,3 +331,4 @@ attendees/scripts/real_data
 .env
 .envs/*
 !.envs/.local/
+.envs/.local/.sendgrid.env
