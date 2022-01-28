@@ -26,6 +26,7 @@ django-private-storage==3.0 # https://github.com/edoburu/django-private-storage
 # django-reversion==4.0.1 # https://github.com/etianen/django-reversion
 dateparser==1.1.0 # https://github.com/scrapinghub/dateparser
 # sendgrid==6.9.3  # https://github.com/sendgrid/sendgrid-python
+#django-anymail[sendgrid]==8.3  # https://github.com/anymail/django-anymail
 
 # Django
 # ------------------------------------------------------------------------------

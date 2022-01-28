@@ -20,6 +20,7 @@ services:
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
+      - ./.envs/.local/.sendgrid.env
     ports:
       - "8008:8000"
     command: /start

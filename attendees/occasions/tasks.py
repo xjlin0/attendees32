@@ -46,8 +46,22 @@ def mail_result(mail_variables):
 @celery_app.task()
 def batch_create_gatherings(meet_infos):
     """
-    A Celery task to periodically generate gatherings.
-    :param meet_infos: a list of meet infos including meet_name, meet_slug, month_adding and recipients' emails
+    A Celery task to periodically generate gatherings taking arguments from model of "periodic task"
+    :param meet_infos: a list of meet infos including meet_name, meet_slug, month_adding & recipients' emails, example:
+
+                    {
+                        "meet_infos": [
+                          {
+                            "desc": "Valid JSON with single key 'meet_infos' is required",
+                            "meet_name": "The Rock",
+                            "meet_slug": "d7c8Fd_cfcch_junior_regular_the_rock",
+                            "months_adding": 1,
+                            "recipients": ["to@email.com"]
+                          }
+                        ]
+                    }
+
+
     return result dictionary of logs including last processing parameters
     """
     begin = datetime.utcnow().replace(microsecond=0)
@@ -82,9 +96,7 @@ def batch_create_gatherings(meet_infos):
         meet = Meet.objects.filter(slug=meet_info["meet_slug"]).first()
         results["meet_name"] = meet_info["meet_name"]
         if not meet:
-            results[
-                "explain"
-            ] = f"Meet with slug '{meet_info['meet_slug']}' cannot be found or invalid."
+            results["explain"] = f"Meet with slug '{meet_info['meet_slug']}' cannot be found or invalid."
             if meet_info["recipients"] and type(meet_info["recipients"]) is list:
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
