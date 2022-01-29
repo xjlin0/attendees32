@@ -1,13 +1,10 @@
-import os
-import ssl
 from datetime import datetime
 
 import pytz
 from celery.utils.log import get_task_logger
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from django.core.mail import send_mail
 
 from attendees.occasions.models import Meet, MessageTemplate
 from config import celery_app
@@ -21,26 +18,17 @@ def mail_result(mail_variables):
     """
     A function to email results to a single recipient
     :param mail_variables: dictionary of mail variables
-    :return: status code of email such as '204'
-    Todo 20210904 tried regenerate certificates, etc but only one work is to disable it by the following openssl
+    :return: text saying number of email triggered such as 1 or 0
     """
-    try:  # https://stackoverflow.com/a/55320969/4257237
-        _create_unverified_https_context = ssl._create_unverified_context
-    except AttributeError:  # Legacy Python that doesn't verify HTTPS certificates by default
-        pass
-    else:  # Handle target environment that doesn't support HTTPS verification
-        ssl._create_default_https_context = _create_unverified_https_context
-
-    sg = mail_variables["sg"]
     mold = mail_variables["mold"]
-    message = Mail(
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to_emails=mail_variables["recipient"],
+    emails_triggered = send_mail(
         subject=mold.templates["subject"].format(**mail_variables),
-        html_content=mold.templates["html_content"].format(**mail_variables),
+        message="nobody see pure text",
+        from_email=None,   # use the EMAIL_HOST_USER setting when None
+        recipient_list=[mail_variables["recipient"]],
+        html_message=mold.templates["html_content"].format(**mail_variables),
     )
-    response = sg.send(message)
-    return response.status_code
+    return f'{emails_triggered} email(s) triggered.'
 
 
 @celery_app.task()
@@ -74,9 +62,6 @@ def batch_create_gatherings(meet_infos):
                         "email status: {email_status}")
     results = {
         "organization": "unknown",
-        "sg": SendGridAPIClient(
-            api_key=os.environ.get("SENDGRID_API_KEY")
-        ),  # from sendgrid.env
         "success": False,
         "meet_name": "unknown",
         "explain": "unknown",
@@ -101,9 +86,7 @@ def batch_create_gatherings(meet_infos):
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    # results["email_logs"][recipient] = mold.templates[
-                    #     "email_log"
-                    # ].format(**results)
+                    results["email_logs"][recipient] = mold.templates["email_log"].format(**results)
             return results
 
         results["meet_name"] = meet.display_name
@@ -131,9 +114,7 @@ def batch_create_gatherings(meet_infos):
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    results["email_logs"][recipient] = no_mold_template.format(
-                        **results
-                    )
+                    results["email_logs"][recipient] = no_mold_template.format(**results)
             return results
 
         results["mold"] = mold
@@ -146,9 +127,7 @@ def batch_create_gatherings(meet_infos):
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    results["email_logs"][recipient] = mold.templates[
-                        "email_log"
-                    ].format(**results)
+                    results["email_logs"][recipient] = mold.templates["email_log"].format(**results)
             return results
 
         end = datetime.utcnow() + relativedelta(months=+meet_info["months_adding"])
@@ -171,8 +150,6 @@ def batch_create_gatherings(meet_infos):
             for recipient in meet_info["recipients"]:
                 results["recipient"] = recipient
                 results["email_status"] = mail_result(results)
-                results["email_logs"][recipient] = mold.templates["email_log"].format(
-                    **results
-                )
+                results["email_logs"][recipient] = mold.templates["email_log"].format(**results)
 
     return results
