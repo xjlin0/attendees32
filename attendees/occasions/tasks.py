@@ -20,7 +20,7 @@ def mail_result(mail_variables):
     :param mail_variables: dictionary of mail variables
     :return: text saying number of email triggered such as 1 or 0
     """
-    mold = mail_variables["mold"]
+    mold = MessageTemplate.objects.get(pk=mail_variables["message_template_id"])
     emails_triggered = send_mail(
         subject=mold.templates["subject"].format(**mail_variables),
         message="nobody see pure text",
@@ -49,7 +49,7 @@ def batch_create_gatherings(meet_infos):
                         ]
                     }
 
-
+    Todo 20220202: use signal for mailing status https://anymail.dev/en/stable/sending/signals/
     return result dictionary of logs including last processing parameters
     """
     begin = datetime.utcnow().replace(microsecond=0)
@@ -86,14 +86,14 @@ def batch_create_gatherings(meet_infos):
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    results["email_logs"][recipient] = mold.templates["email_log"].format(**results)
+                    results["email_logs"][recipient] = message_template.templates["email_log"].format(**results)
             return results
 
         results["meet_name"] = meet.display_name
-        results["organization"] = meet.assembly.division.organization
+        results["organization"] = meet.assembly.division.organization.display_name
         tzname = (
             meet.infos["default_time_zone"]
-            or results["organization"].infos["default_time_zone"]
+            or meet.assembly.division.organization.infos["default_time_zone"]
             or settings.CLIENT_DEFAULT_TIME_ZONE
         )
         time_zone = pytz.timezone(tzname)
@@ -101,11 +101,11 @@ def batch_create_gatherings(meet_infos):
         results["time_triggered"] = begin.astimezone(time_zone).strftime(
             "%Y-%m-%d %H:%M%p"
         )
-        mold = MessageTemplate.objects.filter(
-            type="batch_create_gatherings", organization=results["organization"]
+        message_template = MessageTemplate.objects.filter(
+            type="batch_create_gatherings", organization=meet.assembly.division.organization
         ).first()
 
-        if not mold:
+        if not message_template:
             results[
                 "explain"
             ] = (f"MessageTemplate with type 'batch_create_gatherings' under Organization"
@@ -117,7 +117,7 @@ def batch_create_gatherings(meet_infos):
                     results["email_logs"][recipient] = no_mold_template.format(**results)
             return results
 
-        results["mold"] = mold
+        results["message_template_id"] = message_template.id
 
         if not meet_info["months_adding"]:
             results[
@@ -127,7 +127,7 @@ def batch_create_gatherings(meet_infos):
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    results["email_logs"][recipient] = mold.templates["email_log"].format(**results)
+                    results["email_logs"][recipient] = message_template.templates["email_log"].format(**results)
             return results
 
         end = datetime.utcnow() + relativedelta(months=+meet_info["months_adding"])
@@ -150,6 +150,6 @@ def batch_create_gatherings(meet_infos):
             for recipient in meet_info["recipients"]:
                 results["recipient"] = recipient
                 results["email_status"] = mail_result(results)
-                results["email_logs"][recipient] = mold.templates["email_log"].format(**results)
+                results["email_logs"][recipient] = message_template.templates["email_log"].format(**results)
 
     return results
