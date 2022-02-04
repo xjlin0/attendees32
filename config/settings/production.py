@@ -2,6 +2,7 @@ from .base import *  # noqa
 from .base import env
 
 # GENERAL
+ENV_NAME = env('ENV_NAME', default='production.py')  # for mail task
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env("DJANGO_SECRET_KEY")

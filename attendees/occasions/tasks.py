@@ -1,13 +1,10 @@
-import os
-import ssl
 from datetime import datetime
 
 import pytz
 from celery.utils.log import get_task_logger
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from django.core.mail import send_mail
 
 from attendees.occasions.models import Meet, MessageTemplate
 from config import celery_app
@@ -21,33 +18,38 @@ def mail_result(mail_variables):
     """
     A function to email results to a single recipient
     :param mail_variables: dictionary of mail variables
-    :return: status code of email such as '204'
-    Todo 20210904 tried regenerate certificates, etc but only one work is to disable it by the following openssl
+    :return: text saying number of email triggered such as 1 or 0
     """
-    try:  # https://stackoverflow.com/a/55320969/4257237
-        _create_unverified_https_context = ssl._create_unverified_context
-    except AttributeError:  # Legacy Python that doesn't verify HTTPS certificates by default
-        pass
-    else:  # Handle target environment that doesn't support HTTPS verification
-        ssl._create_default_https_context = _create_unverified_https_context
-
-    sg = mail_variables["sg"]
-    mold = mail_variables["mold"]
-    message = Mail(
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to_emails=mail_variables["recipient"],
+    mold = MessageTemplate.objects.get(pk=mail_variables["message_template_id"])
+    emails_triggered = send_mail(
         subject=mold.templates["subject"].format(**mail_variables),
-        html_content=mold.templates["html_content"].format(**mail_variables),
+        message="nobody see pure text",
+        from_email=None,   # use the EMAIL_HOST_USER setting when None
+        recipient_list=[mail_variables["recipient"]],
+        html_message=mold.templates["html_content"].format(**mail_variables),
     )
-    response = sg.send(message)
-    return response.status_code
+    return f'{emails_triggered} email(s) triggered.'
 
 
 @celery_app.task()
 def batch_create_gatherings(meet_infos):
     """
-    A Celery task to periodically generate gatherings.
-    :param meet_infos: a list of meet infos including meet_name, meet_slug, month_adding and recipients' emails
+    A Celery task to periodically generate gatherings taking arguments from model of "periodic task"
+    :param meet_infos: a list of meet infos including meet_name, meet_slug, month_adding & recipients' emails, example:
+
+                    {
+                        "meet_infos": [
+                          {
+                            "desc": "Valid JSON with single key 'meet_infos' is required",
+                            "meet_name": "The Rock",
+                            "meet_slug": "d7c8Fd_cfcch_junior_regular_the_rock",
+                            "months_adding": 1,
+                            "recipients": ["to@email.com"]
+                          }
+                        ]
+                    }
+
+    Todo 20220202: use signal for mailing status https://anymail.dev/en/stable/sending/signals/
     return result dictionary of logs including last processing parameters
     """
     begin = datetime.utcnow().replace(microsecond=0)
@@ -60,9 +62,6 @@ def batch_create_gatherings(meet_infos):
                         "email status: {email_status}")
     results = {
         "organization": "unknown",
-        "sg": SendGridAPIClient(
-            api_key=os.environ.get("SENDGRID_API_KEY")
-        ),  # from sendgrid.env
         "success": False,
         "meet_name": "unknown",
         "explain": "unknown",
@@ -82,23 +81,19 @@ def batch_create_gatherings(meet_infos):
         meet = Meet.objects.filter(slug=meet_info["meet_slug"]).first()
         results["meet_name"] = meet_info["meet_name"]
         if not meet:
-            results[
-                "explain"
-            ] = f"Meet with slug '{meet_info['meet_slug']}' cannot be found or invalid."
+            results["explain"] = f"Meet with slug '{meet_info['meet_slug']}' cannot be found or invalid."
             if meet_info["recipients"] and type(meet_info["recipients"]) is list:
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    # results["email_logs"][recipient] = mold.templates[
-                    #     "email_log"
-                    # ].format(**results)
+                    results["email_logs"][recipient] = message_template.templates["email_log"].format(**results)
             return results
 
         results["meet_name"] = meet.display_name
-        results["organization"] = meet.assembly.division.organization
+        results["organization"] = meet.assembly.division.organization.display_name
         tzname = (
             meet.infos["default_time_zone"]
-            or results["organization"].infos["default_time_zone"]
+            or meet.assembly.division.organization.infos["default_time_zone"]
             or settings.CLIENT_DEFAULT_TIME_ZONE
         )
         time_zone = pytz.timezone(tzname)
@@ -106,11 +101,11 @@ def batch_create_gatherings(meet_infos):
         results["time_triggered"] = begin.astimezone(time_zone).strftime(
             "%Y-%m-%d %H:%M%p"
         )
-        mold = MessageTemplate.objects.filter(
-            type="batch_create_gatherings", organization=results["organization"]
+        message_template = MessageTemplate.objects.filter(
+            type="batch_create_gatherings", organization=meet.assembly.division.organization
         ).first()
 
-        if not mold:
+        if not message_template:
             results[
                 "explain"
             ] = (f"MessageTemplate with type 'batch_create_gatherings' under Organization"
@@ -119,12 +114,10 @@ def batch_create_gatherings(meet_infos):
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    results["email_logs"][recipient] = no_mold_template.format(
-                        **results
-                    )
+                    results["email_logs"][recipient] = no_mold_template.format(**results)
             return results
 
-        results["mold"] = mold
+        results["message_template_id"] = message_template.id
 
         if not meet_info["months_adding"]:
             results[
@@ -134,9 +127,7 @@ def batch_create_gatherings(meet_infos):
                 for recipient in meet_info["recipients"]:
                     results["recipient"] = recipient
                     results["email_status"][recipient] = mail_result(results)
-                    results["email_logs"][recipient] = mold.templates[
-                        "email_log"
-                    ].format(**results)
+                    results["email_logs"][recipient] = message_template.templates["email_log"].format(**results)
             return results
 
         end = datetime.utcnow() + relativedelta(months=+meet_info["months_adding"])
@@ -159,8 +150,6 @@ def batch_create_gatherings(meet_infos):
             for recipient in meet_info["recipients"]:
                 results["recipient"] = recipient
                 results["email_status"] = mail_result(results)
-                results["email_logs"][recipient] = mold.templates["email_log"].format(
-                    **results
-                )
+                results["email_logs"][recipient] = message_template.templates["email_log"].format(**results)
 
     return results

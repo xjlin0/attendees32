@@ -51,6 +51,7 @@ class Utility:
     @staticmethod
     def organization_infos():
         return {
+            "acronym": "change me in infos",
             "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE,
             "settings": {
                 "attendee_to_attending": True,
