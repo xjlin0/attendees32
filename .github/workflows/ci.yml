@@ -44,6 +44,9 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v2
 
+      - name: create an empty sendgrid.env to continue
+        run: touch .envs/.local/.sendgrid.env
+
       - name: Build the Stack
         run:  docker-compose -f local.yml build
 
