@@ -256,7 +256,8 @@ class Attendee(UUIDModel, Utility, TimeStampedModel, SoftDeletableModel):
         birthday = self.actual_birthday or (self.estimated_birthday and self.estimated_birthday.date)
         try:
             if birthday:
-                return (date.today() - birthday) // timedelta(days=365.2425)
+                age = (date.today() - birthday) // timedelta(days=365.2425)
+                return age if age < 200 else None  # estimated_birthday use 1800 as yearless date
             else:
                 return None
         except Exception as e:
