@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
-
+from partial_date import PartialDateField
 import opencc
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
@@ -59,7 +59,7 @@ class Attendee(UUIDModel, Utility, TimeStampedModel, SoftDeletableModel):
         choices=GenderEnum.choices(),
     )
     actual_birthday = models.DateField(blank=True, null=True)
-    estimated_birthday = models.DateField(blank=True, null=True)
+    estimated_birthday = PartialDateField(null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
     deathday = models.DateField(blank=True, null=True)
     photo = PrivateFileField(
         "Photo", blank=True, null=True, upload_to="attendee_portrait"
@@ -253,7 +253,7 @@ class Attendee(UUIDModel, Utility, TimeStampedModel, SoftDeletableModel):
         )
 
     def age(self):
-        birthday = self.actual_birthday or self.estimated_birthday
+        birthday = self.actual_birthday or (self.estimated_birthday and self.estimated_birthday.date)
         try:
             if birthday:
                 return (date.today() - birthday) // timedelta(days=365.2425)

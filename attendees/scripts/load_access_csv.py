@@ -395,7 +395,8 @@ def import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_sl
                         'created_reason': 'CFCCH member/directory registration from importer',  # the word "importer" is critical for signal
                     }
                 }
-
+                if household_id == '964':
+                    print("399 here is #964 attendee_values: ", attendee_values)
                 if birth_date:
                     try:
                         formatting_birthdate = Utility.boolean_or_datetext_or_original(birth_date)
@@ -841,6 +842,9 @@ def update_attendee_membership_and_other(baptized_meet, baptized_category, atten
     bap_date_text = None
     if attendee.infos.get('progressions', {}).get('baptized_since') or attendee.infos.get('progressions', {}).get('baptism_location'):
         bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since'))
+
+    if access_household_id == '964':
+        print("847 here is 964 bap_date_text: ", bap_date_text)
 
     is_believer = is_member or bap_date_text or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('christian'))
 

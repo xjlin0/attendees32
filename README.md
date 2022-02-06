@@ -391,7 +391,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [ ] each model level version
   - [ ] document aggregation level version
 - [x] [New repo] upgrade to Django 3.2LTS for support of DEFAULT_AUTO_FIELD
-   -[ ] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800
+   -[x] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800
    -[x] 3.1: use Django JSONField instead of Postgres JSONField
    -[x] With Django Cookie-cutter, decide async or not (uvicorn high CPU usage in Mac only, but web_socket can be only with use_async)
 - [ ] deploy to AWS EC2
