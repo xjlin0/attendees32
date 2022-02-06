@@ -71,6 +71,7 @@ class Utility:
             "fixed": {},
             "contacts": {},
             "emergency_contacts": {},
+            "progressions": {},
             "schedulers": {},
             "updating_attendees": {},
         }

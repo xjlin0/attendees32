@@ -392,11 +392,11 @@ def import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_sl
                         'names': {},
                         'progressions': {attendee_header: Utility.boolean_or_datetext_or_original(people.get(access_header)) for (access_header, attendee_header) in progression_converter.items() if Utility.presence(people.get(access_header)) is not None},
                         'emergency_contacts': {}, 'schedulers': {}, 'updating_attendees': {},
-                        'created_reason': 'CFCCH member/directory registration from importer',  # the word "importer" is critical for signal
+                        'created_reason': 'CFCCH member/directory registration from importer',  # the word "importer" can skip signal
                     }
                 }
 
-                if birth_date:
+                if birth_date:  # Todo 20220206 parse partial date into estimate_birthday, also someone is 11//25/2018
                     try:
                         formatting_birthdate = Utility.boolean_or_datetext_or_original(birth_date)
                         attendee_values['actual_birthday'] = datetime.strptime(formatting_birthdate, '%Y-%m-%d').date()
@@ -467,12 +467,23 @@ def import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_sl
                             display_order = 10
 
                         some_household_values = {attendee_header: Utility.boolean_or_datetext_or_original(folk.infos.get('access_household_values', {}).get(access_header)) for (access_header, attendee_header) in family_to_attendee_infos_converter.items() if Utility.presence(folk.infos.get('access_household_values', {}).get(access_header)) is not None}
-                        attendee.infos = {'fixed': {**attendee.infos.get('fixed', {}), **some_household_values}, 'contacts': contacts, 'names': attendee.infos.get('names', {}), 'emergency_contacts': attendee.infos.get('emergency_contacts', {}), 'schedulers': attendee.infos.get('schedulers', {}), 'updating_attendees': attendee.infos.get('updating_attendees', {})}
+                        attendee.infos = {
+                            'created_reason': attendee.infos.get('created_reason'),
+                            'fixed': {**attendee.infos.get('fixed', {}), **some_household_values},
+                            'contacts': contacts,
+                            'names': attendee.infos.get('names', {}),
+                            'emergency_contacts': attendee.infos.get('emergency_contacts', {}),
+                            'progressions': attendee.infos.get('progressions', {}),
+                            'schedulers': attendee.infos.get('schedulers', {}),
+                            'updating_attendees': attendee.infos.get('updating_attendees', {}),
+                        }
 
                         attendee_non_family_folk = attendee.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
                         if attendee_non_family_folk:
                             attendee_non_family_folk.division = attendee.division
                             attendee_non_family_folk.save()
+                        else:
+                            print("no friend circle!!! for attendee!! ", attendee)
 
                         attendee.save()
                         FolkAttendee.objects.update_or_create(
@@ -880,7 +891,7 @@ def update_attendee_membership_and_other(baptized_meet, baptized_category, atten
         member_date_or_now = Utility.parsedate_or_now(member_date_text)
         bap_date_or_now = Utility.parsedate_or_now(bap_date_text)
         baptized_date_or_now = min(member_date_or_now, bap_date_or_now)
-        bap_date_or_unknown = Utility.parsedate_or_now(bap_date_text, default_date='unknown')
+        bap_date_or_unknown = Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('baptized_since', 'unknown'))
 
         AttendingMeet.objects.update_or_create(
             attending=data_attending,
@@ -952,7 +963,9 @@ def update_attendee_membership_and_other(baptized_meet, baptized_category, atten
 
 def update_directory_data(data_assembly, folk, directory_meet, directory_character, directory_gathering):
     """
-    update assembly and gathering for directory.
+    update assembly and gathering for directory. Instead of data_attending, here it creates directory_attending
+    since people may want to join/leave directory by they own rather by coworkers.
+
     :param data_assembly: data_assembly
     :param folk: each family folk
     :param directory_meet: directory_meet

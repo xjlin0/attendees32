@@ -378,7 +378,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [ ] new AttendingMeet datagrid filtered by meets and date ranges
   - [ ] auto-generation of AttendingMeet by django-schedule with certain Past
 - [ ] Attendance list (server side processing with auto-generation)
-  - [ ] new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending)
+  - [ ] new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances & datagrid_coworker_organization_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending)
   - [ ] auto-generation attendance by attending meet and recent attendance status
   - [ ] member list (attendance level with editing category)
 - [ ] Create roaster page (no real-time update for multiple coworkers in v1)
@@ -391,7 +391,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [ ] each model level version
   - [ ] document aggregation level version
 - [x] [New repo] upgrade to Django 3.2LTS for support of DEFAULT_AUTO_FIELD
-   -[ ] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800
+   -[x] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800
    -[x] 3.1: use Django JSONField instead of Postgres JSONField
    -[x] With Django Cookie-cutter, decide async or not (uvicorn high CPU usage in Mac only, but web_socket can be only with use_async)
 - [ ] deploy to AWS EC2
