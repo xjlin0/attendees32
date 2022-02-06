@@ -1088,15 +1088,16 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'estimated_birthday',
+        helpText: 'YYYY-MM-DD',
         label: {
           text: 'Guess birthday',
         },
-        editorType: 'dxDateBox',
+//        editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          placeholder: 'click calendar',
+//          placeholder: 'click calendar',
           elementAttr: {
-            title: 'pick any day of your best guess year for the age estimation',
+            title: 'Enter your best guess year for the age estimation, please enter year 1800 if year unknown. YYYY-MM or YYYY is also acceptable',
           },
         },
       },
