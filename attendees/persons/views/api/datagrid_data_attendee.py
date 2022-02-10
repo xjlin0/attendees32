@@ -123,8 +123,8 @@ class ApiDatagridDataAttendeeViewSet(
             target_attendee.id
         ):  # intentionally forbid user delete him/herself
             instance = serializer.save()
-            if self.request.META.get("HTTP_X_END_ALL_ATTENDEE_ACTIVITIES"):
-                AttendeeService.end_all_activities(instance)
+            if self.request.META.get("HTTP_X_END_ALL_ATTENDEE_ACTIVITIES"):  # passed away
+                AttendeeService.end_all_activities(instance, self.request.user.attendee_uuid_str())
                 # Relationship.objects.filter(
                 #     Q(to_attendee=target_attendee)
                 #     |

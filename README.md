@@ -358,6 +358,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [x] [PR#8](https://github.com/xjlin0/attendees30/pull/8) implement secret/private relation/past general
   - [x] some relationship may be internal and only shows to cowokers/admin, in category/boolean/infos column?
   - [x] [PR#32](https://github.com/xjlin0/attendees30/pull/32) Folk model support secret but attendee UI folkattendee doesn't support it
+  - [x] Passed away attendees also need to be removed from emergency contact/scheduler of others. 
   - [ ] Rich format of note for Past on UI? [Using DevExtreme's html editor instead of summernote?](https://blog.devgenius.io/best-free-wysiwyg-editor-python-django-admin-panel-integration-d9cb30da1dba)
 - [x] Move attendee/attendees page out of data assembly -- some coworkers need to see all attendees of the organization, with a way to see only family members for general users
   - [x] [PR#17](https://github.com/xjlin0/attendees30/pull/17) remove all previous attendee edit testing pages
@@ -378,7 +379,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [ ] new AttendingMeet datagrid filtered by meets and date ranges
   - [ ] auto-generation of AttendingMeet by django-schedule with certain Past
 - [ ] Attendance list (server side processing with auto-generation)
-  - [ ] new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances & datagrid_coworker_organization_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending)
+  - [ ] new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances & datagrid_coworker_organization_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending -- refresh the datagrid & reloading attending lookup with attendance filters)
   - [ ] auto-generation attendance by attending meet and recent attendance status
   - [ ] member list (attendance level with editing category)
 - [ ] Create roaster page (no real-time update for multiple coworkers in v1)
@@ -399,7 +400,7 @@ All libraries are included to facilitate offline development, it will take port 
 - [ ] Export pdf
   - [ ] directory booklet
   - [ ] mail labels (avery template) or printing envelops
-  - [ ] Todo: 20210517 When creating FamilyAttendee, also auto create relationships among families such as siblings, etc
+- [ ] Since Relationship replaced by FolkAttendee, probably create titles in DB/Redis for relationships among families such as siblings, etc
 - [ ] i18n Translation on model data, django-parler maybe?
 
 </details>

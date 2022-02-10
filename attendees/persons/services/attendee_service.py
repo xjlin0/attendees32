@@ -15,7 +15,7 @@ from attendees.persons.models import (  # , Relationship
     FolkAttendee,
     Registration,
     Relation,
-)
+    Utility)
 from attendees.persons.services import AttendingService, FolkService
 
 
@@ -322,7 +322,7 @@ class AttendeeService:
         return field_converter.get(query_field, query_field).replace(".", "__")
 
     @staticmethod
-    def end_all_activities(attendee):
+    def end_all_activities(attendee, updating_attendee_uuid_str):
         """FamilyAttendee is not deleted since many people still memorise their passed away families"""
         for attending in attendee.attendings.all():
             AttendingService.end_all_activities(attending)
@@ -348,6 +348,17 @@ class AttendeeService:
                 family.places.filter(
                     Q(finish__isnull=True) | Q(finish__gte=now)
                 ).update(finish=now)
+
+        attendee_id = str(attendee.id)
+        for scheduler in Attendee.objects.filter(infos__schedulers__contains={attendee_id: True}):
+            scheduler.infos['schedulers'][attendee_id] = False
+            scheduler.infos['updating_attendees'][updating_attendee_uuid_str] = Utility.now_with_timezone().isoformat(timespec='minutes')
+            scheduler.save()
+
+        for contact in Attendee.objects.filter(infos__emergency_contacts__contains={attendee_id: True}):
+            contact.infos['emergency_contacts'][attendee_id] = False
+            contact.infos['updating_attendees'][updating_attendee_uuid_str] = Utility.now_with_timezone().isoformat(timespec='minutes')
+            contact.save()
 
         attendee_user = attendee.user
         if attendee_user:
