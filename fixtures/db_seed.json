@@ -4422,7 +4422,6 @@
       "assembly": 1,
       "registrant": "22c29cd5-a5ab-46a3-afe6-d5a600c33fc9",
       "infos": {
-        "grade": 2,
         "price": "0.00",
         "donation": "0.00",
         "apply_key": "#002",
@@ -10354,7 +10353,7 @@
           "email1": "5greata@email.com",
           "email2": "5greatb@email.com",
           "phone1": "+15555555555",
-          "phone2": "+441912037010"
+          "phone2": "+6555555555"
         },
         "schedulers": {},
         "emergency_contacts": {},

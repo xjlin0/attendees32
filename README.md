@@ -341,7 +341,7 @@ All libraries are included to facilitate offline development, it will take port 
 - [x] [PR#30](https://github.com/xjlin0/attendees30/pull/30) Past can replace Note on DB level, Attendee.progressions and calls/requests, so that any name lists such as status can be easily queried. (membership remains as AttendingMeet with category for active/inactive)
   - [x] make Past model generic
   - [ ] any past status list (Past level)
-  - [ ] Attendance roaster to Past auto conversion
+  - [ ] Attendance roaster to Past auto conversion (AttendingMeet <=> Past has been implemented)
 - [x] attendee detail page
   - [x] server side process of Attendees list & search page
   - [x] AttendingMeet form of Attendee update page
@@ -375,6 +375,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [x] [PR#24](https://github.com/xjlin0/attendees30/pull/24) fix self attendee page error
   - [x] [PR#28](https://github.com/xjlin0/attendees30/pull/28) from Attendee detail and attendee list page
   - [x] [PR#30](https://github.com/xjlin0/attendees30/pull/30) importer load_access_csv need to import bap date and believer, not only by membership.
+- [x] Move "age, grade and mobility" from Attending.infos to Attendee.infos.fixed, since same attendee may join many activities
 - [ ] AttendingMeet list (server side processing)
   - [ ] new AttendingMeet datagrid filtered by meets and date ranges
   - [ ] auto-generation of AttendingMeet by django-schedule with certain Past
@@ -388,7 +389,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [ ] Junior
   - [ ] Data
 - [ ] Audit log/history/vision of data
-  - [ ] find library and install: django-pghistory maybe
+  - [ ] find library and install: maybe django-pghistory with AggregateEvent
   - [ ] each model level version
   - [ ] document aggregation level version
 - [x] [New repo] upgrade to Django 3.2LTS for support of DEFAULT_AUTO_FIELD
