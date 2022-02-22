@@ -32,6 +32,7 @@ Attendees.datagridUpdate = {
     finish: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), // 1 years from now
   },
   // addressId: '', // for sending address data by AJAX
+  divisionShowAttendeeInfos: {},
   placePopup: null, // for show/hide popup
   placePopupDxForm: null,  // for getting formData
   placePopupDxFormData: {},  // for storing formData
@@ -153,7 +154,7 @@ Attendees.datagridUpdate = {
 
   initAttendeeForm: () => {
     Attendees.datagridUpdate.attendeeAttrs = document.querySelector('div.datagrid-attendee-update');
-    Attendees.datagridUpdate.divisions = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.divisions);
+    Attendees.datagridUpdate.processDivisions();
     Attendees.datagridUpdate.divisionIdNames = Attendees.datagridUpdate.divisions.reduce((obj, item) => ({...obj, [item.id]: item.display_name}) ,{});
     Attendees.datagridUpdate.attendeeUrn = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeUrn;
     Attendees.datagridUpdate.attendeeId = document.querySelector('input[name="attendee-id"]').value;
@@ -200,6 +201,15 @@ Attendees.datagridUpdate = {
         },
       });
     }
+  },
+
+  processDivisions: () => {
+    Attendees.datagridUpdate.divisions = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.divisions);
+    Attendees.datagridUpdate.divisionShowAttendeeInfos = Object.entries(Attendees.datagridUpdate.divisions).reduce((acc, curr) => {
+      const [key, value] = curr;
+      acc[value.id] = value.infos.show_attendee_infos || {};
+      return acc;
+    }, {});
   },
 
   patchNewAttendeeDropDown: (newFamily) => {
@@ -1019,6 +1029,13 @@ Attendees.datagridUpdate = {
               }
             })
           }),
+          onValueChanged: (e) => {
+            for (const property in Attendees.datagridUpdate.divisionShowAttendeeInfos[e.value] || {}) {
+              const itemName = `basic-info-container.${property}`;
+              const itemValue = Attendees.datagridUpdate.divisionShowAttendeeInfos[e.value][property];
+              Attendees.datagridUpdate.attendeeMainDxForm.itemOption(itemName, 'visible', itemValue);
+            }
+          },
         },
       },
       {
@@ -1209,7 +1226,8 @@ Attendees.datagridUpdate = {
 //      },
       {
         colSpan: 7,
-        visible: Attendees.datagridUpdate.attendeeFormConfigs.formData.division === 3,  // kid only
+        visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division]['infos-grade'],
+        name: 'infos-grade',
         dataField: 'infos.fixed.grade',
         label: {
           text: 'School grade',
@@ -1218,7 +1236,8 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'infos.fixed.insurer',
-        visible: Attendees.datagridUpdate.attendeeFormConfigs.formData.division === 3,  // kid only
+        name: 'infos-insurer',
+        visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division]['infos-insurer'],
         label: {
           text: 'Insurer',
         },

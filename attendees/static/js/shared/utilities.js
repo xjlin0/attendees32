@@ -43,22 +43,22 @@ Attendees.utilities = {
         $(this)
           .prepend(
             $('<div />')
-                .css({
-                    "margin-right": "1rem",
-                })
-                .dxButton({
-                    "icon": "collapse",
-                    "onClick": (e) => {
-                        const hidden = e.component.option('icon') === 'expand';
-                        const $caption = e.element.closest('.dx-form-group-caption');
-                        const $content = $caption.siblings(".dx-form-group-content");
-                        $content.toggle(animationSpeed);
-                        e.component.option(
-                            'icon',
-                            hidden ? 'collapse' : 'expand'
-                        );
-                    }
-                })
+              .css({
+                "margin-right": "1rem",
+              })
+              .dxButton({
+                "icon": "collapse",
+                "onClick": (e) => {
+                  const hidden = e.component.option('icon') === 'expand';
+                  const $caption = e.element.closest('.dx-form-group-caption');
+                  const $content = $caption.siblings(".dx-form-group-content");
+                  $content.toggle(animationSpeed);
+                  e.component.option(
+                    'icon',
+                    hidden ? 'collapse' : 'expand'
+                  );
+                }
+              })
           );
       });
   },  // jQuery toggle() from https://supportcenter.devexpress.com/ticket/details/t525231

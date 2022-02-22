@@ -29,10 +29,13 @@ class PlaceAdmin(admin.ModelAdmin):
 
 
 class DivisionAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
     prepopulated_fields = {"slug": ("display_name",)}
     list_display_links = ("display_name",)
     readonly_fields = ["id", "created", "modified"]
-    list_display = ("id", "organization", "display_name", "slug", "modified")
+    list_display = ("id", "organization", "display_name", "slug", "infos")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

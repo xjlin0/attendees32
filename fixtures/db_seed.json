@@ -9866,7 +9866,13 @@
       "organization": 1,
       "display_name": "\u672a\u6307\u5b9a CFCCH unspecified",
       "slug": "cfcch_unspecified",
-      "audience_auth_group": 0
+      "audience_auth_group": 0,
+      "infos": {
+        "show_attendee_infos": {
+          "infos-grade": false,
+          "infos-insurer": false
+        }
+      }
     }
   },
   {
@@ -9879,7 +9885,13 @@
       "organization": 1,
       "display_name": "\u4e2d\u6587\u90e8",
       "slug": "cfcch_chinese_ministry",
-      "audience_auth_group": 0
+      "audience_auth_group": 0,
+      "infos": {
+        "show_attendee_infos": {
+          "infos-grade": false,
+          "infos-insurer": false
+        }
+      }
     }
   },
   {
@@ -9892,7 +9904,13 @@
       "organization": 1,
       "display_name": "The Crossing",
       "slug": "cfcch_crossing_ministry",
-      "audience_auth_group": 0
+      "audience_auth_group": 0,
+      "infos": {
+        "show_attendee_infos": {
+          "infos-grade": false,
+          "infos-insurer": false
+        }
+      }
     }
   },
   {
@@ -9905,7 +9923,13 @@
       "organization": 1,
       "display_name": "Junior Ministry",
       "slug": "cfcch_children_ministry",
-      "audience_auth_group": 3
+      "audience_auth_group": 3,
+      "infos": {
+        "show_attendee_infos": {
+          "infos-grade": true,
+          "infos-insurer": true
+        }
+      }
     }
   },
   {
@@ -9918,7 +9942,13 @@
       "organization": 2,
       "display_name": "\u6c38\u6046\u656c\u62dc",
       "slug": "ever_worship",
-      "audience_auth_group": 0
+      "audience_auth_group": 0,
+      "infos": {
+        "show_attendee_infos": {
+          "infos-grade": false,
+          "infos-insurer": false
+        }
+      }
     }
   },
   {
@@ -9931,7 +9961,13 @@
       "organization": 1,
       "display_name": "\u8cc7\u6599\u90e8",
       "slug": "cfcch_data_management",
-      "audience_auth_group": 4
+      "audience_auth_group": 4,
+      "infos": {
+        "show_attendee_infos": {
+          "infos-grade": false,
+          "infos-insurer": false
+        }
+      }
     }
   },
   {
@@ -9944,7 +9980,13 @@
       "organization": 1,
       "display_name": "\u7279\u6703",
       "slug": "cfcch_special_conference",
-      "audience_auth_group": 5
+      "audience_auth_group": 5,
+      "infos": {
+        "show_attendee_infos": {
+          "infos-grade": false,
+          "infos-insurer": false
+        }
+      }
     }
   },
   {
