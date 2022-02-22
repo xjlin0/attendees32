@@ -2287,7 +2287,9 @@
       "slug": "201f",
       "suite": 1,
       "label": "F",
-      "accessibility": 1000
+      "infos": {
+        "accessibility": 2
+      }
     }
   },
   {
@@ -2301,7 +2303,9 @@
       "slug": "ssu_5115",
       "suite": 2,
       "label": "A",
-      "accessibility": 0
+      "infos": {
+        "accessibility": 1
+      }
     }
   },
   {
@@ -2315,7 +2319,9 @@
       "slug": "ssu_5115_b",
       "suite": 2,
       "label": "B",
-      "accessibility": 0
+      "infos": {
+        "accessibility": 1
+      }
     }
   },
   {
@@ -2329,7 +2335,9 @@
       "slug": "ssu_6202_c",
       "suite": 3,
       "label": "C",
-      "accessibility": 1000
+      "infos": {
+        "accessibility": 2
+      }
     }
   },
   {
@@ -2343,7 +2351,9 @@
       "slug": "ssu_7104_living",
       "suite": 4,
       "label": "living room",
-      "accessibility": 0
+      "infos": {
+        "accessibility": 1
+      }
     }
   },
   {
@@ -4602,10 +4612,6 @@
       "attendee": "80f2e82f-0a72-49ea-b3e2-3fc892c49599",
       "category": "normal",
       "infos": {
-        "hi": 5,
-        "age": 500,
-        "grade": 2,
-        "mobility": 300,
         "bed_needs": 0
       }
     }
@@ -9960,7 +9966,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 100
+        },
         "names": {
           "original": "David \u5927\u885b",
           "simplified": "David \u5927\u536b",
@@ -9993,7 +10001,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Hagar \u590f\u7532",
           "simplified": "Hagar \u590f\u7532",
@@ -10026,7 +10036,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "nick": "\u5f1f\u5144",
           "original": "Samson \u53c3\u5b6b",
@@ -10060,7 +10072,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Elizabeth \u4ee5\u5229\u6c99\u4f2f"
         },
@@ -10095,7 +10109,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "nick": "\u8001\u59ca",
           "original": "Abigail \u4e9e\u6bd4\u8a72",
@@ -10129,7 +10145,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "nick": "\u6230\u795e\u4e48\u4e48",
           "original": "Deborah \u5e95\u6ce2\u62c9",
@@ -10163,7 +10181,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Esau \u4ee5\u6383",
           "simplified": "Esau \u4ee5\u626b",
@@ -10196,7 +10216,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Chileab \u57fa\u5229\u62bc",
           "simplified": "Chileab \u57fa\u5229\u62bc",
@@ -10230,7 +10252,9 @@
       "photo": "",
       "infos": {
         "fixed": {
-          "food_pref": "peanut allergy"
+          "food_pref": "peanut allergy",
+          "grade": 2,
+          "mobility": 3
         },
         "names": {
           "nick": "\u5927\u5bf6",
@@ -10272,7 +10296,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Rebecca \u5229\u767e\u52a0",
           "simplified": "Rebecca \u5229\u767e\u52a0",
@@ -10305,7 +10331,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Nabal \u62ff\u516b",
           "simplified": "Nabal \u62ff\u516b",
@@ -10339,7 +10367,8 @@
       "photo": "",
       "infos": {
         "fixed": {
-          "food_pref": "hh",
+          "food_pref": "BBQ",
+          "mobility": 2,
           "test_long_text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
         "names": {
@@ -10381,7 +10410,7 @@
       "photo": "",
       "infos": {
         "fixed": {
-          "food_pref": ""
+          "mobility": 2
         },
         "names": {
           "nick": "",
@@ -10422,7 +10451,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "James \u96c5\u5404",
           "simplified": "James \u96c5\u5404",
@@ -10455,7 +10486,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "nick": "\u63a8\u96c5\u63a8\u5587\u7684\u5442\u5e95\u4e9e",
           "original": "Lydia \u5442\u5e95\u4e9e",
@@ -10489,7 +10522,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "nick": "\u4f7f\u5f92\u7d04\u7ff0",
           "original": "John \u7d04\u7ff0",
@@ -10523,7 +10558,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Isaac \u4ee5\u6492",
           "simplified": "Isaac \u4ee5\u6492",
@@ -10561,7 +10598,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "nick": "\u7687\u540e",
           "original": "Esther \u4ee5\u65af\u5e16",
@@ -10595,7 +10634,9 @@
       "deathday": null,
       "photo": "",
       "infos": {
-        "fixed": {},
+        "fixed": {
+          "mobility": 2
+        },
         "names": {
           "original": "Sarah \u6492\u62c9",
           "simplified": "Sarah \u6492\u62c9",

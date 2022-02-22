@@ -175,8 +175,8 @@ Attendees.utilities = {
           }
         case rawNumberText.startsWith('+852') && rawNumberText.length === 12:  // HK
           return `${rawNumberText.slice(0, 1)}(${rawNumberText.slice(1, 4)})${rawNumberText.slice(4, 8)}-${rawNumberText.slice(8)}`;
-        case rawNumberText.startsWith('+65') && rawNumberText.length === 11:   // Singapore
-          return `${rawNumberText.slice(0, 1)}(${rawNumberText.slice(1, 3)})${rawNumberText.slice(3, 7)}-${rawNumberText.slice(7)}`;
+        case rawNumberText.startsWith('+65') && rawNumberText.length === 11:   // Singapore skips area code
+          return `${rawNumberText.slice(0, 3)}()${rawNumberText.slice(3, 7)}-${rawNumberText.slice(7)}`;
         case rawNumberText.startsWith('+60') && [11, 12, 13].includes(rawNumberText.length):  // Malaysia
           if (rawNumberText.length > 12) {return `${rawNumberText.slice(0, 3)}(${rawNumberText.slice(3, 5)})${rawNumberText.slice(5, 9)}-${rawNumberText.slice(9)}`;}
           if (rawNumberText.length < 12) {

@@ -75,9 +75,12 @@ class SuiteAdmin(admin.ModelAdmin):
 
 
 class RoomAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
-    list_display = ("display_name", "label", "suite", "accessibility", "modified")
+    list_display = ("display_name", "label", "suite", "infos", "modified")
 
 
 class OrganizationAdmin(admin.ModelAdmin):

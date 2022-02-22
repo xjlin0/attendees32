@@ -21,15 +21,19 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
-                ('accessibility', models.SmallIntegerField(default=0)),
                 ('suite', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='whereabouts.Suite')),
                 ('display_name', models.CharField(db_index=True, max_length=50)),
                 ('slug', models.SlugField(max_length=50, unique=True)),
                 ('label', models.CharField(blank=True, max_length=20)),
+                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"accessibility": 3}. Please keep {} here even no data', null=True)),
             ],
             options={
                 'db_table': 'whereabouts_rooms',
             },
             bases=(models.Model, attendees.persons.models.utility.Utility),
+        ),
+        migrations.AddIndex(
+            model_name='room',
+            index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='room_infos_gin'),
         ),
     ]

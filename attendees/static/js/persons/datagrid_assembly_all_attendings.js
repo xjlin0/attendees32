@@ -144,8 +144,8 @@ Attendees.attendings = {
     },
     {
       caption: 'grade',
-      dataField: "infos.grade",
-      calculateCellValue: rowData => rowData.infos.grade,
+      dataField: "attendee.infos.fixed.grade",
+      calculateCellValue: rowData => rowData.attendee.infos.fixed.grade,
     },
     {
       caption: 'Birthday',

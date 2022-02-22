@@ -3,7 +3,8 @@ Attendees.datagridUpdate = {
   attendeeMainDxFormDefault: {
     infos: {
       names: {},
-      fixed: {},
+      fixed: {mobility: 2},
+      progressions: {},
       contacts: {},
       emergency_contacts: {},
       schedulers: {},
@@ -321,7 +322,7 @@ Attendees.datagridUpdate = {
         itemType: "group",
         name: 'basic-info-container',
         cssClass: 'h6',
-        caption: 'Basic info. Fields after nick name can be removed by clearing & save.',  // adding element in caption by $("<span>", {text:"hi 5"}).appendTo($("span.dx-form-group-caption")[1])
+        caption: 'Basic info: Fields after nick name can be removed by clearing & save',  // adding element in caption by $("<span>", {text:"hi 5"}).appendTo($("span.dx-form-group-caption")[1])
         items: [],  // will populate later for dynamic contacts
       },
     ];
@@ -1133,8 +1134,8 @@ Attendees.datagridUpdate = {
         validationRules: [
           {
             type: 'pattern',
-            pattern: /^(\+\d{1,3})(\(\d{1,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
-            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension",
+            pattern: /^(\+\d{1,3})(\(\d{0,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
+            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678",
           },
         ],
       },
@@ -1161,8 +1162,8 @@ Attendees.datagridUpdate = {
         validationRules: [
           {
             type: 'pattern',
-            pattern: /^(\+\d{1,3})(\(\d{1,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
-            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension",
+            pattern: /^(\+\d{1,3})(\(\d{0,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
+            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678",
           },
         ],
       },
@@ -1198,6 +1199,29 @@ Attendees.datagridUpdate = {
             message: "Email is invalid"
           },
         ],
+      },
+//      {
+//        colSpan: 7,
+//        dataField: 'infos.fixed.mobility',   // for retreat only
+//        label: {
+//          text: 'mobility',
+//        },
+//      },
+      {
+        colSpan: 7,
+        visible: Attendees.datagridUpdate.attendeeFormConfigs.formData.division === 3,  // kid only
+        dataField: 'infos.fixed.grade',
+        label: {
+          text: 'School grade',
+        },
+      },
+      {
+        colSpan: 7,
+        dataField: 'infos.fixed.insurer',
+        visible: Attendees.datagridUpdate.attendeeFormConfigs.formData.division === 3,  // kid only
+        label: {
+          text: 'Insurer',
+        },
       },
       {
         colSpan: 7,
