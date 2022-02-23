@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.fields import GenericRelation
-# from django.contrib.postgres.fields.jsonb import JSONField
+
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from model_utils.models import SoftDeletableModel, TimeStampedModel

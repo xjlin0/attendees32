@@ -2,7 +2,6 @@
 
 from attendees.persons.models import Utility
 from django.db import migrations, models
-# from django.contrib.postgres.fields.jsonb import JSONField
 import django.utils.timezone
 import model_utils.fields
 
@@ -38,4 +37,5 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model, Utility),
         ),
+        migrations.RunSQL(Utility.default_sql('occasions_meets')),
     ]

@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 import django.utils.timezone
 import model_utils.fields
 from attendees.persons.models.enum import GenderEnum
+from attendees.persons.models import Utility
 
 
 class Migration(migrations.Migration):
@@ -35,4 +36,5 @@ class Migration(migrations.Migration):
                 'ordering': ('display_order', 'title'),
             },
         ),
+        migrations.RunSQL(Utility.default_sql('persons_relations')),
     ]

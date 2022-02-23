@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 from uuid import uuid4
-# from django.contrib.postgres.fields.jsonb import JSONField
 import django.utils.timezone
 import model_utils.fields
 
@@ -36,6 +35,7 @@ class Migration(migrations.Migration):
                 'ordering': ('organization', 'category', 'content_type', 'object_id', 'display_order', '-modified',),
             },
         ),
+        migrations.RunSQL(Utility.default_sql('persons_notes')),
         migrations.AddIndex(
             model_name='note',
             index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='note_infos_gin'),

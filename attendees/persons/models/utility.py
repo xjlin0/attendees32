@@ -29,6 +29,14 @@ class Utility:
         return self.notes.all() if callable(getattr(self, "notes", None)) else []
 
     @staticmethod
+    def default_sql(table_name):
+        return f"""
+                ALTER TABLE {table_name} ALTER COLUMN created SET DEFAULT CURRENT_TIMESTAMP;
+                ALTER TABLE {table_name} ALTER COLUMN modified SET DEFAULT CURRENT_TIMESTAMP;
+                ALTER TABLE {table_name} ALTER COLUMN is_removed SET DEFAULT false;
+               """
+
+    @staticmethod
     def present_check(string):
         if string:
             return not string.isspace()

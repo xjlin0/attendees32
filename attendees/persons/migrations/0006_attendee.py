@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.db import migrations, models
-# from django.contrib.postgres.fields.jsonb import JSONField
 from private_storage.fields import PrivateFileField
 from private_storage.storage.files import PrivateFileSystemStorage
 import django.utils.timezone
@@ -49,6 +48,7 @@ class Migration(migrations.Migration):
             },
             bases=(Utility, models.Model),
         ),
+        migrations.RunSQL(Utility.default_sql('persons_attendees')),
         # migrations.RunSQL(
         #     sql="""
         #         ALTER TABLE persons_attendees DROP COLUMN full_name;
