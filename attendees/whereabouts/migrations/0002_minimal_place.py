@@ -4,7 +4,7 @@ from address.models import AddressField
 import attendees.persons.models.utility
 from attendees.persons.models import Utility
 # from django.contrib.postgres.fields.jsonb import JSONField
-from django.contrib.postgres.indexes import GinIndex
+
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
