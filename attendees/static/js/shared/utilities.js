@@ -43,22 +43,22 @@ Attendees.utilities = {
         $(this)
           .prepend(
             $('<div />')
-                .css({
-                    "margin-right": "1rem",
-                })
-                .dxButton({
-                    "icon": "collapse",
-                    "onClick": (e) => {
-                        const hidden = e.component.option('icon') === 'expand';
-                        const $caption = e.element.closest('.dx-form-group-caption');
-                        const $content = $caption.siblings(".dx-form-group-content");
-                        $content.toggle(animationSpeed);
-                        e.component.option(
-                            'icon',
-                            hidden ? 'collapse' : 'expand'
-                        );
-                    }
-                })
+              .css({
+                "margin-right": "1rem",
+              })
+              .dxButton({
+                "icon": "collapse",
+                "onClick": (e) => {
+                  const hidden = e.component.option('icon') === 'expand';
+                  const $caption = e.element.closest('.dx-form-group-caption');
+                  const $content = $caption.siblings(".dx-form-group-content");
+                  $content.toggle(animationSpeed);
+                  e.component.option(
+                    'icon',
+                    hidden ? 'collapse' : 'expand'
+                  );
+                }
+              })
           );
       });
   },  // jQuery toggle() from https://supportcenter.devexpress.com/ticket/details/t525231
@@ -175,6 +175,8 @@ Attendees.utilities = {
           }
         case rawNumberText.startsWith('+852') && rawNumberText.length === 12:  // HK
           return `${rawNumberText.slice(0, 1)}(${rawNumberText.slice(1, 4)})${rawNumberText.slice(4, 8)}-${rawNumberText.slice(8)}`;
+        case rawNumberText.startsWith('+65') && rawNumberText.length === 11:   // Singapore skips area code
+          return `${rawNumberText.slice(0, 3)}()${rawNumberText.slice(3, 7)}-${rawNumberText.slice(7)}`;
         case rawNumberText.startsWith('+60') && [11, 12, 13].includes(rawNumberText.length):  // Malaysia
           if (rawNumberText.length > 12) {return `${rawNumberText.slice(0, 3)}(${rawNumberText.slice(3, 5)})${rawNumberText.slice(5, 9)}-${rawNumberText.slice(9)}`;}
           if (rawNumberText.length < 12) {
@@ -190,7 +192,7 @@ Attendees.utilities = {
             return `${rawNumberText.slice(0, 3)}(${rawNumberText.slice(3, 4)})${rawNumberText.slice(4, 8)}-${rawNumberText.slice(8)}`;
           }
         default:
-          return rawNumberText;
+          return rawNumberText;  // currently doesn't support UK numbers
       }
     }
     return '';

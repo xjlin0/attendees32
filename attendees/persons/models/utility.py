@@ -68,7 +68,9 @@ class Utility:
     def attendee_infos():
         return {
             "names": {},
-            "fixed": {},
+            "fixed": {
+                "mobility": 2,
+            },  # also for food_pref and grade, etc
             "contacts": {},
             "emergency_contacts": {},
             "progressions": {},

@@ -22,12 +22,17 @@ class Migration(migrations.Migration):
                 ('is_removed', models.BooleanField(default=False)),
                 ('organization', models.ForeignKey(on_delete=models.SET(0), to='whereabouts.Organization')),
                 ('audience_auth_group', models.ForeignKey(on_delete=models.SET(0), to='auth.Group', null=False, blank=False, help_text='which auth group does the joining general participant belong to?')),
-                ('display_name', models.CharField(max_length=50)),
+                ('display_name', models.CharField(max_length=50, help_text='"Junior Ministry" is a magic word to show certain Attendee infos in attendee_update_view.js')),
                 ('slug', models.SlugField(max_length=50, unique=True)),
+                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"show_attendee_infos": {"insurer": true}}. Please keep {} here even no data', null=True)),
             ],
             options={
                 'db_table': 'whereabouts_divisions',
             },
             bases=(models.Model, attendees.persons.models.utility.Utility),
+        ),
+        migrations.AddIndex(
+            model_name='division',
+            index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='division_infos_gin'),
         ),
     ]

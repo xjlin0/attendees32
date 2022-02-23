@@ -66,7 +66,7 @@ class AttendeeUpdateView(LoginRequiredMixin, RouteAndSpyGuard, UpdateView):
                     list(
                         Division.objects.filter(
                             organization=self.request.user.attendee.division.organization
-                        ).values("id", "display_name")
+                        ).values("id", "display_name", "infos")
                     )
                 ),  # to avoid simultaneous AJAX calls
                 "attendee_search": "/persons/api/datagrid_data_attendees/",

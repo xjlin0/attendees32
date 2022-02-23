@@ -468,6 +468,7 @@ def import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_sl
 
                         some_household_values = {attendee_header: Utility.boolean_or_datetext_or_original(folk.infos.get('access_household_values', {}).get(access_header)) for (access_header, attendee_header) in family_to_attendee_infos_converter.items() if Utility.presence(folk.infos.get('access_household_values', {}).get(access_header)) is not None}
                         attendee.infos = {
+                            'mobility': 2,
                             'created_reason': attendee.infos.get('created_reason'),
                             'fixed': {**attendee.infos.get('fixed', {}), **some_household_values},
                             'contacts': contacts,

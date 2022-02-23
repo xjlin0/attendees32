@@ -9,12 +9,14 @@ class AttendeeSerializer(serializers.ModelSerializer):
     caregiver_email_addresses = serializers.CharField(read_only=True)
     self_phone_numbers = serializers.CharField(read_only=True)
     caregiver_phone_numbers = serializers.CharField(read_only=True)
+    age = serializers.SerializerMethodField(required=False, read_only=True)
 
     class Meta:
         model = Attendee
         fields = [
             f.name for f in model._meta.fields if f.name not in ["is_removed"]
         ] + [
+            "age",
             "display_label",
             "division_label",
             "parents_notifiers_names",
@@ -23,3 +25,6 @@ class AttendeeSerializer(serializers.ModelSerializer):
             "self_phone_numbers",
             "caregiver_phone_numbers",
         ]
+
+    def get_age(self, obj):
+        return obj.age()

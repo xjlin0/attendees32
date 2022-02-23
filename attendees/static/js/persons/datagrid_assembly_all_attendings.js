@@ -144,8 +144,8 @@ Attendees.attendings = {
     },
     {
       caption: 'grade',
-      dataField: "infos.grade",
-      calculateCellValue: rowData => rowData.infos.grade,
+      dataField: "attendee.infos.fixed.grade",
+      calculateCellValue: rowData => rowData.attendee.infos.fixed.grade,
     },
     {
       caption: 'Birthday',
@@ -159,13 +159,13 @@ Attendees.attendings = {
     {
       caption: 'Age',
       dataHtmlTitle: "Could be real or estimated, depends on user inputs",
-      dataField: "attendee",
+      dataField: "attendee.age",
       dataType: "number",
-      calculateCellValue: rowData => {
-        const oneYear = 31557600 * 1000;
-        const birthday = rowData.attendee.actual_birthday ? rowData.attendee.actual_birthday : rowData.attendee.estimated_birthday;
-        return birthday ? Math.round((new Date() - new Date(birthday))/oneYear): rowData.infos.age;
-      },
+//      calculateCellValue: rowData => {
+//        const oneYear = 31557600 * 1000;
+//        const birthday = rowData.attendee.actual_birthday ? rowData.attendee.actual_birthday : rowData.attendee.estimated_birthday;
+//        return birthday ? Math.round((new Date() - new Date(birthday))/oneYear): null;
+//      },
     },
     {
       caption: "Families/Caregivers",
