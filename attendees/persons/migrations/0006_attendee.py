@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Attendee',
             fields=[
-                ('id', model_utils.fields.UUIDField(default=uuid4, editable=False, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(default=uuid4, editable=False, primary_key=True, serialize=False)),
                 ('user', models.OneToOneField(blank=True, default=None, null=True, on_delete=models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
