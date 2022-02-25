@@ -345,7 +345,7 @@ class AttendeesHistory(pghistory.get_event_model(
     created = model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')
     is_removed = models.BooleanField(default=False)
-    # id = models.UUIDField(default=uuid.uuid4, editable=False, serialize=False)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, serialize=False)
     first_name = models.CharField(blank=True, max_length=25, null=True)
     last_name = models.CharField(blank=True, max_length=25, null=True)
     first_name2 = models.CharField(blank=True, max_length=12, null=True)

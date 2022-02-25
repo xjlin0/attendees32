@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Attendee',
             fields=[
-                ('id', models.UUIDField(default=uuid4, editable=False, primary_key=True, serialize=False)),
+                ('id', model_utils.fields.UUIDField(default=uuid4, editable=False, primary_key=True, serialize=False)),
                 ('user', models.OneToOneField(blank=True, default=None, null=True, on_delete=models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
-                # ('id', models.UUIDField(default=uuid4, editable=False, serialize=False)),
+                ('id', models.UUIDField(default=uuid4, editable=False, serialize=False)),
                 ('division', models.ForeignKey(db_constraint=False, default=0, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.division')),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
                 ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='event', to='persons.attendee')),
@@ -101,8 +101,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'persons_attendees_history',
-                'abstract': False,
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('persons_attendees_history', table_comment='pgh_obj_id is attendee id/pk')),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_attendees_history')),
     ]
