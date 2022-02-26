@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                 ('is_removed', models.BooleanField(default=False)),
                 ('division', models.ForeignKey(default=0, blank=False, null=False, on_delete=models.SET(0), to='whereabouts.Division')),
                 ('actual_birthday', models.DateField(blank=True, null=True)),
-                ('estimated_birthday', partial_date.fields.PartialDateField(null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')),
+                ('estimated_birthday', partial_date.fields.PartialDateField(blank=True, null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')),
                 ('deathday', models.DateField(blank=True, null=True)),
                 ('first_name', models.CharField(blank=True, db_index=True, max_length=25, null=True)),
                 ('last_name', models.CharField(blank=True, db_index=True, max_length=25, null=True)),
