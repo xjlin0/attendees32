@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
         # ),
 
         migrations.CreateModel(
-            name='AttendeesHistory',
+            name='AttendeesEvent',
             fields=[
                 ('pgh_id', models.BigAutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
@@ -100,8 +100,8 @@ class Migration(migrations.Migration):
                 ('infos', models.JSONField(blank=True, default=Utility.attendee_infos, help_text='Example: {"fixed": {"food_pref": "peanut allergy", "nick_name": "John"}}.Please keep {} here even no data', null=True)),
             ],
             options={
-                'db_table': 'persons_attendees_history',
+                'db_table': 'persons_attendees_event',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('persons_attendees_history')),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_attendees_event')),
     ]

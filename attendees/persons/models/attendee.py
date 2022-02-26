@@ -335,7 +335,7 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
 # )
 
 
-class AttendeesHistory(pghistory.get_event_model(
+class AttendeesEvent(pghistory.get_event_model(
     Attendee,
     pghistory.Snapshot('attendee.snapshot'),
 )):
@@ -362,4 +362,4 @@ class AttendeesHistory(pghistory.get_event_model(
     user = models.ForeignKey(blank=True, db_constraint=False, default=None, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to=settings.AUTH_USER_MODEL)
 
     class Meta:
-        db_table = "persons_attendees_history"
+        db_table = "persons_attendees_event"
