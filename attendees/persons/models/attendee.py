@@ -59,7 +59,7 @@ class Attendee(UUIDModel, Utility, TimeStampedModel, SoftDeletableModel):
         choices=GenderEnum.choices(),
     )
     actual_birthday = models.DateField(blank=True, null=True)
-    estimated_birthday = PartialDateField(null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
+    estimated_birthday = PartialDateField(null=True, blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
     deathday = models.DateField(blank=True, null=True)
     photo = PrivateFileField(
         "Photo", blank=True, null=True, upload_to="attendee_portrait"

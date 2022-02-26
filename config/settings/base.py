@@ -2,7 +2,7 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
-import pgconnection
+# import mimetypes
 import environ
 
 # mimetypes.add_type('text/html', ".css", True)  # can't load css when debug=False without disabling DEBUG_TOOLBAR_CONFIG.SHOW_TOOLBAR_CALLBACK
@@ -43,12 +43,8 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = pgconnection.configure({
-    'default': {
-        **env.db("DATABASE_URL"),  # DATABASES = {"default": env.db("DATABASE_URL")}
-        "ATOMIC_REQUESTS": True,   # DATABASES["default"]["ATOMIC_REQUESTS"] = True
-    }
-})
+DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -89,9 +85,7 @@ THIRD_PARTY_APPS = [
     "private_storage",
     # "django_readonly_field",
     "address",
-    "pgconnection",
-    "pgtrigger",
-    "pghistory",  # django-pghistory can version a superset of models
+    "reversion",  # django-pghistory can version a superset of models
 ]
 
 LOCAL_APPS = [

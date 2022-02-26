@@ -3,7 +3,8 @@ from django.contrib.postgres import fields
 from django.db.models import Q
 from django_json_widget.widgets import JSONEditorWidget
 from django_summernote.admin import SummernoteModelAdmin
-
+from django.contrib import admin
+from reversion.admin import VersionAdmin
 from attendees.occasions.models import Attendance
 from attendees.persons.models import AttendingMeet, FolkAttendee, Category, Past, Note, Folk, Attendee, Registration, \
     Attending, Relation
@@ -143,7 +144,8 @@ class RelationAdmin(admin.ModelAdmin):
     )
 
 
-class AttendeeAdmin(admin.ModelAdmin):
+@admin.register(Attendee)
+class AttendeeAdmin(VersionAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -287,7 +289,7 @@ admin.site.register(Category, CategoryAdmin)
 admin.site.register(Note, NoteAdmin)
 admin.site.register(Past, PastAdmin)
 admin.site.register(Folk, FolkAdmin)
-admin.site.register(Attendee, AttendeeAdmin)
+# admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(FolkAttendee, FolkAttendeeAdmin)
 admin.site.register(Registration, RegistrationAdmin)
 admin.site.register(Attending, AttendingAdmin)
