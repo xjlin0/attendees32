@@ -64,7 +64,7 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
         choices=GenderEnum.choices(),
     )
     actual_birthday = models.DateField(blank=True, null=True)
-    estimated_birthday = PartialDateField(null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
+    estimated_birthday = PartialDateField(blank=True, null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
     deathday = models.DateField(blank=True, null=True)
     photo = PrivateFileField(
         "Photo", blank=True, null=True, upload_to="attendee_portrait"
@@ -352,7 +352,7 @@ class AttendeesEvent(pghistory.get_event_model(
     last_name2 = models.CharField(blank=True, max_length=8, null=True)
     gender = models.CharField(choices=GenderEnum.choices(), default=GenderEnum['UNSPECIFIED'], max_length=11)
     actual_birthday = models.DateField(blank=True, null=True)
-    estimated_birthday = partial_date.fields.PartialDateField(help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)
+    estimated_birthday = partial_date.fields.PartialDateField(blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)
     deathday = models.DateField(blank=True, null=True)
     photo = private_storage.fields.PrivateFileField(blank=True, null=True, storage=private_storage.storage.files.PrivateFileSystemStorage(), upload_to='attendee_portrait', verbose_name='Photo')
     infos = models.JSONField(blank=True, default=Utility.attendee_infos, help_text='Example: {"fixed": {"food_pref": "peanut allergy", "nick_name": "John"}}.Please keep {} here even no data', null=True)
