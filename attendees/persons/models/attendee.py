@@ -300,6 +300,7 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
         ]
 
     def save(self, *args, **kwargs):
+        self.estimated_birthday = Utility.presence(self.estimated_birthday)
         name = f"{self.first_name or ''} {self.last_name or ''}".strip()
         name2 = f"{self.last_name2 or ''}{self.first_name2 or ''}".strip()
         both_names = f"{name} {name2}".strip()
