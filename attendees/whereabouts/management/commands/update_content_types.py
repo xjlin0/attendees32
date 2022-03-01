@@ -19,6 +19,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("checking ContentType data ..")
+
+        if ContentType._meta.db_table not in connection.introspection.table_names():
+            raise CommandError(
+                f"Fail! Cannot find the table {ContentType._meta.db_table}, did the migration run?"
+            )
+
         if ContentType.objects.count() < 1:
             raise CommandError(
                 "ContentType data does not exist! Please try again after 30 sec."
