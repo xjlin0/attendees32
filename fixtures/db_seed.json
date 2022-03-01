@@ -695,7 +695,7 @@
       "type": "street",
       "hash": null,
       "locality": 1,
-      "raw": "2",
+      "raw": "22416 Meekland Ave. Hayward, CA 94541",
       "formatted": "CFCCH 22416 Meekland Ave. Hayward, CA 94541",
       "latitude": null,
       "longitude": null
@@ -797,8 +797,8 @@
       "type": "street",
       "hash": null,
       "locality": 1,
-      "raw": "null",
-      "formatted": "null: 5 excellent ct., Hayward, CA 94541",
+      "raw": "5 excellent ct., Hayward, CA 94541",
+      "formatted": "5 excellent ct., Hayward, CA 94541",
       "latitude": null,
       "longitude": null
     }
@@ -814,8 +814,8 @@
       "type": "street",
       "hash": null,
       "locality": 1,
-      "raw": "null",
-      "formatted": "null: 6 beautiful dr, Hayward, CA 94541",
+      "raw": "6 beautiful dr, Hayward, CA 94541",
+      "formatted": "6 beautiful dr, Hayward, CA 94541",
       "latitude": null,
       "longitude": null
     }
