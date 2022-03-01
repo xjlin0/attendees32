@@ -14,7 +14,7 @@ unidecode==1.3.2
 opencc==1.1.3  ## https://github.com/BYVoid/OpenCC
 # opencc-python-reimplemented==0.1.6  ## https://github.com/yichen0831/opencc-python
 # django-address==0.2.5  # https://github.com/furious-luke/django-address
--e git+https://github.com/xjlin0/django-address.git@address_extra_field#egg=django-address
+-e git+https://github.com/xjlin0/django-address.git@address_extra_field_test#egg=django-address
 #django-parler==2.2   # https://github.com/django-parler/django-parler  # works on Django 3?
 
 django-summernote==0.8.20.0 # https://github.com/summernote/django-summernote
