@@ -30,9 +30,10 @@ class Utility:
 
     @staticmethod
     def pgh_default_sql(table_name, table_comment='pgh_obj_id is indexed id/pk'):
+        original_model_table = table_name.replace('_event', '')
         return f"""
                 ALTER TABLE {table_name} ALTER COLUMN pgh_created_at SET DEFAULT CURRENT_TIMESTAMP;
-                COMMENT ON TABLE {table_name} IS '{table_comment}';
+                COMMENT ON TABLE {table_name} IS 'History table: {table_comment} of {original_model_table}';
                 """
 
     @staticmethod
