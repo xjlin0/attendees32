@@ -57,9 +57,9 @@ class Migration(migrations.Migration):
                 ('infos', models.JSONField(blank=True, default=Utility.user_infos, help_text="please keep {} here even there's no data", null=True)),
             ],
             options={
-                'db_table': 'users_users_event',
+                'db_table': 'users_user_event',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_users_event')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_user_event')),
     ]
 

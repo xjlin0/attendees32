@@ -180,4 +180,4 @@ class UsersEvent(pghistory.get_event_model(
     infos = models.JSONField(blank=True, default=Utility.user_infos, help_text="please keep {} here even there's no data", null=True)
 
     class Meta:
-        db_table = "users_users_event"
+        db_table = "users_user_event"
