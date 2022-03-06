@@ -89,6 +89,7 @@ THIRD_PARTY_APPS = [
     "private_storage",
     # "django_readonly_field",
     "address",
+    # "django_db_comments",
     "pgconnection",
     "pgtrigger",
     "pghistory",  # django-pghistory can version a superset of models
@@ -158,6 +159,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "pghistory.middleware.HistoryMiddleware",
 ]
 
 # STATIC

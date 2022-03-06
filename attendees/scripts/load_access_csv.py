@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from glob import glob
 from pathlib import Path
 
+import pghistory
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 
@@ -15,6 +16,7 @@ from attendees.users.admin import User
 from attendees.whereabouts.models import Place, Division
 
 
+@pghistory.context(modifier='access csv importer')
 def import_household_people_address(
         household_csv,
         people_csv,
@@ -99,8 +101,6 @@ def import_household_people_address(
             print('Importing/updating address or household or attendee error, result count does not exist!')
     except Exception as e:
         print('Cannot proceed import_household_people_address, reason: ', e)
-
-    pass
 
 
 # Todo: Add created by notes in every instance in notes/infos
