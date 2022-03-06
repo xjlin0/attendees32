@@ -29,14 +29,17 @@ class Utility:
         return self.notes.all() if callable(getattr(self, "notes", None)) else []
 
     @staticmethod
-    def pgh_default_sql(table_name, table_comment='pgh_obj_id is indexed id/pk'):
+    def pgh_default_sql(table_name, table_comment='pgh_obj_id is indexed id/pk', index_on_id=False):
         original_model_table = table_name.replace('_event', '')
         if 'event' in original_model_table:
             original_model_table = table_name.replace('event', '')
-        return f"""
+        results = f"""
                 ALTER TABLE {table_name} ALTER COLUMN pgh_created_at SET DEFAULT CURRENT_TIMESTAMP;
                 COMMENT ON TABLE {table_name} IS 'History table: {table_comment} of {original_model_table}';
                 """
+        if index_on_id:
+            results += f"""CREATE INDEX idx_{table_name}_id ON {table_name}(id);"""
+        return results
 
     @staticmethod
     def default_sql(table_name):

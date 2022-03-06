@@ -28,5 +28,5 @@ class Migration(migrations.Migration):
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_usergroupsevent')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_usergroupsevent', index_on_id=True)),
     ]
