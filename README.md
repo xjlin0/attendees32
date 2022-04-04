@@ -231,8 +231,10 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 </details>
 
 ## [How to start dev env on Linux](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
+
 <details>
   <summary>Click to expand all</summary>
+
 * double check if the dev port 8008 is open on fire wall
 * add server's public ip to ALLOWED_HOSTS in settings
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
@@ -252,6 +254,7 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 * create 2 superusers by `docker-compose -f local.yml run django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f local.yml run django python manage.py loaddata fixtures/db_seed`
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/admin/users/user/
+
 </details>
 
 ## [How to start dev env on Windows](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
