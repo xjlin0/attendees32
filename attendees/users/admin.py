@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from django_json_widget.widgets import JSONEditorWidget
 from mptt.admin import MPTTModelAdmin
 
+from attendees.persons.models import PgHistoryPage
 from attendees.users.forms import UserChangeForm, UserCreationForm
 
 from .models import Menu, MenuAuthGroup
@@ -17,9 +18,7 @@ User = get_user_model()
 
 
 @admin.register(User)
-class UserAdmin(auth_admin.UserAdmin):
-    object_history_template = 'pghistory_template.html'
-
+class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     fieldsets = (
@@ -50,21 +49,6 @@ class UserAdmin(auth_admin.UserAdmin):
     )
     list_display = ["username", "organization", "is_staff", "is_superuser"]
     search_fields = ["username"]
-
-    def history_view(self, request, object_id, extra_context=None):
-        """
-        Adds additional context for the custom history template.
-        """
-        extra_context = extra_context or {}
-        extra_context['object_history'] = (
-            pghistory.models.AggregateEvent.objects
-                .target(self.model(pk=object_id))
-                .order_by('pgh_created_at')
-                .select_related('pgh_context')
-        )
-        return super().history_view(
-            request, object_id, extra_context=extra_context
-        )
 
 
 # from django.contrib import admin, messages

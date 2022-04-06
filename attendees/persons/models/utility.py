@@ -2,11 +2,31 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 
+import pghistory
 import pytz
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
 # from schedule.models.events import EventRelation
+
+
+class PgHistoryPage:
+    object_history_template = 'pghistory_template.html'
+
+    def history_view(self, request, object_id, extra_context=None):
+        """
+        Adds additional context for the custom history template.
+        """
+        extra_context = extra_context or {}
+        extra_context['object_history'] = (
+            pghistory.models.AggregateEvent.objects
+                .target(self.model(pk=object_id))
+                .order_by('pgh_created_at')
+                .select_related('pgh_context')
+        )
+        return super().history_view(
+            request, object_id, extra_context=extra_context
+        )
 
 
 class GatheringBatchCreateResult(object):

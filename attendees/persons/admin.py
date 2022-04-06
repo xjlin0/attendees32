@@ -6,7 +6,7 @@ from django_summernote.admin import SummernoteModelAdmin
 
 from attendees.occasions.models import Attendance
 from attendees.persons.models import AttendingMeet, FolkAttendee, Category, Past, Note, Folk, Attendee, Registration, \
-    Attending, Relation
+    Attending, Relation, PgHistoryPage
 
 
 # from attendees.occasions.models import *
@@ -143,7 +143,7 @@ class RelationAdmin(admin.ModelAdmin):
     )
 
 
-class AttendeeAdmin(admin.ModelAdmin):
+class AttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }

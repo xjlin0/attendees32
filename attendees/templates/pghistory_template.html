@@ -7,8 +7,8 @@
       "": "none",
     };
 
-    function toggleDisplay(elementId) {
-      const element=document.querySelector(elementId);
+    function toggleDisplay(elementSelector) {
+      const element = document.querySelector(elementSelector);
       element.style.display = styleSwitcher[element.style.display];
     }
   </script>
@@ -18,25 +18,34 @@
       <tr>
         <th scope="col">Time</th>
         <th scope="col">Event</th>
-        <th scope="col"></th>
+        <th scope="col" style="text-align:center">Trace</th>
       </tr>
     </thead>
     <tbody>
       {% for item in object_history %}
         <tr>
-          <th scope="row">{{ item.pgh_created_at|date:"DATETIME_FORMAT" }}</th>
+          <th scope="row">{{ item.pgh_created_at|date:"DATETIME_FORMAT" }}
+            {% if item.pgh_context%}
+              <br>
+                {% if item.pgh_context.metadata.user %}
+                  by user {{item.pgh_context.metadata.user}}
+                {% else %}
+                  login
+                {% endif %}
+            {% endif %}
+          </th>
           <td>{{ item.pgh_label }}</td>
           <td align="right">
             {% if item.pgh_context %}
-              <button style="align:right" onclick='toggleDisplay("#history-context-{{ forloop.counter0 }}")'>Context</button>
+              <button class="button" style="align: right; padding: 3px;" onclick='toggleDisplay("#history-context-{{ forloop.counter0 }}")'>Context</button>
             {% endif %}
 
             {% if item.pgh_data %}
-              <button style="align:right" onclick='toggleDisplay("#history-data-{{ forloop.counter0 }}")'>Data</button>
+              <button class="button" style="align:right; padding: 3px;" onclick='toggleDisplay("#history-data-{{ forloop.counter0 }}")'>Data</button>
             {% endif %}
 
             {% if item.pgh_diff %}
-              <button style="align:right" onclick='toggleDisplay("#history-diff-{{ forloop.counter0 }}")'>Changes</button>
+              <button class="button" style="align:right; padding: 3px;" onclick='toggleDisplay("#history-diff-{{ forloop.counter0 }}")'>Changes</button>
             {% endif %}
 
             {% if item.pgh_context %}
@@ -72,7 +81,7 @@
                 {% for key, value in item.pgh_data.items %}
                   <tr>
                     <th>{{ key }}</th>
-                    <td>{{ value }}</td>
+                    <td style="overflow-wrap: anywhere;">{{ value }}</td>
                   </tr>
                 {% endfor %}
                 </table>
