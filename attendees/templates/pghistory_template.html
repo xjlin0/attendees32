@@ -1,0 +1,108 @@
+{% extends "admin/object_history.html" %}
+
+{% block content %}
+  <script>
+    const styleSwitcher = {
+      "none": "",
+      "": "none",
+    };
+
+    function toggleDisplay(elementId) {
+      const element=document.querySelector(elementId);
+      element.style.display = styleSwitcher[element.style.display];
+    }
+  </script>
+
+  <table id="change-history">
+    <thead>
+      <tr>
+        <th scope="col">Time</th>
+        <th scope="col">Event</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in object_history %}
+        <tr>
+          <th scope="row">{{ item.pgh_created_at|date:"DATETIME_FORMAT" }}</th>
+          <td>{{ item.pgh_label }}</td>
+          <td align="right">
+            {% if item.pgh_context %}
+              <button style="align:right" onclick='toggleDisplay("#history-context-{{ forloop.counter0 }}")'>Context</button>
+            {% endif %}
+
+            {% if item.pgh_data %}
+              <button style="align:right" onclick='toggleDisplay("#history-data-{{ forloop.counter0 }}")'>Data</button>
+            {% endif %}
+
+            {% if item.pgh_diff %}
+              <button style="align:right" onclick='toggleDisplay("#history-diff-{{ forloop.counter0 }}")'>Changes</button>
+            {% endif %}
+
+            {% if item.pgh_context %}
+              <div id="history-context-{{ forloop.counter0 }}" style="display: none; text-align:left">
+                <h5>Context</h5>
+                <table style="width:100%">
+                  <thead>
+                    <tr>
+                      <th scole="col">Key</th>
+                      <th scope="col">Value</th>
+                    </tr>
+                  </thead>
+                {% for key, value in item.pgh_context.metadata.items %}
+                  <tr>
+                    <th>{{ key }}</th>
+                    <td>{{ value }}</td>
+                  </tr>
+                {% endfor %}
+                </table>
+              </div>
+            {% endif %}
+
+            {% if item.pgh_data %}
+              <div id="history-data-{{ forloop.counter0 }}" style="display: none; text-align:left">
+                <h5>Data</h5>
+                <table style="width:100%">
+                  <thead>
+                    <tr>
+                      <th scole="col">Key</th>
+                      <th scope="col">Value</th>
+                    </tr>
+                  </thead>
+                {% for key, value in item.pgh_data.items %}
+                  <tr>
+                    <th>{{ key }}</th>
+                    <td>{{ value }}</td>
+                  </tr>
+                {% endfor %}
+                </table>
+              </div>
+            {% endif %}
+
+            {% if item.pgh_diff %}
+              <div id="history-diff-{{ forloop.counter0 }}" style="display: none; text-align:left">
+                <h5>Changes</h5>
+                <table style="width:100%">
+                  <thead>
+                    <tr>
+                      <th scole="col">Field</th>
+                      <th scope="col">Before</th>
+                      <th scope="col">After</th>
+                    </tr>
+                  </thead>
+                {% for key, value in item.pgh_diff.items %}
+                  <tr>
+                    <th>{{ key }}</th>
+                    <td>{{ value.0 }}</td>
+                    <td>{{ value.1 }}</td>
+                  </tr>
+                {% endfor %}
+                </table>
+              </div>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
