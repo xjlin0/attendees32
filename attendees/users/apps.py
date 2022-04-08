@@ -11,13 +11,19 @@ class UsersConfig(AppConfig):
 
     def ready(self):
         user_model = get_user_model()
-        # permission_model = django_apps.get_model("auth.Permission", require_ready=False)
         group_model = django_apps.get_model("auth.Group", require_ready=False)
 
         pghistory.track(
             pghistory.Snapshot('group.snapshot'),
             app_label='users'
         )(group_model)
+
+        pghistory.track(  # Track events to permission group relationships
+            pghistory.AfterInsert('permission.add'),
+            pghistory.BeforeDelete('permission.remove'),
+            obj_fk=None,
+            app_label='users',
+        )(group_model.permissions.through)
 
         pghistory.track(  # Track events to user group relationships
             pghistory.AfterInsert('group.add'),
