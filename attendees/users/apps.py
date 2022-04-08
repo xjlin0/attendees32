@@ -1,5 +1,6 @@
 import pghistory
 from django.apps import AppConfig
+from django.apps import apps as django_apps
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
@@ -10,6 +11,13 @@ class UsersConfig(AppConfig):
 
     def ready(self):
         user_model = get_user_model()
+        # permission_model = django_apps.get_model("auth.Permission", require_ready=False)
+        group_model = django_apps.get_model("auth.Group", require_ready=False)
+
+        pghistory.track(
+            pghistory.Snapshot('group.snapshot'),
+            app_label='users'
+        )(group_model)
 
         pghistory.track(  # Track events to user group relationships
             pghistory.AfterInsert('group.add'),
