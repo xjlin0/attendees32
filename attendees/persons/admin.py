@@ -204,7 +204,7 @@ class AttendingAdmin(admin.ModelAdmin):
         js = ["js/admin/list_filter_collapse.js"]
 
 
-class NoteAdmin(SummernoteModelAdmin):
+class NoteAdmin(PgHistoryPage, SummernoteModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }

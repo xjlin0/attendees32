@@ -1,9 +1,10 @@
 from datetime import date, datetime, timedelta, timezone
 from partial_date import PartialDateField
+from uuid import uuid4
 import opencc
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
-import pghistory, uuid
+import pghistory
 import django.utils.timezone
 import model_utils.fields
 import partial_date.fields
@@ -33,7 +34,7 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
     places = GenericRelation("whereabouts.Place")
     notes = GenericRelation(Note)
     # related_ones = models.ManyToManyField('self',through='Relationship',symmetrical=False,related_name='related_to')
-    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, serialize=False)
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False, serialize=False)
     division = models.ForeignKey(
         "whereabouts.Division",
         default=0,
@@ -348,7 +349,7 @@ class AttendeesHistory(pghistory.get_event_model(
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')
     is_removed = models.BooleanField(default=False)
     pgh_obj = models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='persons.attendee')
-    id = models.UUIDField(default=uuid.uuid4, editable=False, serialize=False)
+    id = models.UUIDField(default=uuid4, editable=False, serialize=False)
     division = models.ForeignKey(db_constraint=False, default=0, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.division')
     gender = models.CharField(choices=GenderEnum.choices(), default=GenderEnum['UNSPECIFIED'], max_length=11)
     pgh_label = models.TextField(help_text='The event label.')
