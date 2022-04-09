@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='GroupPermissionsEvent',
+            name='GroupPermissionsHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
@@ -30,5 +30,5 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_grouppermissionsevent')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_grouppermissionshistory')),
     ]
