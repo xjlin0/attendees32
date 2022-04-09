@@ -23,7 +23,7 @@ class UsersConfig(AppConfig):
         pghistory.track(  # Track events to permission group relationships
             pghistory.AfterInsert('permission.add'),
             pghistory.BeforeDelete('permission.remove'),
-            model_name='GroupPermissionsHistory',
+            model_name='GroupPermissionHistory',
             obj_fk=None,
             app_label='users',
         )(group_model.permissions.through)
