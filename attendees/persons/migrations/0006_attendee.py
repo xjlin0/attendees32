@@ -75,14 +75,14 @@ class Migration(migrations.Migration):
         # ),
 
         migrations.CreateModel(
-            name='AttendeesEvent',
+            name='AttendeeHistory',
             fields=[
                 ('pgh_id', models.BigAutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
-                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='event', to='persons.attendee')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='persons.attendee')),
                 ('id', models.UUIDField(default=uuid4, editable=False, serialize=False)),
                 ('division', models.ForeignKey(db_constraint=False, default=0, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.division')),
                 ('gender', models.CharField(choices=GenderEnum.choices(), default=GenderEnum['UNSPECIFIED'], max_length=11)),
@@ -100,8 +100,8 @@ class Migration(migrations.Migration):
                 ('infos', models.JSONField(blank=True, default=Utility.attendee_infos, help_text='Example: {"fixed": {"food_pref": "peanut allergy", "nick_name": "John"}}.Please keep {} here even no data', null=True)),
             ],
             options={
-                'db_table': 'persons_attendees_event',
+                'db_table': 'persons_attendeehistory',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('persons_attendees_event')),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_attendeehistory')),
     ]

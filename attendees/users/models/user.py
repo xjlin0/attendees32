@@ -178,8 +178,8 @@ class UserHistory(pghistory.get_event_model(
     last_login = models.DateTimeField(blank=True, null=True, verbose_name='last login')
     pgh_context = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')
     email = models.EmailField(blank=True, max_length=254, verbose_name='email address')
-    name = models.CharField(blank=True, max_length=255, verbose_name='Name of User')
     infos = models.JSONField(blank=True, default=Utility.user_infos, help_text="please keep {} here even there's no data", null=True)
+    name = models.CharField(blank=True, max_length=255, verbose_name='Name of User')
 
     class Meta:
         db_table = "users_userhistory"
