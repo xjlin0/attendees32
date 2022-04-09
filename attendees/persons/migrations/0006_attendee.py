@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
         # ),
 
         migrations.CreateModel(
-            name='AttendeeHistory',
+            name='AttendeesHistory',
             fields=[
                 ('pgh_id', models.BigAutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
@@ -86,8 +86,8 @@ class Migration(migrations.Migration):
                 ('id', models.UUIDField(default=uuid4, editable=False, serialize=False)),
                 ('division', models.ForeignKey(db_constraint=False, default=0, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.division')),
                 ('gender', models.CharField(choices=GenderEnum.choices(), default=GenderEnum['UNSPECIFIED'], max_length=11)),
-                ('user', models.ForeignKey(blank=True, db_constraint=False, default=None, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to=settings.AUTH_USER_MODEL)),
                 ('pgh_label', models.TextField(help_text='The event label.')),
+                ('user', models.ForeignKey(blank=True, db_constraint=False, default=None, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to=settings.AUTH_USER_MODEL)),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
                 ('first_name', models.CharField(blank=True, max_length=25, null=True)),
                 ('last_name', models.CharField(blank=True, max_length=25, null=True)),
@@ -100,8 +100,8 @@ class Migration(migrations.Migration):
                 ('infos', models.JSONField(blank=True, default=Utility.attendee_infos, help_text='Example: {"fixed": {"food_pref": "peanut allergy", "nick_name": "John"}}.Please keep {} here even no data', null=True)),
             ],
             options={
-                'db_table': 'persons_attendeehistory',
+                'db_table': 'persons_attendeeshistory',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('persons_attendeehistory')),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_attendeeshistory')),
     ]
