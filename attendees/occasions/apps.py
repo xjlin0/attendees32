@@ -12,6 +12,8 @@ class OccasionsConfig(AppConfig):
 
         pghistory.track(
             pghistory.Snapshot('event.snapshot'),
+            related_name='history',
+            model_name='EventHistory',
             app_label='occasions'
         )(schedule_event_model)
 
