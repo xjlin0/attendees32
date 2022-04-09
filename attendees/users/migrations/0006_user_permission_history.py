@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('auth', '0012_alter_user_first_name_max_length'),
         ('pghistory', '0003_auto_20201023_1636'),
-        ('users', '0005_usergroupsevent'),
+        ('users', '0005_user_group_history'),
     ]
 
     operations = [

@@ -17,16 +17,16 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserGroupsEvent',
+            name='UserGroupHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
                 ('pgh_label', models.TextField(help_text='The event label.')),
                 ('id', models.IntegerField()),
-                ('group', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.group')),
                 ('user', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to=settings.AUTH_USER_MODEL)),
+                ('group', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.group')),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_usergroupsevent')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_usergrouphistory')),
     ]
