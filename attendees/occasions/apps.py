@@ -8,8 +8,16 @@ class OccasionsConfig(AppConfig):
 
     def ready(self):
         schedule_event_model = django_apps.get_model("schedule.Event", require_ready=False)
+        schedule_eventrelation_model = django_apps.get_model("schedule.EventRelation", require_ready=False)
 
         pghistory.track(
             pghistory.Snapshot('event.snapshot'),
             app_label='occasions'
         )(schedule_event_model)
+
+        pghistory.track(
+            pghistory.Snapshot('eventrelation.snapshot'),
+            related_name='history',
+            model_name='EventRelationHistory',
+            app_label='occasions',
+        )(schedule_eventrelation_model)
