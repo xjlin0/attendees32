@@ -30,5 +30,5 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_grouphistory', index_on_id=True)),
+        migrations.RunSQL(Utility.pgh_default_sql('users_grouphistory', index_on_id=True, original_model_table='auth_group')),
     ]
