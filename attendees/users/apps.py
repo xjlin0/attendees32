@@ -15,6 +15,8 @@ class UsersConfig(AppConfig):
 
         pghistory.track(
             pghistory.Snapshot('group.snapshot'),
+            model_name='GroupHistory',
+            related_name='history',
             app_label='users'
         )(group_model)
 

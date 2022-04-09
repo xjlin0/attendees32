@@ -16,19 +16,19 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='GroupEvent',
+            name='GroupHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
-                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='event', to='auth.group')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='auth.group')),
                 ('id', models.IntegerField()),
-                ('name', models.CharField(max_length=150, verbose_name='name')),
                 ('pgh_label', models.TextField(help_text='The event label.')),
+                ('name', models.CharField(max_length=150, verbose_name='name')),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
             options={
                 'abstract': False,
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_groupevent', index_on_id=True)),
+        migrations.RunSQL(Utility.pgh_default_sql('users_grouphistory', index_on_id=True)),
     ]
