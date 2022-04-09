@@ -34,5 +34,5 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('occasions_eventrelationhistory')),
+        migrations.RunSQL(Utility.pgh_default_sql('occasions_eventrelationhistory', original_model_table='schedule_eventrelation')),
     ]

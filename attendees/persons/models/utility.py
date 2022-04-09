@@ -49,15 +49,16 @@ class Utility:
         return self.notes.all() if callable(getattr(self, "notes", None)) else []
 
     @staticmethod
-    def pgh_default_sql(table_name, table_comment='pgh_obj_id is indexed id/pk', index_on_id=False):
-        original_model_table = table_name.replace('history', '')
+    def pgh_default_sql(history_table_name, table_comment='pgh_obj_id is indexed id/pk', index_on_id=False, original_model_table=''):
+        if not original_model_table:
+            original_model_table = history_table_name.replace('history', '')
 
         results = f"""
-                ALTER TABLE {table_name} ALTER COLUMN pgh_created_at SET DEFAULT CURRENT_TIMESTAMP;
-                COMMENT ON TABLE {table_name} IS 'History table: {table_comment} of {original_model_table}';
+                ALTER TABLE {history_table_name} ALTER COLUMN pgh_created_at SET DEFAULT CURRENT_TIMESTAMP;
+                COMMENT ON TABLE {history_table_name} IS 'History table: {table_comment} of {original_model_table}';
                 """
         if index_on_id:
-            results += f"""CREATE INDEX idx_{table_name}_id ON {table_name}(id);"""
+            results += f"""CREATE INDEX idx_{history_table_name}_id ON {history_table_name}(id);"""
         return results
 
     @staticmethod
