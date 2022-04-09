@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserGroupHistory',
+            name='UserGroupsHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
@@ -28,5 +28,5 @@ class Migration(migrations.Migration):
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_usergrouphistory')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_usergroupshistory', original_model_table='users_user_groups')),
     ]

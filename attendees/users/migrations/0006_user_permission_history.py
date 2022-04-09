@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('auth', '0012_alter_user_first_name_max_length'),
         ('pghistory', '0003_auto_20201023_1636'),
-        ('users', '0005_user_group_history'),
+        ('users', '0005_user_groups_history'),
     ]
 
     operations = [
@@ -28,5 +28,5 @@ class Migration(migrations.Migration):
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_userpermissionhistory')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_userpermissionhistory', original_model_table='users_user_user_permissions')),
     ]

@@ -31,7 +31,7 @@ class UsersConfig(AppConfig):
         pghistory.track(  # Track events to user group relationships
             pghistory.AfterInsert('group.add'),
             pghistory.BeforeDelete('group.remove'),
-            model_name='UserGroupHistory',
+            model_name='UserGroupsHistory',
             obj_fk=None,
             app_label='users',
         )(user_model.groups.through)
