@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         # ('whereabouts', '0009_attendee_contact_m2m'),
         ('occasions', '0009_meet_attending'),
-        ('users', '0002_user_organization'),
+        ('users', '0002_user_organization_and_history'),
     ]
 
     operations = [

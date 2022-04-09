@@ -156,9 +156,11 @@ class User(AbstractUser):
         )
 
 
-class UsersEvent(pghistory.get_event_model(
+class UserHistory(pghistory.get_event_model(
     User,
     pghistory.Snapshot('user.snapshot'),
+    name='UserHistory',
+    related_name='history',
     exclude=['password'],
 )):
     pgh_id = models.BigAutoField(primary_key=True, serialize=False)
@@ -169,7 +171,7 @@ class UsersEvent(pghistory.get_event_model(
     is_active = models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')
     organization = models.ForeignKey(blank=True, db_constraint=False, default=None, help_text='Primary organization of the user', null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.organization')
     date_joined = models.DateTimeField(default=timezone.now, verbose_name='date joined')
-    pgh_obj = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='event', to=settings.AUTH_USER_MODEL)
+    pgh_obj = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to=settings.AUTH_USER_MODEL)
     # password = models.CharField(max_length=128, verbose_name='password')
     pgh_label = models.TextField(help_text='The event label.')
     username = models.CharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, validators=[validators.UnicodeUsernameValidator()], verbose_name='username')
@@ -180,4 +182,4 @@ class UsersEvent(pghistory.get_event_model(
     infos = models.JSONField(blank=True, default=Utility.user_infos, help_text="please keep {} here even there's no data", null=True)
 
     class Meta:
-        db_table = "users_user_event"
+        db_table = "users_userhistory"
