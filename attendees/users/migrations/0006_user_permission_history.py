@@ -17,16 +17,16 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserUserPermissionsEvent',
+            name='UserPermissionHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
                 ('pgh_label', models.TextField(help_text='The event label.')),
                 ('id', models.IntegerField()),
-                ('permission', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.permission')),
                 ('user', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to=settings.AUTH_USER_MODEL)),
+                ('permission', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.permission')),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_useruserpermissionsevent')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_userpermissionhistory')),
     ]
