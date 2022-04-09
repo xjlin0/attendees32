@@ -15,7 +15,7 @@ class UsersConfig(AppConfig):
 
         pghistory.track(
             pghistory.Snapshot('group.snapshot'),
-            model_name='GroupHistory',
+            model_name='GroupsHistory',
             related_name='history',
             app_label='users'
         )(group_model)
@@ -23,7 +23,7 @@ class UsersConfig(AppConfig):
         pghistory.track(  # Track events to permission group relationships
             pghistory.AfterInsert('permission.add'),
             pghistory.BeforeDelete('permission.remove'),
-            model_name='GroupPermissionHistory',
+            model_name='GroupPermissionsHistory',
             obj_fk=None,
             app_label='users',
         )(group_model.permissions.through)
@@ -39,7 +39,7 @@ class UsersConfig(AppConfig):
         pghistory.track(  # Track events to user group relationships
             pghistory.AfterInsert('user_permission.add'),
             pghistory.BeforeDelete('user_permission.remove'),
-            model_name='UserPermissionHistory',
+            model_name='UserPermissionsHistory',
             obj_fk=None,
             app_label='users',
         )(user_model.user_permissions.through)

@@ -60,6 +60,6 @@ class Migration(migrations.Migration):
                 'db_table': 'users_userhistory',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_userhistory')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_userhistory', index_on_id=True, original_model_table='users_user')),
     ]
 

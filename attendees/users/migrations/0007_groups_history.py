@@ -11,12 +11,12 @@ class Migration(migrations.Migration):
     dependencies = [
         ('pghistory', '0003_auto_20201023_1636'),
         ('auth', '0012_alter_user_first_name_max_length'),
-        ('users', '0006_user_permission_history'),
+        ('users', '0006_user_permissions_history'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='GroupHistory',
+            name='GroupsHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
@@ -30,5 +30,5 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_grouphistory', index_on_id=True, original_model_table='auth_group')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_groupshistory', index_on_id=True, original_model_table='auth_group')),
     ]

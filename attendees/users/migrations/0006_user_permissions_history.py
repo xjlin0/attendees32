@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserPermissionHistory',
+            name='UserPermissionsHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
@@ -28,5 +28,5 @@ class Migration(migrations.Migration):
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_userpermissionhistory', original_model_table='users_user_user_permissions')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_userpermissionshistory', original_model_table='users_user_user_permissions')),
     ]
