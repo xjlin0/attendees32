@@ -38,7 +38,7 @@ class FolkAttendeeInline(admin.TabularInline):
     extra = 0
 
 
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("display_name",)
     list_display = ("id", "type", "display_name", "display_order", "infos")

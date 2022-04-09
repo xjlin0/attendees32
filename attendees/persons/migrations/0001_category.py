@@ -37,4 +37,26 @@ class Migration(migrations.Migration):
             model_name='category',
             index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='category_infos_gin'),
         ),
+        migrations.CreateModel(
+            name='CategoriesHistory',
+            fields=[
+                ('pgh_id', models.BigAutoField(primary_key=True, serialize=False)),
+                ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
+                ('pgh_label', models.TextField(help_text='The event label.')),
+                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
+                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
+                ('is_removed', models.BooleanField(default=False)),
+                ('type', models.CharField(default='generic', help_text='main type', max_length=25)),
+                ('display_order', models.SmallIntegerField(default=0)),
+                ('display_name', models.CharField(max_length=50)),
+                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"icon": "home", "style": "normal"}. Please keep {} here even no data', null=True)),
+                ('id', models.BigIntegerField()),
+                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='persons.category')),
+            ],
+            options={
+                'db_table': 'persons_categorieshistory',
+            },
+        ),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_categorieshistory')),
     ]
