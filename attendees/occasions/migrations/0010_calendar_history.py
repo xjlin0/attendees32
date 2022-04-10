@@ -3,6 +3,8 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
+from attendees.persons.models import Utility
+
 
 class Migration(migrations.Migration):
 
@@ -29,4 +31,5 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
+        migrations.RunSQL(Utility.pgh_default_sql('occasions_calendarhistory', index_on_id=True, original_model_table='schedule_calendar')),
     ]
