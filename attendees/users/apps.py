@@ -12,6 +12,8 @@ class UsersConfig(AppConfig):
     def ready(self):
         user_model = get_user_model()
         group_model = django_apps.get_model("auth.Group", require_ready=False)
+        emailaddress_model = django_apps.get_model("account.EmailAddress", require_ready=False)
+        emailconfirmation_model = django_apps.get_model("account.EmailConfirmation", require_ready=False)
 
         pghistory.track(
             pghistory.Snapshot('group.snapshot'),
@@ -43,6 +45,13 @@ class UsersConfig(AppConfig):
             obj_fk=None,
             app_label='users',
         )(user_model.user_permissions.through)
+
+        pghistory.track(
+            pghistory.Snapshot('emailaddress.snapshot'),
+            model_name='EmailAddressHistory',
+            related_name='history',
+            app_label='users'
+        )(emailaddress_model)
 
         try:
             import attendees.users.signals  # noqa F401
