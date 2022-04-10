@@ -7,7 +7,7 @@ from django.contrib.postgres.indexes import GinIndex
 import django.utils.timezone
 import model_utils.fields
 from django.db import models
-from model_utils.models import SoftDeletableModel, TimeStampedModel, UUIDModel
+from model_utils.models import SoftDeletableModel, TimeStampedModel
 
 from attendees.persons.models import Utility
 
