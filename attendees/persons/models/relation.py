@@ -5,6 +5,11 @@ from model_utils.models import SoftDeletableModel, TimeStampedModel
 from . import GenderEnum
 
 
+# @pghistory.track(
+#     pghistory.Snapshot('relation.snapshot'),
+#     model_name='RelationsHistory',
+#     related_name='history',
+# )
 class Relation(TimeStampedModel, SoftDeletableModel):
     id = models.BigAutoField(
         auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
