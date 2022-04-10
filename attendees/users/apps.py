@@ -53,6 +53,13 @@ class UsersConfig(AppConfig):
             app_label='users'
         )(emailaddress_model)
 
+        pghistory.track(
+            pghistory.Snapshot('emailconfirmation.snapshot'),
+            model_name='EmailConfirmationHistory',
+            related_name='history',
+            app_label='users'
+        )(emailconfirmation_model)
+
         try:
             import attendees.users.signals  # noqa F401
         except ImportError:
