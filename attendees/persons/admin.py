@@ -44,7 +44,7 @@ class CategoryAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display = ("id", "type", "display_name", "display_order", "infos")
 
 
-class PastAdmin(admin.ModelAdmin):
+class PastAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
