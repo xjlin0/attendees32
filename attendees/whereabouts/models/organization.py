@@ -71,4 +71,4 @@ class OrganizationsHistory(pghistory.get_event_model(
     pgh_context = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')
 
     class Meta:
-        db_table = "whereabouts_organizationshistory"
+        db_table = 'whereabouts_organizationshistory'

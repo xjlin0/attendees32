@@ -54,5 +54,5 @@ class Migration(migrations.Migration):
                 'db_table': 'whereabouts_organizationshistory',
             },
         ),
-migrations.RunSQL(Utility.pgh_default_sql('whereabouts_organizationshistory', original_model_table='whereabouts_organizations', index_on_id=True)),
+        migrations.RunSQL(Utility.pgh_default_sql('whereabouts_organizationshistory', original_model_table='whereabouts_organizations', index_on_id=True)),
     ]
