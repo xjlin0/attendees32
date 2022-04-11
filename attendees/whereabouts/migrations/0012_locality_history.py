@@ -20,13 +20,13 @@ class Migration(migrations.Migration):
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
-                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='address.locality')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='address.locality')),
                 ('pgh_label', models.TextField(help_text='The event label.')),
                 ('id', models.IntegerField()),
-                ('state', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='address.state')),
+                ('state', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='address.state')),
                 ('postal_code', models.CharField(blank=True, max_length=10)),
                 ('name', models.CharField(blank=True, max_length=165)),
-                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
+                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
             options={
                 'abstract': False,
