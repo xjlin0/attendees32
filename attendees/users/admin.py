@@ -78,13 +78,13 @@ class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
 #     search_fields = ["name"]
 
 
-class MenuAuthGroupInline(admin.TabularInline):
+class MenuAuthGroupInline(PgHistoryPage, admin.TabularInline):
     model = MenuAuthGroup
     extra = 0
 
 
 @admin.register(Menu)
-class MenuAdmin(MPTTModelAdmin):
+class MenuAdmin(PgHistoryPage, MPTTModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
@@ -108,7 +108,7 @@ class MenuAdmin(MPTTModelAdmin):
 
 
 @admin.register(MenuAuthGroup)
-class MenuAuthGroupAdmin(admin.ModelAdmin):
+class MenuAuthGroupAdmin(PgHistoryPage, admin.ModelAdmin):
 
     list_display = (
         "auth_group",

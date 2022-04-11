@@ -6,6 +6,7 @@ from django_json_widget.widgets import JSONEditorWidget
 # from attendees.persons.models import *
 #
 # from .models import *
+from attendees.persons.models import PgHistoryPage
 from attendees.whereabouts.models import Place, Campus, Property, Suite, Room, Division, Organization
 
 
@@ -28,7 +29,7 @@ class PlaceAdmin(admin.ModelAdmin):
         return qs.filter(organization=request.user.organization)
 
 
-class DivisionAdmin(admin.ModelAdmin):
+class DivisionAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -56,7 +57,7 @@ class PropertyAdmin(admin.ModelAdmin):
     list_display = ("id", "display_name", "slug", "campus", "modified")
 
 
-class CampusAdmin(admin.ModelAdmin):
+class CampusAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display = ("display_name", "organization", "slug", "modified")
@@ -86,7 +87,7 @@ class RoomAdmin(admin.ModelAdmin):
     list_display = ("display_name", "label", "suite", "infos", "modified")
 
 
-class OrganizationAdmin(admin.ModelAdmin):
+class OrganizationAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
