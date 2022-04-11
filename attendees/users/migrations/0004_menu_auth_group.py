@@ -39,4 +39,27 @@ class Migration(migrations.Migration):
             name='auth_groups',
             field=models.ManyToManyField(related_name='auth_groups', through='users.MenuAuthGroup', to='auth.Group'),
         ),
+
+        migrations.CreateModel(
+            name='MenuAuthGroupsHistory',
+            fields=[
+                ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
+                ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
+                ('pgh_label', models.TextField(help_text='The event label.')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='users.menuauthgroup')),
+                ('id', models.IntegerField()),
+                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
+                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
+                ('is_removed', models.BooleanField(default=False)),
+                ('read', models.BooleanField(default=True)),
+                ('write', models.BooleanField(default=True)),
+                ('auth_group', models.ForeignKey(db_constraint=False, default=0, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.group')),
+                ('menu', models.ForeignKey(db_constraint=False, default=0, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='users.menu')),
+                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
+            ],
+            options={
+                'db_table': 'users_menu_auth_groupshistory',
+            },
+        ),
+        migrations.RunSQL(Utility.pgh_default_sql('users_menu_auth_groupshistory', original_model_table='users_menu_auth_groups')),
     ]
