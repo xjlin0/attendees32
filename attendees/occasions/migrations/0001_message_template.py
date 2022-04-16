@@ -36,4 +36,26 @@ class Migration(migrations.Migration):
             model_name='messagetemplate',
             constraint=models.UniqueConstraint(condition=models.Q(is_removed=False), fields=('organization', 'type'), name='organization_type'),
         ),
+        migrations.CreateModel(
+            name='MessageTemplatesHistory',
+            fields=[
+                ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
+                ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
+                ('pgh_label', models.TextField(help_text='The event label.')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='occasions.messagetemplate')),
+                ('id', models.BigIntegerField()),
+                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
+                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
+                ('is_removed', models.BooleanField(default=False)),
+                ('organization', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.organization')),
+                ('templates', models.JSONField(blank=True, default=dict, help_text='Example: {"body": "Dear {name}: Hello!"}. Whatever in curly braces will be interpolated by variables, Please keep {} here even no data', null=True)),
+                ('defaults', models.JSONField(blank=True, default=dict, help_text='Example: {"name": "John", "Date": "08/31/2020"}. Please keep {} here even no data', null=True)),
+                ('type', models.SlugField(db_index=False, help_text='format: Organization_slug-prefix-message-type-name')),
+                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
+            ],
+            options={
+                'db_table': 'occasions_message_templateshistory',
+            },
+        ),
+        migrations.RunSQL(Utility.pgh_default_sql('occasions_message_templateshistory', original_model_table='occasions_message_templates', index_on_id=True)),
     ]

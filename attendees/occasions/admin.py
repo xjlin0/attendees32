@@ -4,6 +4,7 @@ from django.contrib.postgres import fields
 
 from django_json_widget.widgets import JSONEditorWidget
 from attendees.occasions.models import Attendance, MessageTemplate, Assembly, Price, Character, Meet, Gathering, Team
+from attendees.persons.models import PgHistoryPage
 from attendees.whereabouts.models import Organization, Division
 
 
@@ -20,7 +21,7 @@ from attendees.whereabouts.models import Organization, Division
 #     extra = 0
 
 
-class MessageTemplateAdmin(admin.ModelAdmin):
+class MessageTemplateAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
