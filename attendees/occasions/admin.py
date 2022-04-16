@@ -1,9 +1,10 @@
-
+from django.contrib import messages
 from django.contrib import admin
 from django.contrib.postgres import fields
 
 from django_json_widget.widgets import JSONEditorWidget
 from attendees.occasions.models import Attendance, MessageTemplate, Assembly, Price, Character, Meet, Gathering, Team
+from attendees.whereabouts.models import Organization, Division
 
 
 # Register your models here.
@@ -29,6 +30,23 @@ class MessageTemplateAdmin(admin.ModelAdmin):
     def truncate_template(self, obj):
         return list(obj.templates.values())[0][:100] + "..."
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "organization":
+            kwargs["queryset"] = Organization.objects.all() if request.user.is_superuser else Organization.objects.filter(pk=request.user.organization_pk())
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(organization=request.user.organization)
+
 
 class AssemblyAdmin(admin.ModelAdmin):
     formfield_overrides = {
@@ -40,9 +58,43 @@ class AssemblyAdmin(admin.ModelAdmin):
     list_display = ("id", "division", "display_name", "slug", "get_addresses")
     readonly_fields = ["id", "created", "modified"]
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "division":
+            kwargs["queryset"] = Division.objects.all() if request.user.is_superuser else Division.objects.filter(organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(division__organization=request.user.organization)
+
 
 class PriceAdmin(admin.ModelAdmin):
     list_display = ("display_name", "price_type", "start", "price_value", "modified")
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "assembly":
+            kwargs["queryset"] = Assembly.objects.all() if request.user.is_superuser else Assembly.objects.filter(division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(assembly__division__organization=request.user.organization)
 
 
 class AttendanceAdmin(admin.ModelAdmin):
@@ -76,6 +128,23 @@ class AttendanceAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "gathering":
+            kwargs["queryset"] = Gathering.objects.all() if request.user.is_superuser else Gathering.objects.filter(meet__assembly__division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(gathering__meet__assembly__division__organization=request.user.organization)
 
     def get_attendee(self, obj):
         return obj.attending.attendee
@@ -116,6 +185,23 @@ class CharacterAdmin(admin.ModelAdmin):
     list_display_links = ("display_name",)
     list_display = ("id", "assembly", "display_name", "slug", "display_order", "type")
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "assembly":
+            kwargs["queryset"] = Assembly.objects.all() if request.user.is_superuser else Assembly.objects.filter(division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(assembly__division__organization=request.user.organization)
+
     class Media:
         css = {"all": ("css/admin.css",)}
         js = ["js/admin/list_filter_collapse.js"]
@@ -126,6 +212,23 @@ class TeamAdmin(admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("display_name",)
     list_display = ("id", "display_name", "slug", "meet", "display_order", "modified")
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "meet":
+            kwargs["queryset"] = Meet.objects.all() if request.user.is_superuser else Meet.objects.filter(assembly__division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(meet__assembly__division__organization=request.user.organization)
 
 
 class MeetAdmin(admin.ModelAdmin):
@@ -161,6 +264,23 @@ class MeetAdmin(admin.ModelAdmin):
         ),
     )
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "assembly":
+            kwargs["queryset"] = Assembly.objects.all() if request.user.is_superuser else Assembly.objects.filter(division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(assembly__division__organization=request.user.organization)
+
     class Media:
         css = {"all": ("css/admin.css",)}
         js = ["js/admin/list_filter_collapse.js"]
@@ -189,6 +309,23 @@ class GatheringAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "meet":
+            kwargs["queryset"] = Meet.objects.all() if request.user.is_superuser else Meet.objects.filter(assembly__division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(meet__assembly__division__organization=request.user.organization)
 
     class Media:
         css = {"all": ("css/admin.css",)}
