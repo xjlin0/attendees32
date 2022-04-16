@@ -38,6 +38,9 @@ class User(AbstractUser):
             ),
         ]
 
+    def organization_pk(self):
+        return self.organization.pk if self.organization else None
+
     def get_absolute_url(self):
         """Get url for user's detail view.
 

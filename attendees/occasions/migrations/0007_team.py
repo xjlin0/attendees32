@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
                 ('display_order', models.SmallIntegerField(blank=False, default=0, null=False)),
-                ('site_id', models.BigIntegerField()),
+                ('site_id', models.CharField(default='0', max_length=36)),
                 ('site_type', models.ForeignKey(help_text='site: django_content_type id for table name', on_delete=models.SET(0), to='contenttypes.ContentType')),
                 ('meet', models.ForeignKey(on_delete=models.SET(0), to='occasions.Meet')),
                 ('slug', models.SlugField(max_length=50, unique=True)),
