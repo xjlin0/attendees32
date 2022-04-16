@@ -72,7 +72,7 @@ class CampusAdmin(PgHistoryPage, admin.ModelAdmin):
         return qs.filter(organization=request.user.organization)
 
 
-class SuiteAdmin(admin.ModelAdmin):
+class SuiteAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display = ("id", "display_name", "slug", "site", "modified")
