@@ -58,4 +58,5 @@ class Migration(migrations.Migration):
                 'db_table': 'whereabouts_roomshistory',
             },
         ),
+        migrations.RunSQL(Utility.pgh_default_sql('whereabouts_roomshistory', original_model_table='whereabouts_rooms', index_on_id=True)),
     ]
