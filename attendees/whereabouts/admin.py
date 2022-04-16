@@ -48,7 +48,7 @@ class DivisionAdmin(PgHistoryPage, admin.ModelAdmin):
         return qs.filter(organization=request.user.organization)
 
 
-class PropertyAdmin(admin.ModelAdmin):
+class PropertyAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }

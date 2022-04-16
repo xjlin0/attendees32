@@ -37,4 +37,26 @@ class Migration(migrations.Migration):
             model_name='property',
             index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='property_infos_gin'),
         ),
+        migrations.CreateModel(
+            name='PropertiesHistory',
+            fields=[
+                ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
+                ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
+                ('pgh_label', models.TextField(help_text='The event label.')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='whereabouts.property')),
+                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
+                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
+                ('is_removed', models.BooleanField(default=False)),
+                ('id', models.IntegerField()),
+                ('campus', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.campus')),
+                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"2010id": "3"}. Please keep {} here even no data', null=True)),
+                ('slug', models.SlugField(db_index=False)),
+                ('display_name', models.CharField(max_length=50)),
+                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
+            ],
+            options={
+                'db_table': 'whereabouts_propertieshistory',
+            },
+        ),
+        migrations.RunSQL(Utility.pgh_default_sql('whereabouts_propertieshistory', original_model_table='whereabouts_properties', index_on_id=True)),
     ]
