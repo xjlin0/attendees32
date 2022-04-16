@@ -78,7 +78,7 @@ class SuiteAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display = ("id", "display_name", "slug", "site", "modified")
 
 
-class RoomAdmin(admin.ModelAdmin):
+class RoomAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
