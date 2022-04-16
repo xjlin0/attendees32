@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
                 ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='whereabouts.division')),
                 ('pgh_label', models.TextField(help_text='The event label.')),
-                ('id', models.IntegerField()),
+                ('id', models.BigIntegerField()),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('organization', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.organization')),

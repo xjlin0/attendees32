@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
-                ('id', models.IntegerField()),
+                ('id', models.BigIntegerField()),
                 ('campus', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.campus')),
                 ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"2010id": "3"}. Please keep {} here even no data', null=True)),
                 ('slug', models.SlugField(db_index=False)),
