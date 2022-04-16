@@ -10,7 +10,7 @@ from attendees.persons.models import PgHistoryPage
 from attendees.whereabouts.models import Place, Campus, Property, Suite, Room, Division, Organization
 
 
-class PlaceAdmin(admin.ModelAdmin):
+class PlaceAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }

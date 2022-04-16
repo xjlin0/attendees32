@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Place',
             fields=[
-                ('id', model_utils.fields.UUIDField(default=uuid4, editable=False, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(default=uuid4, editable=False, primary_key=True, serialize=False)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
