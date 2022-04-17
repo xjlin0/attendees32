@@ -64,4 +64,5 @@ class Migration(migrations.Migration):
                 'db_table': 'persons_noteshistory',
             },
         ),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_noteshistory', original_model_table='persons_notes', index_on_id=True)),
     ]

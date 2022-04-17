@@ -49,11 +49,11 @@ class Migration(migrations.Migration):
                 ('pgh_id', models.BigAutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
                 ('pgh_label', models.TextField(help_text='The event label.')),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='persons.past')),
+                ('id', models.UUIDField(db_index=True, default=uuid4, editable=False, serialize=False)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
-                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='persons.past')),
-                ('id', models.UUIDField(default=uuid4, editable=False, serialize=False)),
                 ('object_id', models.CharField(max_length=36)),
                 ('display_order', models.SmallIntegerField(default=30000)),
                 ('infos', models.JSONField(blank=True, default=Utility.relationship_infos, help_text=('Example: {"show_secret": {"attendee1id": true, "attendee2id": false}}.Please keep {} here even no data',), null=True)),
@@ -69,5 +69,6 @@ class Migration(migrations.Migration):
                 'db_table': 'persons_pastshistory',
             },
         ),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_pastshistory', original_model_table='persons_pasts')),
     ]
 
