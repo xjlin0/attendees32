@@ -77,7 +77,7 @@ class AssemblyAdmin(PgHistoryPage, admin.ModelAdmin):
             return qs.filter(division__organization=request.user.organization)
 
 
-class PriceAdmin(admin.ModelAdmin):
+class PriceAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display = ("display_name", "price_type", "start", "price_value", "modified")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
