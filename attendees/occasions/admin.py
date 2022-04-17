@@ -49,7 +49,7 @@ class MessageTemplateAdmin(PgHistoryPage, admin.ModelAdmin):
             return qs.filter(organization=request.user.organization)
 
 
-class AssemblyAdmin(admin.ModelAdmin):
+class AssemblyAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
