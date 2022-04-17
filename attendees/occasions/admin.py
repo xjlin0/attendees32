@@ -179,7 +179,7 @@ class AttendanceInline(admin.StackedInline):
     #     return qs[:10]  # does not work
 
 
-class CharacterAdmin(admin.ModelAdmin):
+class CharacterAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     list_filter = ("assembly", "type")
     readonly_fields = ["id", "created", "modified"]

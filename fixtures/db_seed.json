@@ -6167,7 +6167,7 @@
       "display_name": "Junior Student",
       "display_order": 32766,
       "slug": "d7c8Fd_cfcch_kid_student",
-      "info": null,
+      "infos": {},
       "type": "audience"
     }
   },
@@ -6182,7 +6182,7 @@
       "display_name": "LG Leader 1",
       "display_order": 1,
       "slug": "d7c8Fd_cfcch_kid_LGleader1",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6197,7 +6197,7 @@
       "display_name": "LG Leader 2",
       "display_order": 2,
       "slug": "d7c8Fd_cfcch_kid_LGleader2",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6212,7 +6212,7 @@
       "display_name": "Worship Leader 1",
       "display_order": 3,
       "slug": "d7c8Fd_cfcch_kid_worship_leader1",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6227,7 +6227,7 @@
       "display_name": "Worship Leader 2",
       "display_order": 4,
       "slug": "d7c8Fd_cfcch_kid_worship_leader2",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6242,7 +6242,7 @@
       "display_name": "A/V controller",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_adult_sunday_av_controller",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6257,7 +6257,7 @@
       "display_name": "sky choir member",
       "display_order": 9999,
       "slug": "faBd6C_heaven_sky_choir_member",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6272,7 +6272,7 @@
       "display_name": "\u77ed\u5ba3\u53f8\u6a5f",
       "display_order": 7777,
       "slug": "d7c8fd_cfcch_kid_short_mission_driver",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6287,7 +6287,7 @@
       "display_name": "Food Helper",
       "display_order": 5,
       "slug": "d7c8Fd_cfcch_kid_food_helper",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6302,7 +6302,7 @@
       "display_name": "SG Leader Kindergarten",
       "display_order": 6,
       "slug": "d7c8Fd_cfcch_kid_leader_SG_kindergarten",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6317,7 +6317,7 @@
       "display_name": "SG Leader 1st Grade",
       "display_order": 7,
       "slug": "d7c8Fd_cfcch_kid_leader_SG_1G",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6332,7 +6332,7 @@
       "display_name": "SG Leader 2nd Grade",
       "display_order": 8,
       "slug": "d7c8Fd_cfcch_kid_leader_SG_2G",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6347,7 +6347,7 @@
       "display_name": "SG Leader 3rd & 4th Grades",
       "display_order": 9,
       "slug": "d7c8Fd_cfcch_kid_leader_SG_34G",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6362,7 +6362,7 @@
       "display_name": "SG Leader 5th& 6th Grades",
       "display_order": 10,
       "slug": "d7c8Fd_cfcch_kid_leader_SG_56G",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6377,7 +6377,7 @@
       "display_name": "\u5e38\u505a\u79ae\u62dc\u6703\u773e",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_congregation_data_roaster",
-      "info": null,
+      "infos": {},
       "type": "audience"
     }
   },
@@ -6392,7 +6392,7 @@
       "display_name": "\u590f\u4ee4\u67032020\u53c3\u8207\u6703\u773e",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_summer_retreat2020_attendee",
-      "info": null,
+      "infos": {},
       "type": "audience"
     }
   },
@@ -6407,7 +6407,7 @@
       "display_name": "\u590f\u4ee4\u67032020\u540c\u5de5",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_summer_retreat2020_coworkers",
-      "info": null,
+      "infos": {},
       "type": "coworker"
     }
   },
@@ -6422,7 +6422,7 @@
       "display_name": "\u590f\u4ee4\u67032020\u63a5\u9001\u53f8\u6a5f",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_summer_retreat2020_driver",
-      "info": null,
+      "infos": {},
       "type": "normal"
     }
   },
@@ -6437,7 +6437,7 @@
       "display_name": "\u590f\u4ee4\u67032020\u8a0e\u8ad6\u5c0f\u7d44\u54e1",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_summer_retreat2020_panel_member",
-      "info": null,
+      "infos": {},
       "type": "normal"
     }
   },
@@ -6452,7 +6452,7 @@
       "display_name": "\u590f\u4ee4\u67032020\u8a0e\u8ad6\u5c0f\u7d44\u9577",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_summer_retreat2020_panel_leader",
-      "info": null,
+      "infos": {},
       "type": "normal"
     }
   },
@@ -6467,7 +6467,7 @@
       "display_name": "\u590f\u4ee4\u67032020\u63a5\u9001\u4e58\u5ba2",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_summer_retreat2020_passenger",
-      "info": null,
+      "infos": {},
       "type": "normal"
     }
   },
@@ -6482,7 +6482,7 @@
       "display_name": "\u5165\u7c4d\u6703\u54e1 member",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_congregation_data_member",
-      "info": null,
+      "infos": {},
       "type": "internal"
     }
   },
@@ -6497,7 +6497,7 @@
       "display_name": "\u5217\u5165\u901a\u8a0a\u9304 in directory",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_congregation_data_directory",
-      "info": null,
+      "infos": {},
       "type": "internal"
     }
   },
@@ -6512,7 +6512,7 @@
       "display_name": "\u5df2\u53d7\u6d78 baptisee",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_congregation_data_baptisee",
-      "info": null,
+      "infos": {},
       "type": "internal"
     }
   },
@@ -6527,7 +6527,7 @@
       "display_name": "\u5df2\u4fe1\u4e3b believer",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_congregation_data_believer",
-      "info": null,
+      "infos": {},
       "type": "internal"
     }
   },
@@ -6542,7 +6542,7 @@
       "display_name": "\u8a2a\u5ba2 visitor",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_congregation_data_visitor",
-      "info": null,
+      "infos": {},
       "type": "internal"
     }
   },
