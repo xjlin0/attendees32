@@ -55,7 +55,7 @@ class SuitesHistory(pghistory.get_event_model(
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')
     is_removed = models.BooleanField(default=False)
     site = models.CharField(blank=True, help_text='2F floor, etc', max_length=50)
-    id = models.BigIntegerField()
+    id = models.BigIntegerField(db_index=True)
     property = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.property')
     slug = models.SlugField(db_index=False)
     display_name = models.CharField(max_length=50)

@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('pgh_id', models.BigAutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
-                ('id', models.IntegerField()),
+                ('id', models.IntegerField(db_index=True)),
                 ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
@@ -60,6 +60,6 @@ class Migration(migrations.Migration):
                 'db_table': 'users_userhistory',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('users_userhistory', index_on_id=True, original_model_table='users_user')),
+        migrations.RunSQL(Utility.pgh_default_sql('users_userhistory', original_model_table='users_user')),
     ]
 

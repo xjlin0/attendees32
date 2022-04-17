@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
-                ('id', models.UUIDField(default=uuid4, editable=False, serialize=False)),
+                ('id', models.UUIDField(db_index=True, default=uuid4, editable=False, serialize=False)),
                 ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='persons.note')),
                 ('object_id', models.CharField(max_length=36)),
                 ('display_order', models.SmallIntegerField(default=0)),
@@ -64,5 +64,5 @@ class Migration(migrations.Migration):
                 'db_table': 'persons_noteshistory',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('persons_noteshistory', original_model_table='persons_notes', index_on_id=True)),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_noteshistory', original_model_table='persons_notes')),
     ]

@@ -78,7 +78,7 @@ class NotesHistory(pghistory.get_event_model(
     created = model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')
     is_removed = models.BooleanField(default=False)
-    id = models.UUIDField(default=uuid4, editable=False, serialize=False)
+    id = models.UUIDField(db_index=True, default=uuid4, editable=False, serialize=False)
     object_id = models.CharField(max_length=36)
     display_order = models.SmallIntegerField(default=0)
     body = models.TextField()

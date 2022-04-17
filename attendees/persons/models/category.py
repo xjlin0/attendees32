@@ -59,7 +59,7 @@ class CategoriesHistory(pghistory.get_event_model(
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')
     is_removed = models.BooleanField(default=False)
     pgh_obj = models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='persons.category')
-    id = models.BigIntegerField()
+    id = models.BigIntegerField(db_index=True)
     display_order = models.SmallIntegerField(default=0)
     pgh_label = models.TextField(help_text='The event label.')
     infos = models.JSONField(blank=True, default=dict, help_text='Example: {"icon": "home", "style": "normal"}. Please keep {} here even no data', null=True)

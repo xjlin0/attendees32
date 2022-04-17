@@ -93,7 +93,7 @@ class GatheringsHistory(pghistory.get_event_model(
     pgh_created_at = models.DateTimeField(auto_now_add=True)
     pgh_label = models.TextField(help_text='The event label.')
     pgh_obj = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='occasions.gathering')
-    id = models.BigIntegerField()
+    id = models.BigIntegerField(db_index=True)
     meet = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.meet')
     created = model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')

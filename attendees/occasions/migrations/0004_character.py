@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
                 ('pgh_label', models.TextField(help_text='The event label.')),
                 ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='occasions.character')),
-                ('id', models.BigIntegerField()),
+                ('id', models.BigIntegerField(db_index=True)),
                 ('assembly', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.assembly')),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
@@ -62,5 +62,5 @@ class Migration(migrations.Migration):
                 'db_table': 'occasions_charactershistory',
             },
         ),
-        migrations.RunSQL(Utility.pgh_default_sql('occasions_charactershistory', original_model_table='occasions_characters', index_on_id=True)),
+        migrations.RunSQL(Utility.pgh_default_sql('occasions_charactershistory', original_model_table='occasions_characters')),
     ]
