@@ -232,7 +232,7 @@ class TeamAdmin(admin.ModelAdmin):
             return qs.filter(meet__assembly__division__organization=request.user.organization)
 
 
-class MeetAdmin(admin.ModelAdmin):
+class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
