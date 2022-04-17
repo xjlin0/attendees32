@@ -67,7 +67,7 @@ class CampusesHistory(pghistory.get_event_model(
     name='CampusesHistory',
     related_name='history',
 )):
-    pgh_id = models.AutoField(primary_key=True, serialize=False)
+    pgh_id = models.BigAutoField(primary_key=True, serialize=False)
     pgh_created_at = models.DateTimeField(auto_now_add=True)
     pgh_label = models.TextField(help_text='The event label.')
     pgh_obj = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='history', to='whereabouts.campus')
