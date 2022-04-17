@@ -287,7 +287,7 @@ class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
         js = ["js/admin/list_filter_collapse.js"]
 
 
-class GatheringAdmin(admin.ModelAdmin):
+class GatheringAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
