@@ -41,11 +41,11 @@ class Migration(migrations.Migration):
             model_name='gathering',
             constraint=models.UniqueConstraint(fields=('meet_id', 'site_type', 'site_id', 'start'), condition=models.Q(is_removed=False), name='uniq_meet_location_time'),
         ),
-        migrations.RunSQL(Utility.default_sql('occasions_gatherings')),
         migrations.AddIndex(
             model_name='Gathering',
             index=GinIndex(fields=['infos'], name='gathering_infos_gin'),
         ),
+        migrations.RunSQL(Utility.default_sql('occasions_gatherings')),
         migrations.CreateModel(
             name='GatheringsHistory',
             fields=[

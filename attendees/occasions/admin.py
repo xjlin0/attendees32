@@ -208,7 +208,7 @@ class CharacterAdmin(PgHistoryPage, admin.ModelAdmin):
         js = ["js/admin/list_filter_collapse.js"]
 
 
-class TeamAdmin(admin.ModelAdmin):
+class TeamAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("display_name",)
