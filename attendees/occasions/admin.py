@@ -98,7 +98,7 @@ class PriceAdmin(PgHistoryPage, admin.ModelAdmin):
             return qs.filter(assembly__division__organization=request.user.organization)
 
 
-class AttendanceAdmin(admin.ModelAdmin):
+class AttendanceAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display_links = ("get_attendee",)
     list_filter = (
         ("gathering", admin.RelatedOnlyFieldListFilter),
