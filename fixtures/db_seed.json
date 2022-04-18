@@ -4611,6 +4611,7 @@
       "registration": 1,
       "attendee": "80f2e82f-0a72-49ea-b3e2-3fc892c49599",
       "category": "normal",
+      "price": null,
       "infos": {
         "bed_needs": 0
       }
@@ -4626,6 +4627,7 @@
       "registration": 2,
       "attendee": "d7e6ec14-302e-46a3-9f32-537d1fc0256b",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": 500,
         "mobility": 300,
@@ -4643,6 +4645,7 @@
       "registration": 2,
       "attendee": "a48e4375-1a64-4c4f-beb3-8f088bf77340",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": 500,
         "mobility": 500,
@@ -4660,6 +4663,7 @@
       "registration": 3,
       "attendee": "a48e4375-1a64-4c4f-beb3-8f088bf77340",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": 500,
         "mobility": 300,
@@ -4677,6 +4681,7 @@
       "registration": 2,
       "attendee": "e8c025ec-9ea2-4d61-8df3-9daeecbfb849",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": 500,
         "mobility": 200,
@@ -4694,6 +4699,7 @@
       "registration": 4,
       "attendee": "37ba5cc7-c7a7-419f-833f-915ac68e3676",
       "category": "kingdom",
+      "price": null,
       "infos": {
         "age": 5000,
         "mobility": 2000,
@@ -4711,6 +4717,7 @@
       "registration": 5,
       "attendee": "22c29cd5-a5ab-46a3-afe6-d5a600c33fc9",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": 500,
         "mobility": 200,
@@ -4728,6 +4735,7 @@
       "registration": 6,
       "attendee": "d7e6ec14-302e-46a3-9f32-537d1fc0256b",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": 500,
         "mobility": 500,
@@ -4745,6 +4753,7 @@
       "registration": 7,
       "attendee": "a48e4375-1a64-4c4f-beb3-8f088bf77340",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4762,6 +4771,7 @@
       "registration": 7,
       "attendee": "d7e6ec14-302e-46a3-9f32-537d1fc0256b",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4779,6 +4789,7 @@
       "registration": 7,
       "attendee": "44e894a1-1190-4916-992a-b5eb41b35b16",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4796,6 +4807,7 @@
       "registration": 7,
       "attendee": "3566e642-3624-42e3-9644-c54b08d8c6d6",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4813,6 +4825,7 @@
       "registration": 7,
       "attendee": "fa61941f-79a4-423e-872c-0bb9662e4351",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4830,6 +4843,7 @@
       "registration": 7,
       "attendee": "3833d04e-0897-45da-abf6-7d750f0baee7",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4847,6 +4861,7 @@
       "registration": 7,
       "attendee": "0498c414-abd3-4173-add1-5e42053760e4",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4864,6 +4879,7 @@
       "registration": 7,
       "attendee": "97922785-9025-40ad-9a5f-a9545f884644",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4881,6 +4897,7 @@
       "registration": 7,
       "attendee": "786a9d44-379f-4671-9004-5b3d0bd0227b",
       "category": "normal",
+      "price": null,
       "infos": {
         "age": null,
         "mobility": 200,
@@ -4898,6 +4915,7 @@
       "registration": 8,
       "attendee": "22c29cd5-a5ab-46a3-afe6-d5a600c33fc9",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -4911,6 +4929,7 @@
       "registration": 8,
       "attendee": "80f2e82f-0a72-49ea-b3e2-3fc892c49599",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -4924,6 +4943,7 @@
       "registration": 10,
       "attendee": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -4937,6 +4957,7 @@
       "registration": 10,
       "attendee": "ffd3881a-7a77-437a-ba11-c90610839523",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -4950,6 +4971,7 @@
       "registration": 10,
       "attendee": "f3b780ad-c736-490e-8731-58b96dfd81f8",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -4963,6 +4985,7 @@
       "registration": 11,
       "attendee": "a48e4375-1a64-4c4f-beb3-8f088bf77340",
       "category": "coworker",
+      "price": null,
       "infos": {}
     }
   },
@@ -4976,6 +4999,7 @@
       "registration": 9,
       "attendee": "786a9d44-379f-4671-9004-5b3d0bd0227b",
       "category": "not_going",
+      "price": null,
       "infos": {}
     }
   },
@@ -4989,6 +5013,7 @@
       "registration": 12,
       "attendee": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -5002,6 +5027,7 @@
       "registration": 12,
       "attendee": "ffd3881a-7a77-437a-ba11-c90610839523",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -5015,6 +5041,7 @@
       "registration": 12,
       "attendee": "f3b780ad-c736-490e-8731-58b96dfd81f8",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -5028,6 +5055,7 @@
       "registration": 12,
       "attendee": "8b3b2130-9ec4-469b-9b64-efef141fceee",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -5041,6 +5069,7 @@
       "registration": 12,
       "attendee": "55ee6cde-b6ce-4551-b531-89507cee6ae1",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },
@@ -5054,6 +5083,7 @@
       "registration": 12,
       "attendee": "be687517-d7bf-407a-8088-e3ed64ca62b8",
       "category": "normal",
+      "price": null,
       "infos": {}
     }
   },

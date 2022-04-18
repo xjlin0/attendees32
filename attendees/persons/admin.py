@@ -180,7 +180,7 @@ class AttendanceInline(admin.StackedInline):
     extra = 0
 
 
-class AttendingAdmin(admin.ModelAdmin):
+class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
     # list_per_page = 1000
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
