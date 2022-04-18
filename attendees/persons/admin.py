@@ -92,7 +92,7 @@ class PastAdmin(PgHistoryPage, admin.ModelAdmin):
             ).exclude(category__display_name=Past.COUNSELING)
 
 
-class FolkAdmin(admin.ModelAdmin):
+class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }

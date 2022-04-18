@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
                 ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='persons.attendee')),
-                ('id', models.UUIDField(default=uuid4, editable=False, serialize=False)),
+                ('id', models.UUIDField(db_index=True, default=uuid4, editable=False, serialize=False)),
                 ('division', models.ForeignKey(db_constraint=False, default=0, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.division')),
                 ('gender', models.CharField(choices=GenderEnum.choices(), default=GenderEnum['UNSPECIFIED'], max_length=11)),
                 ('pgh_label', models.TextField(help_text='The event label.')),
