@@ -124,12 +124,12 @@ class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
         return qs.filter(division__organization=request.user.organization)
 
 
-class FolkAttendeeAdmin(admin.ModelAdmin):
+class FolkAttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display = ("id", "folk", "attendee", "role", "infos")
 
 
-class RelationAdmin(admin.ModelAdmin):
+class RelationAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("title",)
     list_display = (
