@@ -308,7 +308,7 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 * upadte content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker-compose -f local.yml run --rm django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f local.yml run django python manage.py loaddata fixtures/db_seed`
-  (data were created by `docker-compose -f local.yml run django python manage.py dumpdata --exclude users.user --exclude admin.logentry --exclude sessions.session --exclude contenttypes.contenttype --exclude sites.site --exclude account.emailaddress --exclude account.emailconfirmation --exclude socialaccount.socialtoken --exclude auth.permission --indent 2 > fixtures/db_seed2.json`)
+  (data were created by `docker-compose -f local.yml run django python manage.py dumpdata --exclude users.user --exclude admin.logentry --exclude sessions.session --exclude contenttypes.contenttype --exclude sites.site --exclude account.emailaddress --exclude account.emailconfirmation --exclude socialaccount.socialtoken --exclude auth.permission --exclude pghistory.context --exclude pghistory.aggregateevent --indent 2 > fixtures/db_seed2.json`)
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://192.168.99.100:8008/admin123/users/user/
 * use browser to open http://192.168.99.100:8008/ and http://192.168.99.100:8025/
 * Enter postgres db console by `docker-compose -f local.yml exec postgres psql --username=YBIJMKerEaNYKqzfvMxOlBAesdyiahxk attendees_development`
