@@ -269,7 +269,7 @@ class NoteAdmin(PgHistoryPage, SummernoteModelAdmin):
 #         )
 
 
-class AttendingMeetAdmin(admin.ModelAdmin):
+class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display_links = ("attending",)
     readonly_fields = ["id", "created", "modified"]
     list_display = (
