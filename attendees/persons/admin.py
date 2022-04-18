@@ -166,7 +166,7 @@ class AttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
         return qs.filter(division__organization=request.user.organization)
 
 
-class RegistrationAdmin(admin.ModelAdmin):
+class RegistrationAdmin(PgHistoryPage, admin.ModelAdmin):
     # list_per_page = 1000
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
