@@ -19,7 +19,7 @@ class UsersConfig(AppConfig):
             pghistory.Snapshot('group.snapshot'),
             model_name='GroupsHistory',
             related_name='history',
-            app_label='users'
+            app_label='users',
         )(group_model)
 
         pghistory.track(  # Track events to permission group relationships
@@ -27,6 +27,7 @@ class UsersConfig(AppConfig):
             pghistory.BeforeDelete('permission.remove'),
             model_name='GroupPermissionsHistory',
             obj_fk=None,
+            related_name='history',
             app_label='users',
         )(group_model.permissions.through)
 
@@ -35,6 +36,7 @@ class UsersConfig(AppConfig):
             pghistory.BeforeDelete('group.remove'),
             model_name='UserGroupsHistory',
             obj_fk=None,
+            related_name='history',
             app_label='users',
         )(user_model.groups.through)
 
@@ -43,6 +45,7 @@ class UsersConfig(AppConfig):
             pghistory.BeforeDelete('user_permission.remove'),
             model_name='UserPermissionsHistory',
             obj_fk=None,
+            related_name='history',
             app_label='users',
         )(user_model.user_permissions.through)
 
@@ -50,14 +53,14 @@ class UsersConfig(AppConfig):
             pghistory.Snapshot('emailaddress.snapshot'),
             model_name='EmailAddressHistory',
             related_name='history',
-            app_label='users'
+            app_label='users',
         )(emailaddress_model)
 
         pghistory.track(
             pghistory.Snapshot('emailconfirmation.snapshot'),
             model_name='EmailConfirmationHistory',
             related_name='history',
-            app_label='users'
+            app_label='users',
         )(emailconfirmation_model)
 
         try:

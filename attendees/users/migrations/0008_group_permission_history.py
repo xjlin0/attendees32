@@ -21,10 +21,10 @@ class Migration(migrations.Migration):
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
                 ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
                 ('id', models.IntegerField()),
-                ('group', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.group')),
-                ('permission', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.permission')),
+                ('group', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.group')),
+                ('permission', models.ForeignKey(db_constraint=False, db_tablespace='', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='auth.permission')),
                 ('pgh_label', models.TextField(help_text='The event label.')),
-                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
+                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
             options={
                 'abstract': False,
