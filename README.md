@@ -231,8 +231,10 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 </details>
 
 ## [How to start dev env on Linux](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
+
 <details>
   <summary>Click to expand all</summary>
+
 * double check if the dev port 8008 is open on fire wall
 * add server's public ip to ALLOWED_HOSTS in settings
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
@@ -252,6 +254,7 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 * create 2 superusers by `docker-compose -f local.yml run django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f local.yml run django python manage.py loaddata fixtures/db_seed`
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/admin/users/user/
+
 </details>
 
 ## [How to start dev env on Windows](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
@@ -305,7 +308,7 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 * upadte content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker-compose -f local.yml run --rm django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f local.yml run django python manage.py loaddata fixtures/db_seed`
-  (data were created by `docker-compose -f local.yml run django python manage.py dumpdata --exclude users.user --exclude admin.logentry --exclude sessions.session --exclude contenttypes.contenttype --exclude sites.site --exclude account.emailaddress --exclude account.emailconfirmation --exclude socialaccount.socialtoken --exclude auth.permission --indent 2 > fixtures/db_seed2.json`)
+  (data were created by `docker-compose -f local.yml run django python manage.py dumpdata --exclude users.user --exclude admin.logentry --exclude sessions.session --exclude contenttypes.contenttype --exclude sites.site --exclude account.emailaddress --exclude account.emailconfirmation --exclude socialaccount.socialtoken --exclude auth.permission --exclude pghistory.context --exclude pghistory.aggregateevent --indent 2 > fixtures/db_seed2.json`)
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://192.168.99.100:8008/admin123/users/user/
 * use browser to open http://192.168.99.100:8008/ and http://192.168.99.100:8025/
 * Enter postgres db console by `docker-compose -f local.yml exec postgres psql --username=YBIJMKerEaNYKqzfvMxOlBAesdyiahxk attendees_development`
@@ -388,9 +391,9 @@ All libraries are included to facilitate offline development, it will take port 
 - [ ] Division specific menu links, such as including selected meets in the search params
   - [ ] Junior
   - [ ] Data
-- [ ] Audit log/history/vision of data
-  - [ ] find library and install: maybe django-pghistory with AggregateEvent
-  - [ ] each model level version
+- [x] [2PR#14](https://github.com/xjlin0/attendees32/pull/14) Audit log/history/vision of data
+  - [x] find library and install: maybe django-pghistory with AggregateEvent
+  - [x] each model level version
   - [ ] document aggregation level version
 - [x] [New repo] upgrade to Django 3.2LTS for support of DEFAULT_AUTO_FIELD
    -[x] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pghistory
 import pytz
 from celery.utils.log import get_task_logger
 from dateutil.relativedelta import relativedelta
@@ -32,6 +33,7 @@ def mail_result(mail_variables):
 
 
 @celery_app.task()
+@pghistory.context(modifier='batch create gatherings')
 def batch_create_gatherings(meet_infos):
     """
     A Celery task to periodically generate gatherings taking arguments from model of "periodic task"

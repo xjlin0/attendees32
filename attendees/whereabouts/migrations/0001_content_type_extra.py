@@ -17,12 +17,12 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql=f"""
                 ALTER TABLE {ContentType._meta.db_table}
-                  ADD COLUMN display_order SMALLINT DEFAULT 0 NOT NULL,
-                  ADD COLUMN genres VARCHAR(100) DEFAULT NULL,
-                  ADD COLUMN endpoint VARCHAR(100) DEFAULT NULL,
-                  ADD COLUMN hint VARCHAR(100) DEFAULT NULL;
+                  ADD COLUMN IF NOT EXISTS display_order SMALLINT DEFAULT 0 NOT NULL,
+                  ADD COLUMN IF NOT EXISTS genres VARCHAR(100) DEFAULT NULL,
+                  ADD COLUMN IF NOT EXISTS endpoint VARCHAR(100) DEFAULT NULL,
+                  ADD COLUMN IF NOT EXISTS hint VARCHAR(100) DEFAULT NULL;
 
-                CREATE INDEX django_content_genres
+                CREATE INDEX IF NOT EXISTS django_content_genres
                    ON {ContentType._meta.db_table} (genres);
                 """,
             reverse_sql=f"""

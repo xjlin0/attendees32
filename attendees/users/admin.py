@@ -1,3 +1,4 @@
+import pghistory
 from django.contrib import admin, messages
 from django.contrib.auth import admin as auth_admin
 from django.contrib.auth import get_user_model
@@ -8,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from django_json_widget.widgets import JSONEditorWidget
 from mptt.admin import MPTTModelAdmin
 
+from attendees.persons.models import PgHistoryPage
 from attendees.users.forms import UserChangeForm, UserCreationForm
 
 from .models import Menu, MenuAuthGroup
@@ -16,8 +18,7 @@ User = get_user_model()
 
 
 @admin.register(User)
-class UserAdmin(auth_admin.UserAdmin):
-
+class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     fieldsets = (
@@ -77,13 +78,13 @@ class UserAdmin(auth_admin.UserAdmin):
 #     search_fields = ["name"]
 
 
-class MenuAuthGroupInline(admin.TabularInline):
+class MenuAuthGroupInline(PgHistoryPage, admin.TabularInline):
     model = MenuAuthGroup
     extra = 0
 
 
 @admin.register(Menu)
-class MenuAdmin(MPTTModelAdmin):
+class MenuAdmin(PgHistoryPage, MPTTModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
@@ -107,7 +108,7 @@ class MenuAdmin(MPTTModelAdmin):
 
 
 @admin.register(MenuAuthGroup)
-class MenuAuthGroupAdmin(admin.ModelAdmin):
+class MenuAuthGroupAdmin(PgHistoryPage, admin.ModelAdmin):
 
     list_display = (
         "auth_group",

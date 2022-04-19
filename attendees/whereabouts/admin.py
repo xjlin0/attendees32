@@ -6,10 +6,11 @@ from django_json_widget.widgets import JSONEditorWidget
 # from attendees.persons.models import *
 #
 # from .models import *
+from attendees.persons.models import PgHistoryPage
 from attendees.whereabouts.models import Place, Campus, Property, Suite, Room, Division, Organization
 
 
-class PlaceAdmin(admin.ModelAdmin):
+class PlaceAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -28,7 +29,7 @@ class PlaceAdmin(admin.ModelAdmin):
         return qs.filter(organization=request.user.organization)
 
 
-class DivisionAdmin(admin.ModelAdmin):
+class DivisionAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -39,15 +40,23 @@ class DivisionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.resolver_match.func.__name__ == "changelist_view":
-            messages.warning(
-                request,
-                "Not all, but only those records accessible to you will be listed here.",
-            )
-        return qs.filter(organization=request.user.organization)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(organization=request.user.organization)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "organization":
+            kwargs["queryset"] = Organization.objects.all() if request.user.is_superuser else Organization.objects.filter(pk=request.user.organization_pk())
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class PropertyAdmin(admin.ModelAdmin):
+class PropertyAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -56,7 +65,7 @@ class PropertyAdmin(admin.ModelAdmin):
     list_display = ("id", "display_name", "slug", "campus", "modified")
 
 
-class CampusAdmin(admin.ModelAdmin):
+class CampusAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display = ("display_name", "organization", "slug", "modified")
@@ -71,13 +80,13 @@ class CampusAdmin(admin.ModelAdmin):
         return qs.filter(organization=request.user.organization)
 
 
-class SuiteAdmin(admin.ModelAdmin):
+class SuiteAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display = ("id", "display_name", "slug", "site", "modified")
 
 
-class RoomAdmin(admin.ModelAdmin):
+class RoomAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -86,13 +95,25 @@ class RoomAdmin(admin.ModelAdmin):
     list_display = ("display_name", "label", "suite", "infos", "modified")
 
 
-class OrganizationAdmin(admin.ModelAdmin):
+class OrganizationAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display = ("display_name", "slug", "infos", "modified")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(pk=request.user.organization_pk())
 
 
 admin.site.register(Place, PlaceAdmin)

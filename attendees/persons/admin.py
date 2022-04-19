@@ -6,7 +6,7 @@ from django_summernote.admin import SummernoteModelAdmin
 
 from attendees.occasions.models import Attendance
 from attendees.persons.models import AttendingMeet, FolkAttendee, Category, Past, Note, Folk, Attendee, Registration, \
-    Attending, Relation
+    Attending, Relation, PgHistoryPage
 
 
 # from attendees.occasions.models import *
@@ -38,13 +38,13 @@ class FolkAttendeeInline(admin.TabularInline):
     extra = 0
 
 
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("display_name",)
     list_display = ("id", "type", "display_name", "display_order", "infos")
 
 
-class PastAdmin(admin.ModelAdmin):
+class PastAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -92,7 +92,7 @@ class PastAdmin(admin.ModelAdmin):
             ).exclude(category__display_name=Past.COUNSELING)
 
 
-class FolkAdmin(admin.ModelAdmin):
+class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -124,12 +124,12 @@ class FolkAdmin(admin.ModelAdmin):
         return qs.filter(division__organization=request.user.organization)
 
 
-class FolkAttendeeAdmin(admin.ModelAdmin):
+class FolkAttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display = ("id", "folk", "attendee", "role", "infos")
 
 
-class RelationAdmin(admin.ModelAdmin):
+class RelationAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("title",)
     list_display = (
@@ -143,7 +143,7 @@ class RelationAdmin(admin.ModelAdmin):
     )
 
 
-class AttendeeAdmin(admin.ModelAdmin):
+class AttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -166,7 +166,7 @@ class AttendeeAdmin(admin.ModelAdmin):
         return qs.filter(division__organization=request.user.organization)
 
 
-class RegistrationAdmin(admin.ModelAdmin):
+class RegistrationAdmin(PgHistoryPage, admin.ModelAdmin):
     # list_per_page = 1000
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
@@ -180,7 +180,7 @@ class AttendanceInline(admin.StackedInline):
     extra = 0
 
 
-class AttendingAdmin(admin.ModelAdmin):
+class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
     # list_per_page = 1000
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
@@ -204,7 +204,7 @@ class AttendingAdmin(admin.ModelAdmin):
         js = ["js/admin/list_filter_collapse.js"]
 
 
-class NoteAdmin(SummernoteModelAdmin):
+class NoteAdmin(PgHistoryPage, SummernoteModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -269,7 +269,7 @@ class NoteAdmin(SummernoteModelAdmin):
 #         )
 
 
-class AttendingMeetAdmin(admin.ModelAdmin):
+class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display_links = ("attending",)
     readonly_fields = ["id", "created", "modified"]
     list_display = (

@@ -2,11 +2,31 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 
+import pghistory
 import pytz
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
 # from schedule.models.events import EventRelation
+
+
+class PgHistoryPage:
+    object_history_template = 'pghistory_template.html'
+
+    def history_view(self, request, object_id, extra_context=None):
+        """
+        Adds additional context for the custom history template.
+        """
+        extra_context = extra_context or {}
+        extra_context['object_history'] = (
+            pghistory.models.AggregateEvent.objects
+                .target(self.model(pk=object_id))
+                .order_by('pgh_created_at')
+                .select_related('pgh_context')
+        )
+        return super().history_view(
+            request, object_id, extra_context=extra_context
+        )
 
 
 class GatheringBatchCreateResult(object):
@@ -27,6 +47,27 @@ class Utility:
     @property
     def all_notes(self):  # return self.notes.all()
         return self.notes.all() if callable(getattr(self, "notes", None)) else []
+
+    @staticmethod
+    def pgh_default_sql(history_table_name, table_comment='pgh_obj_id is indexed id/pk', index_on_id=False, original_model_table=''):
+        if not original_model_table:
+            original_model_table = history_table_name.replace('history', '')
+
+        results = f"""
+                ALTER TABLE {history_table_name} ALTER COLUMN pgh_created_at SET DEFAULT CURRENT_TIMESTAMP;
+                COMMENT ON TABLE {history_table_name} IS 'History table: {table_comment} of {original_model_table}';
+                """
+        if index_on_id:
+            results += f"""CREATE INDEX idx_{history_table_name}_id ON {history_table_name}(id);"""
+        return results
+
+    @staticmethod
+    def default_sql(table_name):
+        return f"""
+                ALTER TABLE {table_name} ALTER COLUMN created SET DEFAULT CURRENT_TIMESTAMP;
+                ALTER TABLE {table_name} ALTER COLUMN modified SET DEFAULT CURRENT_TIMESTAMP;
+                ALTER TABLE {table_name} ALTER COLUMN is_removed SET DEFAULT false;
+               """
 
     @staticmethod
     def present_check(string):
