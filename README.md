@@ -391,9 +391,9 @@ All libraries are included to facilitate offline development, it will take port 
 - [ ] Division specific menu links, such as including selected meets in the search params
   - [ ] Junior
   - [ ] Data
-- [ ] Audit log/history/vision of data
-  - [ ] find library and install: maybe django-pghistory with AggregateEvent
-  - [ ] each model level version
+- [x] [2PR#14](https://github.com/xjlin0/attendees32/pull/14) Audit log/history/vision of data
+  - [x] find library and install: maybe django-pghistory with AggregateEvent
+  - [x] each model level version
   - [ ] document aggregation level version
 - [x] [New repo] upgrade to Django 3.2LTS for support of DEFAULT_AUTO_FIELD
    -[x] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800
