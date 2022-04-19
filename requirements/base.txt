@@ -14,7 +14,7 @@ unidecode==1.3.2
 opencc==1.1.3  ## https://github.com/BYVoid/OpenCC
 # opencc-python-reimplemented==0.1.6  ## https://github.com/yichen0831/opencc-python
 # django-address==0.2.5  # https://github.com/furious-luke/django-address
--e git+https://github.com/xjlin0/django-address.git@address_extra_field_test#egg=django-address
+-e git+https://github.com/xjlin0/django-address.git@address_extra_field_026#egg=django-address
 #django-parler==2.2   # https://github.com/django-parler/django-parler  # works on Django 3?
 
 django-summernote==0.8.20.0 # https://github.com/summernote/django-summernote
@@ -28,6 +28,8 @@ dateparser==1.1.0 # https://github.com/scrapinghub/dateparser
 # sendgrid==6.9.3  # https://github.com/sendgrid/sendgrid-python
 django-anymail[sendgrid]==8.4  # https://github.com/anymail/django-anymail
 django_partial_date==1.3.2  # https://github.com/ktowen/django_partial_date
+django-pghistory==1.4.0  # https://github.com/Opus10/django-pghistory
+django-db-comments==0.4.1  # https://github.com/vanadium23/django-db-comments
 weasyprint==54.1  # https://github.com/Kozea/WeasyPrint
 django-weasyprint==2.1.0  # https://github.com/fdemmer/django-weasyprint
 

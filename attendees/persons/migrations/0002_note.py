@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 from uuid import uuid4
-# from django.contrib.postgres.fields.jsonb import JSONField
 import django.utils.timezone
 import model_utils.fields
 
@@ -19,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Note',
             fields=[
-                ('id', model_utils.fields.UUIDField(default=uuid4, editable=False, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(default=uuid4, primary_key=True, editable=False, serialize=False)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
@@ -36,8 +35,34 @@ class Migration(migrations.Migration):
                 'ordering': ('organization', 'category', 'content_type', 'object_id', 'display_order', '-modified',),
             },
         ),
+        migrations.RunSQL(Utility.default_sql('persons_notes')),
         migrations.AddIndex(
             model_name='note',
             index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='note_infos_gin'),
         ),
+        migrations.CreateModel(
+            name='NotesHistory',
+            fields=[
+                ('pgh_id', models.BigAutoField(primary_key=True, serialize=False)),
+                ('pgh_created_at', models.DateTimeField(auto_now_add=True)),
+                ('pgh_label', models.TextField(help_text='The event label.')),
+                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
+                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
+                ('is_removed', models.BooleanField(default=False)),
+                ('id', models.UUIDField(db_index=True, default=uuid4, editable=False, serialize=False)),
+                ('pgh_obj', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='persons.note')),
+                ('object_id', models.CharField(max_length=36)),
+                ('display_order', models.SmallIntegerField(default=0)),
+                ('body', models.TextField()),
+                ('category', models.ForeignKey(db_constraint=False, help_text="subtype: for note it's public/counseling sub-types etc", on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.category')),
+                ('content_type', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='contenttypes.contenttype')),
+                ('organization', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.organization')),
+                ('infos', models.JSONField(blank=True, default=Utility.relationship_infos, help_text='Example: {"owner": "John"}. Please keep {} here even no data', null=True)),
+                ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
+            ],
+            options={
+                'db_table': 'persons_noteshistory',
+            },
+        ),
+        migrations.RunSQL(Utility.pgh_default_sql('persons_noteshistory', original_model_table='persons_notes')),
     ]

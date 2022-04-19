@@ -4,6 +4,8 @@ from django.contrib.postgres import fields
 
 from django_json_widget.widgets import JSONEditorWidget
 from attendees.occasions.models import Attendance, MessageTemplate, Assembly, Price, Character, Meet, Gathering, Team
+
+from attendees.persons.models import PgHistoryPage
 from attendees.whereabouts.models import Organization, Division
 
 
@@ -20,7 +22,7 @@ from attendees.whereabouts.models import Organization, Division
 #     extra = 0
 
 
-class MessageTemplateAdmin(admin.ModelAdmin):
+class MessageTemplateAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -48,7 +50,7 @@ class MessageTemplateAdmin(admin.ModelAdmin):
             return qs.filter(organization=request.user.organization)
 
 
-class AssemblyAdmin(admin.ModelAdmin):
+class AssemblyAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -76,7 +78,7 @@ class AssemblyAdmin(admin.ModelAdmin):
             return qs.filter(division__organization=request.user.organization)
 
 
-class PriceAdmin(admin.ModelAdmin):
+class PriceAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display = ("display_name", "price_type", "start", "price_value", "modified")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -97,7 +99,7 @@ class PriceAdmin(admin.ModelAdmin):
             return qs.filter(assembly__division__organization=request.user.organization)
 
 
-class AttendanceAdmin(admin.ModelAdmin):
+class AttendanceAdmin(PgHistoryPage, admin.ModelAdmin):
     list_display_links = ("get_attendee",)
     list_filter = (
         ("gathering", admin.RelatedOnlyFieldListFilter),
@@ -178,7 +180,7 @@ class AttendanceInline(admin.StackedInline):
     #     return qs[:10]  # does not work
 
 
-class CharacterAdmin(admin.ModelAdmin):
+class CharacterAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     list_filter = ("assembly", "type")
     readonly_fields = ["id", "created", "modified"]
@@ -207,7 +209,7 @@ class CharacterAdmin(admin.ModelAdmin):
         js = ["js/admin/list_filter_collapse.js"]
 
 
-class TeamAdmin(admin.ModelAdmin):
+class TeamAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("display_name",)
@@ -231,7 +233,7 @@ class TeamAdmin(admin.ModelAdmin):
             return qs.filter(meet__assembly__division__organization=request.user.organization)
 
 
-class MeetAdmin(admin.ModelAdmin):
+class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -286,7 +288,7 @@ class MeetAdmin(admin.ModelAdmin):
         js = ["js/admin/list_filter_collapse.js"]
 
 
-class GatheringAdmin(admin.ModelAdmin):
+class GatheringAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
