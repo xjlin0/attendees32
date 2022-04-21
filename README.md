@@ -222,7 +222,7 @@ POSTGRES_DB=attendees
 POSTGRES_USER=<<production database user name>>
 POSTGRES_PASSWORD=<<production database user password>>
 ```
-* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/sendgrid.env` and save the following fake content.
+* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` and save the following fake content.
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
@@ -240,7 +240,7 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
 * add web user to the docker group by `sudo usermod -aG docker <<web user name>>  && sudo service docker restart`
 * Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees30.git`
-* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.production/sendgrid.env` and save the following fake content.
+* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.production/.sendgrid.env` and save the following fake content.
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
@@ -264,7 +264,7 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 All libraries are included to facilitate offline development, it will take port 8008, 8025, 5555 when running, please change port in local.yml if those ports are occupied.
 * Install [git](https://git-scm.com/downloads) and [docker for windows](https://docs.docker.com/install), which includes docker-compose.
 * clone the repo by `git clone git@github.com:xjlin0/attendees30.git` and cd the repo directory `attendees30`
-* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `start notepad .envs/.local/sendgrid.env` and save the following fake content.
+* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `start notepad .envs/.local/.sendgrid.env` and save the following fake content.
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
@@ -297,7 +297,7 @@ All libraries are included to facilitate offline development, it will take port 
 * start a docker machine named "dev" by `docker-machine create --driver virtualbox dev`
 * Start the dev virtual machine, your "dev" vm can be run at headless mode. Be sure to check permissions of virtual machine in the system preference.
 * get all env variables from "dev" by `eval $(docker-machine env dev)`
-* create a fake sendgrid credential files by `vi .envs/.local/sendgrid.env` and save the following fake content.
+* create a fake sendgrid credential files by `vi .envs/.local/.sendgrid.env` and save the following fake content.
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
