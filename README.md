@@ -226,6 +226,7 @@ POSTGRES_PASSWORD=<<production database user password>>
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
+DJANGO_SECRET_KEY=your_django_secret_key
 ```
 * build and start the production machine by `docker-compose -f production.yml build`
 </details>
@@ -244,6 +245,7 @@ DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
+DJANGO_SECRET_KEY=your_django_secret_key
 ```
 * collect static file: `docker-compose -f local.yml run django python /app/manage.py collectstatic`
 * build and start the local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`
@@ -268,6 +270,7 @@ All libraries are included to facilitate offline development, it will take port 
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
+DJANGO_SECRET_KEY=your_django_secret_key
 ```
 * build and start the local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`
 * upadte content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
@@ -301,6 +304,7 @@ All libraries are included to facilitate offline development, it will take port 
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
+DJANGO_SECRET_KEY=your_django_secret_key
 ```
 * build and start the local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`.  If there's error about `docker-credential-desktop`,  change credsStore to credStore in `~/.docker/config.json`
 * create migration files by `docker-compose -f local.yml run --rm django python manage.py makemigrations`
