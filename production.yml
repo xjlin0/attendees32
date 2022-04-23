@@ -11,6 +11,7 @@ services:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
     image: attendees_production_django
+    container_name: django
     depends_on:
       - postgres
       - redis
@@ -18,6 +19,8 @@ services:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
       - ./.envs/.local/.sendgrid.env
+    ports:
+      - "8008:8008"
     command: /start
 
   postgres:
@@ -25,6 +28,7 @@ services:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: attendees_production_postgres
+    container_name: postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data:Z
       - production_postgres_data_backups:/backups:z
@@ -47,20 +51,34 @@ services:
 
   redis:
     image: redis:6
+    container_name: redis
 
   celeryworker:
     <<: *django
     image: attendees_production_celeryworker
+    container_name: celeryworker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
     command: /start-celeryworker
 
   celerybeat:
     <<: *django
     image: attendees_production_celerybeat
+    container_name: celerybeat
+    depends_on:
+      - redis
+      - postgres
+    ports: []
     command: /start-celerybeat
 
   flower:
     <<: *django
     image: attendees_production_flower
+    container_name: flower
+    ports:
+      - "5555:5555"
     command: /start-flower
 
 #  awscli:
