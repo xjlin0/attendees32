@@ -152,18 +152,20 @@ class Utility:
         default_format="%Y-%m-%d",
         default_timezone=pytz.timezone(settings.CLIENT_DEFAULT_TIME_ZONE),
         default_date=None,
+        error_context='',
     ):
         parsed_date = default_date if default_date else Utility.now_with_timezone()
+        non_decimal = re.compile(r'[^\d\-/]+')
         if isinstance(date_text, str):
             if date_text.count("/") == 2 and default_format.count("-") == 2:
                 default_format = "%m/%d/%Y"
             try:
                 parsing_datetime = datetime.strptime(
-                    date_text.strip().strip("'"), default_format
+                    non_decimal.sub('', date_text.strip().strip("'").strip("/")).replace('//', '/'), default_format
                 )
                 parsed_date = parsing_datetime.astimezone(default_timezone)
             except:
-                print("\nCannot parse date for date_text: ", date_text)
+                print("\nCannot parse date for date_text: ", date_text, error_context)
 
         return parsed_date
 
