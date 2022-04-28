@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from glob import glob
 from pathlib import Path
 
-import pghistory
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.exceptions import ValidationError
@@ -21,7 +20,6 @@ from attendees.whereabouts.models import Place, Division
 class Command(BaseCommand):
     help = "Update extra content type columns after migrations and content type data seeded, no arguments needed"
 
-    @pghistory.context(modifier='access csv importer')
     def import_household_people_address(
             self,
             household_csv,
