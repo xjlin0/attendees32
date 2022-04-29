@@ -184,8 +184,9 @@ class Command(BaseCommand):
                 successfully_processed_count += 1
 
             except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
                 self.stdout.write(f'While importing/updating address: {address_dict}')
-                self.stdout.write(f'An error occurred and cannot proceed import_addresses(), reason: {e}')
+                self.stdout.write(f'An error occurred and cannot proceed import_addresses(), reason: {e} at line: {exc_tb.tb_lineno}.')
         self.stdout.write('done!')
         return successfully_processed_count
 
@@ -284,8 +285,9 @@ class Command(BaseCommand):
                 successfully_processed_count += 1
 
             except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
                 self.stdout.write(f'While importing/updating household: {household}')
-                self.stdout.write(f'An error occurred and cannot proceed import_households, reason: {e}')
+                self.stdout.write(f'An error occurred and cannot proceed import_households, reason: {e} at line: {exc_tb.tb_lineno}.')
         self.stdout.write('done!')
         return successfully_processed_count
 
@@ -533,8 +535,9 @@ class Command(BaseCommand):
                 successfully_processed_count += 1
 
             except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
                 self.stdout.write(f"\nWhile importing/updating people: {people}")
-                self.stdout.write(f'Cannot save import_attendees, reason: {e}')
+                self.stdout.write(f'Cannot save import_attendees, reason: {e} at line: {exc_tb.tb_lineno}.')
         AttendingMeet.objects.filter(meet=member_meet).update(category='active')  # direct SQL update won't trigger save()
         self.stdout.write('done!')
         return successfully_processed_count, photo_import_results  # list(filter(None.__ne__, photo_import_results))
@@ -611,7 +614,7 @@ class Command(BaseCommand):
                     if not wife:  # widow? (since parents number is 2)
                         wife = folk.attendees.filter(folkattendee__role__title='self').order_by('created').first()
                     if not husband:
-                        self.stdout.write(f"604, no husband found, here is potential_primary_phone: {potential_primary_phone}")
+                        self.stdout.write(f"617, no husband found, here is potential_primary_phone: {potential_primary_phone}")
 
                     if husband and wife:  # depend on save by save_two_phones()
                         husband.infos['emergency_contacts'][str(wife.id)] = True
@@ -765,7 +768,7 @@ class Command(BaseCommand):
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
-                self.stdout.write(f"\nWhile importing/updating relationship for folk: {folk} at line: {exc_tb.tb_lineno} ")
+                self.stdout.write(f"\nWhile importing/updating relationship for folk: {folk} at line: {exc_tb.tb_lineno}.")
                 self.stdout.write(f'Cannot save relationship or update_directory_data, reason: {e}')
         self.stdout.write('done!')
         return successfully_processed_count

@@ -20,7 +20,7 @@ services:
       - ./.envs/.production/.postgres
       - ./.envs/.local/.sendgrid.env
     ports:
-      - "8008:8008"
+      - "8008:5000"
     command: /start
 
   postgres:
