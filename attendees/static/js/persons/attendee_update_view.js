@@ -1226,7 +1226,7 @@ Attendees.datagridUpdate = {
 //      },
       {
         colSpan: 7,
-        visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division]['infos-grade'],
+        visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division || Attendees.datagridUpdate.divisions[0].id]['infos-grade'],
         name: 'infos-grade',
         dataField: 'infos.fixed.grade',
         label: {
@@ -1237,7 +1237,7 @@ Attendees.datagridUpdate = {
         colSpan: 7,
         dataField: 'infos.fixed.insurer',
         name: 'infos-insurer',
-        visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division]['infos-insurer'],
+        visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division || Attendees.datagridUpdate.divisions[0].id]['infos-insurer'],
         label: {
           text: 'Insurer',
         },
