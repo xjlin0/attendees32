@@ -1052,6 +1052,7 @@ class Command(BaseCommand):
         :return: Failure message, but write to Attendees db (create or update)
         """
         import_photo_success = False
+        self.stdout.write(f"\n1055 entering update_attendee_photo for {attendee} with photo_names: {photo_names}")
         if photo_names:
             photo_infos={}
             for photo_filename in photo_names.split(';'):
@@ -1065,7 +1066,7 @@ class Command(BaseCommand):
                 latest_file_name = max(photo_infos, key=photo_infos.get)
                 picture_name = latest_file_name.split('/')[-1]
                 image_file = File(file=open(latest_file_name, 'rb'), name=picture_name)
-    
+                self.stdout.write(f"1069 here is original file name : {picture_name}")
                 if attendee.photo:
                     old_file_path = attendee.photo.path
                     attendee.photo.delete()
@@ -1074,6 +1075,7 @@ class Command(BaseCommand):
     
                 attendee.photo.save(picture_name, image_file, True)
                 attendee.save()
+                self.stdout.write(f'1077 here is saved attendee.photo : {attendee.photo}')
                 import_photo_success = True
         else:
             import_photo_success = None
