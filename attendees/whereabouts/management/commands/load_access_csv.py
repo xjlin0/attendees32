@@ -423,7 +423,7 @@ class Command(BaseCommand):
                         estimated_birthday_text = re.sub('/', '-', birth_date.strip('/').replace('//', '/'))
                         if not re.search('\d{4}', estimated_birthday_text):
                             estimated_birthday_text = '1800-' + estimated_birthday_text
-                        re.sub(r'^(0[1-9]|[1-9]|1[012])[-]((19|20)\d\d)$', r"\2-\1", estimated_birthday_text)  # change 12-2099 to 2099-12
+                        estimated_birthday_text = re.sub(r'^(0[1-9]|[1-9]|1[012])[-]((19|20)\d\d)$', r"\2-\1", estimated_birthday_text)  # change 12-2099 to 2099-12
                         try:
                             attendee.estimated_birthday = estimated_birthday_text
                             attendee.save()
