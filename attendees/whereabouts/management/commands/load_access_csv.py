@@ -427,9 +427,9 @@ class Command(BaseCommand):
                         try:
                             attendee.estimated_birthday = estimated_birthday_text
                             attendee.save()
-                            self.stdout.write(f"429 estimated_birthday of attendee {attendee.display_label} is being saved as {attendee.estimated_birthday}")
+                            self.stdout.write(f"430 estimated_birthday of attendee {attendee.display_label} is being saved as {attendee.estimated_birthday}")
                         except ValidationError:
-                            self.stdout.write(f"431 estimated_birthday of attendee {attendee.display_label} saved FAIL as {attendee.estimated_birthday}")
+                            self.stdout.write(f"432 estimated_birthday of attendee {attendee.display_label} saved FAIL as {attendee.estimated_birthday}")
                             attendee.estimated_birthday = ''
                     # potential_non_family_folk = attendee.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
                     # non_family_folk, folk_created = Folk.objects.update_or_create(
