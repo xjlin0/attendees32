@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
-from partial_date import PartialDateField
+from partial_date import PartialDate, PartialDateField
 from uuid import uuid4
 import opencc
 from django.conf import settings
@@ -259,7 +259,7 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
         )
 
     def age(self):
-        birthday = self.actual_birthday or (self.estimated_birthday and self.estimated_birthday.date)
+        birthday = self.actual_birthday or (self.estimated_birthday and PartialDate(self.estimated_birthday).date)
         try:
             if birthday:
                 age = (date.today() - birthday) // timedelta(days=365.2425)

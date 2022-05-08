@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
 # from schedule.models.events import EventRelation
+from partial_date import PartialDate
 
 
 class PgHistoryPage:
@@ -141,6 +142,8 @@ class Utility:
         if not string:
             return default_when_none
         else:
+            if isinstance(string, PartialDate):
+                return string
             if string.isspace():
                 return default_when_none
             else:
@@ -181,7 +184,7 @@ class Utility:
         }
 
         if isinstance(original_value, str):
-            value = original_value.strip().strip("'") if strip_first else original_value
+            value = original_value.strip().strip("'").replace('//', '/') if strip_first else original_value.replace('//', '/')
             if value.upper() in boolean_converter:
                 return boolean_converter.get(value.upper())
             else:

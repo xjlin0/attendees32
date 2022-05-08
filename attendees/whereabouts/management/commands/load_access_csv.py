@@ -426,8 +426,9 @@ class Command(BaseCommand):
                         try:
                             attendee.estimated_birthday = estimated_birthday_text
                             attendee.save()
-                            self.stdout.write(f"estimated_birthday of attendee {attendee.display_label} saved as {attendee.estimated_birthday}")
+                            self.stdout.write(f"429 estimated_birthday of attendee {attendee.display_label} is being saved as {attendee.estimated_birthday}")
                         except ValidationError:
+                            self.stdout.write(f"431 estimated_birthday of attendee {attendee.display_label} saved FAIL as {attendee.estimated_birthday}")
                             attendee.estimated_birthday = ''
                     # potential_non_family_folk = attendee.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
                     # non_family_folk, folk_created = Folk.objects.update_or_create(
@@ -614,7 +615,7 @@ class Command(BaseCommand):
                     if not wife:  # widow? (since parents number is 2)
                         wife = folk.attendees.filter(folkattendee__role__title='self').order_by('created').first()
                     if not husband:
-                        self.stdout.write(f"617, no husband found, here is potential_primary_phone: {potential_primary_phone}")
+                        self.stdout.write(f"618, no husband found, here is potential_primary_phone: {potential_primary_phone}")
 
                     if husband and wife:  # depend on save by save_two_phones()
                         husband.infos['emergency_contacts'][str(wife.id)] = True
@@ -1052,7 +1053,7 @@ class Command(BaseCommand):
         :return: Failure message, but write to Attendees db (create or update)
         """
         import_photo_success = False
-        self.stdout.write(f"\n1055 entering update_attendee_photo for {attendee} with photo_names: {photo_names}")
+
         if photo_names:
             photo_infos={}
             for photo_filename in photo_names.split(';'):
@@ -1066,7 +1067,7 @@ class Command(BaseCommand):
                 latest_file_name = max(photo_infos, key=photo_infos.get)
                 picture_name = latest_file_name.split('/')[-1]
                 image_file = File(file=open(latest_file_name, 'rb'), name=picture_name)
-                self.stdout.write(f"1069 here is original file name : {picture_name}")
+
                 if attendee.photo:
                     old_file_path = attendee.photo.path
                     attendee.photo.delete()
@@ -1075,7 +1076,7 @@ class Command(BaseCommand):
     
                 attendee.photo.save(picture_name, image_file, True)
                 attendee.save()
-                self.stdout.write(f'1077 here is saved attendee.photo : {attendee.photo}')
+
                 import_photo_success = True
         else:
             import_photo_success = None
