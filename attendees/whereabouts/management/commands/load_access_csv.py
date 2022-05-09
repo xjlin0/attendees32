@@ -861,7 +861,7 @@ class Command(BaseCommand):
         is_member = Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('cfcc_member'))
         bap_date_text = None
         if attendee.infos.get('progressions', {}).get('baptized_since') or attendee.infos.get('progressions', {}).get('baptism_location'):
-            bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since').replace('*', '1'), error_context=f' when parsing baptized_since of {attendee.display_label} at line 861')
+            bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since', '').replace('*', '1'), error_context=f' when parsing baptized_since of {attendee.display_label} at line 861')
 
         is_believer = is_member or bap_date_text or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('christian'))
 
@@ -897,7 +897,7 @@ class Command(BaseCommand):
             )
 
         if bap_date_text or is_member:
-            member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since').replace('*', '1'))
+            member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since', '').replace('*', '1'))
             member_date_or_now = Utility.parsedate_or_now(member_date_text, error_context=f' when parsing member_since of {attendee.display_label} at line 899')
             bap_date_or_now = Utility.parsedate_or_now(bap_date_text, error_context=f' when parsing baptized_since of {attendee.display_label} at line 899')
             baptized_date_or_now = min(member_date_or_now, bap_date_or_now)

@@ -159,7 +159,7 @@ class Utility:
     ):
         parsed_date = default_date if default_date else Utility.now_with_timezone()
         non_decimal = re.compile(r'[^\d\-/]+')
-        if isinstance(date_text, str):
+        if date_text and isinstance(date_text, str):
             if date_text.count("/") == 2 and default_format.count("-") == 2:
                 default_format = "%m/%d/%Y"
             try:
