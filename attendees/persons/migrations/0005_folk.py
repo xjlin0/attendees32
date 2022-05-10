@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('category', models.ForeignKey(help_text='subtype: for folk, 0 is family and 25 is other', default=0, on_delete=models.SET(0), to='persons.Category')),
                 ('display_order', models.SmallIntegerField(db_index=True, default=0)),
                 ('display_name', models.CharField(blank=True, max_length=50, null=True)),
-                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"2010id": "3"}. Please keep {} here even no data', null=True)),
+                ('infos', models.JSONField(blank=True, default=Utility.folk_infos, help_text='Example: {"pdf_export": False}. Please keep {} here even no data', null=True)),
             ],
             options={
                 'db_table': 'persons_folks',
@@ -50,7 +50,7 @@ class Migration(migrations.Migration):
                 ('division', models.ForeignKey(db_constraint=False, default=0, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.division')),
                 ('is_removed', models.BooleanField(default=False)),
                 ('display_order', models.SmallIntegerField(default=0)),
-                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"2010id": "3"}. Please keep {} here even no data', null=True)),
+                ('infos', models.JSONField(blank=True, default=Utility.folk_infos, help_text='Example: {"pdf_export": False}. Please keep {} here even no data', null=True)),
                 ('category', models.ForeignKey(db_constraint=False, default=0, help_text='subtype: for folk, 0 is family and 25 is other', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.category')),
                 ('display_name', models.CharField(blank=True, max_length=50, null=True)),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),

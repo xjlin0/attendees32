@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('character', models.ForeignKey(on_delete=models.SET(0), to='occasions.Character')),
                 ('team', models.ForeignKey(blank=True, default=None, help_text='empty for main meet', null=True, on_delete=django.db.models.deletion.SET_NULL, to='occasions.Team')),
                 ('category', models.CharField(max_length=20, default='primary', blank=False, null=False, help_text='primary, secondary, etc (primary will be displayed first)')),
-                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5}. Please keep {} here even no data', null=True)),
+                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5, "pdf_folks": ["uuid1"]}. Please keep {} here even no data', null=True)),
             ],
             options={
                 'db_table': 'persons_attending_meets',
@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 ('is_removed', models.BooleanField(default=False)),
                 ('start', models.DateTimeField(default=Utility.now_with_timezone)),
                 ('finish', models.DateTimeField(help_text='Required for user to filter by time')),
-                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5}. Please keep {} here even no data', null=True)),
+                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5, "pdf_folks": ["uuid1"]}. Please keep {} here even no data', null=True)),
                 ('meet', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.meet')),
                 ('attending', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.attending')),
                 ('character', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.character')),
