@@ -503,7 +503,7 @@ class Command(BaseCommand):
                                 defaults={
                                     'display_order': display_order,
                                     'role': relation,
-                                    # 'start': '1850-01-01',
+                                    'start': '1800-01-01',
                                 }
                             )
                             #

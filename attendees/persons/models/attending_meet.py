@@ -56,7 +56,7 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
         null=True,
         blank=True,
         default=dict,
-        help_text='Example: {"kid_points": 5}. Please keep {} here even no data',
+        help_text='Example: {"kid_points": 5, "pdf_folks": ["uuid1"]}. Please keep {} here even no data',
     )
 
     def clean(self):
@@ -106,7 +106,7 @@ class AttendingMeetsHistory(pghistory.get_event_model(
     is_removed = models.BooleanField(default=False)
     start = models.DateTimeField(default=Utility.now_with_timezone)
     finish = models.DateTimeField(help_text='Required for user to filter by time')
-    infos = models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5}. Please keep {} here even no data', null=True)
+    infos = models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5, "pdf_folks": ["uuid1"]}. Please keep {} here even no data', null=True)
     meet = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.meet')
     attending = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.attending')
     character = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.character')

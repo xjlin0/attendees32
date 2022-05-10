@@ -121,6 +121,12 @@ class Utility:
         }
 
     @staticmethod
+    def folk_infos():
+        return {
+            "pdf_export": True,
+        }
+
+    @staticmethod
     def relationship_infos():
         return {
             "show_secret": {},
