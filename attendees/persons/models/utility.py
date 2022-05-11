@@ -99,6 +99,7 @@ class Utility:
                 "attendee_to_attending": True,
                 "past_category_to_attendingmeet_meet": {},
                 "attendingmeet_meet_to_past_category": {},
+                "attendingmeet_pdf_export_groups": {},
             },
             "groups_see_all_meets_attendees": [],
             "contacts": {},

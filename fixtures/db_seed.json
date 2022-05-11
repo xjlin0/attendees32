@@ -4564,6 +4564,7 @@
           "opencc_convert": true,
           "attendee_to_attending": false,
           "attendingmeet_meet_to_past_category": {},
+          "attendingmeet_pdf_export": {},
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
@@ -4589,6 +4590,7 @@
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_meet_to_past_category": {},
+          "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
@@ -4617,6 +4619,9 @@
             "9": 5,
             "16": 5,
             "17": 4
+          },
+          "attendingmeet_pdf_export_groups": {
+            "d7c8Fd_cfcch_congregation_directory": ["data_organizer"]
           },
           "past_category_to_attendingmeet_meet": {
             "4": 17,
@@ -4662,6 +4667,7 @@
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_meet_to_past_category": {},
+          "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
