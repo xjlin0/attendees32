@@ -233,6 +233,24 @@ Attendees.gatherings = {
           displayExpr: 'display_name',
           showClearButton: true,
           searchEnabled: false,
+          buttons:[
+            'clear',
+            {
+              name: 'selectAll',
+              stylingMode: 'outlined',
+              location: 'after',
+              options: {
+                icon: 'fieldchooser',
+                type: 'default',
+                elementAttr: {
+                  title: 'select all meets',
+                },
+                onClick() {
+                  Attendees.gatherings.selectAllMeets();
+                },
+              },
+            }
+          ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
             Attendees.gatherings.filtersForm.validate();
