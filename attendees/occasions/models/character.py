@@ -47,7 +47,7 @@ class Character(TimeStampedModel, SoftDeletableModel, Utility):
         ]
 
     def __str__(self):
-        return "%s %s %s" % (self.display_name, self.type, self.info or "")
+        return "%s %s %s" % (self.assembly, self.display_name, self.type)
 
 
 class CharactersHistory(pghistory.get_event_model(
