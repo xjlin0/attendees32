@@ -1,6 +1,4 @@
 import time
-from itertools import groupby
-from operator import itemgetter
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import viewsets
@@ -11,6 +9,7 @@ from rest_framework.utils import json
 from attendees.occasions.models import Gathering
 from attendees.occasions.serializers import GatheringSerializer
 from attendees.occasions.services import GatheringService
+from attendees.persons.models import Utility
 
 
 class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
@@ -20,20 +19,9 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
 
     serializer_class = GatheringSerializer
 
-    def transform_result(self, data, group_string):
-        if group_string:
-            results = []
-            groups = json.loads(group_string)
-            for c_title, items in groupby(data, itemgetter(groups[0]["selector"])):
-                groped_data = list(items)
-                results.append({"key": c_title, "items": groped_data})
-            return results
-        else:
-            return data
-
     def list(self, request, *args, **kwargs):
         group_string = request.query_params.get(
-            "group"
+            "group", '[{}]'
         )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -41,11 +29,11 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(
-                self.transform_result(serializer.data, group_string)
+                Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector'))
             )
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(self.transform_result(serializer.data, group_string))
+        return Response(Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector')))
 
     def get_queryset(self):
         current_user_organization = self.request.user.organization

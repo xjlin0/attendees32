@@ -3,6 +3,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from operator import itemgetter
+from rest_framework.utils import json
 
 import pghistory
 import pytz

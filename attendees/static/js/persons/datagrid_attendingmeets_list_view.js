@@ -314,7 +314,7 @@ Attendees.attendingmeets = {
       },
       {
         colSpan: 12,
-        dataField: "filtered_gathering_set",
+        dataField: "filtered_attendingmeet_set",
         label: {
           location: 'top',
           text: ' ',  // empty space required for removing label
@@ -368,7 +368,7 @@ Attendees.attendingmeets = {
           });
 
           $.ajax({
-            url: $('form.filters-dxform').data('gatherings-endpoint'),
+            url: $('form.filters-dxform').data('attendingmeets-endpoint'),
             dataType: "json",
             data: args,
             success: (result) => {
