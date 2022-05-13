@@ -25,6 +25,7 @@ class DatagridAttendingMeetListView(LoginRequiredMixin, RouteGuard, ListView):
                 # "content_type_models_endpoint": "/whereabouts/api/content_type_models/",
                 # "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
                 # "series_gatherings_endpoint": "/occasions/api/series_gatherings/",
+                "characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
                 "meets_endpoint_by_id": "/occasions/api/user_assembly_meets/",
             }

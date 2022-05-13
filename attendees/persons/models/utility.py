@@ -1,6 +1,8 @@
 import re
 import sys
 from datetime import datetime, timedelta, timezone
+from itertools import groupby
+from operator import itemgetter
 
 import pghistory
 import pytz
@@ -278,6 +280,17 @@ class Utility:
             if exception_save:
                 obj.save()
         return obj, created
+
+    @staticmethod
+    def transform_result(data, grouping):
+        if grouping:
+            grouping_data = []
+            for c_title, items in groupby(data, itemgetter(grouping)):
+                grouping_data.append({"key": c_title, "items": list(items)})
+            return grouping_data
+
+        else:
+            return data
 
     # @property
     # def notes(self):

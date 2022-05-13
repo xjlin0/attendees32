@@ -2,7 +2,7 @@ Attendees.attendingmeets = {
   filtersForm: null,
   meetScheduleRules: {},
   selectedMeetHasRule: false,
-//  newAttendeeButton: null,
+  initialized: false,
   filterMeetCheckbox: null,
   contentTypeEndpoint: '',
   contentTypeEndpoints: {},
@@ -172,13 +172,14 @@ Attendees.attendingmeets = {
                   title: 'select all meets',
                 },
                 onClick() {
-                  Attendees.attendingmeets.selectAllMeets();
+                  Attendees.attendingmeets.selectAllGroupedTags('meets');
                 },
               },
             }
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
+            console.log("hi 182 onValueChanged, e: ", e);
             Attendees.attendingmeets.filtersForm.validate();
             const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
             const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -245,6 +246,73 @@ Attendees.attendingmeets = {
         },
       },
       {
+        dataField: 'characters',
+        colSpan: 12,
+        helpText: 'Select one or more characters to filter results',
+        cssClass: 'selected-characters',
+        validationRules: [{type: 'required'}],
+        label: {
+          location: 'top',
+          text: 'Select characters',
+        },
+        editorType: 'dxTagBox',
+        editorOptions: {
+          valueExpr: 'slug',
+          displayExpr: 'display_name',
+          showClearButton: true,
+          searchEnabled: false,
+          buttons:[
+            'clear',
+            {
+              name: 'selectAll',
+              stylingMode: 'outlined',
+              location: 'after',
+              options: {
+                icon: 'fas fa-solid fa-check-double',
+                type: 'default',
+                elementAttr: {
+                  title: 'select all characters',
+                },
+                onClick() {
+                  Attendees.attendingmeets.selectAllGroupedTags('characters');
+                },
+              },
+            }
+          ],
+          grouped: true,  // need to send params['grouping'] = 'assembly_name';
+          onValueChanged: (e)=> {
+            // Attendees.attendingmeets.filtersForm.validate();
+            // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
+            // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
+            // Attendees.attendingmeets.selectedMeetHasRule = false;
+            // // Attendees.attendingmeets.generateGatheringsButton.option('disabled', true);
+            // $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+            if (e.value && e.value.length > 0 && Attendees.attendingmeets.attendingmeetsDatagrid) {
+              Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
+            }
+          },
+          dataSource: new DevExpress.data.DataSource({
+            store: new DevExpress.data.CustomStore({
+              key: 'slug',
+              load: (loadOptions) => {
+                const d = new $.Deferred();
+                const params = {};
+                if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
+                  params['grouping'] = 'assembly_name';  // for grouped: true,
+                }
+                $.get($('form.filters-dxform').data('characters-endpoint'), params)
+                  .done((result) => {
+                    d.resolve(result.data);
+                    Attendees.attendingmeets.selectAllGroupedTags('characters');
+                  });
+                return d.promise();
+              },
+            }),
+            key: 'slug',
+          }),
+        },
+      },
+      {
         colSpan: 12,
         dataField: "filtered_gathering_set",
         label: {
@@ -259,10 +327,10 @@ Attendees.attendingmeets = {
     ],
   },
 
-  selectAllMeets: () => {
-    const availableMeetsDxTagBox = Attendees.attendingmeets.filtersForm.getEditor('meets');
-    const availableMeetSlugs = availableMeetsDxTagBox.option('items').flatMap(assembly => assembly.items.map(meet => meet.slug));
-    availableMeetsDxTagBox.option('value', availableMeetSlugs);
+  selectAllGroupedTags: (editorName) => {
+    const availableTagsDxTagBox = Attendees.attendingmeets.filtersForm.getEditor(editorName);
+    const availableTagSlugs = availableTagsDxTagBox.option('items').flatMap(assembly => assembly.items.map(item => item.slug));
+    availableTagsDxTagBox.option('value', availableTagSlugs);
   },  // loop in loop because of options grouped by assembly
 
   initFilteredAttendingmeetsDatagrid: (data, itemElement) => {
