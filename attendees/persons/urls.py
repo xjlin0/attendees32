@@ -17,6 +17,7 @@ from attendees.persons.views import (  # api_attendee_relationships_viewset,
     api_datagrid_data_folkattendees_viewset,
     # api_attendee_relationships_viewset,
     datagrid_assembly_all_attendings_list_view,
+    datagrid_attendingmeets_list_view,
     attendees_list_view,
     datagrid_assembly_data_attendings_list_view,
     attendee_update_view,
@@ -146,5 +147,10 @@ urlpatterns = [
         "attendee/<str:attendee_id>",
         view=attendee_update_view,
         name="attendee_update_view",
+    ),
+    path(
+        "attendingmeets/",
+        view=datagrid_attendingmeets_list_view,
+        name="attendingmeets_list_view",
     ),
 ]
