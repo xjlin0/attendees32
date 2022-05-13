@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  Attending Meet List
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.common.css' %}">
+
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.light.compact.css' %}">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'devextreme/dx.all.min.js' %}"
+          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/persons/datagrid_attendingmeets_list_view.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+<div class="attendingmeet-container">
+  <div class="d-flex justify-content-between">
+    <div class="d-flex">
+      <h3>
+        Attending Meet list
+      </h3>
+    </div>
+    <div class="">
+      <div id="custom-control-filter-meets-checkbox">
+      </div>
+    </div>
+    <div id="custom-control-edit-switch">
+    </div>
+    <div class="d-flex">
+      <a target="_blank"
+         style="padding: 5px; text-decoration: none; height: 1.6rem;"
+         role="button"
+         aria-label="+ Attendee"
+         class="btn btn-outline-success btn-sm"
+         title="add a new attendee without assigning families in a new tab"
+         href="/persons/attendee/new?familyName=without">
+        <span class="fas fa-user-plus" aria-hidden="true"></span>
+        Attendee
+<!--        <div id="new-attendee">-->
+<!--        </div>-->
+      </a>
+    </div>
+  </div>
+
+  <form class="filters-dxform"
+       data-meets-endpoint-by-id="{{meets_endpoint_by_id}}"
+       data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
+    {% csrf_token %}
+  </form>
+
+  <div class="attendingmeet-datagrids">
+  </div>
+</div>
+{% endblock content %}

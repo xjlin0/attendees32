@@ -5533,9 +5533,9 @@
       "created": "2021-05-22T22:20:43.067Z",
       "modified": "2021-05-22T22:25:39.965Z",
       "is_removed": false,
-      "type": "education",
+      "type": "attendance",
       "display_order": 0,
-      "display_name": "College",
+      "display_name": "scheduled",
       "infos": {}
     }
   },
@@ -5600,7 +5600,7 @@
       "is_removed": false,
       "type": "attendance",
       "display_order": 0,
-      "display_name": "scheduled",
+      "display_name": "Active",
       "infos": {}
     }
   },
@@ -5784,7 +5784,7 @@
       "is_removed": false,
       "type": "status",
       "display_order": 0,
-      "display_name": "interesting",
+      "display_name": "interested",
       "infos": {}
     }
   },
@@ -5853,6 +5853,98 @@
       "infos": {}
     }
   },
+
+  {
+    "model": "persons.category",
+    "pk": 26,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "attendance",
+      "display_order": 0,
+      "display_name": "Inactive",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 27,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "attendance",
+      "display_order": 0,
+      "display_name": "Paused",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 28,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "attendance",
+      "display_order": 0,
+      "display_name": "Primary",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 29,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "attendance",
+      "display_order": 0,
+      "display_name": "Secondary",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 30,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "education",
+      "display_order": 0,
+      "display_name": "College",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 31,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "attendance",
+      "display_order": 0,
+      "display_name": "Remote",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 32,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "attendance",
+      "display_order": 0,
+      "display_name": "RSVPed",
+      "infos": {}
+    }
+  },
   {
     "model": "persons.past",
     "pk": "070ade81-dbf4-47c4-a1e0-046f553021b8",
@@ -5887,7 +5979,7 @@
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "when": "2021-05-23T13:02:45Z",
       "finish": null,
-      "category": 1,
+      "category": 30,
       "display_order": 30000,
       "display_name": "where and major",
       "organization": 1,
