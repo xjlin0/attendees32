@@ -60,7 +60,7 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
                 if group_string:
                     groups = json.loads(group_string)
                     orderby_list.insert(
-                        0, {"selector": groups[0]["selector"], "desc": False}
+                        0, {"selector": groups[0]["selector"], "desc": groups[0]["desc"]}
                     )
 
                 return GatheringService.by_organization_meets(

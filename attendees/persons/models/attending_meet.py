@@ -12,8 +12,6 @@ from . import Utility
 class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
     """
     Served as a partial template for attendance
-    Todo: team = models.ForeignKey('Team', default=None, null=True, blank=True, on_delete=models.SET_NULL,
-          help_text="empty for main meet")
     """
 
     id = models.BigAutoField(

@@ -15,9 +15,7 @@ from attendees.persons.models import Note, Utility
 
 class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     """
-    Todo 20210823 currently one meet can only have single default location for all auto-generated gatherings, need
-    to reconfirm if that's reality.  If one meet need to auto-generate gatherings with different default locations,
-    we might need to store "{model name}#{integer id}" in EventRelation.distinction while sacrificing uuid models.
+    Note: Schedules and Locations(uuid models NOT supported) are stored in EventRelation.distinction
 
     """
 
