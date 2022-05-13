@@ -41,9 +41,7 @@ class GatheringService:
 
     @staticmethod
     def by_organization_meets(current_user, meet_slugs, start, finish, orderbys):
-        orderby_list = GatheringService.orderby_parser(
-            orderbys, meet_slugs, current_user
-        )
+        orderby_list = GatheringService.orderby_parser(orderbys)
         filters = Q(
             meet__assembly__division__organization__slug=current_user.organization.slug
         ).add(Q(meet__slug__in=meet_slugs), Q.AND)
@@ -133,22 +131,15 @@ class GatheringService:
         return results
 
     @staticmethod
-    def orderby_parser(orderbys, meet_slugs, current_user):
+    def orderby_parser(orderbys):
         """
         generates sorter (column or OrderBy Func) based on user's choice
-        Todo: Sort by site name is NOT supported since object_id can be int or char.
+        Todo: Sort by site name is NOT supported https://stackoverflow.com/a/3967871/4257237
         :param orderbys: list of search params
         :param meet_slugs: meet slugs
         :param current_user:
         :return: a List of sorter for order_by()
         """
-        meet_sorters = {
-            meet.slug: Func(F("attendingmeets"), function="'{}'=ANY".format(meet.slug))
-            for meet in Meet.objects.filter(
-                slug__in=meet_slugs,
-                assembly__division__organization=current_user.organization,
-            )
-        }
         orderby_list = (
             []
         )  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
@@ -156,15 +147,10 @@ class GatheringService:
         for orderby_dict in orderbys:
             field = orderby_dict.get("selector", "id").replace(".", "__")
             direction = "-" if orderby_dict.get("desc", False) else ""
-            if field in meet_sorters:
-                sorter = OrderBy(
-                    meet_sorters[field], descending=orderby_dict.get("desc", False)
-                )
-                orderby_list.append(sorter)
-            elif field == "site":
+            if field == "site":
                 site_columns = [
-                    direction + "site_type",
-                    direction + "site_id",
+                    direction + "site_type",  # same types of sites will be grouped together
+                    direction + "site_id",    # but site__display_name is not supported
                 ]
                 orderby_list.extend(site_columns)
             else:

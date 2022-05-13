@@ -195,7 +195,7 @@ class AttendeeService:
         :param current_user:
         :return: a List of sorter for order_by()
         """
-        meet_sorters = {
+        meet_sorters = {  # this sorter only needed since there're dynamic columns (slug is column name)
             meet.slug: Func(F("attendingmeets"), function="'{}'=ANY".format(meet.slug))
             for meet in Meet.objects.filter(
                 id__in=meets, assembly__division__organization=current_user.organization
