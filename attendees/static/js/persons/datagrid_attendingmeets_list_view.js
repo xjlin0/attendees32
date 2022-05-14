@@ -4,8 +4,7 @@ Attendees.attendingmeets = {
   selectedMeetHasRule: false,
   initialized: false,
   filterMeetCheckbox: null,
-  contentTypeEndpoint: '',
-  contentTypeEndpoints: {},
+  loadOptions: null,
   init: () => {
     console.log('static/js/persons/datagrid_attendingmeets_list_view.js');
     Attendees.attendingmeets.initFilterMeetCheckbox();
@@ -344,6 +343,7 @@ Attendees.attendingmeets = {
       store: new DevExpress.data.CustomStore({
         key: 'id',
         load: (loadOptions) => {
+          Attendees.attendingmeets.loadOptions = loadOptions;
           const meets = $('div.selected-meets select').val();
           const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
@@ -578,54 +578,52 @@ Attendees.attendingmeets = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              // load: (e) => {
-              //   return $.getJSON($('form.filters-dxform').data('attendings-endpoint'));
-              // },
-            load: (loadOptions) => {
-              const meets = $('div.selected-meets select').val();
-              const characters = $('div.selected-characters select').val();
-              const deferred = $.Deferred();
-              const args = {
-                meets: meets,
-                characters: characters,
-                start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
-                finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
-              };
-              console.log("hi 594 here is attending column load, loadOptions: ", loadOptions);
-              [
-                'skip',
-                'take',
-                'requireTotalCount',
-                'requireGroupCount',
-                'sort',
-                'filter',
-                'totalSummary',
-                // 'group',
-                // 'groupSummary',
-              ].forEach((i) => {
-                  if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
-                      args[i] = JSON.stringify(loadOptions[i]);
-              });
+              load: (loadOptions) => {
+                const meets = $('div.selected-meets select').val();
+                const characters = $('div.selected-characters select').val();
+                const deferred = $.Deferred();
+                loadOptions['sort'] = Attendees.attendingmeets.attendingmeetsDatagrid.getDataSource().loadOptions().group;
+                const args = {
+                  meets: meets,
+                  characters: characters,
+                  start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
+                  finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
+                };
 
-              $.ajax({
-                url: $('form.filters-dxform').data('attendings-endpoint'),
-                dataType: "json",
-                data: args,
-                success: (result) => {
-                  deferred.resolve(result.data, {
-                    totalCount: result.totalCount,
-                    summary:    result.summary,
-                    groupCount: result.groupCount,
-                  });
-                },
-                error: () => {
-                  deferred.reject("Data Loading Error, probably time out?");
-                },
-                timeout: 60000,
-              });
+                [
+                  'skip',
+                  'take',
+                  'requireTotalCount',
+                  'requireGroupCount',
+                  'sort',
+                  'filter',
+                  'totalSummary',
+                  // 'group',
+                  // 'groupSummary',
+                ].forEach((i) => {
+                    if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+                        args[i] = JSON.stringify(loadOptions[i]);
+                });
 
-              return deferred.promise();
-            },
+                $.ajax({
+                  url: $('form.filters-dxform').data('attendings-endpoint'),
+                  dataType: "json",
+                  data: args,
+                  success: (result) => {
+                    deferred.resolve(result.data, {
+                      totalCount: result.totalCount,
+                      summary:    result.summary,
+                      groupCount: result.groupCount,
+                    });
+                  },
+                  error: () => {
+                    deferred.reject("Data Loading Error, probably time out?");
+                  },
+                  timeout: 10000,
+                });
+
+                return deferred.promise();
+              },
               byKey: (key) => {
                 if (key) {
                   const d = $.Deferred();
