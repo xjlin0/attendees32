@@ -479,7 +479,7 @@ Attendees.attendingmeets = {
     stateStoring: {
       enabled: true,
       type: "sessionStorage",
-      storageKey: "attendeesAttendingmeetsList",
+      storageKey: "allAttendingmeetsList",
     },
     loadPanel: {
       message: 'Fetching...',
@@ -510,36 +510,36 @@ Attendees.attendingmeets = {
         title: 'attendingmeetEditingArgs',
         onContentReady: e => e.component.option('toolbarItems[0].visible', false),
       },
-      form: {
-        colCount: 2,
-        items: [
-          {
-            dataField: 'meet',
-            helpText: "What's the event?",
-          },
-          {
-            dataField: 'display_name',
-            helpText: 'Event name and date',
-          },
-          {
-            dataField: 'start',
-            helpText: 'Event start time in browser timezone',
-          },
-          {
-            dataField: 'finish',
-            helpText: 'Event end time in browser timezone',
-          },
-          {
-            dataField: 'site_type',
-            helpText: 'More specific/smaller place preferred',
-          },
-          {
-            dataField: 'site_id',
-            helpText: 'Where the event be hold',
-//            cssClass: 'in-popup-site-id',
-          },
-        ],
-      },
+//       form: {
+//         colCount: 2,
+//         items: [
+//           {
+//             dataField: 'meet',
+//             helpText: "What's the event?",
+//           },
+//           {
+//             dataField: 'display_name',
+//             helpText: 'Event name and date',
+//           },
+//           {
+//             dataField: 'start',
+//             helpText: 'Event start time in browser timezone',
+//           },
+//           {
+//             dataField: 'finish',
+//             helpText: 'Event end time in browser timezone',
+//           },
+//           {
+//             dataField: 'site_type',
+//             helpText: 'More specific/smaller place preferred',
+//           },
+//           {
+//             dataField: 'site_id',
+//             helpText: 'Where the event be hold',
+// //            cssClass: 'in-popup-site-id',
+//           },
+//         ],
+//       },
     },
     onCellClick: (e) => {
         if (e.rowType === 'data' && e.column.dataField === 'display_name') {
@@ -554,7 +554,7 @@ Attendees.attendingmeets = {
       grid.beginUpdate();
 
       if (e.data && typeof e.data === 'object') {
-        Attendees.gatherings.contentTypeEndpoint = Attendees.attendingmeets.contentTypeEndpoints[e.data['site_type']];
+        // Attendees.gatherings.contentTypeEndpoint = Attendees.attendingmeets.contentTypeEndpoints[e.data['site_type']];
         const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Info: ';
         grid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
       }
@@ -569,6 +569,61 @@ Attendees.attendingmeets = {
       }
     },
     columns: [
+      {
+        dataField: 'attending',
+        validationRules: [{type: 'required'}],
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'attending_label',
+          dataSource: {
+            store: new DevExpress.data.CustomStore({
+              key: 'id',
+              load: (e) => {
+                return $.getJSON($('form.filters-dxform').data('attendings-endpoint'));
+              },
+              byKey: (key) => {
+                if (key) {
+                  const d = $.Deferred();
+                  $.get($('form.filters-dxform').data('attendings-endpoint') + key + '/').done((response) => {
+                    d.resolve(response);
+                  });
+                  return d.promise();
+                }
+              },
+            }),
+          },
+        },
+      },
+      {
+        dataField: 'assembly',
+        groupIndex: 0,
+        validationRules: [{type: 'required'}],
+        caption: 'Group (Assembly)',
+        setCellValue: (newData, value, currentData) => {
+          newData.assembly = value;
+          newData.meet = null;
+          newData.character = null;
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: {
+            store: new DevExpress.data.CustomStore({
+              key: 'id',
+              load: () => $.getJSON($('form.filters-dxform').data('assemblies-endpoint')),
+              byKey: (key) => {
+                if (key) {
+                  const d = $.Deferred();
+                  $.get($('form.filters-dxform').data('assemblies-endpoint') + key + '/').done((response) => {
+                    d.resolve(response);
+                  });
+                  return d.promise();
+                }
+              },
+            }),
+          },
+        },
+      },
       {
         dataField: 'meet',
         width: '10%',
@@ -586,11 +641,11 @@ Attendees.attendingmeets = {
                 const d = new $.Deferred();
                 $.get($('form.filters-dxform').data('meets-endpoint-by-id'))
                   .done((result) => {
-                    if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
-                      result.data.forEach(meet=>{
-                        Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
-                      }); // schedule rules needed for attendingmeets generation
-                    }
+                    // if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+                    //   result.data.forEach(meet=>{
+                    //     Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                    //   }); // schedule rules needed for attendingmeets generation
+                    // }
                     d.resolve(result.data);
                   });
                 return d.promise();
@@ -601,138 +656,199 @@ Attendees.attendingmeets = {
           },
         },
       },
+      // {
+      //   dataField: 'meet',
+      //   caption: 'Activity (Meet)',
+      //   validationRules: [{type: 'required'}],
+      //   setCellValue: (newData, value, currentData) => {
+      //     newData.meet = value;
+      //     const majorCharacter = Attendees.datagridUpdate.meetCharacters[value];
+      //     if (majorCharacter && currentData.character === null) {newData.character = majorCharacter;}
+      //   },  // setting majorCharacter of the corresponding meet
+      //   lookup: {
+      //     valueExpr: 'id',
+      //     displayExpr: 'display_name',
+      //     dataSource: (options) => {
+      //       return {
+      //         filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+      //         store: new DevExpress.data.CustomStore({
+      //           key: 'id',
+      //           load: (searchOpts) => {
+      //             const d = new $.Deferred();
+      //             $.getJSON($('form.filters-dxform').data('meets-endpoint'), searchOpts.filter)
+      //               .done((result) => {
+      //                 if (result.data && Attendees.datagridUpdate.meetCharacters === null) {
+      //                   Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
+      //                 }  // cache the every meet's major characters for later use
+      //                 d.resolve(result);
+      //               });
+      //             return d.promise();
+      //           },
+      //           byKey: (key) => {
+      //             const d = new $.Deferred();
+      //             $.get($('form.filters-dxform').data('meets-endpoint') + key + '/')
+      //               .done((result) => {
+      //                 d.resolve(result);
+      //               });
+      //             return d.promise();
+      //           },
+      //         }),
+      //       };
+      //     },
+      //   },
+      // },
       {
-        dataField: 'display_name',
-        width: '30%',
-//        visible: false,
-        editorOptions: {
-          placeholder: 'Example: "The Rock - 12/25/2022"',
-        },
-        cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append ('<u class="text-info">' + cellInfo.data.display_name + '</u>');
+        dataField: 'character',
+        validationRules: [{type: 'required'}],
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts.filter);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('characters-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
         },
       },
       {
-        dataField: 'site',
-        width: '30%',
-        readOnly: true,
-        caption: 'Location (only grouped not sorted)',
+        dataField: 'category',
+        validationRules: [{type: 'required'}],
+      },
+      {
+        dataField: 'team',
+        visible: false,
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-id'), searchOpts.filter);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('meets-endpoint-by-id') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
       },
       {
         dataField: 'start',
-        width: '30%',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
-        format: 'longDateLongTime',
+        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
-          placeholder: 'Click calendar to select date/time ⇨ ',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
         },
       },
       {
         dataField: 'finish',
-        visible: false,
-        caption: 'End',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
-        format: 'longDateLongTime',
+        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
-          placeholder: 'Click calendar to select date/time ⇨ ',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
         },
       },
-//      {
-//        dataField: 'site_type',
-//        visible: false,
-//        caption: 'Location type',
-//        validationRules: [{type: 'required'}],
-//        editorOptions: {
-//          placeholder: 'Example: "room"',
-//        },
-//        setCellValue: (rowData, value) => {
-//          rowData.site_id = undefined;
-//          Attendees.attendingmeets.contentTypeEndpoint = Attendees.attendingmeets.contentTypeEndpoints[value];
-//          rowData.site_type = value;
-////          $('div.in-popup-site-id input')[1].value=''; Todo 20210814: can't clear site_id dxlookup after it reload
-////          Attendees.attendingmeets.siteIdElement.value = undefined;
-//        },
-//        lookup: {
-//          hint: 'select a location type',
-//          valueExpr: 'id',
-//          displayExpr: (rowData) => rowData.model + ': ' + rowData.hint,
-//          dataSource: {
-//            store: new DevExpress.data.CustomStore({
-//              key: 'id',
-//              load: (searchOpts) => {
-//                const d = new $.Deferred();
-//                $.get($('form.filters-dxform').data('content-type-models-endpoint'), {query: 'location'})
-//                  .done((result) => {
-//                    Attendees.attendingmeets.contentTypeEndpoints = result.data.reduce((obj, item) => ({...obj, [item.id]: item.endpoint}) ,{});
-//                    d.resolve(result.data);
-//                  });
-//                return d.promise();
-//              },
-//              byKey: (key) => {
-//                const d = new $.Deferred();
-//                $.get($('form.filters-dxform').data('content-type-models-endpoint') + key + '/', {query: 'location'})
-//                  .done((result) => {
-//                    if (result.data && result.data[0] && result.data[0].endpoint) {
-//                      Attendees.attendingmeets.contentTypeEndpoint = result.data[0].endpoint;
-//                    }
-//                    d.resolve(result.data);
-//                  });
-//                return d.promise();
-//              },
-//            }),
-//          },
-//        },
-//      },
-//      {
-//        dataField: 'site_id',
-//        visible: false,
-//        cssClass: 'pre-popup-site-id',
-//        caption: 'Location',
-//        validationRules: [{type: 'required'}],
-//        editorOptions: {
-//          placeholder: 'Example: "Fellowship F201"',
-//        },
-//        lookup: {
-//          allowClearing: true,
-//          hint: 'select a location',
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: {
-//            store: new DevExpress.data.CustomStore({
-//              key: 'id',
-//              load: (searchArgs) => {
-//                if (Attendees.gatherings.contentTypeEndpoint) {
-//                  const d = new $.Deferred();
-//                  $.get(Attendees.gatherings.contentTypeEndpoint, searchArgs)
-//                    .done((result) => {
-//                      d.resolve(result.data);
-//                    });
-//                  return d.promise();
-//                }
-//              },
-//              byKey: (key) => {
-//                if (Attendees.gatherings.contentTypeEndpoint) {
-//                  const d = new $.Deferred();
-//                  $.get(Attendees.gatherings.contentTypeEndpoint + key + '/')
-//                    .done((result) => {
-//                    if (result && result.id && parseInt(key) === result.id) {
-//                      result.id = key;
-//                    }  // Todo: type conversion for integer key of models other than address?
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                }
-//              },
-//            }),
-//          },
-//        },
-//      },
+      // {
+      //   dataField: 'meet',
+      //   width: '10%',
+      //   validationRules: [{type: 'required'}],
+      //   editorOptions: {
+      //     placeholder: 'Example: "The Rock"',
+      //   },
+      //   lookup: {
+      //     valueExpr: 'id',
+      //     displayExpr: 'display_name',
+      //     dataSource: {
+      //       store: new DevExpress.data.CustomStore({
+      //         key: 'id',
+      //         load: () => {
+      //           const d = new $.Deferred();
+      //           $.get($('form.filters-dxform').data('meets-endpoint-by-id'))
+      //             .done((result) => {
+      //               if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+      //                 result.data.forEach(meet=>{
+      //                   Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+      //                 }); // schedule rules needed for attendingmeets generation
+      //               }
+      //               d.resolve(result.data);
+      //             });
+      //           return d.promise();
+      //         },
+      //         byKey: (key) => {
+      //           return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-id') + key + '/');},
+      //       }),
+      //     },
+      //   },
+      // },
+//       {
+//         dataField: 'display_name',
+//         width: '30%',
+// //        visible: false,
+//         editorOptions: {
+//           placeholder: 'Example: "The Rock - 12/25/2022"',
+//         },
+//         cellTemplate: (cellElement, cellInfo) => {
+//           cellElement.append ('<u class="text-info">' + cellInfo.data.display_name + '</u>');
+//         },
+//       },
+//       {
+//         dataField: 'site',
+//         width: '30%',
+//         readOnly: true,
+//         caption: 'Location (only grouped not sorted)',
+//       },
+//       {
+//         dataField: 'start',
+//         width: '30%',
+//         validationRules: [{type: 'required'}],
+//         dataType: 'datetime',
+//         format: 'longDateLongTime',
+//         editorOptions: {
+//           type: 'datetime',
+//           placeholder: 'Click calendar to select date/time ⇨ ',
+//           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+//         },
+//       },
+//       {
+//         dataField: 'finish',
+//         visible: false,
+//         caption: 'End',
+//         validationRules: [{type: 'required'}],
+//         dataType: 'datetime',
+//         format: 'longDateLongTime',
+//         editorOptions: {
+//           type: 'datetime',
+//           placeholder: 'Click calendar to select date/time ⇨ ',
+//           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+//         },
+//       },
     ],
   },
 };

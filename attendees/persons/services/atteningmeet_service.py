@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import F, Q
 
 from attendees.persons.models import AttendingMeet
 
@@ -19,7 +19,7 @@ class AttendingMeetService:
             filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
         if finish:
             filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
-        return AttendingMeet.objects.filter(filters).order_by(*orderby_list)
+        return AttendingMeet.objects.annotate(assembly=F("meet__assembly")).filter(filters).order_by(*orderby_list)
 
     @staticmethod
     def orderby_parser(orderbys):
