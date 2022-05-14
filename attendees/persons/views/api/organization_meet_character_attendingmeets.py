@@ -14,6 +14,8 @@ from attendees.persons.services import AttendingMeetService
 class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows Team to be viewed or edited.
+    Todo 20220514: replace LoginRequiredMixin with SpyGuard and needed seeds json
+    Todo 20220514: make API returns only current users attendinmeets if not admin
     """
 
     serializer_class = AttendingMeetEtcSerializer

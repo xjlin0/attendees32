@@ -128,3 +128,37 @@ class AttendingService:
         ):
             registration.delete()
         attending.delete()
+
+    # @staticmethod
+    # def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, orderbys):
+    #     orderby_list = AttendingService.orderby_parser(orderbys)
+    #     filters = Q(
+    #         meets__assembly__division__organization=current_user.organization
+    #     ).add(Q(meets__slug__in=meet_slugs), Q.AND).add(Q(attendingmeet__character__slug__in=character_slugs), Q.AND)
+    #     # Todo 20220512 let scheduler see other attenings too?
+    #     if not current_user.can_see_all_organizational_meets_attendees():
+    #         filters.add(Q(attendee=current_user.attendee), Q.AND)
+    #
+    #     if start:
+    #         filters.add((Q(attendingmeet__finish__isnull=True) | Q(attendingmeet__finish__gte=start)), Q.AND)
+    #     if finish:
+    #         filters.add((Q(attendingmeet__start__isnull=True) | Q(attendingmeet__start__lte=finish)), Q.AND)
+    #     return Attending.objects.annotate(assembly=F("meet__assembly")).filter(filters).order_by(*orderby_list)
+    #
+    # @staticmethod
+    # def orderby_parser(orderbys):
+    #     """
+    #     generates sorter (column) based on user's choice
+    #     :param orderbys: list of search params
+    #     :return: a List of sorter for order_by()
+    #     """
+    #     orderby_list = (
+    #         []
+    #     )  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
+    #
+    #     for orderby_dict in orderbys:
+    #         field = orderby_dict.get("selector", "id").replace(".", "__")
+    #         direction = "-" if orderby_dict.get("desc", False) else ""
+    #         orderby_list.append(direction + field)
+    #
+    #     return orderby_list

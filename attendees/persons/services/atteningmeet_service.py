@@ -9,7 +9,7 @@ class AttendingMeetService:
     def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, orderbys):
         orderby_list = AttendingMeetService.orderby_parser(orderbys)
         filters = Q(
-            meet__assembly__division__organization__slug=current_user.organization.slug
+            meet__assembly__division__organization=current_user.organization
         ).add(Q(meet__slug__in=meet_slugs), Q.AND).add(Q(character__slug__in=character_slugs), Q.AND)
         # Todo 20220512 let scheduler see other attenings too?
         if not current_user.can_see_all_organizational_meets_attendees():
