@@ -23,7 +23,7 @@ class DatagridAttendingMeetListView(LoginRequiredMixin, RouteGuard, ListView):
         context.update(
             {
                 # "content_type_models_endpoint": "/whereabouts/api/content_type_models/",
-                # "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
+                "attendingmeets_endpoint": "/persons/api/organization_meet_character_attendingmeets/",
                 # "series_gatherings_endpoint": "/occasions/api/series_gatherings/",
                 "characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
