@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 
-from django.db.models import F, Func, Q
-from django.db.models.expressions import OrderBy
+from django.db.models import Q
 
-from attendees.occasions.models import Gathering, Meet
+from attendees.occasions.models import Gathering
 
 
 class GatheringService:
@@ -45,7 +44,7 @@ class GatheringService:
         filters = Q(
             meet__assembly__division__organization__slug=current_user.organization.slug
         ).add(Q(meet__slug__in=meet_slugs), Q.AND)
-
+        # Todo 20220512 let scheduler see other attenings too?
         if not current_user.can_see_all_organizational_meets_attendees():
             filters.add(Q(attendings__attendee=current_user.attendee), Q.AND)
 
@@ -133,11 +132,9 @@ class GatheringService:
     @staticmethod
     def orderby_parser(orderbys):
         """
-        generates sorter (column or OrderBy Func) based on user's choice
-        Todo: Sort by site name is NOT supported https://stackoverflow.com/a/3967871/4257237
+        generates sorter (column) based on user's choice
+        # Sort by site name is NOT supported https://stackoverflow.com/a/3967871/4257237
         :param orderbys: list of search params
-        :param meet_slugs: meet slugs
-        :param current_user:
         :return: a List of sorter for order_by()
         """
         orderby_list = (

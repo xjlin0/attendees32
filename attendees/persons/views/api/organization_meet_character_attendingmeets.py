@@ -6,18 +6,17 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.utils import json
 
-from attendees.occasions.models import Gathering
-from attendees.occasions.serializers import GatheringSerializer
-from attendees.occasions.services import GatheringService
-from attendees.persons.models import Utility
+from attendees.persons.models import Utility, AttendingMeet
+from attendees.persons.serializers import AttendingMeetEtcSerializer
+from attendees.persons.services import AttendingMeetService
 
 
-class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
+class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows Team to be viewed or edited.
     """
 
-    serializer_class = GatheringSerializer
+    serializer_class = AttendingMeetEtcSerializer
 
     def list(self, request, *args, **kwargs):
         group_string = request.query_params.get(
@@ -37,7 +36,7 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
 
     def get_queryset(self):
         current_user = self.request.user
-        current_user_organization = self.request.user.organization
+        current_user_organization = current_user.organization
 
         if current_user_organization:
             pk = self.kwargs.get("pk")
@@ -59,7 +58,7 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
                 if not current_user.can_see_all_organizational_meets_attendees():
                     filters['attendings__attendee'] = current_user.attendee
 
-                return Gathering.objects.filter(**filters)
+                return AttendingMeet.objects.filter(**filters)
 
             else:
                 if group_string:
@@ -68,9 +67,10 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
                         0, {"selector": groups[0]["selector"], "desc": groups[0]["desc"]}
                     )
 
-                return GatheringService.by_organization_meets(
+                return AttendingMeetService.by_organization_meet_characters(
                     current_user=self.request.user,
                     meet_slugs=self.request.query_params.getlist("meets[]", []),
+                    character_slugs=self.request.query_params.getlist("characters[]", []),
                     start=self.request.query_params.get("start"),
                     finish=self.request.query_params.get("finish"),
                     orderbys=orderby_list,
@@ -83,4 +83,4 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
             )
 
 
-api_organization_meet_gatherings_viewset = ApiOrganizationMeetGatheringsViewSet
+api_organization_meet_character_attendingmeets_viewset = ApiOrganizationMeetCharacterAttendingMeetsViewSet

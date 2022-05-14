@@ -181,47 +181,47 @@ Attendees.attendingmeets = {
           onValueChanged: (e)=> {
             console.log("hi 182 onValueChanged, e: ", e);
             Attendees.attendingmeets.filtersForm.validate();
-            const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
-            const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            Attendees.attendingmeets.selectedMeetHasRule = false;
+            // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
+            // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
+            // Attendees.attendingmeets.selectedMeetHasRule = false;
             // Attendees.attendingmeets.generateGatheringsButton.option('disabled', true);
-            $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+            // $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
-              if (e.value.length < 2) {
-                const newHelpTexts = [];
-                let finalHelpText = '';
-                let lastDuration = 0;
-                const noRuleText = 'This meet does not have schedules in EventRelation';
-                const ruleData = Attendees.attendingmeets.meetScheduleRules[ e.value[0] ];
-                const timeRules = ruleData.rules;
-                const meetStart = new Date(ruleData.meetStart).toDateString();
-                const meetFinish = new Date(ruleData.meetFinish).toDateString();
-                if (timeRules && timeRules.length > 0) {
-                  timeRules.forEach(timeRule => {
-                    if (timeRule.rule) {
-                      Attendees.attendingmeets.selectedMeetHasRule = true;
-                      const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
-                      const startTime = new Date(timeRule.start);
-                      const endTime = new Date(timeRule.end);
-                      const startTimeText = startTime.toLocaleString(navigator.language, toLocaleStringOpts);
-                      const endTimeText = endTime.toLocaleString(navigator.language, toLocaleStringOpts);
-                      lastDuration = ( endTime - startTime )/60000;
-                      newHelpTexts.push(timeRule.rule + ' ' + startTimeText + ' ~ ' + endTimeText + '@' + timeRule.location);
-                    } else {
-                      newHelpTexts.push(noRuleText);
-                    }
-                  });
-                  finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-                  if (Attendees.attendingmeets.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
-                    Attendees.attendingmeets.generateGatheringsButton.option('disabled', false);
-                  }
-                } else {
-                  finalHelpText = noRuleText;
-                }
-                $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
-                Attendees.attendingmeets.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
-              }
+              // if (e.value.length < 2) {
+              //   const newHelpTexts = [];
+              //   let finalHelpText = '';
+              //   let lastDuration = 0;
+              //   const noRuleText = 'This meet does not have schedules in EventRelation';
+              //   const ruleData = Attendees.attendingmeets.meetScheduleRules[ e.value[0] ];
+              //   const timeRules = ruleData.rules;
+              //   const meetStart = new Date(ruleData.meetStart).toDateString();
+              //   const meetFinish = new Date(ruleData.meetFinish).toDateString();
+              //   if (timeRules && timeRules.length > 0) {
+              //     timeRules.forEach(timeRule => {
+              //       if (timeRule.rule) {
+              //         Attendees.attendingmeets.selectedMeetHasRule = true;
+              //         const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
+              //         const startTime = new Date(timeRule.start);
+              //         const endTime = new Date(timeRule.end);
+              //         const startTimeText = startTime.toLocaleString(navigator.language, toLocaleStringOpts);
+              //         const endTimeText = endTime.toLocaleString(navigator.language, toLocaleStringOpts);
+              //         lastDuration = ( endTime - startTime )/60000;
+              //         newHelpTexts.push(timeRule.rule + ' ' + startTimeText + ' ~ ' + endTimeText + '@' + timeRule.location);
+              //       } else {
+              //         newHelpTexts.push(noRuleText);
+              //       }
+              //     });
+              //     finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
+              //     if (Attendees.attendingmeets.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
+              //       Attendees.attendingmeets.generateGatheringsButton.option('disabled', false);
+              //     }
+              //   } else {
+              //     finalHelpText = noRuleText;
+              //   }
+              //   $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+              //   Attendees.attendingmeets.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
+              // }
             }
           },
           dataSource: new DevExpress.data.DataSource({
@@ -334,7 +334,7 @@ Attendees.attendingmeets = {
   },  // loop in loop because of options grouped by assembly
 
   initFilteredAttendingmeetsDatagrid: (data, itemElement) => {
-    const $attendingmeetDatagrid = $("<div id='gatherings-datagrid-container'>").dxDataGrid(Attendees.attendingmeets.gatheringDatagridConfig);
+    const $attendingmeetDatagrid = $("<div id='attendingmeets-datagrid-container'>").dxDataGrid(Attendees.attendingmeets.attendingmeetDatagridConfig);
     itemElement.append($attendingmeetDatagrid);
     return $attendingmeetDatagrid.dxDataGrid('instance');
   },
@@ -345,9 +345,11 @@ Attendees.attendingmeets = {
         key: 'id',
         load: (loadOptions) => {
           const meets = $('div.selected-meets select').val();
+          const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
           const args = {
             meets: meets,
+            characters: characters,
             start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
             finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
           };
@@ -548,11 +550,18 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.gatheringsDatagrid.option('editing.popup.title', 'Adding Gathering');
     },
     onEditingStart: (e) => {
+      const grid = e.component;
+      grid.beginUpdate();
+
       if (e.data && typeof e.data === 'object') {
-        Attendees.attendingmeets.contentTypeEndpoint = Attendees.attendingmeets.contentTypeEndpoints[e.data['site_type']];
+        Attendees.gatherings.contentTypeEndpoint = Attendees.attendingmeets.contentTypeEndpoints[e.data['site_type']];
         const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Info: ';
-        Attendees.attendingmeets.gatheringsDatagrid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
+        grid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
       }
+      grid.option("columns").forEach((column) => {
+        grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
+      });
+      grid.endUpdate();
     },
     onEditorPrepared: (e) => {
       if (e.dataField === 'site_id') {

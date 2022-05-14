@@ -59,12 +59,10 @@
 
   <form class="filters-dxform"
        data-characters-endpoint="{{characters_endpoint}}"
+       data-attendingmeets-endpoint="{{attendingmeets_endpoint}}"
        data-meets-endpoint-by-id="{{meets_endpoint_by_id}}"
        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
     {% csrf_token %}
   </form>
-
-  <div class="attendingmeet-datagrids">
-  </div>
 </div>
 {% endblock content %}
