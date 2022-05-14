@@ -59,12 +59,12 @@ class ApiDatagridDataAttendingMeetViewSet(
         target_attendee = get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
-        if self.request.user.privileged_to_edit(
+        if self.request.user.privileged_to_edit(  # intentionally forbid user delete him/herself
             target_attendee.id
-        ):  # intentionally forbid user delete him/herself
-            Attendance.objects.filter(
-                gathering__meet=instance.meet, attending=instance.attending
-            ).delete()
+        ):  # Todo 20220513 Is it absolutely required to delete Attendance when deleting AttendingMeet?
+            # Attendance.objects.filter(
+            #     gathering__meet=instance.meet, attending=instance.attending
+            # ).delete()
             instance.delete()
         else:
             time.sleep(2)
