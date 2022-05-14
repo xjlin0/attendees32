@@ -568,11 +568,18 @@ Attendees.gatherings = {
       Attendees.gatherings.gatheringsDatagrid.option('editing.popup.title', 'Adding Gathering');
     },
     onEditingStart: (e) => {
+      const grid = e.component;
+      grid.beginUpdate();
+
       if (e.data && typeof e.data === 'object') {
         Attendees.gatherings.contentTypeEndpoint = Attendees.gatherings.contentTypeEndpoints[e.data['site_type']];
         const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Info: ';
-        Attendees.gatherings.gatheringsDatagrid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
+        grid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
       }
+      grid.option("columns").forEach((column) => {
+        grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
+      });
+      grid.endUpdate();
     },
     onEditorPrepared: (e) => {
       if (e.dataField === 'site_id') {
