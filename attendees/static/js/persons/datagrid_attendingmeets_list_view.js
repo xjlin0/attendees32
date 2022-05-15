@@ -12,6 +12,11 @@ Attendees.attendingmeets = {
     Attendees.attendingmeets.initFilterMeetCheckbox();
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
+
+    // toggleEditing the A tag link to create attendee
+    // memorize filter-from and filter-till into session storage
+    // restore schedule rules display on UI
+    // popup editor
   },
 
   initEditingSwitch: () => {
@@ -122,7 +127,7 @@ Attendees.attendingmeets = {
           value: new Date(new Date().setMonth(new Date().getMonth() + 1)),
           type: 'datetime',
           onValueChanged: (e) => {
-            Attendees.attendingmeets.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
+            // Attendees.attendingmeets.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
             if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
               Attendees.attendingmeets.filtersForm.getEditor('meets').getDataSource().reload();
             }  // allow users to screen only active meets by meet's start&finish
@@ -162,7 +167,7 @@ Attendees.attendingmeets = {
                   title: 'select all meets',
                 },
                 onClick() {
-                  Attendees.attendingmeets.selectAllGroupedTags('meets');
+                  Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'));
                 },
               },
             }
@@ -489,6 +494,22 @@ Attendees.attendingmeets = {
     columnChooser: {
       enabled: true,
       mode: 'select',
+    },
+    onToolbarPreparing: (e) => {
+      const toolbarItems = e.toolbarOptions.items;
+      toolbarItems.unshift({
+        location: 'after',
+        widget: 'dxButton',
+        options: {
+          hint: 'Reset Sort/Group/Columns/Meets/Character/Time',
+          icon: 'refresh',
+          onClick() {
+            Attendees.attendingmeets.attendingmeetsDatagrid.state(null);
+            Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('characters'), []);
+            Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'), []);
+          },
+        },
+      });
     },
     editing: {
       allowUpdating: false,
