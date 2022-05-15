@@ -5,8 +5,11 @@ Attendees.attendingmeets = {
   initialized: false,
   filterMeetCheckbox: null,
   loadOptions: null,
+  selectedCharacterSlugs: [],
+  selectedMeetSlugs: [],
   init: () => {
     console.log('static/js/persons/datagrid_attendingmeets_list_view.js');
+    Attendees.attendingmeets.loadStorages();
     Attendees.attendingmeets.initFilterMeetCheckbox();
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
@@ -65,6 +68,11 @@ Attendees.attendingmeets = {
       }
     });
     Attendees.attendingmeets.filtersForm = $('form.filters-dxform').dxForm(Attendees.attendingmeets.filterFormConfigs).dxForm('instance');
+  },
+
+  loadStorages: () => {
+    // Attendees.attendingmeets.selectedCharacterSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedCharacterSlugs') || [];
+    // Attendees.attendingmeets.selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') || [];
   },
 
   filterFormConfigs: {
@@ -177,8 +185,15 @@ Attendees.attendingmeets = {
             }
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
+          // onContentReady: (e) => {
+          //   console.log("hi 189 meet dxTagBox contentReady here is e: ", e);
+          // },
+          // onInitialized: (e) => {
+          //   console.log("hi 192 meet dxTagBox initialized, e: ", e);
+          // },
           onValueChanged: (e)=> {
-            console.log("hi 182 onValueChanged, e: ", e);
+            console.log("hi 195 meet dxTagBox onValueChanged, e: ", e);
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs', e.value);
             Attendees.attendingmeets.filtersForm.validate();
             // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
             // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -237,7 +252,15 @@ Attendees.attendingmeets = {
                   params['finish'] = filterTill ? new Date(filterTill).toISOString() : null;
                   params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
-                return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), params);
+                // return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), params);
+                $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
+                  .done((result) => {
+                    d.resolve(result.data);
+                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') || [];
+                    console.log("hi 260 meet in dxTagBox AJAX finished, setting selectedMeetSlugs: ", selectedMeetSlugs);
+                    Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'), selectedMeetSlugs);
+                  });
+                return d.promise();
               },
             }),
             key: 'slug',
@@ -273,14 +296,19 @@ Attendees.attendingmeets = {
                   title: 'select all characters',
                 },
                 onClick() {
-                  Attendees.attendingmeets.selectAllGroupedTags('characters');
+                  Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('characters'));
                 },
               },
             }
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
+          // onInitialized: (e) => {
+          //   console.log("hi 297 characters dxTagBox initialized, e: ", e);
+          // },
           onValueChanged: (e)=> {
-            // Attendees.attendingmeets.filtersForm.validate();
+            console.log("hi 309 characters dxTagBox onValueChanged here is e: ", e);
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedCharacterSlugs', e.value);
+            Attendees.attendingmeets.filtersForm.validate();
             // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
             // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
             // Attendees.attendingmeets.selectedMeetHasRule = false;
@@ -290,6 +318,9 @@ Attendees.attendingmeets = {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
             }
           },
+          // onContentReady: (e) => {
+          //   console.log("hi 304 characters dxTagBox contentReady here is e: ", e);
+          // },
           dataSource: new DevExpress.data.DataSource({
             store: new DevExpress.data.CustomStore({
               key: 'slug',
@@ -302,7 +333,9 @@ Attendees.attendingmeets = {
                 $.get($('form.filters-dxform').data('characters-endpoint'), params)
                   .done((result) => {
                     d.resolve(result.data);
-                    Attendees.attendingmeets.selectAllGroupedTags('characters');
+                    const selectedCharacterSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedCharacterSlugs') || [];
+                    console.log("hi 336 characters in dxTagBox AJAX finished, selectedCharacterSlugs: ", selectedCharacterSlugs);
+                    Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('characters'), selectedCharacterSlugs);
                   });
                 return d.promise();
               },
@@ -326,11 +359,11 @@ Attendees.attendingmeets = {
     ],
   },
 
-  selectAllGroupedTags: (editorName) => {
-    const availableTagsDxTagBox = Attendees.attendingmeets.filtersForm.getEditor(editorName);
-    const availableTagSlugs = availableTagsDxTagBox.option('items').flatMap(assembly => assembly.items.map(item => item.slug));
-    availableTagsDxTagBox.option('value', availableTagSlugs);
-  },  // loop in loop because of options grouped by assembly
+  // selectAllGroupedTags: (editorName) => {
+  //   const availableTagsDxTagBox = Attendees.attendingmeets.filtersForm.getEditor(editorName);
+  //   const availableTagSlugs = availableTagsDxTagBox.option('items').flatMap(assembly => assembly.items.map(item => item.slug));
+  //   availableTagsDxTagBox.option('value', availableTagSlugs);
+  // },  // loop in loop because of options grouped by assembly
 
   initFilteredAttendingmeetsDatagrid: (data, itemElement) => {
     const $attendingmeetDatagrid = $("<div id='attendingmeets-datagrid-container'>").dxDataGrid(Attendees.attendingmeets.attendingmeetDatagridConfig);
@@ -381,7 +414,7 @@ Attendees.attendingmeets = {
               });
             },
             error: () => {
-              deferred.reject("Data Loading Error, probably time out?");
+              deferred.reject("Data Loading Error for attendingmeet datagrid, probably time out?");
             },
             timeout: 60000,
           });
@@ -479,7 +512,7 @@ Attendees.attendingmeets = {
     stateStoring: {
       enabled: true,
       type: "sessionStorage",
-      storageKey: "attendeesAttendingmeetsList",
+      storageKey: Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'],
     },
     loadPanel: {
       message: 'Fetching...',
@@ -617,7 +650,7 @@ Attendees.attendingmeets = {
                     });
                   },
                   error: () => {
-                    deferred.reject("Data Loading Error, probably time out?");
+                    deferred.reject("Data Loading Error for attending lookup, probably time out?");
                   },
                   timeout: 10000,
                 });
