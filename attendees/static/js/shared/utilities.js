@@ -2,6 +2,11 @@ Attendees.utilities = {
   editingEnabled: false,
   userApiAllowedUrlNames: {},
   userAttendeeId: '',
+  datagridStorageKeys: {
+    datagridAttendingmeetsListView: "attendeesAttendingmeetsList",
+    gatheringsListView: "attendeesGatheringsList",
+    attendeeListView: "attendeesAttendeesList",
+  },
 
   init: () => {
     console.log("attendees/static/js/shared/utilities.js");
@@ -19,7 +24,12 @@ Attendees.utilities = {
   },  // if button clicking bug can't be fixed, considering DevExtreme DxSwitch
 
   isNotEmpty: (value) => {
-      return value !== undefined && value !== null && value !== "";
+    if (Array.isArray(value)){
+      return value.length > 0;
+    } else if (typeof(value) === 'object' ) {
+      return value !== null && Object.keys(value).length > 0;
+    }
+    return value !== undefined && value !== null && value !== "";
   },
 
   extractParamAndReplaceHistory: (paramName) => {
@@ -152,6 +162,27 @@ Attendees.utilities = {
     phone2: null,
     email1: null,
     email2: null,
+  },
+
+  selectAllGroupedTags: (tagBoxEditor, tagSlugs) => {
+    // const availableTagsDxTagBox = Attendees.attendingmeets.filtersForm.getEditor(editorName);
+    const availableTagSlugs = Attendees.utilities.isNotEmpty(tagSlugs) ? tagSlugs : tagBoxEditor.option('items').flatMap(category => category.items.map(item => item.slug));
+    console.log("utility 165 here is availableTagSlugs: ", availableTagSlugs)
+    tagBoxEditor.option('value', availableTagSlugs);
+  },  // loop in loop/flatMap because of options grouped by assembly/category
+
+  accessItemFromSessionStorage: (storageMasterKey, itemKey, itemValue) => {
+    if (storageMasterKey) {
+      const storedObject = JSON.parse(window.sessionStorage.getItem(storageMasterKey) || '{}');
+      if (itemValue) {
+        if (itemKey) {
+          storedObject[itemKey] = itemValue;
+          window.sessionStorage.setItem(storageMasterKey, JSON.stringify(storedObject));
+        }
+      }
+      return storedObject[itemKey];
+    }
+    return null;
   },
 
   phoneNumberFormatter: (rawNumberText) => {
