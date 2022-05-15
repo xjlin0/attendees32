@@ -172,7 +172,7 @@ Attendees.utilities = {
   accessItemFromSessionStorage: (storageMasterKey, itemKey, itemValue) => {
     if (storageMasterKey) {
       const storedObject = JSON.parse(window.sessionStorage.getItem(storageMasterKey) || '{}');
-      if (itemValue) {
+      if (itemValue !== undefined) {
         if (itemKey) {
           storedObject[itemKey] = itemValue;
           window.sessionStorage.setItem(storageMasterKey, JSON.stringify(storedObject));
