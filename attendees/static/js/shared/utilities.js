@@ -167,7 +167,6 @@ Attendees.utilities = {
   selectAllGroupedTags: (tagBoxEditor, tagSlugs) => {
     // const availableTagsDxTagBox = Attendees.attendingmeets.filtersForm.getEditor(editorName);
     const availableTagSlugs = Attendees.utilities.isNotEmpty(tagSlugs) ? tagSlugs : tagBoxEditor.option('items').flatMap(category => category.items.map(item => item.slug));
-    console.log("utility 165 here is availableTagSlugs: ", availableTagSlugs)
     tagBoxEditor.option('value', availableTagSlugs);
   },  // loop in loop/flatMap because of options grouped by assembly/category
 
