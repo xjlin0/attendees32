@@ -88,11 +88,11 @@ Attendees.attendingmeets = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterFromString') === undefined ? new Date(new Date().setHours(new Date().getHours() - 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterFromString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterFromString')) : null,
+          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString') === undefined ? new Date(new Date().setHours(new Date().getHours() - 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString')) : null,
           type: 'datetime',
           onValueChanged: (e) => {
             const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterFromString', filterFromString);
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString', filterFromString);
             // Attendees.attendingmeets.generateGatheringsButton.option('disabled', !Attendees.attendingmeets.readyToGenerate());
             if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
               Attendees.attendingmeets.filtersForm.getEditor('meets').getDataSource().reload();
@@ -125,12 +125,12 @@ Attendees.attendingmeets = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterTillString') === undefined ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterTillString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterTillString')) : null,
+          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString') === undefined ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString')) : null,
           type: 'datetime',
           onValueChanged: (e) => {
             // Attendees.attendingmeets.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
             const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'filterTillString', filterTillString);
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString', filterTillString);
             if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
               Attendees.attendingmeets.filtersForm.getEditor('meets').getDataSource().reload();
             }  // allow users to screen only active meets by meet's start&finish
@@ -177,7 +177,7 @@ Attendees.attendingmeets = {
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs', e.value);
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.attendingmeets.filtersForm.validate();
             // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
             // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -239,7 +239,7 @@ Attendees.attendingmeets = {
                 $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
                   .done((result) => {
                     d.resolve(result.data);
-                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') || [];
+                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') || [];
                     Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'), selectedMeetSlugs);
                   });
                 return d.promise();
@@ -285,12 +285,12 @@ Attendees.attendingmeets = {
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
-            console.log("hi 288 in onValueChanged, e: ", e);
-            console.log("hi 289 in onValueChanged, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') );
-            const rr = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedCharacterSlugs', e.value);
-            console.log("hi 291 in onValueChanged after setting Character sessionStorage, result : ", rr);
+            // console.log("hi 288 in onValueChanged, e: ", e);
+            // console.log("hi 289 in onValueChanged, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') );
+            const rr = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedCharacterSlugs', e.value);
+            // console.log("hi 291 in onValueChanged after setting Character sessionStorage, result : ", rr);
             Attendees.attendingmeets.filtersForm.validate();
-            console.log("hi 293 in onValueChanged after validation, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') );
+            // console.log("hi 293 in onValueChanged after validation, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') );
             // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
             // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
             // Attendees.attendingmeets.selectedMeetHasRule = false;
@@ -299,7 +299,7 @@ Attendees.attendingmeets = {
             if (e.value && e.value.length > 0 && Attendees.attendingmeets.attendingmeetsDatagrid) {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
             }
-            console.log("hi 302 in onValueChanged after refresh, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedMeetSlugs') );
+            // console.log("hi 302 in onValueChanged after refresh, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') );
           },
           dataSource: new DevExpress.data.DataSource({
             store: new DevExpress.data.CustomStore({
@@ -313,8 +313,7 @@ Attendees.attendingmeets = {
                 $.get($('form.filters-dxform').data('characters-endpoint'), params)
                   .done((result) => {
                     d.resolve(result.data);
-                    console.log("hi 311");
-                    const selectedCharacterSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], 'selectedCharacterSlugs') || [];
+                    const selectedCharacterSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedCharacterSlugs') || [];
                     Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('characters'), selectedCharacterSlugs);
                   });
                 return d.promise();
@@ -515,6 +514,7 @@ Attendees.attendingmeets = {
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
               Attendees.attendingmeets.attendingmeetsDatagrid.state(null);
+              window.sessionStorage.removeItem('datagridAttendingmeetsListViewOpts');
               Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('characters'), []);
               Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'), []);
               Attendees.attendingmeets.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
