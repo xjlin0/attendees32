@@ -45,7 +45,7 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowUpdating', enabled);
       Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowAdding', enabled);
       Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowDeleting', enabled);
-      Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+      // Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
     const addAttendeeLink = document.querySelector('a.add-attendee');
     if (enabled) {
@@ -609,7 +609,7 @@ Attendees.attendingmeets = {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
         cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append ('<u class="text-info">' + cellInfo.displayValue + '</u>');
+          cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
         },
         lookup: {
           valueExpr: 'id',
