@@ -54,7 +54,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets
                 if not current_user.can_see_all_organizational_meets_attendees():
                     filters['attendee'] = current_user.attendee
 
-                return Attending.objects.filter(**filters)
+                return Attending.objects.filter(**filters).distinct()
 
             else:
                 return Attending.objects.filter(
