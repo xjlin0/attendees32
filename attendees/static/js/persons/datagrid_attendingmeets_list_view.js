@@ -41,11 +41,11 @@ Attendees.attendingmeets = {
   },
 
   toggleEditing: (enabled) => {
-    if (Attendees.attendingmeets.atteningmeetsDatagrid) {
-      Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowUpdating', enabled);
-      Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowAdding', enabled);
-      Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowDeleting', enabled);
-      // Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+    if (Attendees.attendingmeets.attendingmeetsDatagrid) {
+      Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowUpdating', enabled);
+      Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowAdding', enabled);
+      Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowDeleting', enabled);
+      Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
     const addAttendeeLink = document.querySelector('a.add-attendee');
     if (enabled) {
@@ -539,7 +539,7 @@ Attendees.attendingmeets = {
       allowAdding: false,
       allowDeleting: false,
       texts: {
-        confirmDeleteMessage: 'Are you sure to delete it and all its attendances? Instead, setting the "finish" date is usually enough!',
+        confirmDeleteMessage: 'Are you sure to delete it and all its future attendances? Instead, setting the "finish" date is usually enough!',
       },
       mode: 'popup',
       popup: {
@@ -583,27 +583,27 @@ Attendees.attendingmeets = {
         }
     },
     onInitNewRow: (rowData) => {
-      Attendees.attendingmeets.gatheringsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
+      console.log("hi 586 here is rowData: ", rowData);
+      Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
     },
     onEditingStart: (e) => {
       const grid = e.component;
       grid.beginUpdate();
 
       if (e.data && typeof e.data === 'object') {
-        // Attendees.gatherings.contentTypeEndpoint = Attendees.attendingmeets.contentTypeEndpoints[e.data['site_type']];
-        const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Info: ';
-        grid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
+        const title = Attendees.utilities.editingEnabled ? 'Editing Attending meet' : 'Read only Info, please enable editing for modifications';
+        grid.option('editing.popup.title', title);
       }
       grid.option("columns").forEach((column) => {
         grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
       });
       grid.endUpdate();
     },
-    onEditorPrepared: (e) => {
-      if (e.dataField === 'site_id') {
-        Attendees.attendingmeets.siteIdElement = e;
-      }
-    },
+    // onEditorPrepared: (e) => {
+    //   if (e.dataField === 'site_id') {
+    //     Attendees.attendingmeets.siteIdElement = e;
+    //   }
+    // },
     columns: [
       {
         dataField: 'attending',
@@ -681,11 +681,11 @@ Attendees.attendingmeets = {
         groupIndex: 0,
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
-        setCellValue: (newData, value, currentData) => {
-          newData.assembly = value;
-          newData.meet = null;
-          newData.character = null;
-        },
+        // setCellValue: (newData, value, currentData) => {
+        //   newData.assembly = value;
+        //   newData.meet = null;
+        //   newData.character = null;
+        // },  // till the requirement to filter meet and characters by assembly
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
