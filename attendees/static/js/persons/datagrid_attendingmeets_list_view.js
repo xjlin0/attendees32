@@ -714,14 +714,14 @@ Attendees.attendingmeets = {
               key: 'id',
               load: () => {
                 const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('meets-endpoint-by-id'))
+                $.get($('form.filters-dxform').data('meets-endpoint-by-slug'))
                   .done((result) => {
                     d.resolve(result.data);
                   });
                 return d.promise();
               },
               byKey: (key) => {
-                return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-id') + key + '/');},
+                return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug') + key + '/');},
             }),
           },
         },
@@ -810,11 +810,11 @@ Attendees.attendingmeets = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-id'), searchOpts.filter);
+                  return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts.filter);
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
-                  $.get($('form.filters-dxform').data('meets-endpoint-by-id') + key + '/')
+                  $.get($('form.filters-dxform').data('meets-endpoint-by-slug') + key + '/')
                     .done((result) => {
                       d.resolve(result);
                     });
