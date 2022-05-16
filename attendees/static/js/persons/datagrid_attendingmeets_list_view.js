@@ -13,7 +13,6 @@ Attendees.attendingmeets = {
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
 
-    // toggleEditing the A tag link to create attendee
     // restore schedule rules display on UI
     // popup editor
   },
@@ -50,6 +49,17 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowAdding', enabled);
       Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.allowDeleting', enabled);
       Attendees.attendingmeets.atteningmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+    }
+    const addAttendeeLink = document.querySelector('a.add-attendee');
+    if (enabled) {
+      addAttendeeLink.classList.remove("btn-outline-secondary");
+      addAttendeeLink.classList.add("btn-outline-success");
+      addAttendeeLink.href = '/persons/attendee/new?familyName=without';
+    } else {
+      addAttendeeLink.removeAttribute("href");
+      addAttendeeLink.classList.add("btn-outline-secondary");
+      addAttendeeLink.classList.remove("btn-outline-success");
+
     }
   },
 
@@ -510,7 +520,7 @@ Attendees.attendingmeets = {
         widget: 'dxButton',
         options: {
           hint: 'Reset Sort/Group/Columns/Meets/Character/Time',
-          icon: 'refresh',
+          icon: 'pulldown',
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
               Attendees.attendingmeets.attendingmeetsDatagrid.state(null);
@@ -609,7 +619,7 @@ Attendees.attendingmeets = {
                 const meets = $('div.selected-meets select').val();
                 const characters = $('div.selected-characters select').val();
                 const deferred = $.Deferred();
-                loadOptions['sort'] = Attendees.attendingmeets.attendingmeetsDatagrid.getDataSource().loadOptions().group;
+                loadOptions['sort'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.getDataSource().loadOptions().group;
                 const args = {
                   meets: meets,
                   characters: characters,
