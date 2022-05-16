@@ -12,8 +12,6 @@ Attendees.attendingmeets = {
     Attendees.attendingmeets.initFilterMeetCheckbox();
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
-
-    // restore schedule rules display on UI
     // popup editor
   },
 
@@ -81,7 +79,7 @@ Attendees.attendingmeets = {
         colSpan: 3,
         cssClass: 'filter-from',
         dataField: 'filter-from',
-        helpText: 'mm/dd/yyyy in your timezone',
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
@@ -118,7 +116,7 @@ Attendees.attendingmeets = {
         colSpan: 3,
         cssClass: 'filter-till',
         dataField: 'filter-till',
-        helpText: 'mm/dd/yyyy in your timezone',
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
@@ -154,7 +152,7 @@ Attendees.attendingmeets = {
       {
         dataField: 'meets',
         colSpan: 6,
-        helpText: 'Select single one to view/generate gatherings, or multiple one to view',
+        helpText: "Can't show schedules when multiple selected. Select single one to view its schedules",
         cssClass: 'selected-meets',
         validationRules: [{type: 'required'}],
         label: {
@@ -189,47 +187,47 @@ Attendees.attendingmeets = {
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.attendingmeets.filtersForm.validate();
-            // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
-            // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            // Attendees.attendingmeets.selectedMeetHasRule = false;
+            const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules";
+            const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
+            Attendees.attendingmeets.selectedMeetHasRule = false;
             // Attendees.attendingmeets.generateGatheringsButton.option('disabled', true);
-            // $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+            $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
-              // if (e.value.length < 2) {
-              //   const newHelpTexts = [];
-              //   let finalHelpText = '';
-              //   let lastDuration = 0;
-              //   const noRuleText = 'This meet does not have schedules in EventRelation';
-              //   const ruleData = Attendees.attendingmeets.meetScheduleRules[ e.value[0] ];
-              //   const timeRules = ruleData.rules;
-              //   const meetStart = new Date(ruleData.meetStart).toDateString();
-              //   const meetFinish = new Date(ruleData.meetFinish).toDateString();
-              //   if (timeRules && timeRules.length > 0) {
-              //     timeRules.forEach(timeRule => {
-              //       if (timeRule.rule) {
-              //         Attendees.attendingmeets.selectedMeetHasRule = true;
-              //         const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
-              //         const startTime = new Date(timeRule.start);
-              //         const endTime = new Date(timeRule.end);
-              //         const startTimeText = startTime.toLocaleString(navigator.language, toLocaleStringOpts);
-              //         const endTimeText = endTime.toLocaleString(navigator.language, toLocaleStringOpts);
-              //         lastDuration = ( endTime - startTime )/60000;
-              //         newHelpTexts.push(timeRule.rule + ' ' + startTimeText + ' ~ ' + endTimeText + '@' + timeRule.location);
-              //       } else {
-              //         newHelpTexts.push(noRuleText);
-              //       }
-              //     });
-              //     finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-              //     if (Attendees.attendingmeets.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
-              //       Attendees.attendingmeets.generateGatheringsButton.option('disabled', false);
-              //     }
-              //   } else {
-              //     finalHelpText = noRuleText;
-              //   }
-              //   $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
-              //   Attendees.attendingmeets.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
-              // }
+              if (e.value.length < 2) {
+                const newHelpTexts = [];
+                let finalHelpText = '';
+                let lastDuration = 0;
+                const noRuleText = 'This meet does not have schedules in EventRelation';
+                const ruleData = Attendees.attendingmeets.meetScheduleRules[ e.value[0] ];
+                const timeRules = ruleData.rules;
+                const meetStart = new Date(ruleData.meetStart).toDateString();
+                const meetFinish = new Date(ruleData.meetFinish).toDateString();
+                if (timeRules && timeRules.length > 0) {
+                  timeRules.forEach(timeRule => {
+                    if (timeRule.rule) {
+                      Attendees.attendingmeets.selectedMeetHasRule = true;
+                      const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
+                      const startTime = new Date(timeRule.start);
+                      const endTime = new Date(timeRule.end);
+                      const startTimeText = startTime.toLocaleString(navigator.language, toLocaleStringOpts);
+                      const endTimeText = endTime.toLocaleString(navigator.language, toLocaleStringOpts);
+                      lastDuration = ( endTime - startTime )/60000;
+                      newHelpTexts.push(timeRule.rule + ' ' + startTimeText + ' ~ ' + endTimeText + '@' + timeRule.location);
+                    } else {
+                      newHelpTexts.push(noRuleText);
+                    }
+                  });
+                  finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
+                  // if (Attendees.attendingmeets.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
+                  //   Attendees.attendingmeets.generateGatheringsButton.option('disabled', false);
+                  // }
+                } else {
+                  finalHelpText = noRuleText;
+                }
+                $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+                // Attendees.attendingmeets.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
+              }
             }
           },
           dataSource: new DevExpress.data.DataSource({
@@ -249,6 +247,13 @@ Attendees.attendingmeets = {
                 $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
                   .done((result) => {
                     d.resolve(result.data);
+                    if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+                      result.data.forEach( assembly => {
+                        assembly.items.forEach( meet => {
+                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                        })
+                      }); // schedule rules needed for attendingmeets generation
+                    }
                     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') || [];
                     Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'), selectedMeetSlugs);
                   });
@@ -295,21 +300,11 @@ Attendees.attendingmeets = {
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
-            // console.log("hi 288 in onValueChanged, e: ", e);
-            // console.log("hi 289 in onValueChanged, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') );
-            const rr = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedCharacterSlugs', e.value);
-            // console.log("hi 291 in onValueChanged after setting Character sessionStorage, result : ", rr);
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedCharacterSlugs', e.value);
             Attendees.attendingmeets.filtersForm.validate();
-            // console.log("hi 293 in onValueChanged after validation, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') );
-            // const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
-            // const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            // Attendees.attendingmeets.selectedMeetHasRule = false;
-            // // Attendees.attendingmeets.generateGatheringsButton.option('disabled', true);
-            // $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0 && Attendees.attendingmeets.attendingmeetsDatagrid) {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
             }
-            // console.log("hi 302 in onValueChanged after refresh, Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') : ", Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') );
           },
           dataSource: new DevExpress.data.DataSource({
             store: new DevExpress.data.CustomStore({
@@ -721,11 +716,6 @@ Attendees.attendingmeets = {
                 const d = new $.Deferred();
                 $.get($('form.filters-dxform').data('meets-endpoint-by-id'))
                   .done((result) => {
-                    // if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
-                    //   result.data.forEach(meet=>{
-                    //     Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
-                    //   }); // schedule rules needed for attendingmeets generation
-                    // }
                     d.resolve(result.data);
                   });
                 return d.promise();

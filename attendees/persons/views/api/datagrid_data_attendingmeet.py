@@ -7,7 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import ModelViewSet
 
 from attendees.occasions.models import Attendance
-from attendees.persons.models import Attendee, AttendingMeet
+from attendees.persons.models import Attendee, AttendingMeet, Utility
 from attendees.persons.serializers import AttendingMeetEtcSerializer
 from attendees.users.authorization.route_guard import SpyGuard
 
@@ -61,10 +61,12 @@ class ApiDatagridDataAttendingMeetViewSet(
         )
         if self.request.user.privileged_to_edit(  # intentionally forbid user delete him/herself
             target_attendee.id
-        ):  # Todo 20220513 Is it absolutely required to delete Attendance when deleting AttendingMeet?
-            # Attendance.objects.filter(
-            #     gathering__meet=instance.meet, attending=instance.attending
-            # ).delete()
+        ):
+            Attendance.objects.filter(
+                gathering__meet=instance.meet,
+                gathering__start_gte=Utility.now_with_timezone(),
+                attending=instance.attending
+            ).delete()  # delete only future attendance
             instance.delete()
         else:
             time.sleep(2)
