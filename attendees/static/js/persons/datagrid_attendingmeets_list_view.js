@@ -547,39 +547,38 @@ Attendees.attendingmeets = {
         title: 'attendingmeetEditingArgs',
         onContentReady: e => e.component.option('toolbarItems[0].visible', false),
       },
-//       form: {
-//         colCount: 2,
-//         items: [
-//           {
-//             dataField: 'meet',
-//             helpText: "What's the event?",
-//           },
-//           {
-//             dataField: 'display_name',
-//             helpText: 'Event name and date',
-//           },
-//           {
-//             dataField: 'start',
-//             helpText: 'Event start time in browser timezone',
-//           },
-//           {
-//             dataField: 'finish',
-//             helpText: 'Event end time in browser timezone',
-//           },
-//           {
-//             dataField: 'site_type',
-//             helpText: 'More specific/smaller place preferred',
-//           },
-//           {
-//             dataField: 'site_id',
-//             helpText: 'Where the event be hold',
-// //            cssClass: 'in-popup-site-id',
-//           },
-//         ],
-//       },
+      form: {
+        colCount: 2,
+        items: [
+          {
+            dataField: 'meet',
+            helpText: "What's the event?",
+          },
+          {
+            dataField: 'attending',
+            helpText: "who?",
+          },
+          {
+            dataField: 'character',
+            helpText: 'default participation role',
+          },
+          {
+            dataField: 'category',
+            helpText: 'What type of participation?',
+          },
+          {
+            dataField: 'start',
+            helpText: 'Event start time in browser timezone',
+          },
+          {
+            dataField: 'finish',
+            helpText: 'Event end time in browser timezone',
+          },
+        ],
+      },
     },
     onCellClick: (e) => {
-        if (e.rowType === 'data' && e.column.dataField === 'display_name') {
+        if (e.rowType === 'data' && e.column.dataField === 'attending') {
             e.component.editRow(e.row.rowIndex);
         }
     },
@@ -609,6 +608,9 @@ Attendees.attendingmeets = {
       {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
+        cellTemplate: (cellElement, cellInfo) => {
+          cellElement.append ('<u class="text-info">' + cellInfo.displayValue + '</u>');
+        },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'attending_label',
