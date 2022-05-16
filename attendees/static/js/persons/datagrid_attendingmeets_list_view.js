@@ -12,7 +12,6 @@ Attendees.attendingmeets = {
     Attendees.attendingmeets.initFilterMeetCheckbox();
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
-    // popup editor
   },
 
   initEditingSwitch: () => {
@@ -106,7 +105,8 @@ Attendees.attendingmeets = {
               Attendees.attendingmeets.filtersForm.getEditor('meets').getDataSource().reload();
             }
             const meets = $('div.selected-meets select').val();
-            if (meets.length) {
+            const characters = $('div.selected-characters select').val();
+            if (meets.length && characters.length) {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
             }
           },
@@ -143,7 +143,8 @@ Attendees.attendingmeets = {
               Attendees.attendingmeets.filtersForm.getEditor('meets').getDataSource().reload();
             }  // allow users to screen only active meets by meet's start&finish
             const meets = $('div.selected-meets select').val();
-            if (meets.length) {
+            const characters = $('div.selected-characters select').val();
+            if (meets.length && characters.length) {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
             }
           },
@@ -193,7 +194,10 @@ Attendees.attendingmeets = {
             // Attendees.attendingmeets.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
-              Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
+              const characters = $('div.selected-characters select').val();
+              if (characters.length) {
+                Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
+              }
               if (e.value.length < 2) {
                 const newHelpTexts = [];
                 let finalHelpText = '';
@@ -302,7 +306,8 @@ Attendees.attendingmeets = {
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedCharacterSlugs', e.value);
             Attendees.attendingmeets.filtersForm.validate();
-            if (e.value && e.value.length > 0 && Attendees.attendingmeets.attendingmeetsDatagrid) {
+            const meets = $('div.selected-meets select').val();
+            if (meets.length && e.value && e.value.length > 0 && Attendees.attendingmeets.attendingmeetsDatagrid) {
               Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
             }
           },
@@ -514,7 +519,7 @@ Attendees.attendingmeets = {
         location: 'after',
         widget: 'dxButton',
         options: {
-          hint: 'Reset Sort/Group/Columns/Meets/Character/Time',
+          hint: 'Reset Sort/Group/Columns/Meets/Character/Time settings',
           icon: 'pulldown',
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
@@ -726,47 +731,6 @@ Attendees.attendingmeets = {
           },
         },
       },
-      // {
-      //   dataField: 'meet',
-      //   caption: 'Activity (Meet)',
-      //   validationRules: [{type: 'required'}],
-      //   setCellValue: (newData, value, currentData) => {
-      //     newData.meet = value;
-      //     const majorCharacter = Attendees.datagridUpdate.meetCharacters[value];
-      //     if (majorCharacter && currentData.character === null) {newData.character = majorCharacter;}
-      //   },  // setting majorCharacter of the corresponding meet
-      //   lookup: {
-      //     valueExpr: 'id',
-      //     displayExpr: 'display_name',
-      //     dataSource: (options) => {
-      //       return {
-      //         filter: options.data ? {'assemblies[]': options.data.assembly} : null,
-      //         store: new DevExpress.data.CustomStore({
-      //           key: 'id',
-      //           load: (searchOpts) => {
-      //             const d = new $.Deferred();
-      //             $.getJSON($('form.filters-dxform').data('meets-endpoint'), searchOpts.filter)
-      //               .done((result) => {
-      //                 if (result.data && Attendees.datagridUpdate.meetCharacters === null) {
-      //                   Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
-      //                 }  // cache the every meet's major characters for later use
-      //                 d.resolve(result);
-      //               });
-      //             return d.promise();
-      //           },
-      //           byKey: (key) => {
-      //             const d = new $.Deferred();
-      //             $.get($('form.filters-dxform').data('meets-endpoint') + key + '/')
-      //               .done((result) => {
-      //                 d.resolve(result);
-      //               });
-      //             return d.promise();
-      //           },
-      //         }),
-      //       };
-      //     },
-      //   },
-      // },
       {
         dataField: 'character',
         validationRules: [{type: 'required'}],
