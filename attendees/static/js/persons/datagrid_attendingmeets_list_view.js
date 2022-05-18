@@ -744,7 +744,7 @@ Attendees.attendingmeets = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts.filter);
+                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
