@@ -40,8 +40,15 @@ class OrganizationMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
         if current_user_organization:
             start = self.request.query_params.get("start")
             finish = self.request.query_params.get("finish")
+            search_value = self.request.query_params.get("searchValue")
+            search_expression = self.request.query_params.get("searchExpr")
+            search_operation = self.request.query_params.get("searchOperation")
 
             extra_filter = Q(assembly__division__organization=current_user_organization)
+
+            if search_value and search_operation == 'contains':  # only contains supported now
+                terms = {f'{search_expression}__icontains': search_value}
+                extra_filter.add(Q(**terms), Q.AND)
 
             if start:
                 extra_filter.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
