@@ -583,7 +583,6 @@ Attendees.attendingmeets = {
         }
     },
     onInitNewRow: (rowData) => {
-      console.log("hi 586 here is rowData: ", rowData);
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
     },
     onEditingStart: (e) => {
@@ -719,9 +718,9 @@ Attendees.attendingmeets = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => {
+              load: (searchOpts) => {
                 const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('meets-endpoint-by-slug'))
+                $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
                   .done((result) => {
                     d.resolve(result.data);
                   });
