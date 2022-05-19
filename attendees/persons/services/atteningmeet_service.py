@@ -6,7 +6,7 @@ from attendees.persons.models import AttendingMeet
 class AttendingMeetService:
 
     @staticmethod
-    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, orderbys):
+    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, orderbys, search_value=None, search_expression=None, search_operation=None):
         orderby_list = AttendingMeetService.orderby_parser(orderbys)
         filters = Q(
             meet__assembly__division__organization=current_user.organization
@@ -14,6 +14,11 @@ class AttendingMeetService:
         # Todo 20220512 let scheduler see other attenings too?
         if not current_user.can_see_all_organizational_meets_attendees():
             filters.add(Q(attending__attendee=current_user.attendee), Q.AND)
+
+        if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # only contains supported now
+            filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
+                         |
+                         Q(attending__attendee__infos__icontains=search_value)), Q.AND)
 
         if start:
             filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)

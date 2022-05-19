@@ -39,6 +39,9 @@ class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets
 
         if current_user_organization:
             pk = self.kwargs.get("pk")
+            search_value = self.request.query_params.get("searchValue")
+            search_expression = self.request.query_params.get("searchExpr")
+            search_operation = self.request.query_params.get("searchOperation")
             orderby_list = json.loads(
                 self.request.query_params.get(
                     "sort",
@@ -65,6 +68,9 @@ class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets
                                 start=self.request.query_params.get("start"),
                                 finish=self.request.query_params.get("finish"),
                                 orderbys=orderby_list,
+                                search_value=search_value,
+                                search_expression=search_expression,
+                                search_operation=search_operation,
                             ).values_list('attending').order_by()
                 )
 

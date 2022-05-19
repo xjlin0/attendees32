@@ -624,6 +624,9 @@ Attendees.attendingmeets = {
                 const args = {
                   meets: meets,
                   characters: characters,
+                  searchOperation: loadOptions['searchOperation'],
+                  searchValue: loadOptions['searchValue'],
+                  searchExpr: loadOptions['searchExpr'],
                   start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
                   finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
                 };
