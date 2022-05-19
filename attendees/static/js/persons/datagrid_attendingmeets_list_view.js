@@ -568,6 +568,10 @@ Attendees.attendingmeets = {
             helpText: 'define participation role',
           },
           {
+            dataField: 'team',
+            helpText: '(Optional) joining team',
+          },
+          {
             dataField: 'category',
             helpText: 'What type of participation?',
           },
@@ -687,6 +691,7 @@ Attendees.attendingmeets = {
           newData.assembly = value;
           newData.meet = null;
           newData.character = null;
+          newData.team = null;
         },
         lookup: {
           valueExpr: 'id',
@@ -714,6 +719,7 @@ Attendees.attendingmeets = {
         validationRules: [{type: 'required'}],
         setCellValue: (newData, value, currentData) => {
           newData.meet = value;
+          newData.team = null;
           const majorCharacter = Attendees.attendingmeets.meetCharacters[value];
           if (majorCharacter && currentData.character === null) {newData.character = majorCharacter;}
         },
@@ -783,20 +789,24 @@ Attendees.attendingmeets = {
       {
         dataField: 'team',
         visible: false,
+        editorOptions: {
+          showClearButton: true,
+        },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts.filter);
+                  if (options.data && options.data.meet) {searchOpts['meets[]'] = options.data.meet; }
+                  return $.getJSON($('form.filters-dxform').data('teams-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
-                  $.get($('form.filters-dxform').data('meets-endpoint-by-slug') + key + '/')
+                  $.get($('form.filters-dxform').data('teams-endpoint') + key + '/')
                     .done((result) => {
                       d.resolve(result);
                     });

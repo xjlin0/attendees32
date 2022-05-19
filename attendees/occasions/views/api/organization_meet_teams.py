@@ -19,11 +19,18 @@ class ApiOrganizationMeetTeamViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         current_user_organization = self.request.user.organization
+        search_value = self.request.query_params.get("searchValue")
+        search_expression = self.request.query_params.get("searchExpr")
+        search_operation = self.request.query_params.get("searchOperation")
+
         if current_user_organization:
             return TeamService.by_organization_meets(
                 meet_slugs=self.request.query_params.getlist("meets[]", []),
                 organization_slug=current_user_organization.slug,
                 pk=self.kwargs.get("pk"),
+                search_value=search_value,
+                search_expression=search_expression,
+                search_operation=search_operation,
             )
 
         else:
