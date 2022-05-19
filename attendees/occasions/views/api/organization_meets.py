@@ -43,8 +43,11 @@ class OrganizationMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
             search_value = self.request.query_params.get("searchValue")
             search_expression = self.request.query_params.get("searchExpr")
             search_operation = self.request.query_params.get("searchOperation")
-
+            assemblies = self.request.query_params.getlist("assemblies[]")
             extra_filter = Q(assembly__division__organization=current_user_organization)
+
+            if assemblies:
+                extra_filter.add(Q(assembly__in=assemblies), Q.AND)
 
             if search_value and search_operation == 'contains':  # only contains supported now
                 terms = {f'{search_expression}__icontains': search_value}

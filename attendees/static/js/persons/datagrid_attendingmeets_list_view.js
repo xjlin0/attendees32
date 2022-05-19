@@ -7,6 +7,7 @@ Attendees.attendingmeets = {
   loadOptions: null,
   selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
+  meetCharacters: null,
   init: () => {
     console.log('static/js/persons/datagrid_attendingmeets_list_view.js');
     Attendees.attendingmeets.initFilterMeetCheckbox();
@@ -551,8 +552,12 @@ Attendees.attendingmeets = {
         colCount: 2,
         items: [
           {
+            dataField: 'assembly',
+            helpText: "Select to filter meet and character",
+          },
+          {
             dataField: 'meet',
-            helpText: "What's the event?",
+            helpText: "What's the activity?",
           },
           {
             dataField: 'attending',
@@ -560,7 +565,7 @@ Attendees.attendingmeets = {
           },
           {
             dataField: 'character',
-            helpText: 'default participation role',
+            helpText: 'define participation role',
           },
           {
             dataField: 'category',
@@ -568,11 +573,11 @@ Attendees.attendingmeets = {
           },
           {
             dataField: 'start',
-            helpText: 'Event start time in browser timezone',
+            helpText: 'participation start time in browser timezone',
           },
           {
             dataField: 'finish',
-            helpText: 'Event end time in browser timezone',
+            helpText: 'participation end time in browser timezone',
           },
         ],
       },
@@ -598,11 +603,6 @@ Attendees.attendingmeets = {
       });
       grid.endUpdate();
     },
-    // onEditorPrepared: (e) => {
-    //   if (e.dataField === 'site_id') {
-    //     Attendees.attendingmeets.siteIdElement = e;
-    //   }
-    // },
     columns: [
       {
         dataField: 'attending',
@@ -683,11 +683,11 @@ Attendees.attendingmeets = {
         groupIndex: 0,
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
-        // setCellValue: (newData, value, currentData) => {
-        //   newData.assembly = value;
-        //   newData.meet = null;
-        //   newData.character = null;
-        // },  // till the requirement to filter meet and characters by assembly
+        setCellValue: (newData, value, currentData) => {
+          newData.assembly = value;
+          newData.meet = null;
+          newData.character = null;
+        },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
@@ -712,26 +712,39 @@ Attendees.attendingmeets = {
         dataField: 'meet',
         width: '10%',
         validationRules: [{type: 'required'}],
+        setCellValue: (newData, value, currentData) => {
+          newData.meet = value;
+          const majorCharacter = Attendees.attendingmeets.meetCharacters[value];
+          if (majorCharacter && currentData.character === null) {newData.character = majorCharacter;}
+        },
         editorOptions: {
           placeholder: 'Example: "The Rock"',
         },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
-          dataSource: {
-            store: new DevExpress.data.CustomStore({
-              key: 'id',
-              load: (searchOpts) => {
-                const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
-                  .done((result) => {
-                    d.resolve(result.data);
-                  });
-                return d.promise();
-              },
-              byKey: (key) => {
-                return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug') + key + '/');},
-            }),
+          dataSource: (options) => {
+            return {
+              // filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
+                  const d = new $.Deferred();
+                  $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
+                    .done((result) => {
+                      if (result.data && Attendees.attendingmeets.meetCharacters === null) {
+                        Attendees.attendingmeets.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
+                      }  // cache the every meet's major characters for later use
+                      d.resolve(result.data);
+                    });
+                  return d.promise();
+                },
+                byKey: (key) => {
+                  return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug') + key + '/');
+                },
+              }),
+            };
           },
         },
       },
@@ -743,10 +756,11 @@ Attendees.attendingmeets = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              // filter: options.data ? {'assemblies[]': options.data.assembly} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
+                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
                   return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
