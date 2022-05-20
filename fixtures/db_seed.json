@@ -4563,7 +4563,6 @@
         "settings": {
           "opencc_convert": true,
           "attendee_to_attending": false,
-          "attendingmeet_meet_to_past_category": {},
           "attendingmeet_pdf_export": {},
           "past_category_to_attendingmeet_meet": {}
         },
@@ -4589,7 +4588,6 @@
         "settings": {
           "opencc_convert": true,
           "attendee_to_attending": true,
-          "attendingmeet_meet_to_past_category": {},
           "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
@@ -4615,11 +4613,6 @@
         "settings": {
           "opencc_convert": true,
           "attendee_to_attending": true,
-          "attendingmeet_meet_to_past_category": {
-            "9": 5,
-            "16": 5,
-            "17": 4
-          },
           "attendingmeet_pdf_export_groups": {
             "d7c8Fd_cfcch_congregation_directory": ["data_organizer"]
           },
@@ -4666,7 +4659,6 @@
         "settings": {
           "opencc_convert": true,
           "attendee_to_attending": true,
-          "attendingmeet_meet_to_past_category": {},
           "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
@@ -11418,6 +11410,11 @@
       "display_name": "封存 archived",
       "slug": "d7c8Fd_cfcch_congregation_archived",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "notice": "the finish date of attending_meets of 'archived' is always forever to show all attendees.",
         "default_time_zone": "America/Los_Angeles"
       },
@@ -11441,6 +11438,11 @@
       "display_name": "訪客 visitor",
       "slug": "d7c8Fd_cfcch_congregation_visitor",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "notice": "the finish date of attending_meets of visitor is always forever to show all attendees.",
         "default_time_zone": "America/Los_Angeles"
       },
@@ -11464,6 +11466,11 @@
       "display_name": "The Rock",
       "slug": "d7c8Fd_cfcch_junior_regular_the_rock",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 54,
@@ -11486,6 +11493,11 @@
       "display_name": "Little foot",
       "slug": "d7c8Fd_cfcch_junior_regular_little_foot",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 54,
@@ -11508,6 +11520,11 @@
       "display_name": "影音中控",
       "slug": "d7c8Fd_cfcch_adault_sunday_recording_av_control",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 52,
@@ -11530,6 +11547,11 @@
       "display_name": "天堂 玻璃海天使詩班",
       "slug": "faBd6C_heaven_sea_of_glass_angel_choir",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": false,
+          "Attendance": false
+        },
         "default_time_zone": "UTC"
       },
       "site_type": 50,
@@ -11552,6 +11574,11 @@
       "display_name": "kid Christmas Celebration 兒少聖誕會",
       "slug": "d7c8Fd_cfcch_junior_regular_christmas_celebration",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 52,
@@ -11574,6 +11601,11 @@
       "display_name": "青少短宣英語教學",
       "slug": "d7c8Fd_cfcch_junior_special_english_teaching",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": false,
+          "Attendance": false
+        },
         "default_time_zone": "Asia/Taipei"
       },
       "site_type": 50,
@@ -11596,6 +11628,11 @@
       "display_name": "常做禮拜 Worship roaster",
       "slug": "d7c8Fd_cfcch_congregation_roaster",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
         "default_time_zone": "America/Los_Angeles",
         "extending_attending_days": 90
       },
@@ -11619,6 +11656,11 @@
       "display_name": "通訊錄 directory",
       "slug": "d7c8Fd_cfcch_congregation_directory",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": false,
+          "Attendance": false
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,
@@ -11641,6 +11683,11 @@
       "display_name": "會員 member",
       "slug": "d7c8Fd_cfcch_congregation_member",
       "infos": {
+        "automatic_creation": {
+          "Past": 5,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,
@@ -11663,6 +11710,11 @@
       "display_name": "2020夏令會食宿",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_accommodation",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11685,6 +11737,11 @@
       "display_name": "2020夏令會接送",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_transportation",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11707,6 +11764,11 @@
       "display_name": "2020夏令會討論小組",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_panel",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11729,6 +11791,11 @@
       "display_name": "2020夏令會中文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_chinese_program",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11751,6 +11818,11 @@
       "display_name": "2020夏令會兒童活動",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_junior_program",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11773,6 +11845,11 @@
       "display_name": "2020夏令會英文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_english_program",
       "infos": {
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11795,6 +11872,11 @@
       "display_name": "已受洗 baptized",
       "slug": "d7c8Fd_cfcch_congregation_baptized",
       "infos": {
+        "automatic_creation": {
+          "Past": 5,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,
@@ -11817,6 +11899,11 @@
       "display_name": "已信主 believer",
       "slug": "d7c8Fd_cfcch_congregation_believer",
       "infos": {
+        "automatic_creation": {
+          "Past": 4,
+          "Gathering": null,
+          "Attendance": null
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,

@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('major_character', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='occasions.Character')),
                 ('slug', models.SlugField(max_length=50, unique=True)),
                 ('display_name', models.CharField(blank=True, null=True, db_index=True, help_text='The Rock, Little Foot, singspiration, A/V control, etc.', max_length=50)),
-                ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"info": "...", "url": "https://..."}. Please keep {} here even no data', null=True)),
+                ('infos', models.JSONField(blank=True, default=Utility.meet_infos, help_text='Example: {"info": "...", "url": "https://..."}. Please keep {} here even no data', null=True)),
             ],
             options={
                 'db_table': 'occasions_meets',

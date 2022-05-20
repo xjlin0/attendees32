@@ -78,16 +78,11 @@ def post_save_handler_for_attendingmeet_to_create_past(sender, **kwargs):
     ):  # to skip extra creation in loaddata seed
         created_attendingmeet = kwargs.get("instance")
         organization = created_attendingmeet.meet.assembly.division.organization
-        meet_id = str(created_attendingmeet.meet.id)
-        category_id = (
-            organization.infos.get("settings", {})
-            .get("attendingmeet_meet_to_past_category", {})
-            .get(meet_id)
-        )
+        category_id = created_attendingmeet.meet.infos.get("automatic_creation", {}).get("Past")
 
         if (
             category_id and "importer" not in created_attendingmeet.category
-        ):  # skip for access importer
+        ):  # skip for access importer since special start date processing needed there
             category = Category.objects.filter(pk=category_id).first()
             if category:
                 target_attendee = created_attendingmeet.attending.attendee
