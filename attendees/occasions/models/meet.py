@@ -65,7 +65,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     infos = models.JSONField(
         null=True,
         blank=True,
-        default=dict,
+        default=Utility.meet_infos,
         help_text='Example: {"info": "...", "url": "https://..."}. Please keep {} here even no data',
     )
     site_type = models.ForeignKey(

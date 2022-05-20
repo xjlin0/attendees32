@@ -101,7 +101,6 @@ class Utility:
             "settings": {
                 "attendee_to_attending": True,
                 "past_category_to_attendingmeet_meet": {},
-                "attendingmeet_meet_to_past_category": {},
                 "attendingmeet_pdf_export_groups": {},
             },
             "groups_see_all_meets_attendees": [],
@@ -128,6 +127,16 @@ class Utility:
     def folk_infos():
         return {
             "pdf_export": True,
+        }
+
+    @staticmethod
+    def meet_infos():
+        return {
+            "automatic_creation": {
+              "Gathering": True,
+              "Attendance": True
+            },
+            "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE
         }
 
     @staticmethod
