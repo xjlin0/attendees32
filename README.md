@@ -391,7 +391,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [x] [PR#28](https://github.com/xjlin0/attendees30/pull/28) from Attendee detail and attendee list page
   - [x] [PR#30](https://github.com/xjlin0/attendees30/pull/30) importer load_access_csv need to import bap date and believer, not only by membership.
 - [x] Move "age, grade and mobility" from Attending.infos to Attendee.infos.fixed, since same attendee may join many activities
-- [ ] AttendingMeet list (server side processing)
+- [x] [2PR#18](https://github.com/xjlin0/attendees32/pull/19) AttendingMeet list (server side processing)
   - [x] [2PR#18](https://github.com/xjlin0/attendees32/pull/18) new AttendingMeet datagrid filtered by meets and date ranges
   - [ ] auto-generation of AttendingMeet by django-schedule with certain Past
 - [ ] Attendance list (server side processing with auto-generation)
