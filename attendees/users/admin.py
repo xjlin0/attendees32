@@ -21,20 +21,72 @@ User = get_user_model()
 class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
+    superuser_fieldsets = (
+        (None, {"fields": ("username", "password")}),
+        (
+            "User",
+            {
+                "fields": (
+                    "is_superuser",
+                    "organization",
+                )
+            },
+        ),
+        (_("Personal info"), {"fields": ("name", "email")}),
+        (
+            _("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+    )
+
+    general_fieldsets = (
+        (None, {"fields": ("username", "password")}),
+        (_("Personal info"), {"fields": ("name", "email")}),
+        (
+            _("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+    )
+    # add_fieldsets = auth_admin.UserAdmin.add_fieldsets
+
     list_display = ["username", "organization", "is_staff", "is_superuser"]
     search_fields = ["username"]
 
     def get_fieldsets(self, request, obj=None):
-        credentials = (None, {"fields": ("username", "password")})
-        super_users = ("Super user fields", {"fields": ("organization", "is_superuser")})
-        personal_info = (_("Personal info"), {"fields": ("name", "email")})
-        permissions = (_("Permissions"), {"fields": ("is_active", "is_staff", "groups", "user_permissions")})
-        important_dates = (_("Important dates"), {"fields": ("last_login", "date_joined")})
-
+        if not obj:
+            return self.add_fieldsets
         if request.user.is_superuser:
-            return (credentials, super_users, personal_info, permissions, important_dates)
+            return self.superuser_fieldsets
         else:
-            return (credentials, personal_info, permissions, important_dates)
+            return self.general_fieldsets
+
+    # def get_fieldsets(self, request, obj=None):
+    #     credentials = (None, {"fields": ("username", "password")})
+    #     super_users = ("Super user fields", {"fields": ("organization", "is_superuser")})
+    #     personal_info = (_("Personal info"), {"fields": ("name", "email")})
+    #     permissions = (_("Permissions"), {"fields": ("is_active", "is_staff", "groups", "user_permissions")})
+    #     important_dates = (_("Important dates"), {"fields": ("last_login", "date_joined")})
+    #
+    #     if request.user.is_superuser:
+    #         return (credentials, super_users, personal_info, permissions, important_dates)
+    #     else:
+    #         return (credentials, personal_info, permissions, important_dates)
 
 # from django.contrib import admin, messages
 # from django.contrib.auth import admin as auth_admin
