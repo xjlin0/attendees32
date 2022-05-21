@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from django.contrib.postgres import fields
+from django.db import models
 from django.db.models import Q
 from django_json_widget.widgets import JSONEditorWidget
 from django_summernote.admin import SummernoteModelAdmin
@@ -46,7 +46,7 @@ class CategoryAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class PastAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     # Todo 20210528  combine with NoteAdmin's show_secret
     search_fields = ("id", "display_name", "infos")
@@ -94,7 +94,7 @@ class PastAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = ("id", "display_name", "infos")
     readonly_fields = ["id", "created", "modified"]
@@ -145,7 +145,7 @@ class RelationAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class AttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = ("id", "infos")
     readonly_fields = ["id", "created", "modified"]
@@ -169,7 +169,7 @@ class AttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
 class RegistrationAdmin(PgHistoryPage, admin.ModelAdmin):
     # list_per_page = 1000
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     list_display_links = ("registrant",)
     list_display = ("id", "registrant", "assembly", "infos", "modified")
@@ -183,7 +183,7 @@ class AttendanceInline(admin.StackedInline):
 class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
     # list_per_page = 1000
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = (
         "attendee__first_name",
@@ -206,7 +206,7 @@ class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class NoteAdmin(PgHistoryPage, SummernoteModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = ("body",)
     readonly_fields = ["id", "created", "modified"]

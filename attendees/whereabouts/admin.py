@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from django.contrib.postgres import fields
+from django.db import models
 from django_json_widget.widgets import JSONEditorWidget
 
 # from attendees.occasions.models import *
@@ -12,7 +12,7 @@ from attendees.whereabouts.models import Place, Campus, Property, Suite, Room, D
 
 class PlaceAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = ("id", "display_name", "infos")
     list_display_links = ("id",)
@@ -31,7 +31,7 @@ class PlaceAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class DivisionAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     prepopulated_fields = {"slug": ("display_name",)}
     list_display_links = ("display_name",)
@@ -58,7 +58,7 @@ class DivisionAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class PropertyAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
@@ -88,7 +88,7 @@ class SuiteAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class RoomAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
@@ -97,7 +97,7 @@ class RoomAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class OrganizationAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]

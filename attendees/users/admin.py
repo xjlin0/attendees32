@@ -2,7 +2,7 @@ import pghistory
 from django.contrib import admin, messages
 from django.contrib.auth import admin as auth_admin
 from django.contrib.auth import get_user_model
-from django.contrib.postgres import fields
+
 from django.db import models
 from django.forms import TextInput
 from django.utils.translation import gettext_lazy as _
@@ -72,7 +72,7 @@ class MenuAuthGroupInline(PgHistoryPage, admin.TabularInline):
 class MenuAdmin(PgHistoryPage, MPTTModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
         models.CharField: {"widget": TextInput(attrs={"size": "100%"})},
     }
     mptt_level_indent = 20

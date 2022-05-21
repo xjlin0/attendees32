@@ -1,4 +1,5 @@
-import pghistory
+import pghistory, pytz
+from datetime import datetime
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.contenttypes.models import ContentType
@@ -6,7 +7,7 @@ from django.db import models
 import django.utils.timezone
 import model_utils.fields
 from django.urls import reverse
-# from django.contrib.postgres.fields.jsonb import JSONField
+from django.conf import settings
 from model_utils.models import SoftDeletableModel, TimeStampedModel
 from schedule.models import EventRelation
 
@@ -99,6 +100,13 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
             }
             for er in self.event_relations.all()
         ]
+
+    def schedule_text(self, timezone_name=settings.TIME_ZONE, format='%H:%M%p'):
+        schedules = [
+            f"{datetime.strftime(er.event.start.astimezone(pytz.timezone(timezone_name)), format)}~{datetime.strftime(er.event.end.astimezone(pytz.timezone(timezone_name)), format)} {timezone_name},{er.event.rule.name}@{Utility.get_location(er)}"
+            for er in self.event_relations.all()
+        ]
+        return ", ".join(schedules)
 
     class Meta:
         db_table = "occasions_meets"
