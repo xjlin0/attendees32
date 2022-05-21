@@ -101,7 +101,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
             for er in self.event_relations.all()
         ]
 
-    def schedule_text(self, timezone_name=settings.TIME_ZONE, format='%H:%M%p'):
+    def schedule_text(self, timezone_name=settings.TIME_ZONE, format='%H:%M%p %a'):
         schedules = [
             f"{datetime.strftime(er.event.start.astimezone(pytz.timezone(timezone_name)), format)}~{datetime.strftime(er.event.end.astimezone(pytz.timezone(timezone_name)), format)} {timezone_name},{er.event.rule.name}@{Utility.get_location(er)}"
             for er in self.event_relations.all()
