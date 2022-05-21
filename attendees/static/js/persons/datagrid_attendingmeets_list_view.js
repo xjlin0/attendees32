@@ -7,7 +7,7 @@ Attendees.attendingmeets = {
   loadOptions: null,
   selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
-  meetCharacters: null,
+  meetData: null,
   init: () => {
     console.log('static/js/persons/datagrid_attendingmeets_list_view.js');
     Attendees.attendingmeets.initFilterMeetCheckbox();
@@ -583,6 +583,11 @@ Attendees.attendingmeets = {
             dataField: 'finish',
             helpText: 'participation end time in browser timezone',
           },
+          {
+            dataField: 'create_attendances_till',
+            disabled: true,
+            helpText: 'Auto create future attendances (not supported yet)',
+          },
         ],
       },
     },
@@ -591,7 +596,8 @@ Attendees.attendingmeets = {
             e.component.editRow(e.row.rowIndex);
         }
     },
-    onInitNewRow: (rowData) => {
+    onInitNewRow: (e) => {
+      e.data.start = new Date();
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
     },
     onEditingStart: (e) => {
@@ -720,8 +726,9 @@ Attendees.attendingmeets = {
         setCellValue: (newData, value, currentData) => {
           newData.meet = value;
           newData.team = null;
-          const majorCharacter = Attendees.attendingmeets.meetCharacters[value];
-          if (majorCharacter && currentData.character === null) {newData.character = majorCharacter;}
+          const [finish, majorCharacter] = Attendees.attendingmeets.meetData[value];
+          if (majorCharacter && !currentData.character) {newData.character = majorCharacter;}
+          if (!currentData.finish) { newData.finish = new Date(finish); }
         },
         editorOptions: {
           placeholder: 'Example: "The Rock"',
@@ -739,8 +746,8 @@ Attendees.attendingmeets = {
                   const d = new $.Deferred();
                   $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
                     .done((result) => {
-                      if (result.data && Attendees.attendingmeets.meetCharacters === null) {
-                        Attendees.attendingmeets.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
+                      if (result.data && Attendees.attendingmeets.meetData === null) {
+                        Attendees.attendingmeets.meetData = result.data.reduce((all, now)=> {all[now.id] = [now.finish, now.major_character]; return all}, {});
                       }  // cache the every meet's major characters for later use
                       d.resolve(result.data);
                     });
@@ -816,6 +823,19 @@ Attendees.attendingmeets = {
             };
           }
         },
+      },
+      {
+        dataField: 'create_attendances_till',
+        visible: false,
+        dataType: 'datetime',
+        label: {
+          text: 'Reserve attendances to',
+        },
+        editorOptions: {
+          type: 'datetime',
+          showClearButton: true,
+          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+        }
       },
       {
         dataField: 'start',

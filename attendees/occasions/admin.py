@@ -323,6 +323,10 @@ class GatheringAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            messages.warning(
+                request,
+                "You are superuser hence all records from all organizations shown here.",
+            )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":
