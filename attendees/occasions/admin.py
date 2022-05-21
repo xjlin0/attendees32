@@ -1,10 +1,9 @@
 from django.contrib import messages
 from django.contrib import admin
-from django.contrib.postgres import fields
-
+from django.db import models
 from django_json_widget.widgets import JSONEditorWidget
 from attendees.occasions.models import Attendance, MessageTemplate, Assembly, Price, Character, Meet, Gathering, Team
-
+from django.conf import settings
 from attendees.persons.models import PgHistoryPage
 from attendees.whereabouts.models import Organization, Division
 
@@ -24,7 +23,7 @@ from attendees.whereabouts.models import Organization, Division
 
 class MessageTemplateAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     readonly_fields = ["id", "created", "modified"]
     list_display = ("truncate_template", "type", "modified")
@@ -52,7 +51,7 @@ class MessageTemplateAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class AssemblyAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     prepopulated_fields = {"slug": ("display_name",)}
     # inlines = (AssemblyContactInline,)
@@ -235,14 +234,14 @@ class TeamAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     prepopulated_fields = {"slug": ("display_name",)}
     search_fields = ("display_name",)
     list_filter = ("assembly",)
     list_display_links = ("display_name",)
     list_display = ("id", "display_name", "slug", "assembly", "site")
-    readonly_fields = ["id", "created", "modified"]
+    readonly_fields = ["schedule_text", "id", "created", "modified"]
     fieldsets = (
         (
             None,
@@ -260,8 +259,8 @@ class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
                     ),
                     tuple(["site_type", "assembly", "site_id"]),
                     tuple(["id", "created", "modified"]),
+                    tuple(["schedule_text"]),
                 ),
-                # 'classes': ['hijack', ],  # the above entire fieldset
             },
         ),
     )
@@ -270,6 +269,10 @@ class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
         if db_field.name == "assembly":
             kwargs["queryset"] = Assembly.objects.all() if request.user.is_superuser else Assembly.objects.filter(division__organization=request.user.organization)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def schedule_text(self, obj):
+        schedules = obj.schedule_text(timezone_name=settings.CLIENT_DEFAULT_TIME_ZONE)
+        return f"Please {'change' if schedules else 'add'} in the 'Event Relations' section. {schedules}"
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -290,7 +293,7 @@ class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
 
 class GatheringAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
+        models.JSONField: {"widget": JSONEditorWidget},
     }
     # inlines = (AttendanceInline,)  # too many and haven't found easy way to limit inline models
     list_display_links = ("display_name",)
@@ -305,7 +308,7 @@ class GatheringAdmin(PgHistoryPage, admin.ModelAdmin):
                 "fields": (
                     tuple(["start", "finish"]),
                     tuple(["display_name", "infos"]),
-                    tuple(["site_type", "meet", "site_id", "occurrence"]),
+                    tuple(["site_type", "meet", "site_id"]),
                     tuple(["id", "created", "modified"]),
                 ),
             },
