@@ -77,7 +77,7 @@ class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
 
     def save_model(self, request, obj, form, change):
         if not obj.organization:
-            obj.organization_id = request.user.organization_id or 0
+            obj.organization_id = request.user and request.user.organization_id or 0
         obj.save()
 
 
