@@ -63,7 +63,6 @@ class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-    # add_fieldsets = auth_admin.UserAdmin.add_fieldsets
 
     list_display = ["username", "organization", "is_staff", "is_superuser"]
     search_fields = ["username"]
@@ -76,43 +75,10 @@ class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
         else:
             return self.general_fieldsets
 
-    # def get_fieldsets(self, request, obj=None):
-    #     credentials = (None, {"fields": ("username", "password")})
-    #     super_users = ("Super user fields", {"fields": ("organization", "is_superuser")})
-    #     personal_info = (_("Personal info"), {"fields": ("name", "email")})
-    #     permissions = (_("Permissions"), {"fields": ("is_active", "is_staff", "groups", "user_permissions")})
-    #     important_dates = (_("Important dates"), {"fields": ("last_login", "date_joined")})
-    #
-    #     if request.user.is_superuser:
-    #         return (credentials, super_users, personal_info, permissions, important_dates)
-    #     else:
-    #         return (credentials, personal_info, permissions, important_dates)
-
-# from django.contrib import admin, messages
-# from django.contrib.auth import admin as auth_admin
-# from django.contrib.auth import get_user_model
-# from django.contrib.postgres import fields
-# from django.forms import TextInput
-# from django.db import models
-# from django_json_widget.widgets import JSONEditorWidget
-# from mptt.admin import MPTTModelAdmin
-# from .models import Menu, MenuAuthGroup
-#
-# from attendees.users.forms.admin_forms import UserChangeForm, UserCreationForm
-
-# User = get_user_model()
-
-
-# @admin.register(User)
-# class UserAdmin(auth_admin.UserAdmin):
-#
-#     form = UserChangeForm
-#     add_form = UserCreationForm
-#     fieldsets = (
-#                     ("User", {"fields": ("name", "organization",)}),
-#                 ) + auth_admin.UserAdmin.fieldsets
-#     list_display = ["username", "organization", "is_staff", "is_superuser"]
-#     search_fields = ["name"]
+    def save_model(self, request, obj, form, change):
+        if not obj.organization:
+            obj.organization_id = request.user.organization_id or 0
+        obj.save()
 
 
 class MenuAuthGroupInline(PgHistoryPage, admin.TabularInline):
