@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 
 from attendees.users.models import User
+from attendees.whereabouts.models import Organization
 
 pytestmark = pytest.mark.django_db
 
@@ -18,6 +19,7 @@ class TestUserAdmin:
         assert response.status_code == 200
 
     def test_add(self, admin_client):
+        Organization.objects.update_or_create(id=0, slug="a8dE2e_none", display_name="No organization assigned")
         url = reverse("admin:users_user_add")
         response = admin_client.get(url)
         assert response.status_code == 200
