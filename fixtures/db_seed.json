@@ -2810,7 +2810,7 @@
       "html_type": "a",
       "urn": "/persons/cfcch_children_ministry/cfcch_junior_regular_activity/datagrid_assembly_all_attendings/?characters=d7c8Fd_cfcch_kid_student",
       "url_name": "datagrid_assembly_all_attendings",
-      "display_name": "regular-kid attending 一般活動參與",
+      "display_name": "regular-kid attending 一般活動登記",
       "display_order": 2300,
       "infos": {
         "class": "dropdown-item",
@@ -3171,7 +3171,7 @@
       "html_type": "a",
       "urn": "/occasions/gatherings/",
       "url_name": "gatherings_list_view",
-      "display_name": "gatherings 定期活動綜覽",
+      "display_name": "gatherings 每次活動綜覽",
       "display_order": 1600,
       "infos": {
         "class": "dropdown-item",
@@ -3269,7 +3269,7 @@
       "html_type": "a",
       "urn": "/persons/attendingmeets/",
       "url_name": "attendingmeets_list_view",
-      "display_name": "attending meet 活動參加綜覽",
+      "display_name": "attending meet 活動登記綜覽",
       "display_order": 1700,
       "infos": {
         "class": "dropdown-item",

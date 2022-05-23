@@ -5,6 +5,8 @@ Attendees.utilities = {
   datagridStorageKeys: {
     datagridAttendingmeetsListView: "attendeesAttendingmeetsList",
     datagridAttendingmeetsListViewOpts: "attendeesAttendingmeetsListOpts",
+    attendancesListView: "attendancesListView",
+    attendancesListViewOpts: "attendancesListViewOpts",
     gatheringsListView: "attendeesGatheringsList",
     attendeeListView: "attendeesAttendeesList",
   },
