@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 {% block title %}
-  All attendances
+  Attending Meet List
 {% endblock title %}
 
 {% block extra_css %}
@@ -28,11 +28,11 @@
 {% endblock extra_head %}
 
 {% block content %}
-<div class="attendance-container">
+<div class="attendingmeet-container">
   <div class="d-flex justify-content-between">
     <div class="d-flex">
       <h3>
-        Attendance list (non working draft)
+        Attendance list
       </h3>
     </div>
     <div class="">
@@ -42,21 +42,26 @@
     <div id="custom-control-edit-switch">
     </div>
     <div class="d-flex">
-      <div id="generate-attendances">
-      </div>
+      <a target="_blank"
+         style="padding: 5px; text-decoration: none; height: 1.6rem;"
+         role="button"
+         class="btn btn-outline-secondary btn-sm add-attendee"
+         title="add a new attendee without assigning families in a new tab"
+         aria-label="+ Attendee">
+        <span class="fas fa-user-plus" aria-hidden="true"></span>
+        Attendance list
+      </a>
     </div>
   </div>
 
   <form class="filters-dxform"
-       data-content-type-models-endpoint="{{content_type_models_endpoint}}"
-       data-gatherings-endpoint="{{gatherings_endpoint}}"
-       data-series-gatherings-endpoint="{{series_gatherings_endpoint}}"
-       data-meets-endpoint-by-id="{{meets_endpoint_by_id}}"
+       data-characters-endpoint="{{characters_endpoint}}"
+       data-attendingmeets-endpoint="{{attendingmeets_endpoint}}"
+       data-assemblies-endpoint="{{assemblies_endpoint}}"
+       data-attendings-endpoint="{{attendings_endpoint}}"
+       data-teams-endpoint="{{teams_endpoint}}"
        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
     {% csrf_token %}
   </form>
-
-  <div class="attendance-datagrids">
-  </div>
 </div>
 {% endblock content %}

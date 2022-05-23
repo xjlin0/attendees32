@@ -2,16 +2,17 @@ Attendees.attendances = {
   filtersForm: null,
   meetScheduleRules: {},
   selectedMeetHasRule: false,
-  generateGatheringsButton: null,
+  initialized: false,
   filterMeetCheckbox: null,
-  contentTypeEndpoint: '',
-  contentTypeEndpoints: {},
+  loadOptions: null,
+  selectedCharacterSlugs: [],
+  selectedMeetSlugs: [],
+  meetData: null,
   init: () => {
-    console.log('static/js/occasions/attendances_list_view.js');
-   // Attendees.attendances.initFilterMeetCheckbox();
-   Attendees.attendances.initEditingSwitch();
-   Attendees.attendances.initFiltersForm();
-//    Attendees.attendances.initGenerateButton();
+    console.log('static/js/persons/datagrid_attendingmeets_list_view.js');
+    Attendees.attendances.initFilterMeetCheckbox();
+    Attendees.attendances.initEditingSwitch();
+    Attendees.attendances.initFiltersForm();
   },
 
   initEditingSwitch: () => {
@@ -40,97 +41,24 @@ Attendees.attendances = {
     }).dxCheckBox('instance');
   },
 
-  initGenerateButton: () => {
-    Attendees.attendances.generateGatheringsButton = $('div#generate-attendances').dxButton({
-      disabled: true,
-      text: 'Generate Gatherings',
-      height: '1.5rem',
-      hint: 'Disabled when multiple meets selected or no duration filled',
-      onClick: () => {
-        if (Attendees.attendances.filtersForm.validate().isValid && confirm('Are you sure to auto generate all gatherings of the chosen meet between the filtered date?')) {
-          const params = {};
-          const filterFrom = $('div.filter-from input')[1].value;
-          const filterTill = $('div.filter-till input')[1].value;
-          params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : null;
-          params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
-          params['duration'] = Attendees.attendances.filtersForm.getEditor('duration').option('value');
-          const meetSlugs = $('div.selected-meets select').val();
-          if (params['begin'] && params['end'] && Attendees.attendances.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
-            params['meet_slug'] = meetSlugs[0];
-            return $.ajax({
-              url: $('form.filters-dxform').data('series-gatherings-endpoint'),
-              method: 'POST',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify(params),
-              success: (result) => {
-                DevExpress.ui.notify(
-                  {
-                    message: 'Batch processed, ' + result.number_created + ' successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
-                    width: 500,
-                    position: {
-                      my: 'center',
-                      at: 'center',
-                      of: window,
-                    },
-                  }, 'success', 3000);
-              },
-              error: (result) => {
-                console.log("hi gatherings_list_view.js 74 here is error result: ", result);
-                DevExpress.ui.notify(
-                  {
-                    message: 'Batch processing error. ' + result && result.responseText,
-                    width: 500,
-                    position: {
-                      my: 'center',
-                      at: 'center',
-                      of: window,
-                    },
-                  }, 'error', 5000);
-              },
-              complete: () => {
-                Attendees.attendances.gatheringsDatagrid.refresh();
-              }, // partial gatherings may have generated even when errors
-            });
-          } else {
-            DevExpress.ui.notify(
-              {
-                message: "Can't generate, Please select one single meet with duration, and Filter 'till' earlier than filter 'from'",
-                width: 500,
-                position: {
-                  my: 'center',
-                  at: 'center',
-                  of: window,
-                },
-              }, 'error', 2000);
-          }
-        }
-      },
-    }).dxButton('instance');
-  },
-
   toggleEditing: (enabled) => {
-    // if (Attendees.attendances.gatheringsDatagrid) {
-    //   Attendees.attendances.gatheringsDatagrid.option('editing.allowUpdating', enabled);
-    //   Attendees.attendances.gatheringsDatagrid.option('editing.allowAdding', enabled);
-    //   Attendees.attendances.gatheringsDatagrid.option('editing.allowDeleting', enabled);
-    //   Attendees.attendances.gatheringsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
-    // }
-    // Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
-  },
+    if (Attendees.attendances.attendingmeetsDatagrid) {
+      Attendees.attendances.attendingmeetsDatagrid.option('editing.allowUpdating', enabled);
+      Attendees.attendances.attendingmeetsDatagrid.option('editing.allowAdding', enabled);
+      Attendees.attendances.attendingmeetsDatagrid.option('editing.allowDeleting', enabled);
+      Attendees.attendances.attendingmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+    }
+    const addAttendeeLink = document.querySelector('a.add-attendee');
+    if (enabled) {
+      addAttendeeLink.classList.remove("btn-outline-secondary");
+      addAttendeeLink.classList.add("btn-outline-success");
+      addAttendeeLink.href = '/persons/attendee/new?familyName=without';
+    } else {
+      addAttendeeLink.removeAttribute("href");
+      addAttendeeLink.classList.add("btn-outline-secondary");
+      addAttendeeLink.classList.remove("btn-outline-success");
 
-  readyToGenerate: () => {
-    const filterFrom = Attendees.attendances.filtersForm.getEditor('filter-from').option('value');
-    const filterTill = Attendees.attendances.filtersForm.getEditor('filter-till').option('value');
-
-    return Attendees.attendances.selectedMeetHasRule &&
-      Attendees.attendances.filtersForm &&
-      Attendees.attendances.filtersForm.validate().isValid &&
-      filterFrom && filterTill && filterTill > filterFrom &&
-      Attendees.attendances.filtersForm.getEditor('meets').option('value') &&
-      Attendees.attendances.filtersForm.getEditor('meets').option('value').length === 1 &&
-      Attendees.attendances.filtersForm.getEditor('duration').option('value') &&
-      Attendees.attendances.filtersForm.getEditor('duration').option('value') > 0
+    }
   },
 
   initFiltersForm: () => {
@@ -151,7 +79,7 @@ Attendees.attendances = {
         colSpan: 3,
         cssClass: 'filter-from',
         dataField: 'filter-from',
-        helpText: 'required to generate attendances',
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
@@ -168,17 +96,20 @@ Attendees.attendances = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: new Date(new Date().setHours(new Date().getHours() - 1)),
+          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString') === undefined ? new Date(new Date().setHours(new Date().getHours() - 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString')) : null,
           type: 'datetime',
           onValueChanged: (e) => {
+            const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString', filterFromString);
             // Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
-            // if (Attendees.attendances.filterMeetCheckbox.option('value')) {
-            //   Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
-            // }  // allow users to screen only active meets by meet's start&finish
-            // const meets = $('div.selected-meets select').val();
-            // if (meets.length) {
-            //   Attendees.attendances.gatheringsDatagrid.refresh();
-            // }
+            if (Attendees.attendances.filterMeetCheckbox.option('value')) {
+              Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
+            }
+            const meets = $('div.selected-meets select').val();
+            const characters = $('div.selected-characters select').val();
+            if (meets.length && characters.length) {
+              Attendees.attendances.attendingmeetsDatagrid.refresh();
+            }
           },
         },
       },
@@ -186,7 +117,7 @@ Attendees.attendances = {
         colSpan: 3,
         cssClass: 'filter-till',
         dataField: 'filter-till',
-        helpText: 'required to generate attendances',
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
@@ -203,24 +134,27 @@ Attendees.attendances = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString') === undefined ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString')) : null,
           type: 'datetime',
           onValueChanged: (e) => {
-            // Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
-            // if (Attendees.attendances.filterMeetCheckbox.option('value')) {
-            //   Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
-            // }
-            // const meets = $('div.selected-meets select').val();
-            // if (meets.length) {
-            //   Attendees.attendances.gatheringsDatagrid.refresh();
-            // }
+            // Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
+            const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString', filterTillString);
+            if (Attendees.attendances.filterMeetCheckbox.option('value')) {
+              Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
+            }  // allow users to screen only active meets by meet's start&finish
+            const meets = $('div.selected-meets select').val();
+            const characters = $('div.selected-characters select').val();
+            if (meets.length && characters.length) {
+              Attendees.attendances.attendingmeetsDatagrid.refresh();
+            }
           },
         },
       },
       {
         dataField: 'meets',
-        colSpan: 5,
-        helpText: 'Select single one to view/generate gatherings, or multiple one to view',
+        colSpan: 6,
+        helpText: "Can't show schedules when multiple selected. Select single one to view its schedules",
         cssClass: 'selected-meets',
         validationRules: [{type: 'required'}],
         label: {
@@ -233,16 +167,38 @@ Attendees.attendances = {
           displayExpr: 'display_name',
           showClearButton: true,
           searchEnabled: false,
+          buttons:[
+            'clear',
+            {
+              name: 'selectAll',
+              stylingMode: 'outlined',
+              location: 'after',
+              options: {
+                icon: 'fas fa-solid fa-check-double',
+                type: 'default',
+                elementAttr: {
+                  title: 'select all meets',
+                },
+                onClick() {
+                  Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('meets'));
+                },
+              },
+            }
+          ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.attendances.filtersForm.validate();
-            const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
+            const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules";
             const $meetHelpText = Attendees.attendances.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
             Attendees.attendances.selectedMeetHasRule = false;
-            Attendees.attendances.generateGatheringsButton.option('disabled', true);
+            // Attendees.attendances.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
-              Attendees.attendances.gatheringsDatagrid.refresh();
+              const characters = $('div.selected-characters select').val();
+              if (characters.length) {
+                Attendees.attendances.attendingmeetsDatagrid.refresh();
+              }
               if (e.value.length < 2) {
                 const newHelpTexts = [];
                 let finalHelpText = '';
@@ -268,14 +224,14 @@ Attendees.attendances = {
                     }
                   });
                   finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-                  if (Attendees.attendances.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
-                    Attendees.attendances.generateGatheringsButton.option('disabled', false);
-                  }
+                  // if (Attendees.attendances.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
+                  //   Attendees.attendances.generateGatheringsButton.option('disabled', false);
+                  // }
                 } else {
                   finalHelpText = noRuleText;
                 }
                 $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
-                Attendees.attendances.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
+                // Attendees.attendances.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
               }
             }
           },
@@ -293,7 +249,20 @@ Attendees.attendances = {
                   params['finish'] = filterTill ? new Date(filterTill).toISOString() : null;
                   params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
-                return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), params);
+                $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
+                  .done((result) => {
+                    d.resolve(result.data);
+                    if (Object.keys(Attendees.attendances.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+                      result.data.forEach( assembly => {
+                        assembly.items.forEach( meet => {
+                          Attendees.attendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                        })
+                      }); // schedule rules needed for attendingmeets generation
+                    }
+                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs') || [];
+                    Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('meets'), selectedMeetSlugs);
+                  });
+                return d.promise();
               },
             }),
             key: 'slug',
@@ -301,55 +270,103 @@ Attendees.attendances = {
         },
       },
       {
-        colSpan: 1,
-        dataField: 'duration',
-        editorType: 'dxTextBox',
-        helpText: '(minutes)',
+        dataField: 'characters',
+        colSpan: 12,
+        helpText: 'Select one or more characters to filter results',
+        cssClass: 'selected-characters',
+        validationRules: [{type: 'required'}],
         label: {
           location: 'top',
-          text: 'duration',
+          text: 'Select characters',
         },
+        editorType: 'dxTagBox',
         editorOptions: {
-          value: 90,
-          // disabled: true,
+          valueExpr: 'slug',
+          displayExpr: 'display_name',
+          showClearButton: true,
+          searchEnabled: false,
+          buttons:[
+            'clear',
+            {
+              name: 'selectAll',
+              stylingMode: 'outlined',
+              location: 'after',
+              options: {
+                icon: 'fas fa-solid fa-check-double',
+                type: 'default',
+                elementAttr: {
+                  title: 'select all characters',
+                },
+                onClick() {
+                  Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('characters'));
+                },
+              },
+            }
+          ],
+          grouped: true,  // need to send params['grouping'] = 'assembly_name';
+          onValueChanged: (e)=> {
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedCharacterSlugs', e.value);
+            Attendees.attendances.filtersForm.validate();
+            const meets = $('div.selected-meets select').val();
+            if (meets.length && e.value && e.value.length > 0 && Attendees.attendances.attendingmeetsDatagrid) {
+              Attendees.attendances.attendingmeetsDatagrid.refresh();
+            }
+          },
+          dataSource: new DevExpress.data.DataSource({
+            store: new DevExpress.data.CustomStore({
+              key: 'slug',
+              load: (loadOptions) => {
+                const d = new $.Deferred();
+                const params = {};
+                if (Attendees.attendances.filterMeetCheckbox.option('value')) {
+                  params['grouping'] = 'assembly_name';  // for grouped: true,
+                }
+                $.get($('form.filters-dxform').data('characters-endpoint'), params)
+                  .done((result) => {
+                    d.resolve(result.data);
+                    const selectedCharacterSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedCharacterSlugs') || [];
+                    Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('characters'), selectedCharacterSlugs);
+                  });
+                return d.promise();
+              },
+            }),
+            key: 'slug',
+          }),
         },
       },
       {
         colSpan: 12,
-        dataField: "filtered_gathering_set",
+        dataField: "filtered_attendingmeet_set",
         label: {
           location: 'top',
           text: ' ',  // empty space required for removing label
           showColon: false,
         },
         template: (data, itemElement) => {
-          Attendees.attendances.gatheringsDatagrid = Attendees.attendances.initFilteredGatheringsDatagrid(data, itemElement);
+          Attendees.attendances.attendingmeetsDatagrid = Attendees.attendances.initFilteredAttendingmeetsDatagrid(data, itemElement);
         },
       },
     ],
   },
 
-  selectAllMeets: () => {
-    const availableMeetsDxTagBox = Attendees.attendances.filtersForm.getEditor('meets');
-    const availableMeetSlugs = availableMeetsDxTagBox.option('items').flatMap(assembly => assembly.items.map(meet => meet.slug));
-    availableMeetsDxTagBox.option('value', availableMeetSlugs);
-  },  // loop in loop because of options grouped by assembly
-
-  initFilteredGatheringsDatagrid: (data, itemElement) => {
-    const $gatheringDatagrid = $("<div id='gatherings-datagrid-container'>").dxDataGrid(Attendees.attendances.gatheringDatagridConfig);
-    itemElement.append($gatheringDatagrid);
-    return $gatheringDatagrid.dxDataGrid('instance');
+  initFilteredAttendingmeetsDatagrid: (data, itemElement) => {
+    const $attendingmeetDatagrid = $("<div id='attendingmeets-datagrid-container'>").dxDataGrid(Attendees.attendances.attendingmeetDatagridConfig);
+    itemElement.append($attendingmeetDatagrid);
+    return $attendingmeetDatagrid.dxDataGrid('instance');
   },
 
-  gatheringDatagridConfig: {
+  attendingmeetDatagridConfig: {
     dataSource: {
       store: new DevExpress.data.CustomStore({
         key: 'id',
         load: (loadOptions) => {
+          Attendees.attendances.loadOptions = loadOptions;
           const meets = $('div.selected-meets select').val();
+          const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
           const args = {
             meets: meets,
+            characters: characters,
             start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
             finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
           };
@@ -365,12 +382,12 @@ Attendees.attendances = {
             'group',
             'groupSummary',
           ].forEach((i) => {
-              if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
-                  args[i] = JSON.stringify(loadOptions[i]);
+            if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+              args[i] = JSON.stringify(loadOptions[i]);
           });
 
           $.ajax({
-            url: $('form.filters-dxform').data('gatherings-endpoint'),
+            url: $('form.filters-dxform').data('attendingmeets-endpoint'),
             dataType: "json",
             data: args,
             success: (result) => {
@@ -381,7 +398,7 @@ Attendees.attendances = {
               });
             },
             error: () => {
-              deferred.reject("Data Loading Error, probably time out?");
+              deferred.reject("Data Loading Error for attendingmeet datagrid, probably time out?");
             },
             timeout: 60000,
           });
@@ -390,7 +407,7 @@ Attendees.attendances = {
         },
         byKey: (key) => {
           const d = new $.Deferred();
-          $.get($('form.filters-dxform').data('gatherings-endpoint') + key + '/')
+          $.get($('form.filters-dxform').data('attendingmeets-endpoint') + key + '/')
             .done((result) => {
               d.resolve(result.data);
             });
@@ -398,7 +415,7 @@ Attendees.attendances = {
         },
         update: (key, values) => {
           return $.ajax({
-            url: $('form.filters-dxform').data('gatherings-endpoint') + key + '/',
+            url: $('form.filters-dxform').data('attendingmeets-endpoint') + key + '/',
             method: 'PATCH',
             dataType: 'json',
             contentType: 'application/json; charset=utf-8',
@@ -419,7 +436,7 @@ Attendees.attendances = {
         },
         insert: function (values) {
           return $.ajax({
-            url: $('form.filters-dxform').data('gatherings-endpoint'),
+            url: $('form.filters-dxform').data('attendingmeets-endpoint'),
             method: 'POST',
             dataType: 'json',
             contentType: 'application/json; charset=utf-8',
@@ -440,7 +457,7 @@ Attendees.attendances = {
         },
         remove: (key) => {
           return $.ajax({
-            url: $('form.filters-dxform').data('gatherings-endpoint') + key ,
+            url: $('form.filters-dxform').data('attendingmeets-endpoint') + key ,
             method: 'DELETE',
             success: (result) => {
               DevExpress.ui.notify(
@@ -476,249 +493,368 @@ Attendees.attendances = {
       showInfo: true,
       showNavigationButtons: true,
     },
+    stateStoring: {
+      enabled: true,
+      type: "sessionStorage",
+      storageKey: Attendees.utilities.datagridStorageKeys['attendancesListView'],
+    },
     loadPanel: {
       message: 'Fetching...',
       enabled: true,
     },
     wordWrapEnabled: false,
     width: '100%',
-     grouping: {
-       autoExpandAll: true,
-     },
-     groupPanel: {
-       visible: 'auto',
-     },  // remoteOperations need server grouping https://js.devexpress.com/Documentation/Guide/Data_Binding/Specify_a_Data_Source/Custom_Data_Sources/#Load_Data/Server-Side_Data_Processing
+    grouping: {
+      autoExpandAll: true,
+    },
+    groupPanel: {
+      visible: 'auto',
+    },
     columnChooser: {
       enabled: true,
       mode: 'select',
+    },
+    onToolbarPreparing: (e) => {
+      const toolbarItems = e.toolbarOptions.items;
+      toolbarItems.unshift({
+        location: 'after',
+        widget: 'dxButton',
+        options: {
+          hint: 'Reset Sort/Group/Columns/Meets/Character/Time settings',
+          icon: 'pulldown',
+          onClick() {
+            if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
+              Attendees.attendances.attendingmeetsDatagrid.state(null);
+              window.sessionStorage.removeItem('attendancesListViewOpts');
+              Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('characters'), []);
+              Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('meets'), []);
+              Attendees.attendances.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
+              Attendees.attendances.filtersForm.getEditor('filter-till').option('value', new Date(new Date().setMonth(new Date().getMonth() + 1)));
+            }
+          },
+        },
+      });
     },
     editing: {
       allowUpdating: false,
       allowAdding: false,
       allowDeleting: false,
       texts: {
-        confirmDeleteMessage: 'Are you sure to delete it and all its attendances? Instead, setting the "finish" date is usually enough!',
+        confirmDeleteMessage: 'Are you sure to delete it and all its future attendances? Instead, setting the "finish" date is usually enough!',
       },
       mode: 'popup',
       popup: {
         showTitle: true,
-        title: 'gatheringEditingArgs',
+        title: 'attendingmeetEditingArgs',
         onContentReady: e => e.component.option('toolbarItems[0].visible', false),
       },
       form: {
         colCount: 2,
         items: [
           {
-            dataField: 'meet',
-            helpText: "What's the event?",
+            dataField: 'assembly',
+            helpText: "Select to filter meet and character",
           },
           {
-            dataField: 'display_name',
-            helpText: 'Event name and date',
+            dataField: 'meet',
+            helpText: "What's the activity?",
+          },
+          {
+            dataField: 'attending',
+            helpText: "who?",
+          },
+          {
+            dataField: 'character',
+            helpText: 'define participation role',
+          },
+          {
+            dataField: 'team',
+            helpText: '(Optional) joining team',
+          },
+          {
+            dataField: 'category',
+            helpText: 'What type of participation?',
           },
           {
             dataField: 'start',
-            helpText: 'Event start time in browser timezone',
+            helpText: 'participation start time in browser timezone',
           },
           {
             dataField: 'finish',
-            helpText: 'Event end time in browser timezone',
+            helpText: 'participation end time in browser timezone',
           },
           {
-            dataField: 'site_type',
-            helpText: 'More specific/smaller place preferred',
-          },
-          {
-            dataField: 'site_id',
-            helpText: 'Where the event be hold',
-//            cssClass: 'in-popup-site-id',
+            dataField: 'create_attendances_till',
+            disabled: true,
+            helpText: 'Auto create future attendances (not supported yet)',
           },
         ],
       },
     },
     onCellClick: (e) => {
-        if (e.rowType === 'data' && e.column.dataField === 'display_name') {
-            e.component.editRow(e.row.rowIndex);
-        }
+      if (e.rowType === 'data' && e.column.dataField === 'attending') {
+        e.component.editRow(e.row.rowIndex);
+      }
     },
-    onInitNewRow: (rowData) => {
-      Attendees.attendances.gatheringsDatagrid.option('editing.popup.title', 'Adding Gathering');
+    onInitNewRow: (e) => {
+      e.data.start = new Date();
+      Attendees.attendances.attendingmeetsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
     },
     onEditingStart: (e) => {
+      const grid = e.component;
+      grid.beginUpdate();
+
       if (e.data && typeof e.data === 'object') {
-        Attendees.attendances.contentTypeEndpoint = Attendees.attendances.contentTypeEndpoints[e.data['site_type']];
-        const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Info: ';
-        Attendees.attendances.gatheringsDatagrid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
+        const title = Attendees.utilities.editingEnabled ? 'Editing Attending meet' : 'Read only Info, please enable editing for modifications';
+        grid.option('editing.popup.title', title);
       }
-    },
-    onEditorPrepared: (e) => {
-      if (e.dataField === 'site_id') {
-        Attendees.attendances.siteIdElement = e;
-      }
+      grid.option("columns").forEach((column) => {
+        grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
+      });
+      grid.endUpdate();
     },
     columns: [
+      {
+        dataField: 'attending',
+        validationRules: [{type: 'required'}],
+        cellTemplate: (cellElement, cellInfo) => {
+          cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'attending_label',
+          dataSource: {
+            store: new DevExpress.data.CustomStore({
+              key: 'id',
+              load: (loadOptions) => {
+                const meets = $('div.selected-meets select').val();
+                const characters = $('div.selected-characters select').val();
+                const deferred = $.Deferred();
+                loadOptions['sort'] = Attendees.attendances.attendingmeetsDatagrid && Attendees.attendances.attendingmeetsDatagrid.getDataSource().loadOptions().group;
+                const args = {
+                  meets: meets,
+                  characters: characters,
+                  searchOperation: loadOptions['searchOperation'],
+                  searchValue: loadOptions['searchValue'],
+                  searchExpr: loadOptions['searchExpr'],
+                  start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
+                  finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
+                };
+
+                [
+                  'skip',
+                  'take',
+                  'requireTotalCount',
+                  'requireGroupCount',
+                  'sort',
+                  'filter',
+                  'totalSummary',
+                  // 'group',
+                  // 'groupSummary',
+                ].forEach((i) => {
+                  if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+                    args[i] = JSON.stringify(loadOptions[i]);
+                });
+
+                $.ajax({
+                  url: $('form.filters-dxform').data('attendings-endpoint'),
+                  dataType: "json",
+                  data: args,
+                  success: (result) => {
+                    deferred.resolve(result.data, {
+                      totalCount: result.totalCount,
+                      summary:    result.summary,
+                      groupCount: result.groupCount,
+                    });
+                  },
+                  error: () => {
+                    deferred.reject("Data Loading Error for attending lookup, probably time out?");
+                  },
+                  timeout: 10000,
+                });
+
+                return deferred.promise();
+              },
+              byKey: (key) => {
+                if (key) {
+                  const d = $.Deferred();
+                  $.get($('form.filters-dxform').data('attendings-endpoint') + key + '/').done((response) => {
+                    d.resolve(response);
+                  });
+                  return d.promise();
+                }
+              },
+            }),
+          },
+        },
+      },
+      {
+        dataField: 'assembly',
+        groupIndex: 0,
+        validationRules: [{type: 'required'}],
+        caption: 'Group (Assembly)',
+        setCellValue: (newData, value, currentData) => {
+          newData.assembly = value;
+          newData.meet = null;
+          newData.character = null;
+          newData.team = null;
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: {
+            store: new DevExpress.data.CustomStore({
+              key: 'id',
+              load: () => $.getJSON($('form.filters-dxform').data('assemblies-endpoint')),
+              byKey: (key) => {
+                if (key) {
+                  const d = $.Deferred();
+                  $.get($('form.filters-dxform').data('assemblies-endpoint') + key + '/').done((response) => {
+                    d.resolve(response);
+                  });
+                  return d.promise();
+                }
+              },
+            }),
+          },
+        },
+      },
       {
         dataField: 'meet',
         width: '10%',
         validationRules: [{type: 'required'}],
+        setCellValue: (newData, value, currentData) => {
+          newData.meet = value;
+          newData.team = null;
+          const [finish, majorCharacter] = Attendees.attendances.meetData[value];
+          if (majorCharacter && !currentData.character) {newData.character = majorCharacter;}
+          if (!currentData.finish) { newData.finish = new Date(finish); }
+        },
         editorOptions: {
           placeholder: 'Example: "The Rock"',
         },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
-          dataSource: {
-            store: new DevExpress.data.CustomStore({
-              key: 'id',
-              load: () => {
-                const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('meets-endpoint-by-id'))
-                  .done((result) => {
-                    if (Object.keys(Attendees.attendances.meetScheduleRules).length < 1 && result.data && result.data[0]) {
-                      result.data.forEach(meet=>{
-                        Attendees.attendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
-                      }); // schedule rules needed for gathering generation
-                    }
-                    d.resolve(result.data);
-                  });
-                return d.promise();
-              },
-              byKey: (key) => {
-                return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-id') + key + '/');},
-            }),
+          dataSource: (options) => {
+            return {
+              // filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
+                  const d = new $.Deferred();
+                  $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
+                    .done((result) => {
+                      if (result.data && Attendees.attendances.meetData === null) {
+                        Attendees.attendances.meetData = result.data.reduce((all, now)=> {all[now.id] = [now.finish, now.major_character]; return all}, {});
+                      }  // cache the every meet's major characters for later use
+                      d.resolve(result.data);
+                    });
+                  return d.promise();
+                },
+                byKey: (key) => {
+                  return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug') + key + '/');
+                },
+              }),
+            };
           },
         },
       },
       {
-        dataField: 'display_name',
-        width: '30%',
-//        visible: false,
-        editorOptions: {
-          placeholder: 'Example: "The Rock - 12/25/2022"',
-        },
-        cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append ('<u class="text-info">' + cellInfo.data.display_name + '</u>');
+        dataField: 'character',
+        validationRules: [{type: 'required'}],
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              // filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
+                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('characters-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
         },
       },
       {
-        dataField: 'site',
-        width: '30%',
-        readOnly: true,
-        caption: 'Location (only grouped not sorted)',
+        dataField: 'category',
+        validationRules: [{type: 'required'}],
+      },
+      {
+        dataField: 'team',
+        visible: false,
+        editorOptions: {
+          showClearButton: true,
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  if (options.data && options.data.meet) {searchOpts['meets[]'] = options.data.meet; }
+                  return $.getJSON($('form.filters-dxform').data('teams-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('teams-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
+      },
+      {
+        dataField: 'create_attendances_till',
+        visible: false,
+        dataType: 'datetime',
+        label: {
+          text: 'Reserve attendances to',
+        },
+        editorOptions: {
+          type: 'datetime',
+          showClearButton: true,
+          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+        }
       },
       {
         dataField: 'start',
-        width: '30%',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
-        format: 'longDateLongTime',
+        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
-          placeholder: 'Click calendar to select date/time ⇨ ',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
         },
       },
       {
         dataField: 'finish',
-        visible: false,
-        caption: 'End',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
-        format: 'longDateLongTime',
+        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
-          placeholder: 'Click calendar to select date/time ⇨ ',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-        },
-      },
-      {
-        dataField: 'site_type',
-        visible: false,
-        caption: 'Location type',
-        validationRules: [{type: 'required'}],
-        editorOptions: {
-          placeholder: 'Example: "room"',
-        },
-        setCellValue: (rowData, value) => {
-          rowData.site_id = undefined;
-          Attendees.attendances.contentTypeEndpoint = Attendees.attendances.contentTypeEndpoints[value];
-          rowData.site_type = value;
-//          $('div.in-popup-site-id input')[1].value=''; Todo 20210814: can't clear site_id dxlookup after it reload
-//          Attendees.attendances.siteIdElement.value = undefined;
-        },
-        lookup: {
-          hint: 'select a location type',
-          valueExpr: 'id',
-          displayExpr: (rowData) => rowData.model + ': ' + rowData.hint,
-          dataSource: {
-            store: new DevExpress.data.CustomStore({
-              key: 'id',
-              load: (searchOpts) => {
-                const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('content-type-models-endpoint'), {query: 'location'})
-                  .done((result) => {
-                    Attendees.attendances.contentTypeEndpoints = result.data.reduce((obj, item) => ({...obj, [item.id]: item.endpoint}) ,{});
-                    d.resolve(result.data);
-                  });
-                return d.promise();
-              },
-              byKey: (key) => {
-                const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('content-type-models-endpoint') + key + '/', {query: 'location'})
-                  .done((result) => {
-                    if (result.data && result.data[0] && result.data[0].endpoint) {
-                      Attendees.attendances.contentTypeEndpoint = result.data[0].endpoint;
-                    }
-                    d.resolve(result.data);
-                  });
-                return d.promise();
-              },
-            }),
-          },
-        },
-      },
-      {
-        dataField: 'site_id',
-        visible: false,
-        cssClass: 'pre-popup-site-id',
-        caption: 'Location',
-        validationRules: [{type: 'required'}],
-        editorOptions: {
-          placeholder: 'Example: "Fellowship F201"',
-        },
-        lookup: {
-          allowClearing: true,
-          hint: 'select a location',
-          valueExpr: 'id',
-          displayExpr: 'display_name',
-          dataSource: {
-            store: new DevExpress.data.CustomStore({
-              key: 'id',
-              load: (searchArgs) => {
-                if (Attendees.attendances.contentTypeEndpoint) {
-                  const d = new $.Deferred();
-                  $.get(Attendees.attendances.contentTypeEndpoint, searchArgs)
-                    .done((result) => {
-                      d.resolve(result.data);
-                    });
-                  return d.promise();
-                }
-              },
-              byKey: (key) => {
-                if (Attendees.attendances.contentTypeEndpoint) {
-                  const d = new $.Deferred();
-                  $.get(Attendees.attendances.contentTypeEndpoint + key + '/')
-                    .done((result) => {
-                    if (result && result.id && parseInt(key) === result.id) {
-                      result.id = key;
-                    }  // Todo: type conversion for integer key of models other than address?
-                      d.resolve(result);
-                    });
-                  return d.promise();
-                }
-              },
-            }),
-          },
         },
       },
     ],
