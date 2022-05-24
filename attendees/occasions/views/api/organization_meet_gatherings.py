@@ -52,14 +52,14 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
             )  # order_by('meet','start')
             # Todo: add group colume to orderby_list
             if pk:
-                filters = {
+                extra_filters = {
                     'pk': pk,
                     'meet__assembly__division__organization': current_user_organization,
                 }
                 if not current_user.can_see_all_organizational_meets_attendees():
-                    filters['attendings__attendee'] = current_user.attendee
+                    extra_filters['attendings__attendee'] = current_user.attendee
 
-                return Gathering.objects.filter(**filters)
+                return Gathering.objects.filter(**extra_filters)
 
             else:
                 if group_string:
@@ -74,6 +74,7 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
                     start=self.request.query_params.get("start"),
                     finish=self.request.query_params.get("finish"),
                     orderbys=orderby_list,
+                    filter=self.request.query_params.get("filter"),
                 )
 
         else:

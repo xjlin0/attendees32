@@ -1,11 +1,24 @@
 from datetime import datetime, timedelta
 
+from address.models import Address
+from rest_framework.utils import json
 from django.db.models import Q
 
 from attendees.occasions.models import Gathering
+from attendees.whereabouts.models import Room, Suite, Property, Campus, Division, Organization
 
 
 class GatheringService:
+    SITE_SEARCHING_PROPERTIES = {
+        Room: 'display_name',
+        Suite: 'display_name',
+        Property: 'display_name',
+        Campus: 'display_name',
+        Division: 'display_name',
+        Organization: 'display_name',
+        Address: 'formatted',
+    }
+
     @staticmethod
     def by_assembly_meets(assembly_slug, meet_slugs):
         return Gathering.objects.filter(
@@ -39,20 +52,31 @@ class GatheringService:
         )  # another way is to get assemblys from registration, but it relies on attendingmeet validations
 
     @staticmethod
-    def by_organization_meets(current_user, meet_slugs, start, finish, orderbys):
+    def by_organization_meets(current_user, meet_slugs, start, finish, orderbys, filter):
         orderby_list = GatheringService.orderby_parser(orderbys)
-        filters = Q(
+        extra_filters = Q(
             meet__assembly__division__organization__slug=current_user.organization.slug
         ).add(Q(meet__slug__in=meet_slugs), Q.AND)
         # Todo 20220512 let scheduler see other attenings too?
         if not current_user.can_see_all_organizational_meets_attendees():
-            filters.add(Q(attendings__attendee=current_user.attendee), Q.AND)
+            extra_filters.add(Q(attendings__attendee=current_user.attendee), Q.AND)
+
+        if filter:  # only support display_name on single level because of generic relations
+            search_term = json.loads(filter)[0][2]
+            if search_term:
+                search_filters = Q(display_name__icontains=search_term)
+
+                for site, field in GatheringService.SITE_SEARCHING_PROPERTIES.items():
+                    site_filter = {f"{field}__icontains": search_term}
+                    search_filters.add((Q(site_type__model=site._meta.model_name) & Q(site_id__in=[str(id) for id in site.objects.filter(**site_filter).values_list('id', flat=True)])), Q.OR)
+
+                extra_filters.add(search_filters, Q.AND)
 
         if start:
-            filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
+            extra_filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
         if finish:
-            filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
-        return Gathering.objects.filter(filters).order_by(*orderby_list)
+            extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
+        return Gathering.objects.filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
     def batch_create(begin, end, meet_slug, duration, meet, user_time_zone):

@@ -68,6 +68,7 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
             )
         ]
         indexes = [
+            # models.Index(fields=["site_type", "site_id"]),
             GinIndex(
                 fields=["infos"],
                 name="gathering_infos_gin",
