@@ -36,6 +36,11 @@ class Team(TimeStampedModel, SoftDeletableModel, Utility):
     class Meta:
         db_table = "occasions_teams"
         indexes = [
+            models.Index(
+                fields=["site_type", "site_id"],
+                condition=models.Q(is_removed=False),
+                name="team_sites",
+            ),
             GinIndex(
                 fields=["infos"],
                 name="team_infos_gin",

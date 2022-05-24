@@ -67,6 +67,11 @@ class Place(TimeStampedModel, SoftDeletableModel, Utility):
             )
         ]
         indexes = [
+            models.Index(
+                fields=["content_type", "object_id"],
+                condition=models.Q(is_removed=False),
+                name="place_subjects",
+            ),
             GinIndex(
                 fields=["infos"],
                 name="place_infos_gin",

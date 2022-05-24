@@ -64,11 +64,15 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
             models.UniqueConstraint(
                 fields=["meet_id", "site_type", "site_id", "start"],
                 condition=models.Q(is_removed=False),
-                name="uniq_meet_location_time",
+                name="gathering_uniq_meet_location_time",
             )
         ]
         indexes = [
-            # models.Index(fields=["site_type", "site_id"]),
+            models.Index(
+                fields=["site_type", "site_id"],
+                condition=models.Q(is_removed=False),
+                name="gathering_sites",
+            ),
             GinIndex(
                 fields=["infos"],
                 name="gathering_infos_gin",

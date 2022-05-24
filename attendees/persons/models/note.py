@@ -55,6 +55,11 @@ class Note(TimeStampedModel, SoftDeletableModel):
             "-modified",
         )
         indexes = [
+            models.Index(
+                fields=["content_type", "object_id"],
+                condition=models.Q(is_removed=False),
+                name="note_content_objects",
+            ),
             GinIndex(
                 fields=["infos"],
                 name="note_infos_gin",

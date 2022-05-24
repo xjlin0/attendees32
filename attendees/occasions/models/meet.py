@@ -111,6 +111,11 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     class Meta:
         db_table = "occasions_meets"
         indexes = [
+            models.Index(
+                fields=["site_type", "site_id"],
+                condition=models.Q(is_removed=False),
+                name="meet_sites",
+            ),
             GinIndex(
                 fields=["infos"],
                 name="meet_infos_gin",
