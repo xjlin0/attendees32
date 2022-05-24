@@ -71,6 +71,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets
                                 search_value=search_value,
                                 search_expression=search_expression,
                                 search_operation=search_operation,
+                                filter=self.request.query_params.get("filter"),
                             ).values_list('attending').order_by()
                 )
 

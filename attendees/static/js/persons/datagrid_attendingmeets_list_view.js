@@ -475,6 +475,11 @@ Attendees.attendingmeets = {
         },
       }),
     },
+    searchPanel: {
+      visible: true,
+      width: 300,
+      placeholder: 'search attending or team/category ...',
+    },
     allowColumnReordering: true,
     columnAutoWidth: true,
     allowColumnResizing: true,
