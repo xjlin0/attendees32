@@ -68,6 +68,11 @@ class Past(TimeStampedModel, SoftDeletableModel, Utility):
             "when",
         )
         indexes = [
+            models.Index(
+                fields=["content_type", "object_id"],
+                condition=models.Q(is_removed=False),
+                name="past_subjects",
+            ),
             GinIndex(
                 fields=["infos"],
                 name="past_infos_gin",

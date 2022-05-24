@@ -59,6 +59,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='place',
+            index=models.Index(condition=models.Q(('is_removed', False)), fields=['content_type', 'object_id'], name='place_subjects'),
+        ),
+        migrations.AddIndex(
+            model_name='place',
             index=django.contrib.postgres.indexes.GinIndex(fields=['infos'], name='place_infos_gin'),
         ),
         migrations.AddConstraint(

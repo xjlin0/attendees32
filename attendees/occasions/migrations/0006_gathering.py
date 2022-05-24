@@ -39,7 +39,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='gathering',
-            constraint=models.UniqueConstraint(fields=('meet_id', 'site_type', 'site_id', 'start'), condition=models.Q(is_removed=False), name='uniq_meet_location_time'),
+            constraint=models.UniqueConstraint(fields=('meet_id', 'site_type', 'site_id', 'start'), condition=models.Q(is_removed=False), name='gathering_uniq_meet_location_time'),
+        ),
+        migrations.AddIndex(
+            model_name='gathering',
+            index=models.Index(condition=models.Q(('is_removed', False)), fields=['site_type', 'site_id'], name='gathering_sites'),
         ),
         migrations.AddIndex(
             model_name='Gathering',
