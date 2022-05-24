@@ -76,6 +76,7 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                     start=self.request.query_params.get("start"),
                     finish=self.request.query_params.get("finish"),
                     orderbys=orderby_list,
+                    filter=self.request.query_params.get("filter"),
                 )
 
         else:

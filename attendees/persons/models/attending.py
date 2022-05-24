@@ -92,7 +92,7 @@ class Attending(TimeStampedModel, SoftDeletableModel, Utility):
         return ",".join([d.display_name for d in self.meets.all()])
 
     @property
-    def attending_label(self):  # parentheses needed in datagrid_attendee_update_view.js
+    def attending_label(self):  # parentheses needed in attendee_update_view.js for populateAttendingButtons?
         return f"({self.registration}) {self.attendee.display_label}"
 
     @cached_property
