@@ -476,6 +476,11 @@ Attendees.gatherings = {
         },
       }),
     },
+    searchPanel: {
+      visible: true,
+      width: 240,
+      placeholder: 'search name or locations ...',
+    },
     allowColumnReordering: true,
     columnAutoWidth: true,
     allowColumnResizing: true,
