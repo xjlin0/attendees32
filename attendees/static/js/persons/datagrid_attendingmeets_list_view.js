@@ -589,6 +589,14 @@ Attendees.attendingmeets = {
             helpText: 'participation end time in browser timezone',
           },
           {
+            dataField: 'infos.note',
+            helpText: 'special memo',
+            colSpan: 2,
+            editorOptions: {
+              autoResizeEnabled: true,
+            },
+          },
+          {
             dataField: 'create_attendances_till',
             disabled: true,
             helpText: 'Auto create future attendances (not supported yet)',
@@ -797,6 +805,33 @@ Attendees.attendingmeets = {
       {
         dataField: 'category',
         validationRules: [{type: 'required'}],
+        visible: false,
+        editorOptions: {
+          showClearButton: true,
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  searchOpts.type = 'attendance';
+                  return $.getJSON($('form.filters-dxform').data('categories-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('categories-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
       },
       {
         dataField: 'team',
@@ -861,6 +896,13 @@ Attendees.attendingmeets = {
           type: 'datetime',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
         },
+      },
+      {
+        dataField: 'infos.note',
+        visible: false,
+        caption: 'Note',
+        dataType: 'string',
+        width: '32%',
       },
     ],
   },
