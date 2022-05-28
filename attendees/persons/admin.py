@@ -4,7 +4,7 @@ from django.db.models import Q
 from django_json_widget.widgets import JSONEditorWidget
 from django_summernote.admin import SummernoteModelAdmin
 
-from attendees.occasions.models import Attendance
+from attendees.occasions.models import Attendance, Meet, Team, Character
 from attendees.persons.models import AttendingMeet, FolkAttendee, Category, Past, Note, Folk, Attendee, Registration, \
     Attending, Relation, PgHistoryPage
 
@@ -281,6 +281,22 @@ class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
         "finish",
         "modified",
     )
+
+    # def get_form(self, request, obj=None, **kwargs):
+    #     self.instance = obj
+    #     return super(AttendingMeetAdmin, self).get_form(request, obj=obj, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # print("hi Todo 20220528 change character/team here based on meet here is self.instance", self.instance)
+        if db_field.name == "meet":
+            kwargs["queryset"] = Meet.objects.filter(assembly__division__organization=request.user.organization)
+        if db_field.name == "category":
+            kwargs["queryset"] = Category.objects.filter(type='attendance')
+        if db_field.name == "team":
+            kwargs["queryset"] = Team.objects.filter(meet__assembly__division__organization=request.user.organization)
+        if db_field.name == "character":
+            kwargs["queryset"] = Character.objects.filter(assembly__division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 admin.site.register(Category, CategoryAdmin)

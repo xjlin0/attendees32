@@ -4,7 +4,7 @@ from django.db import models
 from django_json_widget.widgets import JSONEditorWidget
 from attendees.occasions.models import Attendance, MessageTemplate, Assembly, Price, Character, Meet, Gathering, Team
 from django.conf import settings
-from attendees.persons.models import PgHistoryPage
+from attendees.persons.models import PgHistoryPage, Category
 from attendees.whereabouts.models import Organization, Division
 
 
@@ -62,6 +62,8 @@ class AssemblyAdmin(PgHistoryPage, admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "division":
             kwargs["queryset"] = Division.objects.all() if request.user.is_superuser else Division.objects.filter(organization=request.user.organization)
+        if db_field.name == "category":
+            kwargs["queryset"] = Category.objects.filter(type='assembly')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_queryset(self, request):
