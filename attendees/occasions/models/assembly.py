@@ -19,13 +19,12 @@ class Assembly(TimeStampedModel, SoftDeletableModel, Utility):
     )
     start = models.DateTimeField(null=True, blank=True, help_text="optional")
     finish = models.DateTimeField(null=True, blank=True, help_text="optional")
-    # contacts = models.ManyToManyField('whereabouts.Place', through='AssemblyContact')
-    category = models.CharField(
-        max_length=20,
-        default="normal",
-        blank=False,
+    category = models.ForeignKey(
+        "persons.Category",
         null=False,
-        db_index=True,
+        blank=False,
+        default=33,  # public
+        on_delete=models.deletion.DO_NOTHING,
         help_text="normal, no-display, etc",
     )
     display_name = models.CharField(
@@ -96,7 +95,7 @@ class AssembliesHistory(pghistory.get_event_model(
     display_order = models.SmallIntegerField(default=0)
     infos = models.JSONField(blank=True, default=dict, help_text='example: {"need_age": 18}, please keep {} here even there\'s no data', null=True)
     slug = models.SlugField(db_index=False, help_text='format: Organization_name-Assembly_name')
-    category = models.CharField(default='normal', help_text='normal, no-display, etc', max_length=20)
+    category = models.ForeignKey(db_constraint=False, default=33, help_text='normal, no-display, etc', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.category')
     display_name = models.CharField(help_text='Uniq within Organization, adding year helps', max_length=50)
     start = models.DateTimeField(blank=True, help_text='optional', null=True)
     finish = models.DateTimeField(blank=True, help_text='optional', null=True)

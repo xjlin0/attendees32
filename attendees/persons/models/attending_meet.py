@@ -43,11 +43,19 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
     character = models.ForeignKey(
         "occasions.Character", null=False, blank=False, on_delete=models.SET(0)
     )
-    category = models.CharField(
-        max_length=20,
-        default="primary",
+    # category = models.CharField(
+    #     max_length=20,
+    #     default="primary",
+    #     blank=False,
+    #     null=False,
+    #     help_text="primary, secondary, etc (primary will be displayed first)",
+    # )
+    category = models.ForeignKey(
+        "persons.Category",
+        default=1,  # scheduled
         blank=False,
         null=False,
+        on_delete=models.SET(1),
         help_text="primary, secondary, etc (primary will be displayed first)",
     )
     infos = models.JSONField(
@@ -108,7 +116,7 @@ class AttendingMeetsHistory(pghistory.get_event_model(
     meet = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.meet')
     attending = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.attending')
     character = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.character')
-    category = models.CharField(default='primary', help_text='primary, secondary, etc (primary will be displayed first)', max_length=20)
+    category = models.ForeignKey(db_constraint=False, help_text="primary, secondary, etc (primary will be displayed first)", default=1, on_delete=models.SET(1), related_name='+', related_query_name='+', to='persons.category')
     team = models.ForeignKey(blank=True, db_constraint=False, default=None, help_text='empty for main meet', null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.team')
     pgh_context = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')
 
