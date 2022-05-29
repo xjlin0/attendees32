@@ -40,6 +40,6 @@ class AttendingMeetEtcSerializer(serializers.ModelSerializer):
         instance.character = validated_data.get("character", instance.character)
         instance.category = validated_data.get("category", instance.category)
         instance.team = validated_data.get("team", instance.team)
-        instance.infos = validated_data.get("infos", instance.infos)
+        instance.infos = {**instance.infos, **validated_data.get("infos", {})}
         instance.save()
         return instance

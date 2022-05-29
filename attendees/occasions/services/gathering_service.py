@@ -67,7 +67,7 @@ class GatheringService:
                 search_filters = Q(display_name__icontains=search_term)
 
                 for site, field in GatheringService.SITE_SEARCHING_PROPERTIES.items():
-                    site_filter = {f"{field}__icontains": search_term}
+                    site_filter = {f"{field}__icontains": search_term}  # Todo: will it shorter if using site_id__regex=r'(1|2|3)' ?
                     search_filters.add((Q(site_type__model=site._meta.model_name) & Q(site_id__in=[str(id) for id in site.objects.filter(**site_filter).values_list('id', flat=True)])), Q.OR)
 
                 extra_filters.add(search_filters, Q.AND)
