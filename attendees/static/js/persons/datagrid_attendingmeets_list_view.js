@@ -591,7 +591,6 @@ Attendees.attendingmeets = {
           {
             dataField: 'infos.note',
             helpText: 'special memo',
-            colSpan: 2,
             editorOptions: {
               autoResizeEnabled: true,
             },
@@ -902,7 +901,6 @@ Attendees.attendingmeets = {
         visible: false,
         caption: 'Note',
         dataType: 'string',
-        width: '32%',
       },
     ],
   },
