@@ -3570,6 +3570,32 @@ Attendees.datagridUpdate = {
       {
         dataField: 'category',
         validationRules: [{type: 'required'}],
+        editorOptions: {
+          showClearButton: true,
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  searchOpts.type = 'attendance';
+                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.categoriesEndpoint, searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.categoriesEndpoint + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
       },
       {
         dataField: 'start',
@@ -3618,6 +3644,12 @@ Attendees.datagridUpdate = {
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
         },
       },
+      {
+        dataField: 'infos.note',
+        visible: false,
+        caption: 'Note',
+        dataType: 'string',
+      },
     ],
   },
 
@@ -3628,7 +3660,7 @@ Attendees.datagridUpdate = {
       title: 'Editing Attendee activities'
     },
     texts: {
-      confirmDeleteMessage: 'Are you sure to delete it and all its attendances? Instead, setting the "finish" date is usually enough!',
+      confirmDeleteMessage: 'Are you sure to delete it and all future attendances? Instead, setting the "finish" date is usually enough!',
     },
     form: {
       items: [
@@ -3649,16 +3681,23 @@ Attendees.datagridUpdate = {
           }
         },
         {
+          dataField: 'team',
+        },
+        {
           dataField: 'category',
         },
         {
           dataField: 'start',
         },
         {
-          dataField: 'team',
+          dataField: 'finish',
         },
         {
-          dataField: 'finish',
+          dataField: 'infos.note',
+          helpText: 'special memo',
+          editorOptions: {
+            autoResizeEnabled: true,
+          },
         },
       ],
     },
