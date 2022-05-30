@@ -32,7 +32,7 @@ class ApiUserAssemblyMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
                 "HTTP_X_TARGET_ATTENDEE_ID", current_user.attendee_uuid_str()
             ),
         )
-
+        # Todo 20200530: filter meets by user's group like Meet.objects.filter(infos__allowed_groups__0__in=['children_coworker', 'hi']) if infos = {'allowed_groups': ['children_coworker', 'data_organizer']}
         if current_user_organization:
             filters = {"assembly__division__organization": current_user_organization}
             assemblies = self.request.query_params.getlist("assemblies[]")
