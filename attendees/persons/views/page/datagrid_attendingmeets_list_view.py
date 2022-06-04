@@ -23,7 +23,7 @@ class DatagridAttendingMeetListView(LoginRequiredMixin, RouteGuard, ListView):
                 "characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
                 "teams_endpoint": "/occasions/api/organization_meet_teams/",
-                "categories_endpoint" : "/persons/api/all_categories/",
+                "categories_endpoint": "/persons/api/all_categories/",
             }
         )
         return context

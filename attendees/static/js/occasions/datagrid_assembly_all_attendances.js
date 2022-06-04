@@ -121,7 +121,29 @@ Attendees.attendances = {
       },
       {
         dataField: "category",
-        dataType: "string"
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  searchOpts.type = 'attendance';
+                  return $.getJSON($('div.attendances').data('categories-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('div.attendances').data('categories-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
       },
       {
         dataField: "modified",

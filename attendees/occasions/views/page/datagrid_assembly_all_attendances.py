@@ -47,6 +47,7 @@ class DatagridAssemblyAllAttendancesListView(LoginRequiredMixin, RouteGuard, Lis
                 pass
             else:
                 context.update({"filtered_attendances": []})
+                context.update({'categories_endpoint': "/persons/api/all_categories/"})
                 context.update(
                     {
                         "teams_endpoint": (
