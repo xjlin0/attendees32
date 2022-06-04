@@ -132,6 +132,7 @@ class Utility:
     @staticmethod
     def meet_infos():
         return {
+            'allowed_groups': [],
             "automatic_creation": {
               "Gathering": True,
               "Attendance": True
