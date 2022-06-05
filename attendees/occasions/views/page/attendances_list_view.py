@@ -14,7 +14,8 @@ class AttendancesListView(LoginRequiredMixin, RouteGuard, ListView):
         context.update(
             {
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
-                "attendingmeets_endpoint": "/persons/api/organization_meet_character_attendingmeets/",
+                # "attendingmeets_endpoint": "/persons/api/organization_meet_character_attendingmeets/",
+                "attendances_endpoint": "/occasions/api/organization_meet_character_attendances/",
                 "attendings_endpoint": "/persons/api/organization_meet_character_attendings/",
                 "characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
