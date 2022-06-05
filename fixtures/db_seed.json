@@ -5507,6 +5507,19 @@
   },
   {
     "model": "persons.category",
+    "pk": -1,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "attendance",
+      "display_order": 0,
+      "display_name": "importer",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
     "pk": 0,
     "fields": {
       "created": "2021-05-22T22:20:43.067Z",
