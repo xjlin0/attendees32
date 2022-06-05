@@ -23,7 +23,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
     def list(self, request, *args, **kwargs):
         group_string = request.query_params.get(
             "group", '[{}]'
-        )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
+        )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
@@ -44,13 +44,13 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
             pk = self.kwargs.get("pk")
             group_string = self.request.query_params.get(
                 "group"
-            )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
+            )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
             orderby_list = json.loads(
                 self.request.query_params.get(
                     "sort",
                     '[{"selector":"gathering","desc":false},{"selector":"start","desc":false}]',
                 )
-            )  # order_by('meet','start')
+            )  # order_by('gathering','start')
             # Todo: add group colume to orderby_list
             if pk:
                 filters = {
