@@ -43,12 +43,12 @@ class Attendance(TimeStampedModel, SoftDeletableModel, Utility):
     #     null=True,
     #     help_text="multitasking: the person cannot join other gatherings if negative",
     # )
-    category = models.CharField(
-        max_length=20,
-        null=False,
+    category = models.ForeignKey(
+        "persons.Category",
+        default=1,  # scheduled
         blank=False,
-        db_index=True,
-        default="scheduled",
+        null=False,
+        on_delete=models.SET(1),
         help_text="RSVPed, leave, remote, etc",
     )
     display_order = models.SmallIntegerField(default=0, blank=False, null=False)
@@ -137,7 +137,7 @@ class AttendancesHistory(pghistory.get_event_model(
     attending = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.attending')
     character = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.character')
     gathering = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.gathering')
-    category = models.CharField(default='scheduled', help_text='RSVPed, leave, remote, etc', max_length=20)
+    category = models.ForeignKey(db_constraint=False, help_text="RSVPed, leave, remote, etc", default=1, on_delete=models.SET(1), related_name='+', related_query_name='+', to='persons.category')
     team = models.ForeignKey(blank=True, db_constraint=False, default=None, help_text='empty for main meet', null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.team')
     start = models.DateTimeField(blank=True, help_text='optional', null=True)
     finish = models.DateTimeField(blank=True, help_text='optional', null=True)
