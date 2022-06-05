@@ -9,7 +9,7 @@ Attendees.attendances = {
   selectedMeetSlugs: [],
   meetData: null,
   init: () => {
-    console.log('static/js/persons/datagrid_attendingmeets_list_view.js');
+    console.log('static/js/occasions/attendances_list_view.js.js');
     Attendees.attendances.initFilterMeetCheckbox();
     Attendees.attendances.initEditingSwitch();
     Attendees.attendances.initFiltersForm();
