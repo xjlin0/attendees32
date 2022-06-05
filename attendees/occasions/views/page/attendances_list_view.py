@@ -17,7 +17,7 @@ class AttendancesListView(LoginRequiredMixin, RouteGuard, ListView):
                 "categories_endpoint": "/persons/api/all_categories/",
                 "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
                 "attendances_endpoint": "/occasions/api/organization_meet_character_attendances/",
-                "attendings_endpoint": "/persons/api/organization_meet_character_attendings/",
+                "attendings_endpoint": "/persons/api/organization_meet_character_attendings_for_attendance/",
                 "characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
                 "teams_endpoint": "/occasions/api/organization_meet_teams/",

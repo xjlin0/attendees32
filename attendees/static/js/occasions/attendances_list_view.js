@@ -656,6 +656,9 @@ Attendees.attendances = {
         lookup: {
           valueExpr: 'id',
           displayExpr: 'attending_label',
+
+          // 20220605 Todo: add sort/filter from here like line 764 dataSource: (options) => {
+
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',

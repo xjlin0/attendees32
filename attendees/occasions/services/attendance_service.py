@@ -126,15 +126,16 @@ class AttendanceService:
         extra_filters = Q(
             gathering__meet__assembly__division__organization=current_user.organization
         ).add(Q(gathering__meet__slug__in=meet_slugs), Q.AND).add(Q(character__slug__in=character_slugs), Q.AND)
-        # Todo 20220512 let scheduler see other attenings too?
+        # Todo 20220512 let scheduler see other attendings too?
         if not current_user.can_see_all_organizational_meets_attendees():
             extra_filters.add(Q(attending__attendee=current_user.attendee), Q.AND)
-
+        print("hi 132 here is filter: ", filter)
         # if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # only contains supported now
         #     extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
         #                        |
         #                        Q(attending__attendee__infos__icontains=search_value)), Q.AND)
-
+        print("hi 137 here is orderby: ", orderbys)
+        print("hi 138 here is orderby_list: ", orderby_list)
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)
             search_term = filter_list[-1][-1] if isinstance(filter_list[-1], list) else filter_list[-1]
@@ -160,7 +161,7 @@ class AttendanceService:
         :param orderbys: list of search params
         :return: a List of sorter for order_by()
         """
-        orderby_list = (
+        orderby_list = (  # Todo 20220605 use Set instead of List to make it uniq
             []
         )  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
 
