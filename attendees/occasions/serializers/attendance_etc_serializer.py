@@ -14,9 +14,9 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
         """
         Create or update `AttendingMeet` instance, given the validated data.
         """
-        attendingmeet_id = self._kwargs["data"].get("id")
+        attendance_id = self._kwargs["data"].get("id")
         obj, created = Attendance.objects.update_or_create(
-            id=attendingmeet_id,
+            id=attendance_id,
             defaults=validated_data,
         )
         return obj
@@ -27,13 +27,13 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
 
         """
 
-        if (
-            True
-        ):  # need validations such as if the assembly matching meet, it's better to validate on UI first
-            instance.meet = validated_data.get("meet", instance.meet)
+        # if (
+        #     True
+        # ):  # need validations such as if the assembly matching meet, it's better to validate on UI first
+            # instance.meet = validated_data.get("meet", instance.meet)
             # instance.meet.assembly = validated_data.get('assembly', instance.meet.assembly)
-            instance.meet.save()
-
+            # instance.meet.save()
+        instance.gathering = validated_data.get("gathering", instance.gathering)
         instance.attending = validated_data.get("attending", instance.attending)
         instance.start = validated_data.get("start", instance.start)
         instance.finish = validated_data.get("finish", instance.finish)

@@ -7,7 +7,7 @@ Attendees.attendances = {
   loadOptions: null,
   selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
-  meetData: null,
+  meetData: {},
   init: () => {
     console.log('static/js/occasions/attendances_list_view.js.js');
     Attendees.attendances.initFilterMeetCheckbox();
@@ -240,14 +240,14 @@ Attendees.attendances = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {};
+                const params = {grouping: 'assembly_name'};  // for grouped: true,
 
                 if (Attendees.attendances.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;
                   const filterTill = $('div.filter-till input')[1].value;
                   params['start'] = filterFrom ? new Date(filterFrom).toISOString() : null;
                   params['finish'] = filterTill ? new Date(filterTill).toISOString() : null;
-                  params['grouping'] = 'assembly_name';  // for grouped: true,
+                  // params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
                 $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
                   .done((result) => {
@@ -256,6 +256,7 @@ Attendees.attendances = {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
                           Attendees.attendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                          Attendees.attendances.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
                         })
                       }); // schedule rules needed for attendingmeets generation
                     }
@@ -615,6 +616,38 @@ Attendees.attendances = {
     },
     columns: [
       {
+        dataField: 'gathering',
+        validationRules: [{type: 'required'}],
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  if (options.data && options.data.meet) {
+                    searchOpts['meets[]'] = options.data.meet;
+                  } else {
+                    searchOpts['meets[]'] = $('div.selected-meets select').val();
+                  }
+                  return $.getJSON($('form.filters-dxform').data('gatherings-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('gatherings-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
+      },
+      {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
         cellTemplate: (cellElement, cellInfo) => {
@@ -719,48 +752,6 @@ Attendees.attendances = {
           },
         },
       },
-      // {
-      //   dataField: 'meet',
-      //   width: '10%',
-      //   validationRules: [{type: 'required'}],
-      //   setCellValue: (newData, value, currentData) => {
-      //     newData.meet = value;
-      //     newData.team = null;
-      //     const [finish, majorCharacter] = Attendees.attendances.meetData[value];
-      //     if (majorCharacter && !currentData.character) {newData.character = majorCharacter;}
-      //     if (!currentData.finish) { newData.finish = new Date(finish); }
-      //   },
-      //   editorOptions: {
-      //     placeholder: 'Example: "The Rock"',
-      //   },
-      //   lookup: {
-      //     valueExpr: 'id',
-      //     displayExpr: 'display_name',
-      //     dataSource: (options) => {
-      //       return {
-      //         // filter: options.data ? {'assemblies[]': options.data.assembly} : null,
-      //         store: new DevExpress.data.CustomStore({
-      //           key: 'id',
-      //           load: (searchOpts) => {
-      //             if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
-      //             const d = new $.Deferred();
-      //             $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
-      //               .done((result) => {
-      //                 if (result.data && Attendees.attendances.meetData === null) {
-      //                   Attendees.attendances.meetData = result.data.reduce((all, now)=> {all[now.id] = [now.finish, now.major_character]; return all}, {});
-      //                 }  // cache the every meet's major characters for later use
-      //                 d.resolve(result.data);
-      //               });
-      //             return d.promise();
-      //           },
-      //           byKey: (key) => {
-      //             return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug') + key + '/');
-      //           },
-      //         }),
-      //       };
-      //     },
-      //   },
-      // },
       {
         dataField: 'character',
         validationRules: [{type: 'required'}],
@@ -792,33 +783,33 @@ Attendees.attendances = {
       {
         dataField: 'category',
         validationRules: [{type: 'required'}],
-        // visible: false,
-        // editorOptions: {
-        //   showClearButton: true,
-        // },
-        // lookup: {
-        //   valueExpr: 'id',
-        //   displayExpr: 'display_name',
-        //   dataSource: (options) => {
-        //     return {
-        //       store: new DevExpress.data.CustomStore({
-        //         key: 'id',
-        //         load: (searchOpts) => {
-        //           searchOpts.type = 'attendance';
-        //           return $.getJSON($('form.filters-dxform').data('categories-endpoint'), searchOpts);
-        //         },
-        //         byKey: (key) => {
-        //           const d = new $.Deferred();
-        //           $.get($('form.filters-dxform').data('categories-endpoint') + key + '/')
-        //             .done((result) => {
-        //               d.resolve(result);
-        //             });
-        //           return d.promise();
-        //         },
-        //       }),
-        //     };
-        //   }
-        // },
+        visible: false,
+        editorOptions: {
+          showClearButton: true,
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  searchOpts.type = 'attendance';
+                  return $.getJSON($('form.filters-dxform').data('categories-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('categories-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
       },
       {
         dataField: 'team',

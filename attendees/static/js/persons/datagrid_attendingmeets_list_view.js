@@ -240,14 +240,14 @@ Attendees.attendingmeets = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {};
+                const params = {grouping: 'assembly_name'};  // for grouped: true,
 
                 if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;
                   const filterTill = $('div.filter-till input')[1].value;
                   params['start'] = filterFrom ? new Date(filterFrom).toISOString() : null;
                   params['finish'] = filterTill ? new Date(filterTill).toISOString() : null;
-                  params['grouping'] = 'assembly_name';  // for grouped: true,
+                  // params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
                 $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
                   .done((result) => {
