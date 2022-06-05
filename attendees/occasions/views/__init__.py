@@ -34,3 +34,4 @@ from .page.datagrid_user_organization_attendances import (
     datagrid_user_organization_attendances_list_view,
 )
 from .page.gatherings_list_view import gatherings_list_view
+from .api.organization_meet_character_attendances import api_organization_meet_character_attendances_viewset

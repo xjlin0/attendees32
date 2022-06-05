@@ -19,6 +19,7 @@ from attendees.occasions.views import (
     datagrid_assembly_all_attendances_list_view,
     datagrid_coworker_organization_attendances_list_view,
     datagrid_user_organization_attendances_list_view,
+    api_organization_meet_character_attendances_viewset,
     gatherings_list_view,
     organization_meets_viewset,
     organization_characters_viewset,
@@ -91,6 +92,11 @@ router.register(
 router.register(
     "api/family_organization_attendances",
     api_family_organization_attendances_viewset,
+    basename="attendance",
+)
+router.register(
+    "api/organization_meet_character_attendances",
+    api_organization_meet_character_attendances_viewset,
     basename="attendance",
 )
 router.register(
