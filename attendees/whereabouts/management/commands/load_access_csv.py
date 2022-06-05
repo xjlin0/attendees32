@@ -540,7 +540,7 @@ class Command(BaseCommand):
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 self.stdout.write(f"\nWhile importing/updating people: {people}")
                 self.stdout.write(f'Cannot save import_attendees, reason: {e} at line: {exc_tb.tb_lineno}.')
-        AttendingMeet.objects.filter(meet=member_meet).update(category='active')  # direct SQL update won't trigger save()
+        AttendingMeet.objects.filter(meet=member_meet).update(category_id=6)  # Active, direct SQL update won't trigger save()
         self.stdout.write('done!')
         return successfully_processed_count, photo_import_results  # list(filter(None.__ne__, photo_import_results))
 
@@ -793,7 +793,7 @@ class Command(BaseCommand):
             meet=visitor_meet,
             defaults={
                 'character': general_character,
-                'category': 'importer',
+                'category_id': -1,
                 'start': visitor_meet.start,
                 'finish': visitor_meet.finish,
             },
@@ -805,7 +805,7 @@ class Command(BaseCommand):
                 meet=roaster_meet,
                 defaults={
                     'character': general_character,
-                    'category': 'importer',
+                    'category_id': -1,
                     'start': roaster_meet.start,
                     'finish': datetime.now(pdt) + timedelta(365),  # whoever don't attend for a year won't be counted anymore
                 },
@@ -820,6 +820,7 @@ class Command(BaseCommand):
                     'gathering': roaster_gathering,
                     'attending': data_attending,
                     'character': general_character,
+                    'category_id': 6,   # Active
                     'team': None,
                     'start': roaster_gathering.start,
                     'finish': roaster_gathering.finish,
@@ -874,7 +875,7 @@ class Command(BaseCommand):
                     'attending': data_attending,
                     'meet': believer_meet,
                     'character': believer_character,
-                    'category': 'importer',  # This stop auto create Past via post-save signal
+                    'category_id': -1,  # This stop auto create Past via post-save signal
                     'start': Utility.now_with_timezone(),
                     'finish': believer_meet.finish,
                 },
@@ -910,7 +911,7 @@ class Command(BaseCommand):
                     'attending': data_attending,
                     'meet': baptized_meet,
                     'character': baptisee_character,
-                    'category': 'importer',  # This stops auto create Past via post-save signal
+                    'category_id': -1,  # This stops auto create Past via post-save signal
                     'start': baptized_date_or_now,
                     'finish': baptized_meet.finish,
                 },
@@ -939,7 +940,7 @@ class Command(BaseCommand):
                 'attending': data_attending,
                 'meet': member_meet,
                 'character': member_character,
-                'category': 'importer',  # member category has to be converted to active later
+                'category_id': -1,  # member category has to be converted to active later
                 'start': member_since_or_now,
                 'finish': member_meet.finish,
             }
@@ -960,7 +961,7 @@ class Command(BaseCommand):
                     'attending': data_attending,
                     'character': member_character,
                     'team': None,
-                    'category': 'active',  # membership can be inactive temporarily
+                    'category_id': 6,  # Active, membership can be inactive temporarily
                     'start': member_attending_meet_default['start'],
                     'finish': member_gathering.finish,
                     'infos': {
@@ -1021,7 +1022,7 @@ class Command(BaseCommand):
                             'attending': directory_attending,
                             'meet': directory_meet,
                             'character': directory_character,
-                            'category': 'importer',
+                            'category_id': -1,
                             'start': directory_gathering.start,
                             'finish': directory_gathering.finish,
                         }
@@ -1036,6 +1037,7 @@ class Command(BaseCommand):
                             'gathering': directory_gathering,
                             'attending': directory_attending,
                             'character': directory_character,
+                            'category_id': 6,  # Active
                             'team': None,
                             'start': directory_gathering.start,
                             'finish': directory_gathering.finish,

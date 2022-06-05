@@ -58,6 +58,7 @@ def post_save_handler_for_past_to_create_attendingmeet(sender, **kwargs):
                             "meet": meet,
                             "attending": first_attending,
                             "is_removed": False,
+                            "category_id": 6,  # Active
                         },
                         defaults=defaults,
                     )
@@ -81,7 +82,7 @@ def post_save_handler_for_attendingmeet_to_create_past(sender, **kwargs):
         category_id = created_attendingmeet.meet.infos.get("automatic_creation", {}).get("Past")
 
         if (
-            category_id and "importer" not in created_attendingmeet.category
+            category_id and created_attendingmeet.category_id != -1
         ):  # skip for access importer since special start date processing needed there
             category = Category.objects.filter(pk=category_id).first()
             if category:
