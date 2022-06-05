@@ -6,12 +6,12 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.utils import json
 
+from attendees.occasions.services import AttendanceService
 from attendees.persons.models import Utility, Attending
 from attendees.persons.serializers.attending_minimal_serializer import AttendingMinimalSerializer
-from attendees.persons.services import AttendingMeetService
 
 
-class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
+class ApiOrganizationMeetCharacterAttendingsViewSetForAttendance(LoginRequiredMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows Team to be viewed or edited.
     Todo 20220514: replace LoginRequiredMixin with SpyGuard and needed seeds json
@@ -45,7 +45,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets
             orderby_list = json.loads(
                 self.request.query_params.get(
                     "sort",
-                    '[{"selector":"meet","desc":false},{"selector":"start","desc":false}]',
+                    '[{"selector":"gathering.meet","desc":false},{"selector":"start","desc":false}]',
                 )
             )  # order_by('meet','start')
             # Todo: add group column to orderby_list
@@ -61,7 +61,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets
 
             else:
                 return Attending.objects.filter(
-                    pk__in=AttendingMeetService.by_organization_meet_characters(
+                    pk__in=AttendanceService.by_organization_meet_characters(
                                 current_user=self.request.user,
                                 meet_slugs=self.request.query_params.getlist("meets[]", []),
                                 character_slugs=self.request.query_params.getlist("characters[]", []),
@@ -82,4 +82,4 @@ class ApiOrganizationMeetCharacterAttendingsViewSet(LoginRequiredMixin, viewsets
             )
 
 
-api_organization_meet_character_attendings_viewset = ApiOrganizationMeetCharacterAttendingsViewSet
+api_organization_meet_character_attendings_viewset_for_attendance = ApiOrganizationMeetCharacterAttendingsViewSetForAttendance
