@@ -42,11 +42,14 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
             search_value = self.request.query_params.get("searchValue")
             search_expression = self.request.query_params.get("searchExpr")
             search_operation = self.request.query_params.get("searchOperation")
+            group_string = self.request.query_params.get(
+                "group",
+            )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
             orderby_list = json.loads(
                 self.request.query_params.get(
                     "sort",
                     '[{"selector":"meet","desc":false},{"selector":"start","desc":false}]',
-                )
+                )  # default selector of meet is for AttendingMeet queries
             )  # order_by('meet','start')
             # Todo: add group column to orderby_list
             if pk:
@@ -60,6 +63,12 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
                 return Attending.objects.filter(**filters).distinct()
 
             else:
+                if group_string:
+                    groups = json.loads(group_string)
+                    orderby_list.insert(
+                        0, {"selector": groups[0]["selector"], "desc": groups[0]["desc"]}
+                    )
+
                 return Attending.objects.filter(  # Todo: 20220604 need to separate for attendingmeet or attendance for sorting fields
                     pk__in=AttendingMeetService.by_organization_meet_characters(
                                 current_user=self.request.user,

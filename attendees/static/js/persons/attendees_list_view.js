@@ -1,5 +1,6 @@
 Attendees.dataAttendees = {
   meetTagBox: null,
+  attendeeDatagrid: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
@@ -41,7 +42,7 @@ Attendees.dataAttendees = {
 
   startDataGrid: () => {
     Attendees.dataAttendees.dataGridOpts['dataSource'] = Attendees.dataAttendees.customStore;
-    $("div.dataAttendees").dxDataGrid(Attendees.dataAttendees.dataGridOpts);//.dxDataGrid("instance");
+    Attendees.dataAttendees.attendeeDatagrid = $("div.dataAttendees").dxDataGrid(Attendees.dataAttendees.dataGridOpts).dxDataGrid("instance");
   },
 
   customStore: new DevExpress.data.CustomStore({

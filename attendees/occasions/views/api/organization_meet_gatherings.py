@@ -1,6 +1,7 @@
 import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models.aggregates import Count
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -20,16 +21,24 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
     serializer_class = GatheringSerializer
 
     def list(self, request, *args, **kwargs):
+        """
+        Todo 20220610: This is grouping AFTER queryset, thus the count of items for each group is incorrect after paging.
+        Todo 20220610: To make the count correct when grouping, the count needs to be query and grouped at db level
+        """
         group_string = request.query_params.get(
             "group", '[{}]'
         )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-
+        print("hi 33 here is queryset.count(): ", queryset.count())
         if page is not None:
+            selector = json.loads(group_string)[0].get('selector')
+            print("hi 36 here is selector: ", selector)
+            # counter_qs = Gathering.objects.values(selector).order_by(selector).annotate(count=Count(selector) if selector else None)
+            counter = {c.get(selector): c.get('count') for c in Gathering.objects.values(selector).order_by(selector).annotate(count=Count(selector))} if selector else {}
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(
-                Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector'))
+                Utility.transform_result(serializer.data, selector, counter)
             )
 
         serializer = self.get_serializer(queryset, many=True)
