@@ -367,11 +367,16 @@ Attendees.gatherings = {
           const meets = $('div.selected-meets select').val();
           const deferred = $.Deferred();
           const args = {
+            requireTotalCount: true,
+            take: 20,
+            skip: 0,
+//            take: Attendees.gatherings.gatheringsDatagrid.state().pageSize,
+//            skip: Attendees.gatherings.gatheringsDatagrid.state().pageSize * Attendees.gatherings.gatheringsDatagrid.state().pageIndex,
             meets: meets,
             start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
             finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
           };
-
+console.log("hi 374 here is original loadOptions: ", loadOptions);
           [
             'skip',
             'take',
@@ -386,7 +391,7 @@ Attendees.gatherings = {
               if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
                   args[i] = JSON.stringify(loadOptions[i]);
           });
-
+console.log("hi 389 here is processed  args: ", args);
           $.ajax({
             url: $('form.filters-dxform').data('gatherings-endpoint'),
             dataType: "json",
@@ -488,7 +493,14 @@ Attendees.gatherings = {
     // cellHintEnabled: true,
     hoverStateEnabled: true,
     rowAlternationEnabled: true,
-    remoteOperations: true,
+    remoteOperations: {
+      filtering: true,
+      paging: true,
+      sorting: true,
+      groupPaging: true,
+      grouping: true,
+//      summary: true
+    },
     paging: {
       pageSize: 20,
     },

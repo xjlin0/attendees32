@@ -293,11 +293,15 @@ class Utility:
         return obj, created
 
     @staticmethod
-    def transform_result(data, grouping):
+    def transform_result(data, grouping, counter={}):
+        """
+        Todo 20220610: This is grouping AFTER queryset, thus the count of items for each group is incorrect after paging.
+        Todo 20220610: To make the count correct when grouping, the count needs to be query and grouped at db level
+        """
         if grouping:
             grouping_data = []
             for c_title, items in groupby(data, itemgetter(grouping)):
-                grouping_data.append({"key": c_title, "items": list(items)})
+                grouping_data.append({"key": c_title, "items": list(items), "count": 200})
             return grouping_data
 
         else:

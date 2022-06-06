@@ -14,6 +14,7 @@ class CustomStorePagination(LimitOffsetPagination):
         return Response(
             {
                 "totalCount": self.count,
+                # "groupCount": len(data) if data else 0,
                 "data": data,
             }
         )
