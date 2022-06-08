@@ -337,7 +337,7 @@ All libraries are included to facilitate offline development, it will take port 
 * Install pre-commit for python, such as `pip3 install pre-commit` (pre-commit settings are at .git/hooks/pre-commit).
 * There is no need to have local docker machine, Django or Postgres running.
 * Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/mac/#file-sharing).
-* build and start the CentOS based local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`
+* build and start the CentOS based local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
 
 
 ## DB SQL Backup & Restore process (with local.yml)

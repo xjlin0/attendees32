@@ -30,19 +30,20 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
         )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        print("hi 33 here is queryset.count(): ", queryset.count())
+        selector = json.loads(group_string)[0].get('selector')
+
         if page is not None:
-            selector = json.loads(group_string)[0].get('selector')
-            print("hi 36 here is selector: ", selector)
-            # counter_qs = Gathering.objects.values(selector).order_by(selector).annotate(count=Count(selector) if selector else None)
-            counter = {c.get(selector): c.get('count') for c in Gathering.objects.values(selector).order_by(selector).annotate(count=Count(selector))} if selector else {}
+            counter = {
+                c.get(selector): c.get('count')
+                for c in Gathering.objects.values(selector).order_by(selector).annotate(count=Count(selector))
+            } if selector else {}
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(
                 Utility.transform_result(serializer.data, selector, counter)
             )
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector')))
+        return Response(Utility.transform_result(serializer.data, selector))
 
     def get_queryset(self):
         current_user = self.request.user
