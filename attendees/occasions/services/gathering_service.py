@@ -62,15 +62,17 @@ class GatheringService:
             extra_filters.add(Q(attendings__attendee=current_user.attendee), Q.AND)
 
         if filter:  # only support display_name on single level because of generic relations
-            search_term = json.loads(filter)[0][2]
-            if search_term:
-                search_filters = Q(display_name__icontains=search_term)
+            filter_term = json.loads(filter)
+            if isinstance(filter_term[0], list) and filter_term[0][1] == 'contains':  # [["display_name","contains","207"],"or",["site","contains","207"]]
+                search_term = filter_term[0][2]  # [["meet","=",1],"or",["meet","=",2]] is already filtered above
+                if search_term:
+                    search_filters = Q(display_name__icontains=search_term)
 
-                for site, field in GatheringService.SITE_SEARCHING_PROPERTIES.items():
-                    site_filter = {f"{field}__icontains": search_term}  # Todo: will it shorter if using site_id__regex=r'(1|2|3)' ?
-                    search_filters.add((Q(site_type__model=site._meta.model_name) & Q(site_id__in=[str(id) for id in site.objects.filter(**site_filter).values_list('id', flat=True)])), Q.OR)
+                    for site, field in GatheringService.SITE_SEARCHING_PROPERTIES.items():
+                        site_filter = {f"{field}__icontains": search_term}  # Todo: will it shorter if using site_id__regex=r'(1|2|3)' ?
+                        search_filters.add((Q(site_type__model=site._meta.model_name) & Q(site_id__in=[str(id) for id in site.objects.filter(**site_filter).values_list('id', flat=True)])), Q.OR)
 
-                extra_filters.add(search_filters, Q.AND)
+                    extra_filters.add(search_filters, Q.AND)
 
         if start:
             extra_filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)

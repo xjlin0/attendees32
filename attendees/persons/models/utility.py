@@ -301,7 +301,14 @@ class Utility:
         if grouping:
             grouping_data = []
             for c_title, items in groupby(data, itemgetter(grouping)):
-                grouping_data.append({"key": c_title, "items": list(items), "count": 200})
+                response = {"key": c_title}
+                if counter and counter.get(c_title):
+                    response['items'] = None
+                    response['count'] = counter.get(c_title)
+                    response['summary'] = [counter.get(c_title)]
+                else:
+                    response['items'] = list(items)
+                grouping_data.append(response)
             return grouping_data
 
         else:

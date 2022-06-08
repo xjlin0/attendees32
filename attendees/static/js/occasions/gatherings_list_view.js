@@ -76,7 +76,7 @@ Attendees.gatherings = {
                   }, 'success', 3000);
               },
               error: (result) => {
-                console.log("hi gatherings_list_view.js 74 here is error result: ", result);
+                console.log("hi gatherings_list_view.js 79 here is error result: ", result);
                 DevExpress.ui.notify(
                   {
                     message: 'Batch processing error. ' + result && result.responseText,
@@ -365,51 +365,51 @@ Attendees.gatherings = {
         key: 'id',
         load: (loadOptions) => {
           const meets = $('div.selected-meets select').val();
-          const deferred = $.Deferred();
-          const args = {
-            requireTotalCount: true,
-            take: 20,
-            skip: 0,
-//            take: Attendees.gatherings.gatheringsDatagrid.state().pageSize,
-//            skip: Attendees.gatherings.gatheringsDatagrid.state().pageSize * Attendees.gatherings.gatheringsDatagrid.state().pageIndex,
-            meets: meets,
-            start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
-            finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
-          };
-console.log("hi 374 here is original loadOptions: ", loadOptions);
-          [
-            'skip',
-            'take',
-            'requireTotalCount',
-            'requireGroupCount',
-            'sort',
-            'filter',
-            'totalSummary',
-            'group',
-            'groupSummary',
-          ].forEach((i) => {
-              if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
-                  args[i] = JSON.stringify(loadOptions[i]);
-          });
-console.log("hi 389 here is processed  args: ", args);
-          $.ajax({
-            url: $('form.filters-dxform').data('gatherings-endpoint'),
-            dataType: "json",
-            data: args,
-            success: (result) => {
-              deferred.resolve(result.data, {
-                totalCount: result.totalCount,
-                summary:    result.summary,
-                groupCount: result.groupCount,
-              });
-            },
-            error: () => {
-              deferred.reject("Data Loading Error, probably time out?");
-            },
-            timeout: 60000,
-          });
+          if (meets && meets.length > 0) {
+            const deferred = $.Deferred();
+            const args = {
+              requireTotalCount: true,
+              take: Attendees.gatherings.gatheringsDatagrid.state().pageSize,
+              skip: Attendees.gatherings.gatheringsDatagrid.state().pageSize * Attendees.gatherings.gatheringsDatagrid.state().pageIndex,
+              meets: meets,
+              start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
+              finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
+            };
 
-          return deferred.promise();
+            [
+              'skip',
+              'take',
+              'requireTotalCount',
+              'requireGroupCount',
+              'sort',
+              'filter',
+              'totalSummary',
+              'group',
+              'groupSummary',
+            ].forEach((i) => {
+              if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+                args[i] = JSON.stringify(loadOptions[i]);
+            });
+
+            $.ajax({
+              url: $('form.filters-dxform').data('gatherings-endpoint'),
+              dataType: "json",
+              data: args,
+              success: (result) => {
+                deferred.resolve(result.data, {
+                  totalCount: result.totalCount,
+                  summary: result.summary,
+                  groupCount: result.groupCount,
+                });
+              },
+              error: () => {
+                deferred.reject("Data Loading Error, probably time out?");
+              },
+              timeout: 60000,
+            });
+
+            return deferred.promise();
+          }
         },
         byKey: (key) => {
           const d = new $.Deferred();
@@ -494,12 +494,7 @@ console.log("hi 389 here is processed  args: ", args);
     hoverStateEnabled: true,
     rowAlternationEnabled: true,
     remoteOperations: {
-      filtering: true,
-      paging: true,
-      sorting: true,
       groupPaging: true,
-      grouping: true,
-//      summary: true
     },
     paging: {
       pageSize: 20,
