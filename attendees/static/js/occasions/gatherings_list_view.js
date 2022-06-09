@@ -365,8 +365,8 @@ Attendees.gatherings = {
         key: 'id',
         load: (loadOptions) => {
           const meets = $('div.selected-meets select').val();
+          const deferred = $.Deferred();
           if (meets && meets.length > 0) {
-            const deferred = $.Deferred();
             const args = {
               requireTotalCount: true,
               take: Attendees.gatherings.gatheringsDatagrid.state().pageSize,
@@ -405,11 +405,12 @@ Attendees.gatherings = {
               error: () => {
                 deferred.reject("Data Loading Error, probably time out?");
               },
-              timeout: 60000,
+              timeout: 30000,
             });
-
-            return deferred.promise();
+          } else {
+            deferred.resolve([], {totalCount: 0, groupCount: 0});
           }
+          return deferred.promise();
         },
         byKey: (key) => {
           const d = new $.Deferred();
@@ -579,6 +580,12 @@ Attendees.gatherings = {
     onInitNewRow: (rowData) => {
       Attendees.gatherings.gatheringsDatagrid.option('editing.popup.title', 'Adding Gathering');
     },
+//    onOptionChanged: (e) => {  // somehow only works on second clicks, cannot resolve by cacheEnabled: false !!
+//      console.log("hi 584 here is e: ", e);
+//      if (e.fullName === "paging.pageSize" && e.value > e.previousValue){
+//        Attendees.gatherings.gatheringsDatagrid.refresh();
+//      } // To prevent datagrid only show UI cached data while server may have extra excluded by previous pagination.
+//    },
     onEditingStart: (e) => {
       const grid = e.component;
       grid.beginUpdate();

@@ -293,7 +293,7 @@ class Utility:
         return obj, created
 
     @staticmethod
-    def transform_result(data, grouping, counter={}):
+    def transform_result(data, grouping):
         """
         Todo 20220610: This is grouping AFTER queryset, thus the count of items for each group is incorrect after paging.
         Todo 20220610: To make the count correct when grouping, the count needs to be query and grouped at db level
@@ -301,14 +301,7 @@ class Utility:
         if grouping:
             grouping_data = []
             for c_title, items in groupby(data, itemgetter(grouping)):
-                response = {"key": c_title}
-                if counter and counter.get(c_title):
-                    response['items'] = None
-                    response['count'] = counter.get(c_title)
-                    response['summary'] = [counter.get(c_title)]
-                else:
-                    response['items'] = list(items)
-                grouping_data.append(response)
+                grouping_data.append({"key": c_title, "items": list(items)})
             return grouping_data
 
         else:
