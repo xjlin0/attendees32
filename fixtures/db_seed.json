@@ -11455,7 +11455,9 @@
           "Gathering": null,
           "Attendance": null
         },
-        "notice": "the finish date of attending_meets of 'archived' is always forever to show all attendees.",
+        "gathering": {
+          "notice": "the finish date of attending_meets of 'archived' is always forever to show all attendees."
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 45,
@@ -11484,7 +11486,9 @@
           "Gathering": null,
           "Attendance": null
         },
-        "notice": "the finish date of attending_meets of visitor is always forever to show all attendees.",
+        "gathering": {
+          "notice": "the finish date of attending_meets of visitor is always forever to show all attendees."
+        },
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 45,
@@ -11513,6 +11517,7 @@
           "Gathering": true,
           "Attendance": true
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 54,
@@ -11541,6 +11546,7 @@
           "Gathering": true,
           "Attendance": true
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 54,
@@ -11569,6 +11575,7 @@
           "Gathering": true,
           "Attendance": true
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 52,
@@ -11597,6 +11604,7 @@
           "Gathering": false,
           "Attendance": false
         },
+        "gathering": {},
         "default_time_zone": "UTC"
       },
       "site_type": 50,
@@ -11625,6 +11633,7 @@
           "Gathering": true,
           "Attendance": true
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 52,
@@ -11653,6 +11662,7 @@
           "Gathering": false,
           "Attendance": false
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11681,6 +11691,7 @@
           "Gathering": true,
           "Attendance": true
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles",
         "extending_attending_days": 90
       },
@@ -11710,6 +11721,7 @@
           "Gathering": false,
           "Attendance": false
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,
@@ -11738,6 +11750,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,
@@ -11766,6 +11779,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11794,6 +11808,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11822,6 +11837,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11850,6 +11866,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11878,6 +11895,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11906,6 +11924,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 50,
@@ -11934,6 +11953,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,
@@ -11962,6 +11982,7 @@
           "Gathering": null,
           "Attendance": null
         },
+        "gathering": {},
         "default_time_zone": "America/Los_Angeles"
       },
       "site_type": 46,
