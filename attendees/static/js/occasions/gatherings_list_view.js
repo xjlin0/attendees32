@@ -12,6 +12,7 @@ Attendees.gatherings = {
     Attendees.gatherings.initEditingSwitch();
     Attendees.gatherings.initFiltersForm();
     Attendees.gatherings.initGenerateButton();
+    Attendees.gatherings.filtersForm.validate();
   },
 
   initEditingSwitch: () => {
@@ -509,8 +510,17 @@ Attendees.gatherings = {
     },
     stateStoring: {
       enabled: true,
-      type: "sessionStorage",
-      storageKey: "attendeesGatheringsList",
+      type: 'custom',
+      storageKey: Attendees.utilities.datagridStorageKeys['gatheringsListView'],
+      customSave: (state) => {
+        for (item in state) {
+          if (['searchText'].includes(item)) delete state[item];
+        }
+        window.sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['gatheringsListView'], JSON.stringify(state));
+      },
+      customLoad: () => {
+        return window.sessionStorage.getItem(this.storageKey);
+      },
     },
     loadPanel: {
       message: 'Fetching...',
@@ -604,6 +614,27 @@ Attendees.gatherings = {
       if (e.dataField === 'site_id') {
         Attendees.gatherings.siteIdElement = e;
       }
+    },
+    onToolbarPreparing: (e) => {
+      const toolbarItems = e.toolbarOptions.items;
+      toolbarItems.unshift({
+        location: 'after',
+        widget: 'dxButton',
+        options: {
+          hint: 'Clear Sort/Group/Columns/Meets/Character/Time settings',
+          icon: 'pulldown',
+          onClick() {
+            if(confirm('Are you sure to clear all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
+              Attendees.gatherings.gatheringsDatagrid.state(null);
+              window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts']);
+              Attendees.utilities.selectAllGroupedTags(Attendees.gatherings.filtersForm.getEditor('characters'), []);
+              Attendees.utilities.selectAllGroupedTags(Attendees.gatherings.filtersForm.getEditor('meets'), []);
+              Attendees.gatherings.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
+              Attendees.gatherings.filtersForm.getEditor('filter-till').option('value', new Date(new Date().setMonth(new Date().getMonth() + 1)));
+            }
+          },
+        }, //
+      });
     },
     columns: [
       {

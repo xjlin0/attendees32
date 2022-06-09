@@ -532,7 +532,7 @@ Attendees.attendingmeets = {
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
               Attendees.attendingmeets.attendingmeetsDatagrid.state(null);
-              window.sessionStorage.removeItem('datagridAttendingmeetsListViewOpts');
+              window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts']);
               Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('characters'), []);
               Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'), []);
               Attendees.attendingmeets.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));

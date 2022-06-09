@@ -57,20 +57,27 @@ class GatheringService:
         extra_filters = Q(
             meet__assembly__division__organization__slug=current_user.organization.slug
         ).add(Q(meet__slug__in=meet_slugs), Q.AND)
-        # Todo 20220512 let scheduler see other attenings too?
+        # Todo 20220512 let scheduler see other attendings too?
         if not current_user.can_see_all_organizational_meets_attendees():
             extra_filters.add(Q(attendings__attendee=current_user.attendee), Q.AND)
 
-        if filter:  # only support display_name on single level because of generic relations
-            filter_term = json.loads(filter)
-            if isinstance(filter_term[0], list) and filter_term[0][1] == 'contains':  # [["display_name","contains","207"],"or",["site","contains","207"]]
-                search_term = filter_term[0][2]  # [["meet","=",1],"or",["meet","=",2]] is already filtered above
+        if filter:  # [["meet","=",1],"or",["meet","=",2]] is already filtered by slugs above
+            filter_term = json.loads(filter)  # [["display_name","contains","207"],"or",["site","contains","207"]]
+            if isinstance(filter_term[0], list) and filter_term[0][1] == 'contains':
+                search_term = filter_term[0][2]
                 if search_term:
-                    search_filters = Q(display_name__icontains=search_term)
+                    search_filters = Q(display_name__icontains=search_term)    # Gathering level
+                    search_filters.add(Q(infos__icontains=search_term), Q.OR)  # Gathering level
 
                     for site, field in GatheringService.SITE_SEARCHING_PROPERTIES.items():
-                        site_filter = {f"{field}__icontains": search_term}  # Todo: will it shorter if using site_id__regex=r'(1|2|3)' ?
-                        search_filters.add((Q(site_type__model=site._meta.model_name) & Q(site_id__in=[str(id) for id in site.objects.filter(**site_filter).values_list('id', flat=True)])), Q.OR)
+                        site_filter = {f"{field}__icontains": search_term}
+                        search_filters.add(
+                            (Q(site_type__model=site._meta.model_name)
+                             &
+                             Q(site_id__in=[str(key)  # can't use site_id__regex=r'(1|2|3)' for empty r'()'
+                                            for key in site.objects.filter(**site_filter).values_list('id', flat=True)]
+                               )
+                             ), Q.OR)
 
                     extra_filters.add(search_filters, Q.AND)
 
