@@ -30,20 +30,30 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
         )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        selector = json.loads(group_string)[0].get('selector')
+        group_column = json.loads(group_string)[0].get('selector')
+        current_user_organization = request.user.organization
+        meet_slugs = request.query_params.getlist("meets[]", [])
 
         if page is not None:
-            counter = {
-                c.get(selector): c.get('count')
-                for c in Gathering.objects.values(selector).order_by(selector).annotate(count=Count(selector))
-            } if selector else {}
+            if group_column:
+                counters = Gathering.objects.filter(
+                    meet__slug__in=meet_slugs,
+                    meet__assembly__division__organization=current_user_organization,
+                ).values(group_column).order_by(group_column).annotate(count=Count(group_column))
+                group_counts = []
+                total_count = 0
+                for g in counters:
+                    group_counts.append({'key': g.get(group_column), 'items': None, 'count': g.get('count')})
+                    total_count += g.get('count')
+                return Response({'data': group_counts, 'totalCount': total_count})
+
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(
-                Utility.transform_result(serializer.data, selector, counter)
+                Utility.transform_result(serializer.data, group_column)
             )
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(Utility.transform_result(serializer.data, selector))
+        return Response(Utility.transform_result(serializer.data, group_column))
 
     def get_queryset(self):
         current_user = self.request.user
