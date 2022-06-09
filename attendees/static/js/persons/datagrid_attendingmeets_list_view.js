@@ -196,6 +196,7 @@ Attendees.attendingmeets = {
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               const characters = $('div.selected-characters select').val();
+              Attendees.attendingmeets.filtersForm.getEditor('characters').getDataSource().reload();
               if (characters.length) {
                 Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
               }
@@ -255,12 +256,13 @@ Attendees.attendingmeets = {
                     if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
                         })
                       }); // schedule rules needed for attendingmeets generation
                     }
                     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs') || [];
                     Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeets.filtersForm.getEditor('meets'), selectedMeetSlugs);
+                    Attendees.attendingmeets.filtersForm.getEditor('characters').getDataSource().reload();
                   });
                 return d.promise();
               },
@@ -317,7 +319,13 @@ Attendees.attendingmeets = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {};
+                const params = {take: 9999};
+                const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
+                const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendingmeets.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                const length = assemblies && assemblies.length
+                if (assemblies && assemblies.size){
+                  params['assemblies[]'] = Array.from(assemblies);
+                }
                 if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
                   params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
@@ -802,6 +810,7 @@ Attendees.attendingmeets = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
+                  searchOpts['take'] = 9999;
                   if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
                   return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
                 },
