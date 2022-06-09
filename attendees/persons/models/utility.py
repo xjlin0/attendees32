@@ -137,7 +137,8 @@ class Utility:
               "Gathering": True,
               "Attendance": True
             },
-            "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE
+            "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE,
+            "gathering": {},
         }
 
     @staticmethod

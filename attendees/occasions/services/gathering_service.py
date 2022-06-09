@@ -126,7 +126,7 @@ class GatheringService:
                             "meet": meet,
                             "start": occurrence.start,
                             "finish": occurrence_end,
-                            "infos": meet.infos,
+                            "infos": meet.infos.get('gathering', {}),
                             "display_name": f'{meet.display_name} {occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")}',
                         },
                     )  # don't update gatherings if exist since it may have customizations
