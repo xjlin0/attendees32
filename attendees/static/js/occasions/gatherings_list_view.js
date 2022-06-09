@@ -169,9 +169,11 @@ Attendees.gatherings = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: new Date(new Date().setHours(new Date().getHours() - 1)),
+          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString') === undefined ? new Date(new Date().setHours(new Date().getHours() - 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString')) : null,
           type: 'datetime',
           onValueChanged: (e) => {
+            const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString', filterFromString);
             Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
             if (Attendees.gatherings.filterMeetCheckbox.option('value')) {
               Attendees.gatherings.filtersForm.getEditor('meets').getDataSource().reload();
@@ -204,9 +206,11 @@ Attendees.gatherings = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString') === undefined ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString')) : null,
           type: 'datetime',
           onValueChanged: (e) => {
+            const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString', filterTillString);
             Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
             if (Attendees.gatherings.filterMeetCheckbox.option('value')) {
               Attendees.gatherings.filtersForm.getEditor('meets').getDataSource().reload();
@@ -254,6 +258,7 @@ Attendees.gatherings = {
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.gatherings.filtersForm.validate();
             const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
             const $meetHelpText = Attendees.gatherings.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -312,7 +317,20 @@ Attendees.gatherings = {
                   params['finish'] = filterTill ? new Date(filterTill).toISOString() : null;
                   params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
-                return $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), params);
+                $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
+                  .done((result) => {
+                    d.resolve(result.data);
+                    if (Object.keys(Attendees.gatherings.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+                      result.data.forEach( assembly => {
+                        assembly.items.forEach( meet => {
+                          Attendees.gatherings.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                        })
+                      }); // schedule rules needed for gatherings generation
+                    }
+                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'selectedMeetSlugs') || [];
+                    Attendees.utilities.selectAllGroupedTags(Attendees.gatherings.filtersForm.getEditor('meets'), selectedMeetSlugs);
+                  });
+                return d.promise();
               },
             }),
             key: 'slug',
@@ -654,11 +672,11 @@ Attendees.gatherings = {
                 const d = new $.Deferred();
                 $.get($('form.filters-dxform').data('meets-endpoint-by-id'))
                   .done((result) => {
-                    if (Object.keys(Attendees.gatherings.meetScheduleRules).length < 1 && result.data && result.data[0]) {
-                      result.data.forEach(meet=>{
-                        Attendees.gatherings.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
-                      }); // schedule rules needed for gathering generation
-                    }
+                    // if (Object.keys(Attendees.gatherings.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+                    //   result.data.forEach(meet=>{
+                    //     Attendees.gatherings.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                    //   }); // schedule rules needed for gathering generation
+                    // }
                     d.resolve(result.data);
                   });
                 return d.promise();
@@ -684,7 +702,7 @@ Attendees.gatherings = {
         dataField: 'site',
         width: '30%',
         readOnly: true,
-        caption: 'Location (only grouped not sorted)',
+        caption: 'Location',
       },
       {
         dataField: 'start',
