@@ -39,7 +39,6 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
 
         if current_user_organization:
             pk = self.kwargs.get("pk")
-            ids = self.request.query_params.getlist("ids[]", [])
             search_value = self.request.query_params.get("searchValue")
             search_expression = self.request.query_params.get("searchExpr")
             search_operation = self.request.query_params.get("searchOperation")
@@ -63,12 +62,6 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
 
                 return Attending.objects.filter(**filters).distinct()
 
-            # if ids:
-            #     return Attending.objects.filter(
-            #         meets__assembly__division__organization=current_user_organization,
-            #         id__in=ids,
-            #     )
-
             else:
                 if group_string:
                     groups = json.loads(group_string)
@@ -76,7 +69,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
                         0, {"selector": groups[0]["selector"], "desc": groups[0]["desc"]}
                     )
 
-                return Attending.objects.filter(  # Todo: 20220604 need to separate for attendingmeet or attendance for sorting fields
+                return Attending.objects.filter(
                     pk__in=AttendingMeetService.by_organization_meet_characters(
                                 current_user=self.request.user,
                                 meet_slugs=self.request.query_params.getlist("meets[]", []),

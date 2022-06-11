@@ -368,8 +368,6 @@ Attendees.attendingmeets = {
       store: new DevExpress.data.CustomStore({
         key: 'id',
         load: (loadOptions) => {
-          console.log("hi 371 here is loadOptions for attendingMeet: ", loadOptions);
-//          Attendees.attendingmeets.loadOptions = loadOptions;
           const meets = $('div.selected-meets select').val();
           const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
@@ -402,10 +400,6 @@ Attendees.attendingmeets = {
               dataType: "json",
               data: args,
               success: (result) => {
-//                if (!args['group']){
-//                  Attendees.attendingmeets.attendingIds = [];
-//                }
-
                 deferred.resolve(result.data, {
                   totalCount: result.totalCount,
                   summary:    result.summary,
@@ -656,6 +650,7 @@ Attendees.attendingmeets = {
       {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
+        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `(${rowData.attending__registration__attendee}) ${rowData.attending__attendee}` : rowData.attending__attendee,
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
         },
@@ -663,12 +658,10 @@ Attendees.attendingmeets = {
           valueExpr: 'id',
           displayExpr: 'attending_label',
           dataSource: (options) => {
-             console.log("hi 662 here is options for attending: ", options);
             return {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (loadOptions) => {
-                  console.log("hi 667 here is loadOptions for attending before addition: ", loadOptions);
                   const meets = $('div.selected-meets select').val();
                   const characters = $('div.selected-characters select').val();
                   const deferred = $.Deferred();
@@ -686,7 +679,7 @@ Attendees.attendingmeets = {
                       start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
                       finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
                     };
-                    console.log("hi 685 here is loadOptions after addition: ", loadOptions);
+
                     [
                       'skip',
                       'take',

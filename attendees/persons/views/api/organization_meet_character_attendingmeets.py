@@ -33,9 +33,7 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
         page = self.paginate_queryset(queryset)
 
         if page is not None:
-            print("hi 36")
             if group_column:
-                print("hi 38")
                 counters = AttendingMeet.objects.filter(
                     meet__slug__in=meet_slugs,
                     character__slug__in=character_slugs,
@@ -47,7 +45,7 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
             return self.get_paginated_response(
                 Utility.transform_result(serializer.data, group_column)
             )
-        print("hi 50")
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(Utility.transform_result(serializer.data, group_column))
 
@@ -83,8 +81,8 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                     orderby_list.insert(
                         0, {"selector": groups[0]["selector"], "desc": groups[0]["desc"]}
                     )
-                print("hi 75 here is group_string", group_string)
-                qs = AttendingMeetService.by_organization_meet_characters(
+
+                return AttendingMeetService.by_organization_meet_characters(
                     current_user=self.request.user,
                     meet_slugs=self.request.query_params.getlist("meets[]", []),
                     character_slugs=self.request.query_params.getlist("characters[]", []),
@@ -93,8 +91,6 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                     orderbys=orderby_list,
                     filter=self.request.query_params.get("filter"),
                 )
-                print("hi 81 here is qs.count()", qs.count())
-                return qs
 
         else:
             time.sleep(2)

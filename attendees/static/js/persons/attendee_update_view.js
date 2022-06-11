@@ -3470,7 +3470,7 @@ Attendees.datagridUpdate = {
         },
       },
       {
-        dataField: 'assembly',
+        dataField: 'meet__assembly',
         groupIndex: 0,
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
