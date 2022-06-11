@@ -39,6 +39,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
 
         if current_user_organization:
             pk = self.kwargs.get("pk")
+            ids = self.request.query_params.getlist("ids[]", [])
             search_value = self.request.query_params.get("searchValue")
             search_expression = self.request.query_params.get("searchExpr")
             search_operation = self.request.query_params.get("searchOperation")
@@ -61,6 +62,12 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
                     filters['attendee'] = current_user.attendee
 
                 return Attending.objects.filter(**filters).distinct()
+
+            # if ids:
+            #     return Attending.objects.filter(
+            #         meets__assembly__division__organization=current_user_organization,
+            #         id__in=ids,
+            #     )
 
             else:
                 if group_string:
