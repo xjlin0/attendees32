@@ -1,6 +1,7 @@
 import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models.aggregates import Count
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -24,17 +25,29 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
         group_string = request.query_params.get(
             "group", '[{}]'
         )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
+        group_column = json.loads(group_string)[0].get('selector')
+        current_user_organization = request.user.organization
+        meet_slugs = request.query_params.getlist("meets[]", [])
+        character_slugs = request.query_params.getlist("characters[]", [])
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
         if page is not None:
+            if group_column:
+                counters = AttendingMeet.objects.filter(
+                    meet__slug__in=meet_slugs,
+                    character__slug__in=character_slugs,
+                    meet__assembly__division__organization=current_user_organization,
+                ).values(group_column).order_by(group_column).annotate(count=Count(group_column))
+                return Response(Utility.group_count(group_column, counters))
+
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(
-                Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector'))
+                Utility.transform_result(serializer.data, group_column)
             )
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector')))
+        return Response(Utility.transform_result(serializer.data, group_column))
 
     def get_queryset(self):
         current_user = self.request.user
@@ -51,7 +64,7 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                     '[{"selector":"meet","desc":false},{"selector":"start","desc":false}]',
                 )
             )  # order_by('meet','start')
-            # Todo: add group colume to orderby_list
+            # Todo: add group column to orderby_list
             if pk:
                 filters = {
                     'pk': pk,
@@ -68,8 +81,8 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                     orderby_list.insert(
                         0, {"selector": groups[0]["selector"], "desc": groups[0]["desc"]}
                     )
-
-                return AttendingMeetService.by_organization_meet_characters(
+                print("hi 75 here is group_string", group_string)
+                qs = AttendingMeetService.by_organization_meet_characters(
                     current_user=self.request.user,
                     meet_slugs=self.request.query_params.getlist("meets[]", []),
                     character_slugs=self.request.query_params.getlist("characters[]", []),
@@ -78,6 +91,8 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                     orderbys=orderby_list,
                     filter=self.request.query_params.get("filter"),
                 )
+                print("hi 81 here is qs.count()", qs.count())
+                return qs
 
         else:
             time.sleep(2)

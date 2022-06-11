@@ -373,8 +373,6 @@ Attendees.attendingmeets = {
           const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
           const args = {
-            take: Attendees.attendingmeets.attendingmeetsDatagrid.state().pageSize,
-            skip: Attendees.attendingmeets.attendingmeetsDatagrid.state().pageSize * Attendees.attendingmeets.attendingmeetsDatagrid.state().pageIndex,
             meets: meets,
             characters: characters,
             start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
@@ -497,7 +495,7 @@ Attendees.attendingmeets = {
     // cellHintEnabled: true,
     hoverStateEnabled: true,
     rowAlternationEnabled: true,
-    remoteOperations: { paging: true },
+    remoteOperations: { groupPaging: true },
     paging: {
       pageSize: 20,
     },
@@ -726,7 +724,7 @@ Attendees.attendingmeets = {
         },
       },
       {
-        dataField: 'assembly',
+        dataField: 'meet__assembly',
         groupIndex: 0,
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
