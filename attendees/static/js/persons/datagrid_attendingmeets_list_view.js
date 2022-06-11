@@ -4,7 +4,7 @@ Attendees.attendingmeets = {
   selectedMeetHasRule: false,
   initialized: false,
   filterMeetCheckbox: null,
-  loadOptions: null,
+  attendingIds: null,
   selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
   meetData: null,
@@ -368,49 +368,59 @@ Attendees.attendingmeets = {
       store: new DevExpress.data.CustomStore({
         key: 'id',
         load: (loadOptions) => {
-          Attendees.attendingmeets.loadOptions = loadOptions;
+          console.log("hi 371 here is loadOptions for attendingMeet: ", loadOptions);
+//          Attendees.attendingmeets.loadOptions = loadOptions;
           const meets = $('div.selected-meets select').val();
           const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
-          const args = {
-            meets: meets,
-            characters: characters,
-            start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
-            finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
-          };
 
-          [
-            'skip',
-            'take',
-            'requireTotalCount',
-            'requireGroupCount',
-            'sort',
-            'filter',
-            'totalSummary',
-            'group',
-            'groupSummary',
-          ].forEach((i) => {
-              if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
-                  args[i] = JSON.stringify(loadOptions[i]);
-          });
+          if (meets && meets.length > 0) {
+            const args = {
+              meets: meets,
+              characters: characters,
+              start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
+              finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
+            };
 
-          $.ajax({
-            url: $('form.filters-dxform').data('attendingmeets-endpoint'),
-            dataType: "json",
-            data: args,
-            success: (result) => {
-              deferred.resolve(result.data, {
-                totalCount: result.totalCount,
-                summary:    result.summary,
-                groupCount: result.groupCount,
-              });
-            },
-            error: () => {
-              deferred.reject("Data Loading Error for attendingmeet datagrid, probably time out?");
-            },
-            timeout: 60000,
-          });
+            [
+              'skip',
+              'take',
+              'requireTotalCount',
+              'requireGroupCount',
+              'sort',
+              'filter',
+              'totalSummary',
+              'group',
+              'groupSummary',
+            ].forEach((i) => {
+                if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+                    args[i] = JSON.stringify(loadOptions[i]);
+            });
 
+            $.ajax({
+              url: $('form.filters-dxform').data('attendingmeets-endpoint'),
+              dataType: "json",
+              data: args,
+              success: (result) => {
+//                if (!args['group']){
+//                  Attendees.attendingmeets.attendingIds = [];
+//                }
+
+                deferred.resolve(result.data, {
+                  totalCount: result.totalCount,
+                  summary:    result.summary,
+                  groupCount: result.groupCount,
+                });
+              },
+              error: () => {
+                deferred.reject("Data Loading Error for attendingmeet datagrid, probably time out?");
+              },
+              timeout: 60000,
+            });
+
+          } else {
+            deferred.resolve([], {totalCount: 0, groupCount: 0});
+          }
           return deferred.promise();
         },
         byKey: (key) => {
@@ -653,60 +663,64 @@ Attendees.attendingmeets = {
           valueExpr: 'id',
           displayExpr: 'attending_label',
           dataSource: (options) => {
-            // console.log("hi 639 here is options: ", options);
+             console.log("hi 662 here is options for attending: ", options);
             return {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (loadOptions) => {
-                  // console.log("hi 644 here is loadOptions: ", loadOptions);
+                  console.log("hi 667 here is loadOptions for attending before addition: ", loadOptions);
                   const meets = $('div.selected-meets select').val();
                   const characters = $('div.selected-characters select').val();
                   const deferred = $.Deferred();
-                  loadOptions['group'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.getDataSource().loadOptions().group;
-                  loadOptions['take'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.pageSize();
-                  loadOptions['skip'] = Attendees.attendingmeets.attendingmeetsDatagrid && (Attendees.attendingmeets.attendingmeetsDatagrid.pageIndex()*loadOptions['take']);
-                  const args = {
-                    meets: meets,
-                    characters: characters,
-                    searchOperation: loadOptions['searchOperation'],
-                    searchValue: loadOptions['searchValue'],
-                    searchExpr: loadOptions['searchExpr'],
-                    start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
-                    finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
-                  };
-                  // console.log("hi 660 here is loadOptions after addition: ", loadOptions);
-                  [
-                    'skip',
-                    'take',
-                    'requireTotalCount',
-                    'requireGroupCount',
-                    'sort',
-                    'filter',
-                    'totalSummary',
-                    'group',
-                    // 'groupSummary',
-                  ].forEach((i) => {
-                    if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
-                      args[i] = JSON.stringify(loadOptions[i]);
-                  });
-                  // console.log("hi 673 here is args: ", args);
-                  $.ajax({
-                    url: $('form.filters-dxform').data('attendings-endpoint'),
-                    dataType: "json",
-                    data: args,
-                    success: (result) => {
-                      deferred.resolve(result.data, {
-                        totalCount: result.totalCount,
-                        summary: result.summary,
-                        groupCount: result.groupCount,
-                      });
-                    },
-                    error: () => {
-                      deferred.reject("Data Loading Error for attending lookup, probably time out?");
-                    },
-                    timeout: 10000,
-                  });
 
+                  if (meets && meets.length > 0) {
+                    loadOptions['group'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.getDataSource().loadOptions().group;
+                    loadOptions['take'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.pageSize();
+                    loadOptions['skip'] = Attendees.attendingmeets.attendingmeetsDatagrid && (Attendees.attendingmeets.attendingmeetsDatagrid.pageIndex()*loadOptions['take']);
+                    const args = {
+                      meets: meets,
+                      characters: characters,
+                      searchOperation: loadOptions['searchOperation'],
+                      searchValue: loadOptions['searchValue'],
+                      searchExpr: loadOptions['searchExpr'],
+                      start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
+                      finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
+                    };
+                    console.log("hi 685 here is loadOptions after addition: ", loadOptions);
+                    [
+                      'skip',
+                      'take',
+                      'requireTotalCount',
+                      'requireGroupCount',
+                      'sort',
+                      'filter',
+                      'totalSummary',
+                      'group',
+                      // 'groupSummary',
+                    ].forEach((i) => {
+                      if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+                        args[i] = JSON.stringify(loadOptions[i]);
+                    });
+                     console.log("hi 700 here is args for attending: ", args);
+                    $.ajax({
+                      url: $('form.filters-dxform').data('attendings-endpoint'),
+                      dataType: "json",
+                      data: args,
+                      success: (result) => {
+                        deferred.resolve(result.data, {
+                          totalCount: result.totalCount,
+                          summary: result.summary,
+                          groupCount: result.groupCount,
+                        });
+                      },
+                      error: () => {
+                        deferred.reject("Data Loading Error for attending lookup, probably time out?");
+                      },
+                      timeout: 10000,
+                    });
+                  } else {
+                    deferred.resolve([], {totalCount: 0, groupCount: 0});
+                  }
                   return deferred.promise();
                 },
                 byKey: (key) => {
