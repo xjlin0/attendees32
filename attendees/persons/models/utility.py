@@ -308,6 +308,16 @@ class Utility:
         else:
             return data
 
+    @staticmethod
+    def group_count(group_column, counters):
+        group_counts = []
+        total_count = 0
+        for group in counters:
+            group_counts.append({'key': group.get(group_column), 'items': None, 'count': group.get('count')})
+            total_count += group.get('count')
+        return {'data': group_counts, 'totalCount': total_count}
+
+
     # @property
     # def notes(self):
     #     return Note.objects.filter(

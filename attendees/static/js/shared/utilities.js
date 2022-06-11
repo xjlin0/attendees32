@@ -33,7 +33,7 @@ Attendees.utilities = {
     } else if (typeof(value) === 'object' ) {
       return value !== null && Object.keys(value).length > 0;
     }
-    return value !== undefined && value !== null && value !== "";
+    return ![undefined, null, "", NaN].includes(value);
   },
 
   extractParamAndReplaceHistory: (paramName) => {

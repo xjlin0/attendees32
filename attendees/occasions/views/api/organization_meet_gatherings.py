@@ -40,12 +40,7 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
                     meet__slug__in=meet_slugs,
                     meet__assembly__division__organization=current_user_organization,
                 ).values(group_column).order_by(group_column).annotate(count=Count(group_column))
-                group_counts = []
-                total_count = 0
-                for g in counters:
-                    group_counts.append({'key': g.get(group_column), 'items': None, 'count': g.get('count')})
-                    total_count += g.get('count')
-                return Response({'data': group_counts, 'totalCount': total_count})
+                return Response(Utility.group_count(group_column, counters))
 
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(
@@ -70,7 +65,7 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
                     '[{"selector":"meet","desc":false},{"selector":"start","desc":false}]',
                 )
             )  # order_by('meet','start')
-            # Todo: add group colume to orderby_list
+            # Todo: add group column to orderby_list
             if pk:
                 extra_filters = {
                     'pk': pk,

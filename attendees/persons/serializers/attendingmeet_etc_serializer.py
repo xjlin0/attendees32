@@ -4,7 +4,7 @@ from attendees.persons.models import AttendingMeet
 
 
 class AttendingMeetEtcSerializer(serializers.ModelSerializer):
-    assembly = serializers.IntegerField(read_only=True)
+    meet__assembly = serializers.IntegerField(read_only=True, source='assembly')  # field name conversion for UI to group directly later
 
     class Meta:
         model = AttendingMeet
