@@ -196,6 +196,7 @@ Attendees.attendances = {
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               const characters = $('div.selected-characters select').val();
+              Attendees.attendances.filtersForm.getEditor('characters').getDataSource().reload();
               if (characters.length) {
                 Attendees.attendances.attendancesDatagrid.refresh();
               }
@@ -255,7 +256,7 @@ Attendees.attendances = {
                     if (Object.keys(Attendees.attendances.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.attendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                          Attendees.attendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
                           Attendees.attendances.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
                         })
                       }); // schedule rules needed for attendingmeets generation
@@ -318,7 +319,12 @@ Attendees.attendances = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {};
+                const params = {take: 9999};
+                const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                if (assemblies && assemblies.size){
+                  params['assemblies[]'] = Array.from(assemblies);
+                }
                 if (Attendees.attendances.filterMeetCheckbox.option('value')) {
                   params['grouping'] = 'assembly_name';  // for grouped: true,
                 }

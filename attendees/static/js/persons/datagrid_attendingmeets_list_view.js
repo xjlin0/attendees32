@@ -694,7 +694,7 @@ Attendees.attendingmeets = {
                       if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
                         args[i] = JSON.stringify(loadOptions[i]);
                     });
-                     console.log("hi 700 here is args for attending: ", args);
+
                     $.ajax({
                       url: $('form.filters-dxform').data('attendings-endpoint'),
                       dataType: "json",
