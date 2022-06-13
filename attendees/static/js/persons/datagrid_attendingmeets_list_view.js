@@ -322,7 +322,7 @@ Attendees.attendingmeets = {
                 const params = {take: 9999};
                 const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendingmeets.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
-                const length = assemblies && assemblies.length
+                // const length = assemblies && assemblies.length
                 if (assemblies && assemblies.size){
                   params['assemblies[]'] = Array.from(assemblies);
                 }
@@ -578,7 +578,7 @@ Attendees.attendingmeets = {
         colCount: 2,
         items: [
           {
-            dataField: 'assembly',
+            dataField: 'meet__assembly',
             helpText: "Select to filter meet and character",
           },
           {
