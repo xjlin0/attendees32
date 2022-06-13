@@ -2,6 +2,7 @@ import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models.aggregates import Count
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -26,19 +27,22 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
             "group", '[{}]'
         )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
         group_column = json.loads(group_string)[0].get('selector')
-        current_user_organization = request.user.organization
-        meet_slugs = request.query_params.getlist("meets[]", [])
-        character_slugs = request.query_params.getlist("characters[]", [])
+        search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
         if page is not None:
             if group_column:
-                counters = AttendingMeet.objects.filter(
-                    meet__slug__in=meet_slugs,
-                    character__slug__in=character_slugs,
-                    meet__assembly__division__organization=current_user_organization,
-                ).values(group_column).order_by(group_column).annotate(count=Count(group_column))
+                filters = Q(meet__slug__in=request.query_params.getlist("meets[]", [])).add(
+                    Q(character__slug__in=request.query_params.getlist("characters[]", [])), Q.AND).add(
+                    Q(meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                if search_value:
+                    filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
+                                |
+                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
+
+                counters = AttendingMeet.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count(group_column))
                 return Response(Utility.group_count(group_column, counters))
 
             serializer = self.get_serializer(page, many=True)

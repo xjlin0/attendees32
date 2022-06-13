@@ -21,10 +21,11 @@ class AttendingMeetService:
             extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
                                |
                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
-
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)
-            search_term = filter_list[-1][-1] if isinstance(filter_list[-1], list) else filter_list[-1]
+            search_term = (filter_list[-1][-1]
+                           if filter_list[1] == 'or'
+                           else filter_list[0][0][-1]) if isinstance(filter_list[-1], list) else filter_list[-1]
             if isinstance(search_term, str):
                 extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_term)
                                    |
@@ -33,7 +34,6 @@ class AttendingMeetService:
                                    Q(infos__icontains=search_term)
                                    |
                                    Q(attending__attendee__infos__icontains=search_term)), Q.AND)
-
         if start:
             extra_filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
         if finish:
