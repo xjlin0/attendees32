@@ -1,6 +1,7 @@
 import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.db.models.aggregates import Count
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
@@ -31,15 +32,29 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         group_column = json.loads(group_string)[0].get('selector')
-        current_user_organization = request.user.organization
-        meet_slugs = request.query_params.getlist("meets[]", [])
+        search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]
 
         if page is not None:
             if group_column:
-                counters = Gathering.objects.filter(
-                    meet__slug__in=meet_slugs,
-                    meet__assembly__division__organization=current_user_organization,
-                ).values(group_column).order_by(group_column).annotate(count=Count(group_column))
+                filters = Q(meet__slug__in=request.query_params.getlist("meets[]", [])).add(
+                    Q(meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                if search_value:
+                    search_filters = Q(infos__icontains=search_value)
+                    search_filters.add(Q(display_name__icontains=search_value), Q.OR)
+
+                    for site, field in GatheringService.SITE_SEARCHING_PROPERTIES.items():
+                        site_filter = {f"{field}__icontains": search_value}
+                        search_filters.add(
+                            (Q(site_type__model=site._meta.model_name)
+                             &
+                             Q(site_id__in=[str(key)  # can't use site_id__regex=r'(1|2|3)' for empty r'()'
+                                            for key in site.objects.filter(**site_filter).values_list('id', flat=True)]
+                               )
+                             ), Q.OR)
+                    filters.add(search_filters, Q.AND)
+
+                counters = Gathering.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count(group_column))
                 return Response(Utility.group_count(group_column, counters))
 
             serializer = self.get_serializer(page, many=True)
