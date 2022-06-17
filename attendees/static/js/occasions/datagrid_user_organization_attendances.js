@@ -151,8 +151,36 @@ Attendees.userAttendances = {
         }
       },
       {
-        dataField: "category",
-        dataType: "string"
+        dataField: 'category',
+        validationRules: [{type: 'required'}],
+        visible: false,
+        editorOptions: {
+          showClearButton: true,
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  searchOpts['type'] = 'attendance';
+                  searchOpts['take'] = 9999;
+                  return $.getJSON($('div.organization-attendances').data('categories-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('div.organization-attendances').data('categories-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
       },
       {
         dataField: "modified",
