@@ -1,14 +1,17 @@
 import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models.aggregates import Count
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.utils import json
 
+from attendees.occasions.models import Attendance
 from attendees.occasions.serializers import AttendanceEtcSerializer
 from attendees.occasions.services import AttendanceService
-from attendees.persons.models import Utility, AttendingMeet
+from attendees.persons.models import Utility
 
 
 class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
@@ -24,17 +27,27 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
         group_string = request.query_params.get(
             "group", '[{}]'
         )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
+        group_column = json.loads(group_string)[0].get('selector')
+        # search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
         if page is not None:
+            if group_column:
+                filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
+                    Q(character__slug__in=request.query_params.getlist("characters[]", [])), Q.AND).add(
+                    Q(gathering__meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                counters = Attendance.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count(group_column))
+                return Response(Utility.group_count(group_column, counters))
+
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(
-                Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector'))
+                Utility.transform_result(serializer.data, group_column)
             )
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(Utility.transform_result(serializer.data, json.loads(group_string)[0].get('selector')))
+        return Response(Utility.transform_result(serializer.data, group_column))
 
     def get_queryset(self):
         current_user = self.request.user
@@ -60,7 +73,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
                 if not current_user.can_see_all_organizational_meets_attendees():
                     filters['attendings__attendee'] = current_user.attendee
 
-                return AttendingMeet.objects.filter(**filters)
+                return Attendance.objects.filter(**filters)
 
             else:
                 if group_string:

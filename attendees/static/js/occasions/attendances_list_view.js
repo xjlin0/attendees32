@@ -320,7 +320,8 @@ Attendees.attendances = {
               load: (loadOptions) => {
                 const d = new $.Deferred();
                 const params = {take: 9999};
-                const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                const meetSlugs = $('div.selected-meets select').val();
+                const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                 if (assemblies && assemblies.size){
                   params['assemblies[]'] = Array.from(assemblies);
@@ -489,7 +490,7 @@ Attendees.attendances = {
     // cellHintEnabled: true,
     hoverStateEnabled: true,
     rowAlternationEnabled: true,
-    remoteOperations: true,
+    remoteOperations: {groupPaging: true},
     paging: {
       pageSize: 20,
     },
@@ -559,13 +560,13 @@ Attendees.attendances = {
         colCount: 2,
         items: [
           {
-            dataField: 'assembly',
+            dataField: 'gathering__meet__assembly',
             helpText: "Select to filter meet and character",
           },
-          // {
-          //   dataField: 'meet',
-          //   helpText: "What's the activity?",
-          // },
+           {
+             dataField: 'gathering',
+             helpText: "What's the activity?",
+           },
           {
             dataField: 'attending',
             helpText: "who?",
@@ -622,49 +623,15 @@ Attendees.attendances = {
     },
     columns: [
       {
-        dataField: 'gathering',
-        validationRules: [{type: 'required'}],
-        lookup: {
-          valueExpr: 'id',
-          displayExpr: 'display_name',
-          dataSource: (options) => {
-            return {
-              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
-              store: new DevExpress.data.CustomStore({
-                key: 'id',
-                load: (searchOpts) => {
-                  if (options.data && options.data.meet) {
-                    searchOpts['meets[]'] = options.data.meet;
-                  } else {
-                    searchOpts['meets[]'] = $('div.selected-meets select').val();
-                  }
-                  return $.getJSON($('form.filters-dxform').data('gatherings-endpoint'), searchOpts);
-                },
-                byKey: (key) => {
-                  const d = new $.Deferred();
-                  $.get($('form.filters-dxform').data('gatherings-endpoint') + key + '/')
-                    .done((result) => {
-                      d.resolve(result);
-                    });
-                  return d.promise();
-                },
-              }),
-            };
-          }
-        },
-      },
-      {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
+        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `(${rowData.attending__registration__attendee}) ${rowData.attending__attendee}` : rowData.attending__attendee,
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
         },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'attending_label',
-
-          // 20220605 Todo: add sort/filter from here like line 764 dataSource: (options) => {
-
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
@@ -731,7 +698,40 @@ Attendees.attendances = {
         },
       },
       {
-        dataField: 'assembly',
+        dataField: 'gathering',
+        validationRules: [{type: 'required'}],
+        calculateDisplayValue: (rowData) => rowData.gathering_name,
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  if (options.data && options.data.meet) {
+                    searchOpts['meets[]'] = options.data.meet;
+                  } else {
+                    searchOpts['meets[]'] = $('div.selected-meets select').val();
+                  }
+                  return $.getJSON($('form.filters-dxform').data('gatherings-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('gatherings-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
+        },
+      },
+      {
+        dataField: 'gathering__meet__assembly',
         groupIndex: 0,
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
@@ -773,7 +773,13 @@ Attendees.attendances = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
+                  searchOpts['take'] = 9999;
+                  const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                  const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                  if (assemblies && assemblies.size){
+                    searchOpts['assemblies[]'] = Array.from(assemblies);
+                  }
+//                  if (options.data && options.data.assembly) { searchOpts['assemblies[]'] = options.data.assembly; }
                   return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
@@ -804,7 +810,8 @@ Attendees.attendances = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  searchOpts.type = 'attendance';
+                  searchOpts['type'] = 'attendance';
+                  searchOpts['take'] = 9999;
                   return $.getJSON($('form.filters-dxform').data('categories-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
@@ -835,7 +842,12 @@ Attendees.attendances = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  if (options.data && options.data.meet) {searchOpts['meets[]'] = options.data.meet; }
+                  searchOpts['take'] = 9999;
+                  const meetSlugs = $('div.selected-meets select').val();
+                  const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                  if (meets && meets.length){
+                    searchOpts['meets[]'] = meets;
+                  }
                   return $.getJSON($('form.filters-dxform').data('teams-endpoint'), searchOpts);
                 },
                 byKey: (key) => {

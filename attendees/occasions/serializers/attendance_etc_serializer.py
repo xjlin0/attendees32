@@ -4,7 +4,10 @@ from attendees.occasions.models import Attendance
 
 
 class AttendanceEtcSerializer(serializers.ModelSerializer):
-    assembly = serializers.IntegerField(read_only=True)
+    gathering__meet__assembly = serializers.IntegerField(read_only=True, source='assembly')
+    gathering_name = serializers.CharField(read_only=True)
+    attending__registration__attendee = serializers.CharField(read_only=True, source='register_name')
+    attending__attendee = serializers.CharField(read_only=True, source='attendee_name')
 
     class Meta:
         model = Attendance

@@ -320,7 +320,8 @@ Attendees.attendingmeets = {
               load: (loadOptions) => {
                 const d = new $.Deferred();
                 const params = {take: 9999};
-                const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
+                const meetSlugs = $('div.selected-meets select').val();
+                const meets = meetSlugs && meetSlugs.length ? Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendingmeets.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                 // const length = assemblies && assemblies.length
                 if (assemblies && assemblies.size){
@@ -784,7 +785,6 @@ Attendees.attendingmeets = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
                   const d = new $.Deferred();
                   $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
                     .done((result) => {
@@ -816,7 +816,12 @@ Attendees.attendingmeets = {
                 key: 'id',
                 load: (searchOpts) => {
                   searchOpts['take'] = 9999;
-                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
+                  const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
+                  const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendingmeets.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                  if (assemblies && assemblies.size){
+                    searchOpts['assemblies[]'] = Array.from(assemblies);
+                  }
+//                  if (options.data && options.data.assembly) {searchOpts['assemblies[]'] = options.data.assembly; }
                   return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
@@ -847,7 +852,8 @@ Attendees.attendingmeets = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  searchOpts.type = 'attendance';
+                  searchOpts['type'] = 'attendance';
+                  searchOpts['take'] = 9999;
                   return $.getJSON($('form.filters-dxform').data('categories-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
@@ -878,7 +884,12 @@ Attendees.attendingmeets = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  if (options.data && options.data.meet) {searchOpts['meets[]'] = options.data.meet; }
+                  searchOpts['take'] = 9999;
+                  const meetSlugs = $('div.selected-meets select').val();
+                  const meets = meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
+                  if (meets && meets.length){
+                    searchOpts['assemblies[]'] = meets;
+                  }
                   return $.getJSON($('form.filters-dxform').data('teams-endpoint'), searchOpts);
                 },
                 byKey: (key) => {

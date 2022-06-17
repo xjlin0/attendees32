@@ -1,4 +1,5 @@
-from django.db.models import F, Q
+from django.db.models import F, Q, CharField, Value
+from django.db.models.functions import Concat, Trim
 from rest_framework.utils import json
 from attendees.occasions.models import Attendance
 
@@ -152,7 +153,28 @@ class AttendanceService:
             extra_filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
         if finish:
             extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
-        return Attendance.objects.annotate(assembly=F("gathering__meet__assembly")).filter(extra_filters).order_by(*orderby_list)
+        return Attendance.objects.annotate(
+            register_name=Trim(
+                Concat(
+                    Trim(Concat("attending__registration__registrant__first_name", Value(' '),
+                                "attending__registration__registrant__last_name", output_field=CharField())),
+                    Value(' '),
+                    Trim(Concat("attending__registration__registrant__last_name2",
+                                "attending__registration__registrant__first_name2", output_field=CharField())),
+                    output_field=CharField()
+                )
+            ),
+            attendee_name=Concat(
+                Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
+                            output_field=CharField())),
+                Value(' '),
+                Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
+                            output_field=CharField())),
+                output_field=CharField()
+            ),
+            gathering_name=F("gathering__display_name"),
+            assembly=F("gathering__meet__assembly"),
+        ).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
     def orderby_parser(orderbys):
