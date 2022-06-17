@@ -55,29 +55,14 @@ class DatagridUserOrganizationAttendancesListView(LoginRequiredMixin, ListView):
             else:
                 # chosen_character_slugs = self.request.GET.getlist('characters', [])
                 # context.update({'chosen_character_slugs': chosen_character_slugs})
-                context.update(
-                    {"teams_endpoint": "/occasions/api/organization_meet_teams/"}
-                )
-                context.update(
-                    {
-                        "gatherings_endpoint": "/occasions/api/family_organization_gatherings/"
-                    }
-                )
-                context.update(
-                    {
-                        "characters_endpoint": "/occasions/api/family_organization_characters/"
-                    }
-                )
-                context.update(
-                    {
-                        "attendings_endpoint": "/persons/api/family_organization_attendings/"
-                    }
-                )
-                context.update(
-                    {
-                        "attendances_endpoint": "/occasions/api/family_organization_attendances/"
-                    }
-                )
+                context.update({
+                    "teams_endpoint": "/occasions/api/organization_meet_teams/",
+                    "gatherings_endpoint": "/occasions/api/family_organization_gatherings/",
+                    "characters_endpoint": "/occasions/api/family_organization_characters/",
+                    "attendings_endpoint": "/persons/api/family_organization_attendings/",
+                    "attendances_endpoint": "/occasions/api/family_organization_attendances/",
+                    "categories_endpoint": "/persons/api/all_categories/",
+                })
                 return render(self.request, self.get_template_names()[0], context)
         else:
             time.sleep(2)

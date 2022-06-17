@@ -172,7 +172,11 @@ class AttendanceService:
                             output_field=CharField())),
                 output_field=CharField()
             ),
-            gathering_name=F("gathering__display_name"),
+            gathering_name=Trim(
+                Concat("gathering__meet__display_name",
+                       Value(': '),
+                       "gathering__display_name",
+                        output_field=CharField())),
             assembly=F("gathering__meet__assembly"),
         ).filter(extra_filters).order_by(*orderby_list)
 
