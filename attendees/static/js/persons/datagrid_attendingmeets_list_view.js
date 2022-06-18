@@ -321,7 +321,7 @@ Attendees.attendingmeets = {
                 const d = new $.Deferred();
                 const params = {take: 9999};
                 const meetSlugs = $('div.selected-meets select').val();
-                const meets = meetSlugs && meetSlugs.length ? Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
+                const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendingmeets.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                 // const length = assemblies && assemblies.length
                 if (assemblies && assemblies.size){
