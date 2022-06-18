@@ -508,8 +508,17 @@ Attendees.attendances = {
     },
     stateStoring: {
       enabled: true,
-      type: "sessionStorage",
+      type: 'custom',
       storageKey: Attendees.utilities.datagridStorageKeys['attendancesListView'],
+      customSave: (state) => {
+        for (item in state) {
+          if (['searchText'].includes(item)) delete state[item];
+        }
+        window.sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['attendancesListView'], JSON.stringify(state));
+      },
+      customLoad: () => {
+        return window.sessionStorage.getItem(this.storageKey);
+      },
     },
     loadPanel: {
       message: 'Fetching...',
