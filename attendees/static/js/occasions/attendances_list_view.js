@@ -154,7 +154,7 @@ Attendees.attendances = {
       {
         dataField: 'meets',
         colSpan: 6,
-        helpText: "Can't show schedules when multiple selected. Select single one to view its schedules",
+        helpText: "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely",
         cssClass: 'selected-meets',
         validationRules: [{type: 'required'}],
         label: {
