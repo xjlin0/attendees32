@@ -11449,6 +11449,7 @@
       "display_name": "封存 archived",
       "slug": "d7c8Fd_cfcch_congregation_archived",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_organizer", "data_counselor"],
         "automatic_creation": {
           "Past": null,
@@ -11480,6 +11481,7 @@
       "display_name": "訪客 visitor",
       "slug": "d7c8Fd_cfcch_congregation_visitor",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["children_organizer", "children_coworker", "data_organizer", "conference_organizer", "data_counselor"],
         "automatic_creation": {
           "Past": null,
@@ -11511,6 +11513,7 @@
       "display_name": "The Rock",
       "slug": "d7c8Fd_cfcch_junior_regular_the_rock",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
         "automatic_creation": {
           "Past": null,
@@ -11540,6 +11543,7 @@
       "display_name": "Little foot",
       "slug": "d7c8Fd_cfcch_junior_regular_little_foot",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
         "automatic_creation": {
           "Past": null,
@@ -11569,6 +11573,7 @@
       "display_name": "影音中控",
       "slug": "d7c8Fd_cfcch_adault_sunday_recording_av_control",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["worship_organizer", "conference_organizer", "data_counselor"],
         "automatic_creation": {
           "Past": null,
@@ -11598,6 +11603,7 @@
       "display_name": "天堂 玻璃海天使詩班",
       "slug": "faBd6C_heaven_sea_of_glass_angel_choir",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["worship_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11627,6 +11633,7 @@
       "display_name": "kid Christmas Celebration 兒少聖誕會",
       "slug": "d7c8Fd_cfcch_junior_regular_christmas_celebration",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
         "automatic_creation": {
           "Past": null,
@@ -11656,6 +11663,7 @@
       "display_name": "青少退休會",
       "slug": "d7c8Fd_cfcch_junior_retreat",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
         "automatic_creation": {
           "Past": null,
@@ -11685,6 +11693,7 @@
       "display_name": "常做禮拜 Worship roaster",
       "slug": "d7c8Fd_cfcch_congregation_roaster",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11715,6 +11724,7 @@
       "display_name": "通訊錄 directory",
       "slug": "d7c8Fd_cfcch_congregation_directory",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11744,6 +11754,7 @@
       "display_name": "會員 member",
       "slug": "d7c8Fd_cfcch_congregation_member",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": 5,
@@ -11773,6 +11784,7 @@
       "display_name": "2020夏令會食宿",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_accommodation",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11802,6 +11814,7 @@
       "display_name": "2020夏令會接送",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_transportation",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11831,6 +11844,7 @@
       "display_name": "2020夏令會討論小組",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_panel",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_counselor", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11860,6 +11874,7 @@
       "display_name": "2020夏令會中文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_chinese_program",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11889,6 +11904,7 @@
       "display_name": "2020夏令會兒童活動",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_junior_program",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11918,6 +11934,7 @@
       "display_name": "2020夏令會英文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_english_program",
       "infos": {
+        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
         "automatic_creation": {
           "Past": null,
@@ -11947,6 +11964,7 @@
       "display_name": "已受洗 baptized",
       "slug": "d7c8Fd_cfcch_congregation_baptized",
       "infos": {
+        "allowed_models": ["attendingmeet"],
         "allowed_groups": ["data_counselor", "children_organizer", "children_coworker", "conference_organizer"],
         "automatic_creation": {
           "Past": 5,
@@ -11976,6 +11994,7 @@
       "display_name": "已信主 believer",
       "slug": "d7c8Fd_cfcch_congregation_believer",
       "infos": {
+        "allowed_models": ["attendingmeet"],
         "allowed_groups": ["data_counselor", "children_organizer", "children_coworker", "conference_organizer"],
         "automatic_creation": {
           "Past": 4,
