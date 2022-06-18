@@ -483,6 +483,11 @@ Attendees.attendances = {
         },
       }),
     },
+    searchPanel: {
+      visible: true,
+      width: 240,
+      placeholder: 'search name or activities ...',
+    },
     allowColumnReordering: true,
     columnAutoWidth: true,
     allowColumnResizing: true,

@@ -11630,8 +11630,8 @@
       "audience_editable": true,
       "start": "2020-05-12T14:54:57Z",
       "finish": "2099-12-31T15:54:58Z",
-      "display_name": "kid Christmas Celebration 兒少聖誕會",
-      "slug": "d7c8Fd_cfcch_junior_regular_christmas_celebration",
+      "display_name": "Vacation Bible School 兒少聖經營",
+      "slug": "d7c8Fd_cfcch_junior_vacation_bible_school",
       "infos": {
         "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
         "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],

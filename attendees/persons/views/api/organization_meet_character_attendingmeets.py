@@ -40,7 +40,9 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                 if search_value:
                     filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
                                 |
-                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
+                                Q(attending__attendee__infos__icontains=search_value)
+                                |
+                                Q(infos__icontains=search_value)), Q.AND)
 
                 counters = AttendingMeet.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count(group_column))
                 return Response(Utility.group_count(group_column, counters))
