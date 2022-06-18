@@ -132,6 +132,7 @@ class Utility:
     @staticmethod
     def meet_infos():
         return {
+            'allowed_models': ['gathering', 'attendingmeet', 'attendance', 'eventrelation'],
             'allowed_groups': [],
             "automatic_creation": {
               "Gathering": True,
