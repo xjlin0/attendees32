@@ -28,7 +28,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
             "group", '[{}]'
         )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
         group_column = json.loads(group_string)[0].get('selector')
-        # search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]
+        search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]  # could be [[null,"contains","jack"],"or",[null,"contains","jack"]] or [[[null,"contains","jack"],"or",[null,"contains","jack"]],"and",["gathering__meet__assembly","=",5]]
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
@@ -37,6 +37,15 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
                 filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
                     Q(character__slug__in=request.query_params.getlist("characters[]", [])), Q.AND).add(
                     Q(gathering__meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                if isinstance(search_value, str):
+                    filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
+                                 |
+                                 Q(attending__attendee__infos__icontains=search_value)
+                                 |
+                                 Q(gathering__display_name__icontains=search_value)
+                                 |
+                                 Q(infos__icontains=search_value)), Q.AND)
 
                 counters = Attendance.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count(group_column))
                 return Response(Utility.group_count(group_column, counters))

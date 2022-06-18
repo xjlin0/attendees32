@@ -130,20 +130,17 @@ class AttendanceService:
         # Todo 20220512 let scheduler see other attendings too?
         if not current_user.can_see_all_organizational_meets_attendees():
             extra_filters.add(Q(attending__attendee=current_user.attendee), Q.AND)
-        print("hi 132 here is filter: ", filter)
-        # if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # only contains supported now
-        #     extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
-        #                        |
-        #                        Q(attending__attendee__infos__icontains=search_value)), Q.AND)
-        print("hi 137 here is orderby: ", orderbys)
-        print("hi 138 here is orderby_list: ", orderby_list)
+
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)
-            search_term = filter_list[-1][-1] if isinstance(filter_list[-1], list) else filter_list[-1]
+            search_term = (filter_list[-1][-1]
+                           if filter_list[1] == 'or'
+                           else filter_list[0][0][-1]) if isinstance(filter_list[-1], list) else filter_list[-1]
+
             if isinstance(search_term, str):
                 extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_term)
                                    |
-                                   Q(category__display_name__icontains=search_term)
+                                   Q(gathering__display_name__icontains=search_term)
                                    |
                                    Q(infos__icontains=search_term)
                                    |
