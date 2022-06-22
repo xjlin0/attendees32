@@ -150,37 +150,36 @@ class AttendanceService:
             extra_filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
         if finish:
             extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
+
+        attendee_name = Trim(
+            Concat(
+                Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
+                            output_field=CharField())),
+                Value(' '),
+                Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
+                            output_field=CharField())),
+                output_field=CharField()
+            )
+        )
+
+        register_name = Trim(
+            Concat(
+                Trim(Concat("attending__registration__registrant__first_name", Value(' '),
+                            "attending__registration__registrant__last_name", output_field=CharField())),
+                Value(' '),
+                Trim(Concat("attending__registration__registrant__last_name2",
+                            "attending__registration__registrant__first_name2", output_field=CharField())),
+                output_field=CharField()
+            )
+        )
+
         return Attendance.objects.annotate(
             attending_name=Case(
-                When(attending__registration__isnull=True, then=Concat(
-                    Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
-                                output_field=CharField())),
-                    Value(' '),
-                    Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
-                                output_field=CharField())),
-                    output_field=CharField()
-                )),
+                When(attending__registration__isnull=True, then=attendee_name),
                 When(attending__registration__isnull=False, then=Concat(
-                    Trim(
-                        Concat(
-                            Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
-                                        output_field=CharField())),
-                            Value(' '),
-                            Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
-                                        output_field=CharField())),
-                            output_field=CharField()
-                        )
-                    ),
+                    attendee_name,
                     Value(' by '),
-                    Trim(
-                        Concat(
-                            Trim(Concat("attending__registration__registrant__first_name", Value(' '),
-                                        "attending__registration__registrant__last_name", output_field=CharField())),
-                            Value(' '),
-                            Trim(Concat("attending__registration__registrant__last_name2",
-                                        "attending__registration__registrant__first_name2", output_field=CharField())),
-                            output_field=CharField()
-                        )),
+                    register_name,
                     output_field=CharField()
                 )),
                 output_field=CharField()
