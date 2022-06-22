@@ -189,7 +189,7 @@ Attendees.attendances = {
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.attendances.filtersForm.validate();
-            const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules";
+            const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely";
             const $meetHelpText = Attendees.attendances.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
             Attendees.attendances.selectedMeetHasRule = false;
             // Attendees.attendances.generateGatheringsButton.option('disabled', true);
