@@ -1,4 +1,4 @@
-from django.db.models import F, Q, CharField, Value
+from django.db.models import F, Q, CharField, Value, When, Case
 from django.db.models.functions import Concat, Trim
 from rest_framework.utils import json
 from attendees.occasions.models import Attendance
@@ -151,28 +151,44 @@ class AttendanceService:
         if finish:
             extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
         return Attendance.objects.annotate(
-            register_name=Trim(
-                Concat(
-                    Trim(Concat("attending__registration__registrant__first_name", Value(' '),
-                                "attending__registration__registrant__last_name", output_field=CharField())),
+            attending_name=Case(
+                When(attending__registration__isnull=True, then=Concat(
+                    Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
+                                output_field=CharField())),
                     Value(' '),
-                    Trim(Concat("attending__registration__registrant__last_name2",
-                                "attending__registration__registrant__first_name2", output_field=CharField())),
+                    Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
+                                output_field=CharField())),
                     output_field=CharField()
-                )
-            ),
-            attendee_name=Concat(
-                Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
-                            output_field=CharField())),
-                Value(' '),
-                Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
-                            output_field=CharField())),
+                )),
+                When(attending__registration__isnull=False, then=Concat(
+                    Trim(
+                        Concat(
+                            Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
+                                        output_field=CharField())),
+                            Value(' '),
+                            Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
+                                        output_field=CharField())),
+                            output_field=CharField()
+                        )
+                    ),
+                    Value(' by '),
+                    Trim(
+                        Concat(
+                            Trim(Concat("attending__registration__registrant__first_name", Value(' '),
+                                        "attending__registration__registrant__last_name", output_field=CharField())),
+                            Value(' '),
+                            Trim(Concat("attending__registration__registrant__last_name2",
+                                        "attending__registration__registrant__first_name2", output_field=CharField())),
+                            output_field=CharField()
+                        )),
+                    output_field=CharField()
+                )),
                 output_field=CharField()
             ),
             gathering_name=Trim(
-                Concat("gathering__meet__display_name",
-                       Value(': '),
-                       "gathering__display_name",
+                Concat("gathering__display_name",
+                       Value(' in '),
+                       "gathering__meet__display_name",
                         output_field=CharField())),
             assembly=F("gathering__meet__assembly"),
         ).filter(extra_filters).order_by(*orderby_list)
@@ -184,13 +200,19 @@ class AttendanceService:
         :param orderbys: list of search params
         :return: a List of sorter for order_by()
         """
-        orderby_list = (  # Todo 20220605 use Set instead of List to make it uniq
-            []
-        )  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
+        orderby_dict = {}  # [{"selector":"<<dataField value in DataGrid>>","desc":false}]
+        field_converter = {
+            'gathering': 'gathering__display_name',
+            'gathering_name': 'gathering__display_name',
+            'character': 'character__display_name',
+            'attending': 'attending__attendee__infos__names__original',
+            'attending_name': 'attending__attendee__infos__names__original',
+        }
 
-        for orderby_dict in orderbys:
-            field = orderby_dict.get("selector", "id").replace(".", "__")
-            direction = "-" if orderby_dict.get("desc", False) else ""
-            orderby_list.append(direction + field)
+        for orderby in orderbys:
+            raw_sort = orderby.get("selector", "id")
+            field = (field_converter.get(raw_sort) if raw_sort in field_converter else raw_sort).replace(".", "__")
+            direction = "-" if orderby.get("desc", False) else ""
+            orderby_dict[direction + field] = True
 
-        return orderby_list
+        return orderby_dict.keys()

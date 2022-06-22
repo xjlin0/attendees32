@@ -93,7 +93,7 @@ class Attending(TimeStampedModel, SoftDeletableModel, Utility):
 
     @property
     def attending_label(self):  # parentheses needed in attendee_update_view.js for populateAttendingButtons?
-        return f"({self.registration}) {self.attendee.display_label}"
+        return f"{self.attendee.display_label} by {self.registration}" if self.registration else self.attendee.display_label
 
     @cached_property
     def all_addresses(self):
