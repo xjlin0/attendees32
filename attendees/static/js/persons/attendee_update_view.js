@@ -310,7 +310,7 @@ Attendees.datagridUpdate = {
                   name: 'photo',
                   disabled: !Attendees.utilities.editingEnabled,
                   selectButtonText: 'Select photo',
-                  accept: 'image/*',
+                  accept: 'image/*;capture=camera',  // see if Android can take picture from camera
                   multiple: false,
                   uploadMode: 'useForm',
                   onValueChanged: (e) => {

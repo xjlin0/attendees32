@@ -511,7 +511,7 @@ Attendees.attendances = {
       type: 'custom',
       storageKey: Attendees.utilities.datagridStorageKeys['attendancesListView'],
       customSave: (state) => {
-        for (item in state) {
+        for (const item in state) {
           if (['searchText'].includes(item)) delete state[item];
         }
         window.sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['attendancesListView'], JSON.stringify(state));
@@ -568,7 +568,7 @@ Attendees.attendances = {
       popup: {
         showTitle: true,
         title: 'attendanceEditingArgs',
-        onContentReady: e => e.component.option('toolbarItems[0].visible', false),
+        onContentReady: e => e.component.option('toolbarItems[0].visible', false),  // assembly
       },
       form: {
         colCount: 2,
@@ -639,7 +639,7 @@ Attendees.attendances = {
       {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
-        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `(${rowData.attending__registration__attendee}) ${rowData.attending__attendee}` : rowData.attending__attendee,
+        calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
         },
@@ -714,7 +714,8 @@ Attendees.attendances = {
       {
         dataField: 'gathering',
         validationRules: [{type: 'required'}],
-        calculateDisplayValue: (rowData) => rowData.gathering_name,
+        caption: 'Gathering in Meet',
+        calculateDisplayValue: 'gathering_name',  // can't use function for remote operations https://supportcenter.devexpress.com/ticket/details/t897726
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
