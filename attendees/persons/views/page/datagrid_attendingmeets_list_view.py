@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.views.generic.list import ListView
 
 from attendees.users.authorization import RouteGuard
+from attendees.users.services import MenuService
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class DatagridAttendingMeetListView(LoginRequiredMixin, RouteGuard, ListView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
+                "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "attendingmeets_endpoint": "/persons/api/organization_meet_character_attendingmeets/",
                 "attendings_endpoint": "/persons/api/organization_meet_character_attendings_for_attendingmeet/",

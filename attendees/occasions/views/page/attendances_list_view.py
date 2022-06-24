@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.views.generic.list import ListView
 
 from attendees.users.authorization import RouteGuard
+from attendees.users.services import MenuService
 
 
 class AttendancesListView(LoginRequiredMixin, RouteGuard, ListView):
@@ -13,6 +14,7 @@ class AttendancesListView(LoginRequiredMixin, RouteGuard, ListView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
+                "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "categories_endpoint": "/persons/api/all_categories/",
                 "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",

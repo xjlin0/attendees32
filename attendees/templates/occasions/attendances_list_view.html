@@ -39,19 +39,25 @@
       <div id="custom-control-filter-meets-checkbox">
       </div>
     </div>
-    <div id="custom-control-edit-switch">
-    </div>
-    <div class="d-flex">
-      <a target="_blank"
-         style="padding: 5px; text-decoration: none; height: 1.6rem;"
-         role="button"
-         class="btn btn-outline-secondary btn-sm add-attendee"
-         title="add a new attendee without assigning families in a new tab"
-         aria-label="+ Attendee">
-        <span class="fas fa-user-plus" aria-hidden="true"></span>
-        Attendance list
-      </a>
-    </div>
+    {% if user_can_write %}
+      <div id="custom-control-edit-switch">
+      </div>
+      <div class="d-flex">
+        <a target="_blank"
+           style="padding: 5px; text-decoration: none; height: 1.6rem;"
+           role="button"
+           class="btn btn-outline-secondary btn-sm add-attendee"
+           title="add a new attendee without assigning families in a new tab"
+           aria-label="+ Attendee">
+          <span class="fas fa-user-plus" aria-hidden="true"></span>
+          Attendance list
+        </a>
+      </div>
+    {% else %}
+      <div id="user-cannot-write">
+        Editing forbidden
+      </div>
+    {% endif %}
   </div>
 
   <form class="filters-dxform"

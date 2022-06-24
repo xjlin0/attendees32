@@ -16,18 +16,21 @@ Attendees.gatherings = {
   },
 
   initEditingSwitch: () => {
-    $('div#custom-control-edit-switch').dxSwitch({
-      value: Attendees.utilities.editingEnabled,
-      switchedOffText: 'Editing disabled',
-      switchedOnText: 'Editing enabled',
-      hint: 'Toggle Editing mode',
-      width: '18%',
-      height: '110%',
-      onValueChanged: (e) => {  // not reconfirm, it's already after change
-        Attendees.utilities.editingEnabled = e.value;
-        Attendees.gatherings.toggleEditing(e.value);
-      },
-    })
+    const $editSwitcherDiv = $('div#custom-control-edit-switch');
+    if ($editSwitcherDiv && $editSwitcherDiv.length){
+      $editSwitcherDiv.dxSwitch({
+        value: Attendees.utilities.editingEnabled,
+        switchedOffText: 'Editing disabled',
+        switchedOnText: 'Editing enabled',
+        hint: 'Toggle Editing mode',
+        width: '18%',
+        height: '110%',
+        onValueChanged: (e) => {  // not reconfirm, it's already after change
+          Attendees.utilities.editingEnabled = e.value;
+          Attendees.gatherings.toggleEditing(e.value);
+        },
+      })
+    }
   },
 
   initFilterMeetCheckbox: () => {
@@ -42,72 +45,77 @@ Attendees.gatherings = {
   },
 
   initGenerateButton: () => {
-    Attendees.gatherings.generateGatheringsButton = $('div#generate-gatherings').dxButton({
-      disabled: true,
-      text: 'Generate Gatherings',
-      height: '1.5rem',
-      hint: 'Disabled when multiple meets selected or no duration filled',
-      onClick: () => {
-        if (Attendees.gatherings.filtersForm.validate().isValid && confirm('Are you sure to auto generate all gatherings of the chosen meet between the filtered date?')) {
-          const params = {};
-          const filterFrom = $('div.filter-from input')[1].value;
-          const filterTill = $('div.filter-till input')[1].value;
-          params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : null;
-          params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
-          params['duration'] = Attendees.gatherings.filtersForm.getEditor('duration').option('value');
-          const meetSlugs = $('div.selected-meets select').val();
-          if (params['begin'] && params['end'] && Attendees.gatherings.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
-            params['meet_slug'] = meetSlugs[0];
-            return $.ajax({
-              url: $('form.filters-dxform').data('series-gatherings-endpoint'),
-              method: 'POST',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify(params),
-              success: (result) => {
-                DevExpress.ui.notify(
-                  {
-                    message: 'Batch processed, ' + result.number_created + ' successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
-                    width: 500,
-                    position: {
-                      my: 'center',
-                      at: 'center',
-                      of: window,
-                    },
-                  }, 'success', 3000);
-              },
-              error: (result) => {
-                console.log("hi gatherings_list_view.js 79 here is error result: ", result);
-                DevExpress.ui.notify(
-                  {
-                    message: 'Batch processing error. ' + result && result.responseText,
-                    width: 500,
-                    position: {
-                      my: 'center',
-                      at: 'center',
-                      of: window,
-                    },
-                  }, 'error', 5000);
-              },
-              complete: () => {
-                Attendees.gatherings.gatheringsDatagrid.refresh();
-              }, // partial gatherings may have generated even when errors
-            });
-          } else {
-            DevExpress.ui.notify(
-              {
-                message: "Can't generate, Please select one single meet with duration, and Filter 'till' earlier than filter 'from'",
-                width: 500,
-                position: {
-                  my: 'center',
-                  at: 'center',
-                  of: window,
+    const generateGatheringsButtonDiv = document.querySelector('div#generate-gatherings');
+    if (generateGatheringsButtonDiv) {
+      Attendees.gatherings.generateGatheringsButton = $('div#generate-gatherings').dxButton({
+        disabled: true,
+        text: 'Generate Gatherings',
+        height: '1.5rem',
+        hint: 'Disabled when multiple meets selected or no duration filled',
+        onClick: () => {
+          if (Attendees.gatherings.filtersForm.validate().isValid && confirm('Are you sure to auto generate all gatherings of the chosen meet between the filtered date?')) {
+            const params = {};
+            const filterFrom = $('div.filter-from input')[1].value;
+            const filterTill = $('div.filter-till input')[1].value;
+            params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : null;
+            params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
+            params['duration'] = Attendees.gatherings.filtersForm.getEditor('duration').option('value');
+            const meetSlugs = $('div.selected-meets select').val();
+            if (params['begin'] && params['end'] && Attendees.gatherings.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
+              params['meet_slug'] = meetSlugs[0];
+              return $.ajax({
+                url: $('form.filters-dxform').data('series-gatherings-endpoint'),
+                method: 'POST',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(params),
+                success: (result) => {
+                  DevExpress.ui.notify(
+                    {
+                      message: 'Batch processed, ' + result.number_created + ' successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
+                      width: 500,
+                      position: {
+                        my: 'center',
+                        at: 'center',
+                        of: window,
+                      },
+                    }, 'success', 3000);
                 },
-              }, 'error', 2000);
+                error: (result) => {
+                  console.log("hi gatherings_list_view.js 85 here is error result: ", result);
+                  DevExpress.ui.notify(
+                    {
+                      message: 'Batch processing error. ' + result && result.responseText,
+                      width: 500,
+                      position: {
+                        my: 'center',
+                        at: 'center',
+                        of: window,
+                      },
+                    }, 'error', 5000);
+                },
+                complete: () => {
+                  Attendees.gatherings.gatheringsDatagrid.refresh();
+                }, // partial gatherings may have generated even when errors
+              });
+            } else {
+              DevExpress.ui.notify(
+                {
+                  message: "Can't generate, Please select one single meet with duration, and Filter 'till' earlier than filter 'from'",
+                  width: 500,
+                  position: {
+                    my: 'center',
+                    at: 'center',
+                    of: window,
+                  },
+                }, 'error', 2000);
+            }
           }
-        }
-      },
-    }).dxButton('instance');
+        },
+      }).dxButton('instance');
+    } else {
+      Attendees.gatherings.filtersForm.getEditor('duration').option('disabled', true);
+    }
   },
 
   toggleEditing: (enabled) => {
@@ -174,7 +182,7 @@ Attendees.gatherings = {
           onValueChanged: (e) => {
             const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString', filterFromString);
-            Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
+            Attendees.gatherings.generateGatheringsButton && Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
             if (Attendees.gatherings.filterMeetCheckbox.option('value')) {
               Attendees.gatherings.filtersForm.getEditor('meets').getDataSource().reload();
             }
@@ -211,7 +219,7 @@ Attendees.gatherings = {
           onValueChanged: (e) => {
             const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString', filterTillString);
-            Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
+            Attendees.gatherings.generateGatheringsButton && Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
             if (Attendees.gatherings.filterMeetCheckbox.option('value')) {
               Attendees.gatherings.filtersForm.getEditor('meets').getDataSource().reload();
             }  // allow users to screen only active meets by meet's start&finish
@@ -263,7 +271,7 @@ Attendees.gatherings = {
             const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
             const $meetHelpText = Attendees.gatherings.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
             Attendees.gatherings.selectedMeetHasRule = false;
-            Attendees.gatherings.generateGatheringsButton.option('disabled', true);
+            Attendees.gatherings.generateGatheringsButton && Attendees.gatherings.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               Attendees.gatherings.gatheringsDatagrid.refresh();
@@ -292,7 +300,7 @@ Attendees.gatherings = {
                     }
                   });
                   finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-                  if (Attendees.gatherings.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
+                  if (Attendees.gatherings.generateGatheringsButton && Attendees.gatherings.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
                     Attendees.gatherings.generateGatheringsButton.option('disabled', false);
                   }
                 } else {
@@ -308,7 +316,7 @@ Attendees.gatherings = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {};
+                const params = {model: 'gathering'};
 
                 if (Attendees.gatherings.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;
@@ -645,7 +653,6 @@ Attendees.gatherings = {
             if(confirm('Are you sure to clear all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
               Attendees.gatherings.gatheringsDatagrid.state(null);
               window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts']);
-              Attendees.utilities.selectAllGroupedTags(Attendees.gatherings.filtersForm.getEditor('characters'), []);
               Attendees.utilities.selectAllGroupedTags(Attendees.gatherings.filtersForm.getEditor('meets'), []);
               Attendees.gatherings.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
               Attendees.gatherings.filtersForm.getEditor('filter-till').option('value', new Date(new Date().setMonth(new Date().getMonth() + 1)));
@@ -670,7 +677,7 @@ Attendees.gatherings = {
               key: 'id',
               load: () => {
                 const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('meets-endpoint-by-id'))
+                $.get($('form.filters-dxform').data('meets-endpoint-by-id'), {model: 'gathering'})
                   .done((result) => {
                     // if (Object.keys(Attendees.gatherings.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                     //   result.data.forEach(meet=>{

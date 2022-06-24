@@ -129,7 +129,9 @@ class AttendanceService:
         ).add(Q(gathering__meet__slug__in=meet_slugs), Q.AND).add(Q(character__slug__in=character_slugs), Q.AND)
         # Todo 20220512 let scheduler see other attendings too?
         if not current_user.can_see_all_organizational_meets_attendees():
-            extra_filters.add(Q(attending__attendee=current_user.attendee), Q.AND)
+            extra_filters.add((Q(attending__attendee__in=current_user.attendee.scheduling_attendees())
+                               |
+                               Q(attending__registration__registrant=current_user.attendee)), Q.AND)
 
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)

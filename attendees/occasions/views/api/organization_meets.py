@@ -36,6 +36,8 @@ class OrganizationMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         current_user_organization = self.request.user.organization
+        model = self.request.query_params.get("model")
+        user_groups = self.request.user.groups.values_list('name', flat=True)
 
         if current_user_organization:
             start = self.request.query_params.get("start")
@@ -45,6 +47,12 @@ class OrganizationMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
             search_operation = self.request.query_params.get("searchOperation")
             assemblies = self.request.query_params.getlist("assemblies[]")
             extra_filter = Q(assembly__division__organization=current_user_organization)
+
+            if user_groups:
+                extra_filter.add(Q(infos__allowed_groups__regex=fr"({'|'.join([name for name in user_groups])})"), Q.AND)
+
+            if model:
+                extra_filter.add(Q(infos__allowed_models__regex=fr'({model})'), Q.AND)
 
             if assemblies:
                 extra_filter.add(Q(assembly__in=assemblies), Q.AND)

@@ -16,18 +16,21 @@ Attendees.attendingmeets = {
   },
 
   initEditingSwitch: () => {
-    $('div#custom-control-edit-switch').dxSwitch({
-      value: Attendees.utilities.editingEnabled,
-      switchedOffText: 'Editing disabled',
-      switchedOnText: 'Editing enabled',
-      hint: 'Toggle Editing mode',
-      width: '18%',
-      height: '110%',
-      onValueChanged: (e) => {  // not reconfirm, it's already after change
-        Attendees.utilities.editingEnabled = e.value;
-        Attendees.attendingmeets.toggleEditing(e.value);
-      },
-    })
+    const $editSwitcherDiv = $('div#custom-control-edit-switch');
+    if ($editSwitcherDiv && $editSwitcherDiv.length){
+      $editSwitcherDiv.dxSwitch({
+        value: Attendees.utilities.editingEnabled,
+        switchedOffText: 'Editing disabled',
+        switchedOnText: 'Editing enabled',
+        hint: 'Toggle Editing mode',
+        width: '18%',
+        height: '110%',
+        onValueChanged: (e) => {  // not reconfirm, it's already after change
+          Attendees.utilities.editingEnabled = e.value;
+          Attendees.attendingmeets.toggleEditing(e.value);
+        },
+      })
+    }
   },
 
   initFilterMeetCheckbox: () => {
@@ -49,15 +52,16 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
     const addAttendeeLink = document.querySelector('a.add-attendee');
-    if (enabled) {
-      addAttendeeLink.classList.remove("btn-outline-secondary");
-      addAttendeeLink.classList.add("btn-outline-success");
-      addAttendeeLink.href = '/persons/attendee/new?familyName=without';
-    } else {
-      addAttendeeLink.removeAttribute("href");
-      addAttendeeLink.classList.add("btn-outline-secondary");
-      addAttendeeLink.classList.remove("btn-outline-success");
-
+    if (addAttendeeLink) {
+      if (enabled) {
+        addAttendeeLink.classList.remove("btn-outline-secondary");
+        addAttendeeLink.classList.add("btn-outline-success");
+        addAttendeeLink.href = '/persons/attendee/new?familyName=without';
+      } else {
+        addAttendeeLink.removeAttribute("href");
+        addAttendeeLink.classList.add("btn-outline-secondary");
+        addAttendeeLink.classList.remove("btn-outline-success");
+      }
     }
   },
 
@@ -241,7 +245,7 @@ Attendees.attendingmeets = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {grouping: 'assembly_name'};  // for grouped: true,
+                const params = {grouping: 'assembly_name', model: 'attendingmeet'};  // for grouped: true,
 
                 if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;
@@ -786,6 +790,7 @@ Attendees.attendingmeets = {
                 key: 'id',
                 load: (searchOpts) => {
                   const d = new $.Deferred();
+                  searchOpts['model'] = 'attendingmeet';
                   $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
                     .done((result) => {
                       if (result.data && Attendees.attendingmeets.meetData === null) {

@@ -59,7 +59,9 @@ class GatheringService:
         ).add(Q(meet__slug__in=meet_slugs), Q.AND)
         # Todo 20220512 let scheduler see other attendings too?
         if not current_user.can_see_all_organizational_meets_attendees():
-            extra_filters.add(Q(attendings__attendee=current_user.attendee), Q.AND)
+            extra_filters.add((Q(attendings__attendee__in=current_user.attendee.scheduling_attendees())
+                               |
+                               Q(attendings__registration__registrant=current_user.attendee)), Q.AND)
 
         if filter:  # [["meet","=",1],"or",["meet","=",2]] is already filtered by slugs above
             filter_term = json.loads(filter)  # [["display_name","contains","207"],"or",["site","contains","207"]]

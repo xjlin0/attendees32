@@ -75,14 +75,15 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
             )  # order_by('gathering','start')
             # Todo: add group colume to orderby_list
             if pk:
-                filters = {
-                    'pk': pk,
-                    'gathering__meet__assembly__division__organization': current_user_organization,
-                }
+                filters = Q(
+                    gathering__meet__assembly__division__organization=current_user_organization
+                ).add(Q(pk=pk), Q.AND)
                 if not current_user.can_see_all_organizational_meets_attendees():
-                    filters['attendings__attendee'] = current_user.attendee
+                    filters.add((Q(attending__attendee__in=current_user.attendee.scheduling_attendees())
+                                 |
+                                 Q(attending__registration__registrant=current_user.attendee)), Q.AND)
 
-                return Attendance.objects.filter(**filters)
+                return Attendance.objects.filter(filters)
 
             else:
                 if group_string:
