@@ -225,15 +225,18 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
         #     from_attendee__is_removed=False,
         # ).exists()
 
-    def scheduling_attendees(self):
+    def scheduling_attendees(self, include_self=True):
         """
         :return: all attendees that can be scheduled by the attendee. For example, if a kid specified its
         parent by "scheduler" is true in its infos__schedulers, when calling parent_attendee.scheduling_attendees(),
         the kid will be returned, means the parent can change/see schedule of the kid.
         """
-        return self.__class__.objects.filter(
-            infos__schedulers__contains={str(self.id): True}
-        )
+        filters = Q(infos__schedulers__contains={str(self.id): True})
+
+        if include_self:
+            filters.add(Q(id=self.id), Q.OR)
+
+        return self.__class__.objects.filter(filters)
         # self.__class__.objects.filter(
         #     Q(id=self.id)
         #     |
