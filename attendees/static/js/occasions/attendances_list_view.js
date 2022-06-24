@@ -10,6 +10,7 @@ Attendees.attendances = {
   meetData: {},
   init: () => {
     console.log('static/js/occasions/attendances_list_view.js.js');
+    Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListView']); // remove saved search text without interfering column visibility
     Attendees.attendances.initFilterMeetCheckbox();
     Attendees.attendances.initEditingSwitch();
     Attendees.attendances.initFiltersForm();
@@ -512,17 +513,8 @@ Attendees.attendances = {
     },
     stateStoring: {
       enabled: true,
-      type: 'custom',
+      type: 'sessionStorage',
       storageKey: Attendees.utilities.datagridStorageKeys['attendancesListView'],
-      customSave: (state) => {
-        for (const item in state) {
-          if (['searchText'].includes(item)) delete state[item];
-        }
-        window.sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['attendancesListView'], JSON.stringify(state));
-      },
-      customLoad: () => {
-        return window.sessionStorage.getItem(this.storageKey);
-      },
     },
     loadPanel: {
       message: 'Fetching...',
@@ -578,13 +570,9 @@ Attendees.attendances = {
         colCount: 2,
         items: [
           {
-            dataField: 'gathering__meet__assembly',
-            helpText: "Select to filter meet and character",
+            dataField: 'gathering',
+            helpText: "What's the activity?",
           },
-           {
-             dataField: 'gathering',
-             helpText: "What's the activity?",
-           },
           {
             dataField: 'attending',
             helpText: "who?",
@@ -600,6 +588,13 @@ Attendees.attendances = {
           {
             dataField: 'category',
             helpText: 'What type of participation?',
+          },
+          {
+            dataField: 'infos.note',
+            helpText: 'special memo',
+            editorOptions: {
+              autoResizeEnabled: true,
+            },
           },
           {
             dataField: 'start',
@@ -912,6 +907,11 @@ Attendees.attendances = {
           type: 'datetime',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
         },
+      },
+      {
+        dataField: 'infos.note',
+        caption: 'Note',
+        dataType: 'string',
       },
     ],
   },

@@ -10,6 +10,7 @@ Attendees.attendingmeets = {
   meetData: null,
   init: () => {
     console.log('static/js/persons/datagrid_attendingmeets_list_view.js');
+    Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView']); // remove saved search text without interfering column visibility
     Attendees.attendingmeets.initFilterMeetCheckbox();
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
@@ -517,17 +518,8 @@ Attendees.attendingmeets = {
     },
     stateStoring: {
       enabled: true,
-      type: 'custom',
+      type: 'sessionStorage',
       storageKey: Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'],
-      customSave: (state) => {
-        for (item in state) {
-          if (['searchText'].includes(item)) delete state[item];
-        }
-        window.sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListView'], JSON.stringify(state));
-      },
-      customLoad: () => {
-        return window.sessionStorage.getItem(this.storageKey);
-      },
     },
     loadPanel: {
       message: 'Fetching...',
@@ -945,7 +937,6 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'infos.note',
-        visible: false,
         caption: 'Note',
         dataType: 'string',
       },

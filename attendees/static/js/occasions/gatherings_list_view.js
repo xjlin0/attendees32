@@ -8,6 +8,7 @@ Attendees.gatherings = {
   contentTypeEndpoints: {},
   init: () => {
     console.log('static/js/occasions/gatherings_list_view.js');
+    Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListView']); // remove saved search text without interfering column visibility
     Attendees.gatherings.initFilterMeetCheckbox();
     Attendees.gatherings.initEditingSwitch();
     Attendees.gatherings.initFiltersForm();
@@ -536,17 +537,8 @@ Attendees.gatherings = {
     },
     stateStoring: {
       enabled: true,
-      type: 'custom',
+      type: 'sessionStorage',
       storageKey: Attendees.utilities.datagridStorageKeys['gatheringsListView'],
-      customSave: (state) => {
-        for (item in state) {
-          if (['searchText'].includes(item)) delete state[item];
-        }
-        window.sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['gatheringsListView'], JSON.stringify(state));
-      },
-      customLoad: () => {
-        return window.sessionStorage.getItem(this.storageKey);
-      },
     },
     loadPanel: {
       message: 'Fetching...',
@@ -603,7 +595,13 @@ Attendees.gatherings = {
           {
             dataField: 'site_id',
             helpText: 'Where the event be hold',
-//            cssClass: 'in-popup-site-id',
+          },
+          {
+            dataField: 'infos.note',
+            helpText: 'special memo',
+            editorOptions: {
+              autoResizeEnabled: true,
+            },
           },
         ],
       },
@@ -825,6 +823,11 @@ Attendees.gatherings = {
             }),
           },
         },
+      },
+      {
+        dataField: 'infos.note',
+        caption: 'Note',
+        dataType: 'string',
       },
     ],
   },

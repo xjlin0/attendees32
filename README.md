@@ -395,7 +395,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [x] [2PR#18](https://github.com/xjlin0/attendees32/pull/18) new AttendingMeet datagrid filtered by meets and date ranges
   - [ ] auto-generation of AttendingMeet by django-schedule with certain Past
 - [ ] Attendance list (server side processing with auto-generation)
-  - [ ] [2PR#20](https://github.com/xjlin0/attendees32/pull/20) new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances & datagrid_coworker_organization_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending -- refresh the datagrid & reloading attending lookup with attendance filters)
+  - [x] [2PR#20](https://github.com/xjlin0/attendees32/pull/20) new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances & datagrid_coworker_organization_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending -- refresh the datagrid & reloading attending lookup with attendance filters)
   - [ ] auto-generation attendance by attending meet and recent attendance status
   - [ ] member list (attendance level with editing category)
 - [ ] Create roaster page (no real-time update for multiple coworkers in v1)
