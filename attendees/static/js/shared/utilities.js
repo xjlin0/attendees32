@@ -153,6 +153,14 @@ Attendees.utilities = {
     }
   },
 
+  clearGridStatesInSessionStorage: (storageKey, keysToBeDeleted=['searchText']) => {
+    const state = JSON.parse(window.sessionStorage.getItem(storageKey));
+    for (const item in state) {
+      if (keysToBeDeleted.includes(item)) delete state[item];
+    }
+    window.sessionStorage.setItem(storageKey, JSON.stringify(state));
+  },  // to remove annoyed search text.  Custom stateStoring interfered with column visibility
+
   genderEnums: () => {
     return [
       {name: 'MALE'},

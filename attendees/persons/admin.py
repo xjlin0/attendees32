@@ -270,6 +270,9 @@ class NoteAdmin(PgHistoryPage, SummernoteModelAdmin):
 
 
 class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
+    formfield_overrides = {
+        models.JSONField: {"widget": JSONEditorWidget},
+    }
     list_display_links = ("attending",)
     readonly_fields = ["id", "created", "modified"]
     list_display = (

@@ -101,6 +101,9 @@ class PriceAdmin(PgHistoryPage, admin.ModelAdmin):
 
 
 class AttendanceAdmin(PgHistoryPage, admin.ModelAdmin):
+    formfield_overrides = {
+        models.JSONField: {"widget": JSONEditorWidget},
+    }
     list_display_links = ("get_attendee",)
     list_filter = (
         ("gathering", admin.RelatedOnlyFieldListFilter),
@@ -124,7 +127,7 @@ class AttendanceAdmin(PgHistoryPage, admin.ModelAdmin):
                     tuple(["start", "finish"]),
                     tuple(["gathering", "team"]),
                     tuple(["attending", "character"]),
-                    tuple(["free", "display_order", "category"]),
+                    tuple(["display_order", "category"]),
                     tuple(["id", "created", "modified"]),
                     tuple(["infos"]),
                 ),
