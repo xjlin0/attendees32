@@ -274,6 +274,7 @@ class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
         models.JSONField: {"widget": JSONEditorWidget},
     }
     list_display_links = ("attending",)
+    raw_id_fields = ('attending',)
     readonly_fields = ["id", "created", "modified"]
     list_display = (
         "id",
