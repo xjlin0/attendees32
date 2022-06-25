@@ -146,7 +146,7 @@ class AttendanceAdmin(PgHistoryPage, admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         else:
-            if request.resolver_match.func.__name__ == "changelist_view":
+            if request.resolver_match.func.__name__ == "changelist_view" and not messages.get_messages(request):
                 messages.warning(
                     request,
                     "Not all, but only those records accessible to you will be listed here.",
@@ -202,7 +202,7 @@ class CharacterAdmin(PgHistoryPage, admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         else:
-            if request.resolver_match.func.__name__ == "changelist_view":
+            if request.resolver_match.func.__name__ == "changelist_view" and not messages.get_messages(request):
                 messages.warning(
                     request,
                     "Not all, but only those records accessible to you will be listed here.",

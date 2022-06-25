@@ -129,6 +129,15 @@ class FolkAttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display = ("id", "folk", "attendee", "role", "infos")
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.resolver_match.func.__name__ == "changelist_view":
+            messages.warning(
+                request,
+                "Not all, but only those records accessible to you will be listed here.",
+            )
+        return qs.filter(division__organization=request.user.organization)
+
 
 class RelationAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
@@ -225,6 +234,15 @@ class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
         AttendingMeetInline,
     )  # add AttendanceInline when creating new Attending will fails on meet_names
     list_display = ("id", "registration", "attendee", "meet_names")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.resolver_match.func.__name__ == "changelist_view":
+            messages.warning(
+                request,
+                "Not all, but only those records accessible to you will be listed here.",
+            )
+        return qs.filter(attendee__division__organization=request.user.organization)
 
     class Media:
         css = {"all": ("css/admin.css",)}
@@ -328,6 +346,15 @@ class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
         if db_field.name == "character":
             kwargs["queryset"] = Character.objects.filter(assembly__division__organization=request.user.organization)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.resolver_match.func.__name__ == "changelist_view":
+            messages.warning(
+                request,
+                "Not all, but only those records accessible to you will be listed here.",
+            )
+        return qs.filter(attending__attendee__division__organization=request.user.organization)
 
 
 admin.site.register(Category, CategoryAdmin)

@@ -80,6 +80,18 @@ class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
             obj.organization_id = request.user and request.user.organization_id or 0
         obj.save()
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(organization=request.user.organization)
+
 
 class MenuAuthGroupInline(PgHistoryPage, admin.TabularInline):
     model = MenuAuthGroup
