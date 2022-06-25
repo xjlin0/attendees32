@@ -101,7 +101,7 @@ class PriceAdmin(PgHistoryPage, admin.ModelAdmin):
 
 
 class AttendanceAdmin(PgHistoryPage, admin.ModelAdmin):
-    raw_id_fields = ('attending', 'gathering',)
+    autocomplete_fields = ('attending', 'gathering',)
     formfield_overrides = {
         models.JSONField: {"widget": JSONEditorWidget},
     }
