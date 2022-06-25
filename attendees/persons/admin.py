@@ -4,7 +4,7 @@ from django.db.models import Q
 from django_json_widget.widgets import JSONEditorWidget
 from django_summernote.admin import SummernoteModelAdmin
 
-from attendees.occasions.models import Attendance, Meet, Team, Character
+from attendees.occasions.models import Attendance, Meet, Team, Character, Assembly
 from attendees.persons.models import AttendingMeet, FolkAttendee, Category, Past, Note, Folk, Attendee, Registration, \
     Attending, Relation, PgHistoryPage
 
@@ -20,6 +20,7 @@ from attendees.persons.models import AttendingMeet, FolkAttendee, Category, Past
 # class AttendeeContactInline(admin.StackedInline):
 #     model = Locate
 #     extra = 0
+from attendees.whereabouts.models import Division
 
 
 class AttendingMeetInline(admin.StackedInline):
@@ -165,14 +166,39 @@ class AttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
             )
         return qs.filter(division__organization=request.user.organization)
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "division":
+            kwargs["queryset"] = Division.objects.filter(organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 class RegistrationAdmin(PgHistoryPage, admin.ModelAdmin):
-    # list_per_page = 1000
+    search_fields = (
+        'registrant__first_name',
+        'registrant__last_name',
+        'registrant__first_name2',
+        'registrant__last_name2',
+    )
+    autocomplete_fields = ('registrant',)
     formfield_overrides = {
         models.JSONField: {"widget": JSONEditorWidget},
     }
     list_display_links = ("registrant",)
     list_display = ("id", "registrant", "assembly", "infos", "modified")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.resolver_match.func.__name__ == "changelist_view":
+            messages.warning(
+                request,
+                "Not all, but only those records accessible to you will be listed here.",
+            )
+        return qs.filter(assembly__division__organization=request.user.organization)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "assembly":
+            kwargs["queryset"] = Assembly.objects.filter(division__organization=request.user.organization)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class AttendanceInline(admin.StackedInline):
@@ -192,6 +218,7 @@ class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
         "attendee__last_name2",
     )
     list_display_links = ("attendee",)
+    autocomplete_fields = ('attendee', 'registration')
     list_filter = ("meets",)
     readonly_fields = ["id", "created", "modified"]
     inlines = (
@@ -274,7 +301,7 @@ class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
         models.JSONField: {"widget": JSONEditorWidget},
     }
     list_display_links = ("attending",)
-    raw_id_fields = ('attending',)
+    autocomplete_fields = ('attending',)
     readonly_fields = ["id", "created", "modified"]
     list_display = (
         "id",
