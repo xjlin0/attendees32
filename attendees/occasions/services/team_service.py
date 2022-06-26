@@ -1,4 +1,4 @@
-from attendees.occasions.models import Team
+from attendees.occasions.models import Team, Gathering
 
 
 class TeamService:
@@ -12,7 +12,7 @@ class TeamService:
         )
 
     @staticmethod
-    def by_organization_meets(organization_slug, meet_slugs, pk=None, search_value=None, search_expression=None, search_operation=None):
+    def by_organization_meets(organization_slug, meet_slugs, pk=None, search_value=None, search_expression=None, search_operation=None, gathering=None):
         filters = {
             'meet__assembly__division__organization__slug': organization_slug,
         }
@@ -22,6 +22,9 @@ class TeamService:
         else:
             if search_value and search_operation == 'contains':  # only contains supported now
                 filters[f'{search_expression}__icontains'] = search_value
+
+            if gathering:
+                filters['meet'] = Gathering.objects.get(pk=gathering).meet
 
             if meet_slugs:
                 if meet_slugs[0] and meet_slugs[0].isnumeric():

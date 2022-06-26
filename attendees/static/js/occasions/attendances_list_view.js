@@ -783,17 +783,20 @@ Attendees.attendances = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              // filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              // filter: options.data ? {'assemblies[]': options.data.gathering__meet__assembly} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
                   searchOpts['take'] = 9999;
-                  const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
-                  const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
-                  if (assemblies && assemblies.size){
-                    searchOpts['assemblies[]'] = Array.from(assemblies);
+                  if (options.data && options.data.gathering__meet__assembly) {
+                    searchOpts['assemblies[]'] = options.data.gathering__meet__assembly;
+                  } else {
+                    const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                    const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                    if (assemblies && assemblies.size){
+                      searchOpts['assemblies[]'] = Array.from(assemblies);
+                    }
                   }
-//                  if (options.data && options.data.assembly) { searchOpts['assemblies[]'] = options.data.assembly; }
                   return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
                 },
                 byKey: (key) => {
@@ -852,15 +855,19 @@ Attendees.attendances = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              // filter: options.data ? {gathering: options.data.gathering} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
                   searchOpts['take'] = 9999;
-                  const meetSlugs = $('div.selected-meets select').val();
-                  const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
-                  if (meets && meets.length){
-                    searchOpts['meets[]'] = meets;
+                  if (options.data && options.data.gathering) {  // for popup editor drop down limiting by chosen meet
+                    searchOpts['gathering'] = options.data.gathering;
+                  } else {  // for datagrid column lookup limiting by meet
+                    const meetSlugs = $('div.selected-meets select').val();
+                    const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                    if (meets && meets.length) {
+                      searchOpts['meets[]'] = meets;
+                    }
                   }
                   return $.getJSON($('form.filters-dxform').data('teams-endpoint'), searchOpts);
                 },
