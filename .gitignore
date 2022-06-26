@@ -324,7 +324,7 @@ Session.vim
 tags
 
 ### Project template
-
+attendees/media/private-media/attendee_portrait/*
 attendees/scripts/real_data
 .pytest_cache/
 .ipython/
