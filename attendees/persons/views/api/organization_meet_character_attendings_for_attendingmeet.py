@@ -1,6 +1,7 @@
 import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -53,14 +54,13 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
             )  # order_by('meet','start')
             # Todo: add group column to orderby_list
             if pk:
-                filters = {
-                    'pk': pk,
-                    'meets__assembly__division__organization': current_user_organization,
-                }
+                filters = Q(meets__assembly__division__organization=current_user_organization).add(Q(pk=pk), Q.AND)
                 if not current_user.can_see_all_organizational_meets_attendees():
-                    filters['attendee'] = current_user.attendee
+                    filters.add((Q(attendee__in=current_user.attendee.scheduling_attendees())
+                                 |
+                                 Q(registration__registrant=current_user.attendee)), Q.AND)
 
-                return Attending.objects.filter(**filters).distinct()
+                return Attending.objects.filter(filters).distinct()
 
             else:
                 if group_string:

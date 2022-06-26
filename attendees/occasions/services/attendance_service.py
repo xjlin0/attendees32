@@ -133,6 +133,11 @@ class AttendanceService:
                                |
                                Q(attending__registration__registrant=current_user.attendee)), Q.AND)
 
+        if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # only contains supported now
+            extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
+                               |
+                               Q(attending__attendee__infos__icontains=search_value)), Q.AND)
+
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)
             search_term = (filter_list[-1][-1]

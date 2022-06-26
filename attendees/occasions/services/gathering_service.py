@@ -52,7 +52,7 @@ class GatheringService:
         )  # another way is to get assemblys from registration, but it relies on attendingmeet validations
 
     @staticmethod
-    def by_organization_meets(current_user, meet_slugs, start, finish, orderbys, filter):
+    def by_organization_meets(current_user, meet_slugs, start, finish, orderbys, filter, search_value, search_expression=None, search_operation=None,):
         orderby_list = GatheringService.orderby_parser(orderbys)
         extra_filters = Q(
             meet__assembly__division__organization__slug=current_user.organization.slug
@@ -63,11 +63,16 @@ class GatheringService:
                                |
                                Q(attendings__registration__registrant=current_user.attendee)), Q.AND)
 
+        if search_value and search_operation == 'contains' and search_expression == 'display_name':  # for searching in drop down of popup editor
+            extra_filters.add((Q(display_name__icontains=search_value)
+                               |
+                               Q(infos__icontains=search_value)), Q.AND)
+
         if filter:  # [["meet","=",1],"or",["meet","=",2]] is already filtered by slugs above
             filter_term = json.loads(filter)  # [["display_name","contains","207"],"or",["site","contains","207"]]
             if isinstance(filter_term[0], list) and filter_term[0][1] == 'contains':
                 search_term = filter_term[0][2]
-                if search_term:
+                if search_term:  # for searching in the upper right search bar of datagrid
                     search_filters = Q(display_name__icontains=search_term)    # Gathering level
                     search_filters.add(Q(infos__icontains=search_term), Q.OR)  # Gathering level
 
