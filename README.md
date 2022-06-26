@@ -151,17 +151,10 @@ https://dbdiagram.io/d/5d5ff66eced98361d6dddc48
 <details>
   <summary>Click to expand all</summary>
 
-* if other staging ran previously (such as local), please remove it like `docker-compose -f local.yml down -v`
-* double check the domain name in `compose/production/traefik/traefik.yml` and `attendees/contrib/sites/migrations/0003_set_site_domain_and_name.py`
-* setup env variables for django secret key:
-```
-export DJANGO_ALLOWED_HOSTS=("your.domain.name")
-export DJANGO_SECRET_KEY=<<production Django secret key>>
-```
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
 * add web user to the docker group by `sudo usermod -aG docker <<web user name>>  && sudo service docker restart`
-* Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees30.git`
-* create a production setting by `vi .envs/.production/.django` and save the following content.
+* Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees32.git`.  Please do NOT clone under public html folder or guest will be able to see media, keys and passwords.
+* create a production setting by `vi .envs/.production/.django` and save the following content. Ensure using a non-default ADMIN_URL and add your DJANGO_ALLOWED_HOSTS.
 ```
 # General
 # ------------------------------------------------------------------------------
@@ -212,7 +205,7 @@ CELERY_FLOWER_USER=<<YOUR CELERY_FLOWER_USER NAME>>
 CELERY_FLOWER_PASSWORD=<<YOUR CELERY_FLOWER_PASSWORD>>
 
 ```
-* create a production setting by `vi .envs/.production/.postgres` and save the following content.
+* create a production setting by `vi .envs/.production/.postgres` and save the following content. Ensure the db password changed.
 ```
 # PostgreSQL
 # ------------------------------------------------------------------------------
@@ -222,13 +215,37 @@ POSTGRES_DB=attendees
 POSTGRES_USER=<<production database user name>>
 POSTGRES_PASSWORD=<<production database user password>>
 ```
-* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` and save the following fake content.
+* create a [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` and save the following example content. (yes, local, really)
 ```
-SENDGRID_API_KEY=FAKE
-DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
+SENDGRID_API_KEY=YOUR_REAL_API_KEY
+DJANGO_DEFAULT_FROM_EMAIL=your@email.com
 DJANGO_SECRET_KEY=your_django_secret_key
 ```
+* if other staging ran previously (such as local), please remove it like `docker-compose -f local.yml down -v`
+* double check if previous [docker images needs to be removed](https://medium.com/@wlarch/no-space-left-on-device-when-using-docker-compose-why-c4a2c783c6f6). It will also remove attendees user images too.
+* double check the domain name in `compose/production/traefik/traefik.yml` and `attendees/contrib/sites/migrations/0003_set_site_domain_and_name.py`
+* setup env variables for django secret key:
+```
+export DJANGO_ALLOWED_HOSTS=("your.domain.name")
+export DJANGO_SECRET_KEY=<<production Django secret key>>
+```
 * build and start the production machine by `docker-compose -f production.yml build`
+* migrate database by
+`docker-compose -f production.yml run django python manage.py migrate`  (do NOT makemigration on prod)
+* update content types after migration by `docker-compose -f production.yml run django python manage.py update_content_types`
+* create 2 superusers by `docker-compose -f production.yml run django python manage.py createsuperuser`
+* import the seed data by `docker-compose -f production.yml run django python manage.py loaddata fixtures/db_seed`
+* do NOT collect static file.
+* copy the real data to attendees/scripts/real_data/ and import real data by `docker-compose -f production.yml run django python manage.py load_access_csv attendees/scripts/real_data/tblHousehold20211026_m.csv attendees/scripts/real_data/tblPeople20211026_pass.csv attendees/scripts/real_data/tblAddress20211026.csv cfcch_chinese_ministry cfcch_crossing_ministry cfcch_children_ministry cfcch_congregation_data d7c8Fd_cfcch_congregation_member d7c8Fd_cfcch_congregation_directory d7c8Fd_cfcch_congregation_baptized d7c8Fd_cfcch_congregation_roaster d7c8Fd_cfcch_congregation_believer`
+
+* start server by `docker-compose -f production.yml up -d`
+
+* go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/<ADMIN_URL>/users/user/
+
+* upload a photo to a user and keep note of the photo filename.
+
+* as a root, visit `cd /var/lib/docker/overlay2/` and search for the photo file name `find . -name "filename.jpg"`
+`chown systemd-resolve:systemd-journal *`??
 </details>
 
 ## [How to start dev env on Linux](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
@@ -236,11 +253,11 @@ DJANGO_SECRET_KEY=your_django_secret_key
 <details>
   <summary>Click to expand all</summary>
 
-* double check if the dev port 8008 is open on fire wall
+* double check if the dev port 8008 is open on server firewall
 * add server's public ip to ALLOWED_HOSTS in settings
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
 * add web user to the docker group by `sudo usermod -aG docker <<web user name>>  && sudo service docker restart`
-* Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees30.git`
+* Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees32.git`
 * create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.production/.sendgrid.env` and save the following fake content.
 ```
 SENDGRID_API_KEY=FAKE
@@ -252,7 +269,7 @@ DJANGO_SECRET_KEY=your_django_secret_key
 * Ensure the MailHog is not publicly available such as https://your.domain.name:8025
 * Ensure the db password in .envs/.local/.postgres changed
 * Ensure using a non-default ADMIN_URL
-* upadte content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
+* update content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker-compose -f local.yml run django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f local.yml run django python manage.py loaddata fixtures/db_seed`, which was generated by:
   ```
@@ -374,7 +391,36 @@ All libraries are included to facilitate offline development, it will take port 
   - [x] some relationship may be internal and only shows to cowokers/admin, in category/boolean/infos column?
   - [x] [PR#32](https://github.com/xjlin0/attendees30/pull/32) Folk model support secret but attendee UI folkattendee doesn't support it
   - [x] Passed away attendees also need to be removed from emergency contact/scheduler of others. 
-  - [ ] Rich format of note for Past on UI? [Using DevExtreme's html editor instead of summernote?](https://blog.devgenius.io/best-free-wysiwyg-editor-python-django-admin-panel-integration-d9cb30da1dba)
+  - [ ] Rich format of note for Past on UI? [Using DevExtreme's html editor instead of summernote?](https://blog.devgenius.io/best-free-wysiwyg-editor-python-django-admin-panel-integration-d9cb30da1dba) Django summer note cannot make migration on prod:
+```
+adam@panel:~/attendees32$ docker-compose -f production.yml run django python manage.py makemigrations
+Creating network "attendees32_default" with the default driver
+Creating volume "attendees32_production_postgres_data" with default driver
+Creating volume "attendees32_production_postgres_data_backups" with default driver
+Waiting for PostgreSQL to become available...
+PostgreSQL is available
+Migrations for 'django_summernote':
+  /usr/local/lib/python3.9/site-packages/django_summernote/migrations/0003_alter_attachment_id.py
+    - Alter field id on attachment
+Traceback (most recent call last):
+  File "/app/manage.py", line 31, in <module>
+    execute_from_command_line(sys.argv)
+  File "/usr/local/lib/python3.9/site-packages/django/core/management/__init__.py", line 419, in execute_from_command_line
+    utility.execute()
+  File "/usr/local/lib/python3.9/site-packages/django/core/management/__init__.py", line 413, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+  File "/usr/local/lib/python3.9/site-packages/django/core/management/base.py", line 354, in run_from_argv
+    self.execute(*args, **cmd_options)
+  File "/usr/local/lib/python3.9/site-packages/django/core/management/base.py", line 398, in execute
+    output = self.handle(*args, **options)
+  File "/usr/local/lib/python3.9/site-packages/django/core/management/base.py", line 89, in wrapped
+    res = handle_func(*args, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/django/core/management/commands/makemigrations.py", line 190, in handle
+    self.write_migration_files(changes)
+  File "/usr/local/lib/python3.9/site-packages/django/core/management/commands/makemigrations.py", line 228, in write_migration_files
+    with open(writer.path, "w", encoding='utf-8') as fh:
+PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-packages/django_summernote/migrations/0003_alter_attachment_id.py'
+```
 - [x] Move attendee/attendees page out of data assembly -- some coworkers need to see all attendees of the organization, with a way to see only family members for general users
   - [x] [PR#17](https://github.com/xjlin0/attendees30/pull/17) remove all previous attendee edit testing pages
   - [x] [PR#18](https://github.com/xjlin0/attendees30/pull/18) remove attendee list page dependency of path params and take search params from user for assembly slug
@@ -418,7 +464,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [ ] mail labels (avery template) or printing envelops
 - [ ] Since Relationship replaced by FolkAttendee, probably create titles in DB/Redis for relationships among families such as siblings, etc
 - [ ] i18n Translation on model data, django-parler maybe?
-
+- [ ] retire 
 </details>
 
 ## Issues:
