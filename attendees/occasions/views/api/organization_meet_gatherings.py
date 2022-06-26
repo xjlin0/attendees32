@@ -107,6 +107,9 @@ class ApiOrganizationMeetGatheringsViewSet(LoginRequiredMixin, viewsets.ModelVie
                     finish=self.request.query_params.get("finish"),
                     orderbys=orderby_list,
                     filter=self.request.query_params.get("filter"),
+                    search_value=self.request.query_params.get("searchValue"),
+                    search_expression=self.request.query_params.get("searchExpr"),
+                    search_operation=self.request.query_params.get("searchOperation"),
                 )
 
         else:
