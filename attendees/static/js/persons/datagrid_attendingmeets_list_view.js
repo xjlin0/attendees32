@@ -808,7 +808,7 @@ Attendees.attendingmeets = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              // filter: options.data ? {'assemblies[]': options.data.assembly} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
@@ -880,14 +880,13 @@ Attendees.attendingmeets = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'meets[]': [options.data.meet]} : null,
+              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
                   searchOpts['take'] = 9999;
-                  const filters = searchOpts['filter'];
-                  if (filters && filters['meets[]']) {  // for popup editor drop down limiting by chosen meet
-                    searchOpts['meets[]'] = filters['meets[]'];
+                  if (options.data && options.data.meet) {  // for popup editor drop down limiting by chosen meet
+                    searchOpts['meets[]'] = options.data.meet;
                     delete searchOpts['filter'];
                   } else {  // for datagrid column lookup limiting by meet
                     const meetSlugs = $('div.selected-meets select').val();
