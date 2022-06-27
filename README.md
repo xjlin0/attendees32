@@ -5,7 +5,7 @@ Attendees in Django 3.2
 - Tracking who/when/where/what of any activities with attendance records.
 - Monolith architecture on docker [![Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/) and Javascript([DevExtreme](https://js.devexpress.com/Licensing/#NonCommercial)) with Postgres/PostGIS & Redis
 
-<img src="draft_screenshot.png"  alt="participations_screenshot_draft" width="100%"/>
+<img src="attendees/media/private-media/attendee_portrait/draft_screenshot.png"  alt="participations_screenshot_draft" width="100%"/>
 
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
@@ -236,6 +236,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * create 2 superusers by `docker-compose -f production.yml run django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f production.yml run django python manage.py loaddata fixtures/db_seed`
 * do NOT collect static file.
+* prepare all member's photos from different server.
 * copy the real data to attendees/scripts/real_data/ and import real data by `docker-compose -f production.yml run django python manage.py load_access_csv attendees/scripts/real_data/tblHousehold20211026_m.csv attendees/scripts/real_data/tblPeople20211026_pass.csv attendees/scripts/real_data/tblAddress20211026.csv cfcch_chinese_ministry cfcch_crossing_ministry cfcch_children_ministry cfcch_congregation_data d7c8Fd_cfcch_congregation_member d7c8Fd_cfcch_congregation_directory d7c8Fd_cfcch_congregation_baptized d7c8Fd_cfcch_congregation_roaster d7c8Fd_cfcch_congregation_believer`
 
 * start server by `docker-compose -f production.yml up -d`
@@ -244,8 +245,8 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 
 * upload a photo to a user and keep note of the photo filename.
 
-* as a root, visit `cd /var/lib/docker/overlay2/` and search for the photo file name `find . -name "filename.jpg"`
-`chown systemd-resolve:systemd-journal *`??
+* as a root, visit `cd /var/lib/docker/overlay2/` and search for the photo file name `find . -name "filename.jpg"` . Note down the path/folder.
+* As a root, copy all members' photos from the other server to the above path/folder, then change owner of all photos to `chown systemd-resolve:systemd-journal *`
 </details>
 
 ## [How to start dev env on Linux](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
