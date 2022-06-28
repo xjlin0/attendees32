@@ -647,7 +647,7 @@ Attendees.attendingmeets = {
       {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
-        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `(${rowData.attending__registration__attendee}) ${rowData.attending__attendee}` : rowData.attending__attendee,
+        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `${rowData.attending__attendee} by ${rowData.attending__registration__attendee}` : rowData.attending__attendee,
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
         },
