@@ -154,7 +154,7 @@ https://dbdiagram.io/d/5d5ff66eced98361d6dddc48
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
 * add web user to the docker group by `sudo usermod -aG docker <<web user name>>  && sudo service docker restart`
 * Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees32.git`.  Please do NOT clone under public html folder or guest will be able to see media, keys and passwords.
-* create a production setting by `vi .envs/.production/.django` and save the following content. Ensure using a non-default ADMIN_URL and add your DJANGO_ALLOWED_HOSTS.
+* create a production setting by `vi .envs/.production/.django` and save the following content. Ensure using a non-default ADMIN_URL , add your DJANGO_ALLOWED_HOSTS and ensure DJANGO_DEBUG is False.
 ```
 # General
 # ------------------------------------------------------------------------------
@@ -163,6 +163,7 @@ DJANGO_SETTINGS_MODULE=config.settings.production
 DJANGO_SECRET_KEY=<<your django secret key>>
 DJANGO_ADMIN_URL=<<any cryptic string as admin path>>
 DJANGO_ALLOWED_HOSTS=<<your domain name>>
+DJANGO_DEBUG=False
 ENV_NAME=production
 # Security
 # ------------------------------------------------------------------------------
