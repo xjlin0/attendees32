@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  Directory
+{% endblock title %}
+
+{% block extra_css %}
+
+{% endblock extra_css %}
+
+{% block extra_head %}
+
+{% endblock extra_head %}
+
+{% block content %}
+<div class="directory-container">
+  <h1> Directory </h1>
+  <form class="whatever">
+    {% csrf_token %}
+  </form>
+</div>
+{% endblock content %}
