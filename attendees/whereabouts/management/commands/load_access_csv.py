@@ -218,6 +218,7 @@ class Command(BaseCommand):
                 address_id = Utility.presence(household.get('AddressID'))  # str
                 display_name = Utility.presence(household.get('HousholdLN', '') + ' ' + household.get('HousholdFN', '') + ' ' + household.get('SpouseFN', '')) or 'household_id: ' + household_id
                 congregation = Utility.presence(household.get('Congregation'))
+                print_directory = Utility.is_truthy(Utility.presence(household.get('PrintDir')))
 
                 if household_id:
                     household_values = {
@@ -226,6 +227,7 @@ class Command(BaseCommand):
                         'division': default_division,
                         'category': family_category,
                         'infos': {
+                            'print_directory': print_directory,
                             'access_household_id': household_id,
                             'access_household_values': household,
                             'last_update': Utility.presence(household.get('LastUpdate')),
@@ -477,6 +479,7 @@ class Command(BaseCommand):
                                 display_order = 10
 
                             some_household_values = {attendee_header: Utility.boolean_or_datetext_or_original(folk.infos.get('access_household_values', {}).get(access_header)) for (access_header, attendee_header) in family_to_attendee_infos_converter.items() if Utility.presence(folk.infos.get('access_household_values', {}).get(access_header)) is not None}
+                            some_household_values['print_directory'] = [str(folk.id)]
                             attendee.infos = {
                                 'mobility': 2,
                                 'created_reason': attendee.infos.get('created_reason'),
@@ -588,12 +591,14 @@ class Command(BaseCommand):
                         husband.save()
                         husband_folkattendee = husband.folkattendee_set.first()
                         husband_folkattendee.role = husband_role
+                        # husband_folkattendee.display_order = 100
                         husband_folkattendee.save()
 
                         wife.gender = GenderEnum.FEMALE.name
                         wife.save()
                         wife_folkattendee = wife.folkattendee_set.first()
                         wife_folkattendee.role = wife_role
+                        # wife_folkattendee.display_order = 200
                         wife_folkattendee.save()
                         self.stdout.write(f'After reassigning, now husband is: {husband}. And wife is: {wife}. Continuing.')
 

@@ -3,7 +3,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from operator import itemgetter
-from rest_framework.utils import json
+from collections import defaultdict
 
 import pghistory
 import pytz
@@ -158,6 +158,16 @@ class Utility:
     @staticmethod
     def now_with_timezone(delta=timedelta(weeks=0)):  # 1923 years from now
         return datetime.now(timezone.utc) + delta
+
+    @staticmethod
+    def is_truthy(value):
+        converter = defaultdict(lambda: False)
+        converter['1'] = True
+        converter[1] = True
+        converter['True'] = True
+        converter[True] = True
+        converter['true'] = True
+        return converter[value]
 
     @staticmethod
     def presence(string, default_when_none=None):
