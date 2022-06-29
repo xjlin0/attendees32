@@ -1,7 +1,33 @@
-# from attendees.persons.models import Relationship
+from django.db.models import OuterRef, Subquery
+from django.db.models.functions import Concat
+
+from attendees.occasions.models import Meet
+from attendees.persons.models import Attendee, Folk, Utility
 
 
 class FolkService:
+    @staticmethod
+    def families_in_directory():
+        directory_meet = Meet.objects.get(pk=8)
+        attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
+        return Folk.objects.annotate(
+            householder_name=Concat(
+                Subquery(attendee_subquery.values_list('last_name')[:1]),
+                Subquery(attendee_subquery.values_list('first_name')[:1]),
+            )
+        ).filter(
+            category=0,  # Family
+            is_removed=False,
+            infos__print_directory=True,
+            attendees__in=Attendee.objects.filter(
+                attendings__in=directory_meet.attendings.filter(
+                    attendingmeet__finish__gte=Utility.now_with_timezone()
+                ),
+                deathday=None,
+                is_removed=False,
+            ),
+        ).distinct().order_by('householder_name')
+
     @staticmethod
     def destroy_with_associations(folk, attendee):
         """
