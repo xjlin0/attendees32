@@ -27,6 +27,7 @@ from attendees.persons.views import (  # api_attendee_relationships_viewset,
     api_attendee_attendings_viewset,
     api_user_meet_attendings_viewset,
     api_family_organization_attendings_viewset,
+    directory_report_list_view,
 )
 
 app_name = "persons"
@@ -170,5 +171,10 @@ urlpatterns = [
         "attendingmeets/",
         view=datagrid_attendingmeets_list_view,
         name="attendingmeets_list_view",
+    ),
+    path(
+        "directory_report/",
+        view=directory_report_list_view,
+        name="directory_report_list_view",
     ),
 ]

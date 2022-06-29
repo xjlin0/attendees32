@@ -2918,7 +2918,7 @@
         "data-bs-toggle": "dropdown"
       },
       "lft": 1,
-      "rght": 6,
+      "rght": 8,
       "tree_id": 13,
       "level": 0
     }
@@ -3323,6 +3323,31 @@
       "rght": 2,
       "tree_id": 5,
       "level": 0
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 33,
+    "fields": {
+      "created": "2022-06-28T16:10:05.478Z",
+      "modified": "2022-06-29T00:36:33.109Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "main",
+      "parent": 12,
+      "html_type": "a",
+      "urn": "/persons/directory_report/",
+      "url_name": "directory_report_list_view",
+      "display_name": "通訊錄 directory reports",
+      "display_order": 3800,
+      "infos": {
+        "class": "dropdown-item",
+        "title": "directory and pdf"
+      },
+      "lft": 6,
+      "rght": 7,
+      "tree_id": 13,
+      "level": 1
     }
   },
   {
@@ -4548,6 +4573,19 @@
     }
   },
   {
+    "model": "users.menuauthgroup",
+    "pk": 117,
+    "fields": {
+      "created": "2022-06-28T16:10:05.488Z",
+      "modified": "2022-06-28T16:10:05.488Z",
+      "is_removed": false,
+      "auth_group": 4,
+      "read": true,
+      "write": true,
+      "menu": 33
+    }
+  },
+  {
     "model": "whereabouts.organization",
     "pk": -1,
     "fields": {
@@ -4614,7 +4652,9 @@
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_pdf_export_groups": {
-            "d7c8Fd_cfcch_congregation_directory": ["data_organizer"]
+            "d7c8Fd_cfcch_congregation_directory": [
+              "data_organizer"
+            ]
           },
           "past_category_to_attendingmeet_meet": {
             "4": 17,
@@ -5858,7 +5898,6 @@
       "infos": {}
     }
   },
-
   {
     "model": "persons.category",
     "pk": 26,
@@ -11449,17 +11488,25 @@
       "display_name": "封存 archived",
       "slug": "d7c8Fd_cfcch_congregation_archived",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_organizer", "data_counselor"],
+        "gathering": {
+          "notice": "the finish date of attending_meets of 'archived' is always forever to show all attendees."
+        },
+        "allowed_groups": [
+          "data_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {
-          "notice": "the finish date of attending_meets of 'archived' is always forever to show all attendees."
-        },
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 45,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
@@ -11481,17 +11528,28 @@
       "display_name": "訪客 visitor",
       "slug": "d7c8Fd_cfcch_congregation_visitor",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["children_organizer", "children_coworker", "data_organizer", "conference_organizer", "data_counselor"],
+        "gathering": {
+          "notice": "the finish date of attending_meets of visitor is always forever to show all attendees."
+        },
+        "allowed_groups": [
+          "children_organizer",
+          "children_coworker",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {
-          "notice": "the finish date of attending_meets of visitor is always forever to show all attendees."
-        },
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 45,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
@@ -11513,15 +11571,27 @@
       "display_name": "The Rock",
       "slug": "d7c8Fd_cfcch_junior_regular_the_rock",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
+        "gathering": {},
+        "allowed_groups": [
+          "children_organizer",
+          "children_coworker",
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 54,
       "site_id": "1"
@@ -11543,15 +11613,27 @@
       "display_name": "Little foot",
       "slug": "d7c8Fd_cfcch_junior_regular_little_foot",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
+        "gathering": {},
+        "allowed_groups": [
+          "children_organizer",
+          "children_coworker",
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 54,
       "site_id": "1"
@@ -11573,15 +11655,24 @@
       "display_name": "影音中控",
       "slug": "d7c8Fd_cfcch_adault_sunday_recording_av_control",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["worship_organizer", "conference_organizer", "data_counselor"],
+        "gathering": {},
+        "allowed_groups": [
+          "worship_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 52,
       "site_id": "1"
@@ -11603,15 +11694,22 @@
       "display_name": "天堂 玻璃海天使詩班",
       "slug": "faBd6C_heaven_sea_of_glass_angel_choir",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["worship_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "worship_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "UTC",
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
           "Attendance": false
-        },
-        "gathering": {},
-        "default_time_zone": "UTC"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11633,15 +11731,27 @@
       "display_name": "Vacation Bible School 兒少聖經營",
       "slug": "d7c8Fd_cfcch_junior_vacation_bible_school",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
+        "gathering": {},
+        "allowed_groups": [
+          "children_organizer",
+          "children_coworker",
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 52,
       "site_id": "1"
@@ -11663,15 +11773,27 @@
       "display_name": "青少退休會",
       "slug": "d7c8Fd_cfcch_junior_retreat",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["children_organizer", "children_coworker", "organization_participant", "data_organizer", "conference_organizer", "data_counselor"],
+        "gathering": {},
+        "allowed_groups": [
+          "children_organizer",
+          "children_coworker",
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
           "Attendance": false
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11693,15 +11815,24 @@
       "display_name": "常做禮拜 Worship roaster",
       "slug": "d7c8Fd_cfcch_congregation_roaster",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
         },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles",
         "extending_attending_days": 90
       },
       "site_type": 46,
@@ -11724,15 +11855,23 @@
       "display_name": "通訊錄 directory",
       "slug": "d7c8Fd_cfcch_congregation_directory",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
           "Attendance": false
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 46,
       "site_id": "1"
@@ -11754,15 +11893,23 @@
       "display_name": "會員 member",
       "slug": "d7c8Fd_cfcch_congregation_member",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": 5,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 46,
       "site_id": "1"
@@ -11784,15 +11931,24 @@
       "display_name": "2020夏令會食宿",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_accommodation",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11814,15 +11970,24 @@
       "display_name": "2020夏令會接送",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_transportation",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11844,15 +12009,23 @@
       "display_name": "2020夏令會討論小組",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_panel",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_counselor", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11874,15 +12047,24 @@
       "display_name": "2020夏令會中文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_chinese_program",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11904,15 +12086,24 @@
       "display_name": "2020夏令會兒童活動",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_junior_program",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11934,15 +12125,24 @@
       "display_name": "2020夏令會英文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_english_program",
       "infos": {
-        "allowed_models": ["gathering", "attendingmeet", "attendance", "eventrelation"],
-        "allowed_groups": ["data_counselor", "children_organizer", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 50,
       "site_id": "2"
@@ -11964,15 +12164,22 @@
       "display_name": "已受洗 baptized",
       "slug": "d7c8Fd_cfcch_congregation_baptized",
       "infos": {
-        "allowed_models": ["attendingmeet"],
-        "allowed_groups": ["data_counselor", "children_organizer", "children_coworker", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "children_coworker",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "attendingmeet"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": 5,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 46,
       "site_id": "1"
@@ -11994,15 +12201,22 @@
       "display_name": "已信主 believer",
       "slug": "d7c8Fd_cfcch_congregation_believer",
       "infos": {
-        "allowed_models": ["attendingmeet"],
-        "allowed_groups": ["data_counselor", "children_organizer", "children_coworker", "conference_organizer"],
+        "gathering": {},
+        "allowed_groups": [
+          "data_counselor",
+          "children_organizer",
+          "children_coworker",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "attendingmeet"
+        ],
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": 4,
           "Gathering": null,
           "Attendance": null
-        },
-        "gathering": {},
-        "default_time_zone": "America/Los_Angeles"
+        }
       },
       "site_type": 46,
       "site_id": "1"
