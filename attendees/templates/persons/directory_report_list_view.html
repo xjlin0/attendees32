@@ -18,6 +18,9 @@
           crossorigin="anonymous"
           referrerpolicy="no-referrer" />
 
+    <link rel="stylesheet"
+          href="{% static 'css/directory.css' %}">
+
 <!--      <link rel="preload"-->
 <!--            as="style"-->
 <!--            href="{% static 'bootstrap/bootstrap.min.css' %}"-->
@@ -48,11 +51,22 @@
 
   <body>
     <div class="directory-container">
-        {% for family in families %}
-          <div id="{{family.id}}">
-            family name: {{family.display_name}}
+      {% for family in families %}
+        <div class="family-container">
+          <div class="family-title">
+            <div class="family-last_name">
+              {{family.attendees[0].last_name}}
+            </div>
+            <div class="family-other_names">
+              {{family.attendees[0].last_name}},
+              {{family.attendees[0].first_name}}
+            </div>
           </div>
-        {% endfor %}>
+
+
+          family name: {{family.display_name}}
+        </div>
+      {% endfor %}>
     </div>
   </body>
 </html>

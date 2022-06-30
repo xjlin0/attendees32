@@ -1131,7 +1131,7 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'infos.contacts.phone1',  // DxTextBox maskRules can't accept variable length of country codes
-        helpText: 'format: +1(510)123-4567',
+        helpText: 'Will be in directory',
         label: {
           text: 'phone1',
         },
@@ -1159,7 +1159,7 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'infos.contacts.phone2',
-        helpText: 'ie. +1(000)000-0000',
+        helpText: 'Will NOT be in directory',
         label: {
           text: 'phone2',
         },
@@ -1194,6 +1194,7 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'infos.contacts.email1',
+        helpText: 'Will be in directory',
         label: {
           text: 'email1',
         },
@@ -1207,6 +1208,7 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'infos.contacts.email2',
+        helpText: 'Will NOT be in directory',
         label: {
           text: 'email2',
         },

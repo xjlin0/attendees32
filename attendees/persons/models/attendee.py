@@ -303,10 +303,16 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
             # GinIndex(fields=['progressions'], name='attendee_progressions_gin', ),
         ]
 
+    def name1(self):
+        return f"{self.first_name or ''} {self.last_name or ''}".strip()
+
+    def name2(self):
+        return f"{self.last_name2 or ''}{self.first_name2 or ''}".strip()
+
     def save(self, *args, **kwargs):
         self.estimated_birthday = Utility.presence(self.estimated_birthday)
-        name = f"{self.first_name or ''} {self.last_name or ''}".strip()
-        name2 = f"{self.last_name2 or ''}{self.first_name2 or ''}".strip()
+        name = self.name1()
+        name2 = self.name2()
         both_names = f"{name} {name2}".strip()
         self.infos["names"]["original"] = both_names
         self.infos["names"]["romanization"] = unidecode(
