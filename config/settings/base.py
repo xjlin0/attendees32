@@ -12,7 +12,7 @@ ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # attendees/
 APPS_DIR = ROOT_DIR / "attendees"
 env = environ.Env()
-
+BASE_URI = None
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
 if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
