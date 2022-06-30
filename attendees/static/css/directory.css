@@ -1,4 +1,21 @@
-
+@media print {
+  @page {
+    margin: 0.5in;
+    /*margin-top: 0.5in;*/
+    /*margin-left: 2px;*/
+    /*margin-bottom: 40px;*/
+    /*margin-right: 2px;*/
+    size: Letter;
+    @bottom-center {
+      content: counter(page);
+    }
+  }
+  /*@page :first {*/
+  /*  @top-right {*/
+  /*    content: "";*/
+  /*  }*/
+  /*}*/
+}
 
 .page-break {
   display: block;
