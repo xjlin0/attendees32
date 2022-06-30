@@ -1,6 +1,12 @@
-div.family-title {
+div.family-title-container {
   border-top: 1px solid;
   border-bottom: 1px solid;
+  display: flex;
+  /*justify-content: space-around;*/
+}
+
+div.attendee {
+  text-align: center;
 }
 
 div.attendees-container {
@@ -8,9 +14,17 @@ div.attendees-container {
   justify-content: flex-start;
 }
 
-img.attendee-photo-img {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 5px;
+div.contacts-container {
+  display: flex;
+  /*justify-content: space-around;*/
+}
+
+img.directory-photo-img {
+  border: 1px;
+  padding: 15px;
   width: 7rem;
+}
+
+.left, .right {
+  flex: 1;
 }
