@@ -55,18 +55,24 @@
         <div class="family-container">
           <div class="family-title">
             <div class="family-last_name">
-              {{family.attendees[0].last_name}}
+              {{family.household_last_name}}
             </div>
             <div class="family-other_names">
-              {{family.attendees[0].last_name}},
-              {{family.attendees[0].first_name}}
+              {{family.household_title}}
             </div>
           </div>
-
-
-          family name: {{family.display_name}}
+          {% for attendee in family.attendees %}
+            <div class="attendees-container">
+              name2: {{attendee.name2}}
+              first_name: {{attendee.first_name}}
+              {% if attendee.photo_url%}
+                <img class="attendee-photo-img"
+                     src="{{attendee.photo_url}}">
+              {% endif %}
+            </div>
+          {% endfor %}
         </div>
-      {% endfor %}>
+      {% endfor %}
     </div>
   </body>
 </html>
