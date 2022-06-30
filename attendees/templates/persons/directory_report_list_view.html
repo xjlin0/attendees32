@@ -53,24 +53,40 @@
     <div class="directory-container">
       {% for family in families %}
         <div class="family-container">
-          <div class="family-title">
-            <div class="family-last_name">
+          <div class="family-title-container">
+            <div class="family-last_name left">
               {{family.household_last_name}}
             </div>
             <div class="family-other_names">
               {{family.household_title}}
             </div>
+            <div class="right"></div>
           </div>
-          {% for attendee in family.attendees %}
-            <div class="attendees-container">
-              name2: {{attendee.name2}}
-              first_name: {{attendee.first_name}}
-              {% if attendee.photo_url%}
-                <img class="attendee-photo-img"
-                     src="{{attendee.photo_url}}">
-              {% endif %}
+          <div class="attendees-container">
+            {% for attendee in family.attendees %}
+              <div class="attendee">
+                {{attendee.name2}}      <br>
+                {{attendee.first_name}} <br>
+                {% if attendee.photo_url%}
+                  <img class="directory-photo-img"
+                       src="{{attendee.photo_url}}">
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="contacts-container">
+            <div class="phone_address left">
+              {{family.phone1}}       <br>
+              {{family.address_line1}}<br>
+              {{family.address_line2}}
             </div>
-          {% endfor %}
+            <div class="phone_email">
+              {{family.phone2}}<br>
+              {{family.email1}}<br>
+              {{family.email2}}
+            </div>
+            <div class="right"></div>
+          </div>
         </div>
       {% endfor %}
     </div>
