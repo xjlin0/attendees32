@@ -50,7 +50,7 @@
   </head>
 
   <body>
-    <div class="directory-container">
+    <div class="family-directory-container">
       {% for family in families %}
         <div class="family-container">
           <div class="family-title-container">
@@ -91,7 +91,12 @@
             <div class="right"></div>
           </div>
         </div>
+        {% if forloop.counter|divisibleby:3 %}
+          <div class="page-break"></div>
+        {% endif %}
       {% endfor %}
+    </div>
+    <div class="area-directory-container">
     </div>
   </body>
 </html>
