@@ -1,5 +1,5 @@
 import logging
-
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic.list import ListView
@@ -19,6 +19,7 @@ class DirectoryReportListView(LoginRequiredMixin, RouteGuard, ListView):
 
         context.update({
             'families': FolkService.families_in_directory(),
+            "empty_image_link": f"{settings.STATIC_URL}images/empty.png"
         })
         return context
 

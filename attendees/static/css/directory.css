@@ -1,12 +1,16 @@
+div.family-container {
+  padding-top: 1rem;
+}
+
 div.family-title-container {
   border-top: 1px solid;
   border-bottom: 1px solid;
   display: flex;
-  /*justify-content: space-around;*/
 }
 
 div.attendee {
   text-align: center;
+  width: 8rem;
 }
 
 div.attendees-container {
@@ -16,12 +20,11 @@ div.attendees-container {
 
 div.contacts-container {
   display: flex;
-  /*justify-content: space-around;*/
 }
 
 img.directory-photo-img {
   border: 1px;
-  padding: 15px;
+  padding: 5px;
   width: 7rem;
 }
 

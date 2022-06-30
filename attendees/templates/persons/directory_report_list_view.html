@@ -70,6 +70,9 @@
                 {% if attendee.photo_url%}
                   <img class="directory-photo-img"
                        src="{{attendee.photo_url}}">
+                {% else %}
+                  <img class="directory-photo-img"
+                       src="{{empty_image_link}}">
                 {% endif %}
               </div>
             {% endfor %}
