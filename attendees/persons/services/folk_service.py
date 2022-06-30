@@ -2,15 +2,17 @@ from django.db.models import OuterRef, Subquery
 from django.db.models.functions import Concat
 
 from attendees.occasions.models import Meet
-from attendees.persons.models import Attendee, Folk, Utility
+from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
 
 
 class FolkService:
     @staticmethod
     def families_in_directory():
+        families = []
         directory_meet = Meet.objects.get(pk=8)
+        member_meet = Meet.objects.get(pk=9)
         attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
-        return Folk.objects.annotate(
+        families_in_directory = Folk.objects.annotate(
             householder_name=Concat(
                 Subquery(attendee_subquery.values_list('last_name')[:1]),
                 Subquery(attendee_subquery.values_list('first_name')[:1]),
@@ -27,6 +29,57 @@ class FolkService:
                 is_removed=False,
             ),
         ).distinct().order_by('householder_name')
+
+        for family in families_in_directory:
+            attrs = {}
+            attendees = family.attendees.order_by('folkattendee__display_order')
+            parents = attendees.filter(
+                folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife']  # no father/mother-in-law
+            )
+            attrs['household_last_name'] = attendees.first().last_name
+
+            phone1 = parents.first().infos['contacts']['phone1']  # only phone1 published in directory
+            if phone1:
+                attrs['phone1'] = Utility.phone_number_formatter(phone1)
+            email1 = parents.first().infos['contacts']['email1']  # only email1 published in directory
+            if email1:
+                attrs['email1'] = email1
+
+            is_householder_member = AttendingMeet.check_participation_of(attendees.first(), member_meet)
+            householder_title = f'{attendees.first().last_name}, {attendees.first().first_name}{"*" if is_householder_member else ""}'
+            if len(parents) > 1:
+                is_parent1_member = AttendingMeet.check_participation_of(parents[1], member_meet)
+                householder_title += f' & {parents[1].first_name}{"*" if is_parent1_member else ""}'
+                phone2 = parents[1].infos['contacts']['phone1']  # only phone1 published in directory
+                if phone2 and phone1 != phone2:
+                    attrs['phone2'] = Utility.phone_number_formatter(phone2)
+                email2 = parents[1].infos['contacts']['email1']  # only email1 published in directory
+                if email2 and email1 != email2:
+                    attrs['email2'] = email2
+            attrs['household_title'] = householder_title
+
+            family_address = family.places.first().address
+            address_line1 = f'{family_address.street_number} {family_address.route}'
+            address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
+            if family_address.extra:
+                address_line1 += f' {family_address.extra}'
+            attrs['address_line1'] = address_line1
+            attrs['address_line2'] = address_line2
+
+            attendees_attr = []
+            for attendee in attendees:
+                is_attendee_member = AttendingMeet.check_participation_of(attendee, member_meet)
+                attendees_attr.append({
+                    'first_name': f'{attendee.first_name}{"*" if is_attendee_member else ""}',
+                    'name2': attendee.name2(),
+                    'photo_url': attendee.photo and attendee.photo.url,
+                    'is_member': AttendingMeet.check_participation_of(attendee, member_meet),
+                })
+            attrs['attendees'] = attendees_attr
+
+            families.append(attrs)
+
+        return families
 
     @staticmethod
     def destroy_with_associations(folk, attendee):

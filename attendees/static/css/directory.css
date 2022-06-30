@@ -1,0 +1,16 @@
+div.family-title {
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+}
+
+div.attendees-container {
+  display: flex;
+  justify-content: flex-start;
+}
+
+img.attendee-photo-img {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  width: 7rem;
+}

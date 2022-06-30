@@ -86,6 +86,16 @@ class Utility:
         return True
 
     @staticmethod
+    def phone_number_formatter(raw_number_text):
+        """
+        only format US phone (12 digit) as of now
+        """
+        if raw_number_text:
+            return f'({raw_number_text[2:5]}){raw_number_text[5:8]}-{raw_number_text[8:12]}'
+        else:
+            return ''
+
+    @staticmethod
     def user_infos():
         return {"settings": {}}
 

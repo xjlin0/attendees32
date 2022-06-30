@@ -95,6 +95,14 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
     def __str__(self):
         return "%s %s" % (self.attending, self.meet)
 
+    @staticmethod
+    def check_participation_of(attendee, meet):
+        return AttendingMeet.objects.filter(
+                meet=meet,
+                attending__attendee=attendee,
+                finish__gte=Utility.now_with_timezone()
+        ).exists()
+
 
 class AttendingMeetsHistory(pghistory.get_event_model(
     AttendingMeet,
