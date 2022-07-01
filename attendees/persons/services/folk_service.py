@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.db.models import OuterRef, Subquery
 from django.db.models.functions import Concat
 
@@ -9,6 +11,7 @@ class FolkService:
     @staticmethod
     def families_in_directory():
         families = []
+        index = defaultdict(lambda: {})
         directory_meet = Meet.objects.get(pk=8)
         member_meet = Meet.objects.get(pk=9)
         attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
@@ -39,6 +42,7 @@ class FolkService:
             attrs['household_last_name'] = attendees.first().last_name
 
             phone1 = parents.first().infos['contacts']['phone1']  # only phone1 published in directory
+            phone2 = None
             if phone1:
                 attrs['phone1'] = Utility.phone_number_formatter(phone1)
             email1 = parents.first().infos['contacts']['email1']  # only email1 published in directory
@@ -47,7 +51,9 @@ class FolkService:
 
             is_householder_member = AttendingMeet.check_participation_of(attendees.first(), member_meet)
             householder_title = f'{attendees.first().last_name}, {attendees.first().first_name}{"*" if is_householder_member else ""}'
+            name2_title = f'{attendees.first().name2()}'
             if len(parents) > 1:
+                name2_title += f' {parents[1].name2()}'
                 is_parent1_member = AttendingMeet.check_participation_of(parents[1], member_meet)
                 householder_title += f' & {parents[1].first_name}{"*" if is_parent1_member else ""}'
                 phone2 = parents[1].infos['contacts']['phone1']  # only phone1 published in directory
@@ -58,13 +64,15 @@ class FolkService:
                     attrs['email2'] = email2
             attrs['household_title'] = householder_title
 
-            family_address = family.places.first().address
+            family_address = family.places.first().address  # implicitly ordered by display_order of place
             address_line1 = f'{family_address.street_number} {family_address.route}'
             address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
             if family_address.extra:
                 address_line1 += f' {family_address.extra}'
             attrs['address_line1'] = address_line1
             attrs['address_line2'] = address_line2
+
+            index[family_address.locality.name][f'{householder_title} {name2_title}'.strip()] = phone1 or phone2
 
             attendees_attr = []
             for attendee in attendees:
@@ -79,7 +87,7 @@ class FolkService:
 
             families.append(attrs)
 
-        return families
+        return {k: dict(sorted(v.items())) for k, v in sorted(index.items())}, families
 
     @staticmethod
     def destroy_with_associations(folk, attendee):

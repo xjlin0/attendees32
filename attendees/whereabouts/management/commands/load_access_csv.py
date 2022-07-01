@@ -105,6 +105,15 @@ class Command(BaseCommand):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             self.stdout.write(f'Cannot proceed import_household_people_address, reason: {e} at line: {exc_tb.tb_lineno}')
 
+    def spell_correcter(self, town_name):
+        correcter = {
+            'Hayard': 'Hayward',
+            'Haywardy': 'Hayward',
+            'Neward': 'Newark',
+            'Union  City': 'Union City',
+        }
+        return correcter[town_name] if town_name in correcter else town_name
+
     # Todo: Add created by notes in every instance in notes/infos
     def import_addresses(self, addresses, california, division1_slug):
         """
@@ -130,7 +139,7 @@ class Command(BaseCommand):
                 if address_id and state == california.code:  # Only process US data
                     address = {
                         'type': 'city',
-                        'locality': Utility.presence(address_dict.get('City')),
+                        'locality': self.spell_correcter(Utility.presence(address_dict.get('City'))),
                         'postal_code': zip_code,
                         'state': california.name,
                         'state_code': california.code,
