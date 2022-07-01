@@ -22,6 +22,14 @@ urlpatterns = [
     path("users/", include("attendees.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
+    path(
+            "robots.txt",
+            TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
+        ),
+    path(
+            "humans.txt",
+            TemplateView.as_view(template_name="humans.txt", content_type="text/plain"),
+        ),
     path("summernote/", include("django_summernote.urls")),
     path(
         "occasions/",
