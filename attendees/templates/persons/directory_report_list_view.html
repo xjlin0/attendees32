@@ -25,26 +25,11 @@
 <!--            as="style"-->
 <!--            href="{% static 'bootstrap/bootstrap.min.css' %}"-->
 <!--            onload="this.rel='stylesheet'">-->
-    <!-- Le javascript
-    ================================================== -->
-    {# Placed at the top of the document so pages load faster with defer #}
-      <!-- Bootstrap JS -->
-<!--      <script defer-->
-<!--              src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js" -->
-<!--              integrity="sha512-OvBgP9A2JBgiRad/mM36mkzXSXaJE9BEIENnVEmeZdITvwT09xnxLtT4twkCa8m/loMbPHsvPl0T8lRGVBwjlQ==" -->
-<!--              crossorigin="anonymous" -->
-<!--              referrerpolicy="no-referrer"> -->
+
 <!--      </script> -->
     <script defer
             src="https://unpkg.com/pagedjs/dist/paged.polyfill.js">
     </script>
-
-<!--    <script defer-->
-<!--              comment="Bootstrap 5 bundled with popper"-->
-<!--              src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"-->
-<!--              integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"-->
-<!--              crossorigin="anonymous">-->
-<!--      </script>-->
 
   </head>
 
@@ -110,10 +95,9 @@
       {% endfor %}
     </div>
 
-    {% if True %}
-      <div class="page-break">Intentional breaks for page number matching</div>
+    {% for i in index_page_breaks %}
       <div class="page-break"></div>
-    {% endif %}
+    {% endfor %}
 
     <div class="index-directory-container">
       <div class="d-flex justify-content-between">
