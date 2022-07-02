@@ -9,9 +9,10 @@ from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
 
 class FolkService:
     @staticmethod
-    def families_in_directory():
+    def families_in_directory(row_limit=26):
         families = []
         index = defaultdict(lambda: {})
+        index_list = []
         directory_meet = Meet.objects.get(pk=8)
         member_meet = Meet.objects.get(pk=9)
         attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
@@ -72,7 +73,7 @@ class FolkService:
             attrs['address_line1'] = address_line1
             attrs['address_line2'] = address_line2
 
-            index[family_address.locality.name][f'{householder_title} {name2_title}'.strip()] = phone1 or phone2
+            index[family_address.locality.name][f'{householder_title} {name2_title}'.strip()] = Utility.phone_number_formatter(phone1 or phone2)
 
             attendees_attr = []
             for attendee in attendees:
@@ -87,7 +88,21 @@ class FolkService:
 
             families.append(attrs)
 
-        return {k: dict(sorted(v.items())) for k, v in sorted(index.items())}, families
+        for town_name, family_rows in sorted(index.items()):
+            index_list.append({'BREAKER': 'LINE'})
+            if len(index_list) % row_limit < 1:
+                index_list.append({'BREAKER': 'PAGE'})
+
+            index_list.append({'TOWN_NAME': town_name})
+            if len(index_list) % row_limit < 1:
+                index_list.append({'BREAKER': 'PAGE'})
+
+            for title, number in sorted(index[town_name].items()):
+                index_list.append({title: number})
+                if len(index_list) % row_limit < 1:
+                    index_list.append({'BREAKER': 'PAGE'})
+
+        return index_list, families
 
     @staticmethod
     def destroy_with_associations(folk, attendee):

@@ -17,10 +17,10 @@ class DirectoryReportListView(LoginRequiredMixin, RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        index, families = FolkService.families_in_directory()
+        indexes, families = FolkService.families_in_directory(26)
         context.update({
             'families': families,
-            'index': index,
+            'indexes': indexes,
             'empty_image_link': f'{settings.STATIC_URL}images/empty.png'
         })
         return context

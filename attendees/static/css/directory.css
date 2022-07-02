@@ -46,6 +46,10 @@ div.contacts-container {
   display: flex;
 }
 
+div.index-container {
+  display: flex;
+}
+
 img.directory-photo-img {
   border: 1px;
   padding: 5px;
