@@ -111,7 +111,8 @@
     </div>
 
     {% if True %}
-    <div class="page-break">configurable break</div>
+      <div class="page-break">Intentional breaks for page number matching</div>
+      <div class="page-break"></div>
     {% endif %}
 
     <div class="index-directory-container">
@@ -119,9 +120,32 @@
         <div></div>
         <div>Header 2</div>
       </div>
-      <p>
-        index-directory goes here, 26 items per page
-      </p>
+      {% for index in indexes %}
+        {% for title, value in index.items %}
+          {% if title == 'BREAKER' %}
+            {% if value == 'PAGE' %}
+              <div class="page-break"></div>
+            {% else %}
+              <div>
+                <br>
+              </div>
+            {% endif %}
+          {% else %}
+            {% if title == 'TOWN_NAME' %}
+              <div class="d-flex justify-content-between bg-secondary">
+                <div>{{value}}</div>
+                <div></div>
+              </div>
+            {% else %}
+              <div class="d-flex justify-content-between">
+                <div>{{title}}</div>
+                <div>{{value}}</div>
+              </div>
+            </div>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
     </div>
   </body>
 </html>
