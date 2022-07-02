@@ -21,6 +21,7 @@ class DirectoryReportListView(LoginRequiredMixin, RouteGuard, ListView):
         context.update({
             'families': families,
             'indexes': indexes,
+            'index_page_breaks': range(2),
             'empty_image_link': f'{settings.STATIC_URL}images/empty.png'
         })
         return context
