@@ -16,10 +16,7 @@ class DirectoryPrintConfigurationView(LoginRequiredMixin, RouteGuard, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            # 'families': families,
-            # 'indexes': indexes,
-            # 'index_page_breaks': range(2),
-            # 'empty_image_link': f'{settings.STATIC_URL}images/empty.png'
+            'pdf_url': '/persons/directory_report/',
         })
         return context
 

@@ -44,7 +44,7 @@
       <div class="page-break"></div>
       <div class="d-flex justify-content-between">
         <div></div>
-        <div>Header 1</div>
+        <div>{{directory_header}}</div>
       </div>
       {% for family in families %}
       <div class="family-container">
@@ -90,7 +90,7 @@
         <div class="page-break"></div>
         <div class="d-flex justify-content-between">
           <div></div>
-          <div>Header 1</div>
+          <div>{{directory_header}}</div>
         </div>
       {% endif %}
       {% endfor %}
@@ -103,7 +103,7 @@
     <div class="index-directory-container">
       <div class="d-flex justify-content-between">
         <div></div>
-        <div>Header 2</div>
+        <div>{{index_header}}</div>
       </div>
       {% for index in indexes %}
         {% for title, value in index.items %}
