@@ -462,7 +462,7 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
 - [ ] deploy to AWS EC2
    - [x] [PR#25](https://github.com/xjlin0/attendees30/pull/25) ensure libraries loaded other than MacOS
 - [ ] Export pdf
-  - [ ] directory booklet
+  - [x] [2PR#21](https://github.com/xjlin0/attendees32/pull/21) directory booklet
   - [ ] mail labels (avery template) or printing envelops
 - [ ] Since Relationship replaced by FolkAttendee, probably create titles in DB/Redis for relationships among families such as siblings, etc
 - [ ] i18n Translation on model data, django-parler maybe?
