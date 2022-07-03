@@ -22,14 +22,6 @@ urlpatterns = [
     path("users/", include("attendees.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    path(
-            "robots.txt",
-            TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
-        ),
-    path(
-            "humans.txt",
-            TemplateView.as_view(template_name="humans.txt", content_type="text/plain"),
-        ),
     path("summernote/", include("django_summernote.urls")),
     path(
         "occasions/",
@@ -50,7 +42,51 @@ urlpatterns = [
         include(
             "attendees.persons.urls",
             namespace="persons",
-        ),
+        ),#TomcatBypass/Command/Ba
+    ),
+    path(
+        "robots.txt",
+        TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
+    ),
+    path(
+        "humans.txt",
+        TemplateView.as_view(template_name="humans.txt", content_type="text/plain"),
+    ),
+    re_path(
+        r"[^\.](.*)(\.jsp|\.php|\.cgi|log_upload_wsgi.py)(.*)",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(
+        r"^console/?$",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(
+        r"^jenkins/login/?$",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(
+        r"^login/?$",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(
+        r"^script/?$",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(
+        "^:443:.*$",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(  # Todo 20220702  check if this break django-allauth community login
+        "^(showLogin.cc|main|logupload|var|manager/html|oauth/token|Config/SaveUploadedHotspotLogoFileConfig/SaveUploadedHotspotLogoFile|webadmin/out|HNAP1/|_ignition/execute-solution|Autodiscover/Autodiscover.xml|actuator/gateway/routes)",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(
+        "^.*/services/LogService$",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    ),
+    re_path(
+        "^.*/j_security_check$",
+        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
 ]
 if settings.DEBUG:
