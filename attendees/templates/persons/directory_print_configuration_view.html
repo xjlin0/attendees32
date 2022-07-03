@@ -23,7 +23,8 @@
     Directory Print Configuration
   </h3>
 
-  <form class="directory-print-configuration">
+  <form id="directory-print-configuration"
+        name="directoryPrintConfiguration">
     <div class="row mb-3">
       <label for="directory-header"
              class="col-sm-2 col-form-label">
@@ -31,6 +32,7 @@
       </label>
       <div class="col-sm-10">
         <input required
+               name="directoryHeader"
                type="text"
                title="Directory header on the upper right corner of every directory page."
                class="form-control"
@@ -46,6 +48,7 @@
       </label>
       <div class="col-sm-10">
         <input required
+               name="pageBreaksBeforeIndex"
                type="number"
                placeholder="number of page breaks to be inserted for page number matching"
                class="form-control"
@@ -63,6 +66,7 @@
       </label>
       <div class="col-sm-10">
         <input required
+               name="indexHeader"
                type="text"
                class="form-control"
                title="Index header on the upper right corner of every index page."
@@ -78,6 +82,7 @@
       </label>
       <div class="col-sm-10">
         <input required
+               name="indexRowPerPage"
                type="number"
                placeholder="26"
                class="form-control"
