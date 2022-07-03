@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  Directory Print Configuration
+{% endblock title %}
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/persons/directory_print_configuration_view.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+
+<div class="container">
+
+  <h3>
+    Directory Print Configuration
+  </h3>
+
+  <form class="directory-print-configuration">
+    <div class="row mb-3">
+      <label for="directory-header"
+             class="col-sm-2 col-form-label">
+        Directory Header
+      </label>
+      <div class="col-sm-10">
+        <input required
+               type="text"
+               title="Directory header on the upper right corner of every directory page."
+               class="form-control"
+               value="2023 Directory"
+               placeholder="For example: 2023 Directory"
+               id="directory-header">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="page-breaks-before-index"
+             class="col-sm-2 col-form-label">
+        Page breaks before index
+      </label>
+      <div class="col-sm-10">
+        <input required
+               type="number"
+               placeholder="number of page breaks to be inserted for page number matching"
+               class="form-control"
+               value="2"
+               min="0"
+               max="50"
+               title="Number of page breaks inserted after Directory before Index for page number matching"
+               id="page-breaks-before-index">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="index-header"
+             class="col-sm-2 col-form-label">
+        Index Header
+      </label>
+      <div class="col-sm-10">
+        <input required
+               type="text"
+               class="form-control"
+               title="Index header on the upper right corner of every index page."
+               value="2023 Area Directory"
+               placeholder="For example: 2023 Area Directory"
+               id="index-header">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="index-row-per-page"
+             class="col-sm-2 col-form-label">
+        Index Rows Per Page
+      </label>
+      <div class="col-sm-10">
+        <input required
+               type="number"
+               placeholder="26"
+               class="form-control"
+               value="26"
+               min="1"
+               max="50"
+               title="number of lines per page in the index page, including empty lines and city names"
+               id="index-row-per-page">
+      </div>
+    </div>
+    <button class="btn btn-primary"
+            title="Get the directory for print (it will take some time)."
+            type="submit">
+      Generate Directory for Print
+    </button>
+  </form>
+</div>
+{% endblock content %}
