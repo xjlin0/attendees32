@@ -57,19 +57,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
-        r"^console/?$",
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(
-        r"^jenkins/login/?$",
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(
-        r"^login/?$",
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(
-        r"^script/?$",
+        r"^(console|login|script|jenkins/login)/?$",  # no preceding strings
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
@@ -81,11 +69,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
-        "^.*/services/LogService$",
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(
-        "^.*/j_security_check$",
+        "^.*(/services/LogService|/j_security_check)/?$",  # allow preceding strings
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
 ]
