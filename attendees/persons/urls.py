@@ -172,6 +172,11 @@ urlpatterns = [
         view=datagrid_attendingmeets_list_view,
         name="attendingmeets_list_view",
     ),
+    # path(
+    #     "directory_print/",
+    #     view=directory_print_configuration_view,
+    #     name="directory_print_configuration_view",
+    # ),
     path(
         "directory_report/",
         view=directory_report_list_view,

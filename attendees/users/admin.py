@@ -114,12 +114,15 @@ class MenuAdmin(PgHistoryPage, MPTTModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.resolver_match.func.__name__ == "changelist_view":
-            messages.warning(
-                request,
-                "Not all, but only those records accessible to you will be listed here.",
-            )
-        return qs.filter(organization=request.user.organization)
+        if request.user.is_superuser:
+            return qs
+        else:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.warning(
+                    request,
+                    "Not all, but only those records accessible to you will be listed here.",
+                )
+            return qs.filter(organization=request.user.organization)
 
 
 @admin.register(MenuAuthGroup)

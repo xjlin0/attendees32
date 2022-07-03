@@ -1799,10 +1799,22 @@
     }
   },
   {
+    "model": "django_celery_beat.crontabschedule",
+    "pk": 2,
+    "fields": {
+      "minute": "0",
+      "hour": "4",
+      "day_of_week": "*",
+      "day_of_month": "*",
+      "month_of_year": "*",
+      "timezone": "UTC"
+    }
+  },
+  {
     "model": "django_celery_beat.periodictasks",
     "pk": 1,
     "fields": {
-      "last_update": "2022-04-21T15:06:48.174Z"
+      "last_update": "2022-07-02T04:20:14.034Z"
     }
   },
   {
@@ -1831,6 +1843,34 @@
       "total_run_count": 0,
       "date_changed": "2021-08-28T18:59:47.395Z",
       "description": "test desc: attendees.occasions.tasks.batch_create_gatherings"
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 2,
+    "fields": {
+      "name": "celery.backend_cleanup",
+      "task": "celery.backend_cleanup",
+      "interval": null,
+      "crontab": 2,
+      "solar": null,
+      "clocked": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": null,
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": 43200,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": null,
+      "total_run_count": 0,
+      "date_changed": "2022-07-02T04:20:14.036Z",
+      "description": ""
     }
   },
   {
@@ -3330,19 +3370,44 @@
     "pk": 33,
     "fields": {
       "created": "2022-06-28T16:10:05.478Z",
-      "modified": "2022-06-29T00:36:33.109Z",
+      "modified": "2022-07-02T04:30:39.005Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "sublink",
+      "parent": null,
+      "html_type": "a",
+      "urn": "/persons/directory_report/",
+      "url_name": "directory_report_list_view",
+      "display_name": "通訊錄PDF directory PDF",
+      "display_order": 3900,
+      "infos": {
+        "class": "dropdown-item",
+        "title": "directory pdf"
+      },
+      "lft": 1,
+      "rght": 2,
+      "tree_id": 14,
+      "level": 0
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 34,
+    "fields": {
+      "created": "2022-07-02T04:30:28.461Z",
+      "modified": "2022-07-02T04:33:30.735Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
       "parent": 12,
       "html_type": "a",
-      "urn": "/persons/directory_report/",
-      "url_name": "directory_report_list_view",
-      "display_name": "通訊錄 directory reports",
+      "urn": "/persons/directory_print_configuration/",
+      "url_name": "directory_print_configuration_view",
+      "display_name": "通訊錄 directory",
       "display_order": 3800,
       "infos": {
         "class": "dropdown-item",
-        "title": "directory and pdf"
+        "title": "directory print"
       },
       "lft": 6,
       "rght": 7,
@@ -4583,6 +4648,19 @@
       "read": true,
       "write": true,
       "menu": 33
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 118,
+    "fields": {
+      "created": "2022-07-02T04:30:28.477Z",
+      "modified": "2022-07-02T04:30:28.477Z",
+      "is_removed": false,
+      "auth_group": 4,
+      "read": true,
+      "write": true,
+      "menu": 34
     }
   },
   {
