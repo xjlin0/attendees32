@@ -35,6 +35,7 @@ div.family-title-container {
 div.attendee {
   text-align: center;
   width: 8rem;
+  margin-top: 7px;
 }
 
 div.attendees-container {
@@ -48,6 +49,14 @@ div.contacts-container {
 
 div.index-container {
   display: flex;
+}
+
+div.telephone-number {
+  font-family: monospace;
+}
+
+hr {
+  margin-top: 0;
 }
 
 img.directory-photo-img {
