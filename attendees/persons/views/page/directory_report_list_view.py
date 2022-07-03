@@ -17,11 +17,15 @@ class DirectoryReportListView(LoginRequiredMixin, RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        indexes, families = FolkService.families_in_directory(26)
+        index_row_per_page = int(self.request.GET.get("indexRowPerPage", '26'))
+        page_breaks_before_index = int(self.request.GET.get("pageBreaksBeforeIndex", '2'))
+        indexes, families = FolkService.families_in_directory(index_row_per_page)
         context.update({
+            'directory_header': self.request.GET.get('directoryHeader', ''),
+            'index_header': self.request.GET.get('indexHeader', ''),
             'families': families,
             'indexes': indexes,
-            'index_page_breaks': range(2),
+            'index_page_breaks': range(page_breaks_before_index),
             'empty_image_link': f'{settings.STATIC_URL}images/empty.png'
         })
         return context

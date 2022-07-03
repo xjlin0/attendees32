@@ -2,24 +2,22 @@ Attendees.directoryPrintConfiguration = {
 
   init: () => {
     console.log('static/js/persons/directory_print_configuration_view.js');
-    Attendees.directoryPrintConfiguration.catchSubmitToGeneratePDF();
+    Attendees.directoryPrintConfiguration.listenToFormSubmit();
   },
 
-  catchSubmitToGeneratePDF: () => {
-    const configurationForm = document.getElementById("directory-print-configuration");
-    configurationForm.addEventListener("submit", (event) => {
+  listenToFormSubmit: () => {
+    document.directoryPrintConfiguration.addEventListener('submit', Attendees.directoryPrintConfiguration.handleSubmitToGeneratePDF);
+  },
 
-      event.preventDefault();
+  handleSubmitToGeneratePDF: (event) => {
+    event.preventDefault();
 
-
+    if (confirm('Do you want to see the directory for print? (This will take 2 minutes.)')) {
       const formData = new FormData(event.target);
-      const formProps = Object.fromEntries(formData);
-      console.log('clicked! here is formProps');
-      console.log(formProps);
-      //document.directoryPrintConfiguration['directory-header'].value;
-    });
+      const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
+      location.href = `${document.directoryPrintConfiguration.action}?${searchParams}`;
+    }
   },
-
 };
 
 $(document).ready(() => {
