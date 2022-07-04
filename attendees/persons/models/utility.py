@@ -136,7 +136,7 @@ class Utility:
     @staticmethod
     def folk_infos():
         return {
-            "print_directory": True,
+            "print_directory": False,
         }
 
     @staticmethod

@@ -409,7 +409,7 @@ class AttendeeService:
         # Todo 20211102: CCPA deletion requires history removal too
 
     @staticmethod
-    def create_or_update_first_folk(attendee, folk_name, category_id, role_id):
+    def create_or_update_first_folk(attendee, folk_name, category_id, role_id, print_directory=False):
         potential_non_family_folk = attendee.folks.filter(category=category_id).first()
         folk, folk_created = Folk.objects.update_or_create(
             id=potential_non_family_folk.id if potential_non_family_folk else None,
@@ -417,6 +417,7 @@ class AttendeeService:
                 "division": attendee.division,
                 "category": Category.objects.get(pk=category_id),
                 "display_name": folk_name,
+                "infos": {"print_directory": print_directory},
             },
         )
         FolkAttendee.objects.update_or_create(
