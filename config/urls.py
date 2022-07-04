@@ -42,8 +42,10 @@ urlpatterns = [
         include(
             "attendees.persons.urls",
             namespace="persons",
-        ),#TomcatBypass/Command/Ba
+        ),
     ),
+    path("api/", include("config.api_router")),  # API base url
+    path("auth-token/", obtain_auth_token),      # DRF auth token
     path(
         "robots.txt",
         TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
@@ -53,11 +55,11 @@ urlpatterns = [
         TemplateView.as_view(template_name="humans.txt", content_type="text/plain"),
     ),
     re_path(
-        r"[^\.](.*)(\.jsp|\.php|\.cgi|log_upload_wsgi.py)(.*)",
+        r"[^\.](.*)(\.jsp|\.php|\.cgi|log_upload_wsgi.py|admin/controller)(.*)",
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
-        r"^(console|login|script|jenkins/login)/?$",  # no preceding strings
+        r"^(console|login|script|jenkins/login|files|images|uploads|\.local|\.production|\.env|\.remote)/?$",  # no preceding strings
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
@@ -65,11 +67,11 @@ urlpatterns = [
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(  # Todo 20220702  check if this break django-allauth community login
-        "^(showLogin.cc|main|logupload|var|manager/html|oauth/token|Config/SaveUploadedHotspotLogoFileConfig/SaveUploadedHotspotLogoFile|webadmin/out|HNAP1/|_ignition/execute-solution|Autodiscover/Autodiscover.xml|actuator/gateway/routes)",
+        "^(showLogin.cc|main|logupload|var|manager/html|oauth/token|Config/SaveUploadedHotspotLogoFileConfig/SaveUploadedHotspotLogoFile|webadmin/out|HNAP1/|_ignition/execute-solution|Autodiscover/Autodiscover.xml|actuator/gateway/routes|admin/controller/extension)",
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
-        "^.*(/services/LogService|/j_security_check)/?$",  # allow preceding strings
+        "^.*(/services/LogService|/j_security_check|category/latestnews/comments/feed|sites/default/files|wp-admin/css)/?$",  # allow preceding strings
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
 ]
@@ -78,12 +80,12 @@ if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
 
 # API URLS
-urlpatterns += [
-    # API base url
-    path("api/", include("config.api_router")),
-    # DRF auth token
-    path("auth-token/", obtain_auth_token),
-]
+# urlpatterns += [
+#     # API base url
+#     path("api/", include("config.api_router")),
+#     # DRF auth token
+#     path("auth-token/", obtain_auth_token),
+# ]
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit
