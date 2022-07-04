@@ -2822,7 +2822,7 @@ Attendees.datagridUpdate = {
     const ajaxUrl = $('form#family-attr-update-popup-form').attr('action') + (familyAttrButton.value ? familyAttrButton.value + '/': '');
     return {
       visible: true,
-      title: familyAttrButton.value ? 'Viewing Family' : 'Creating Family',
+      title: familyAttrButton.value ? 'Viewing Family of ' + familyAttrButton.textContent : 'Creating new Family',
       minwidth: '20%',
       minheight: '30%',
       position: {
@@ -2907,6 +2907,15 @@ Attendees.datagridUpdate = {
             },
             {
               colSpan: 1,
+              dataField: 'infos.print_directory',
+              label: {
+                text: 'Print in directory?',
+              },
+              dataType: 'boolean',
+              editorType: 'dxCheckBox',
+            },
+            {
+              colSpan: 1,
               itemType: 'button',
               horizontalAlignment: 'left',
               buttonOptions: {
@@ -2987,7 +2996,7 @@ Attendees.datagridUpdate = {
                 onClick: (clickEvent) => {
                   if (confirm('Are you sure to delete the family and all its places and marital relationships in the popup?  Instead, editing the "finish" date or members is usually enough!')) {
                     $.ajax({
-                      url: $('form#family-attr-update-popup-form').attr('action') + Attendees.datagridUpdate.familyAttrPopupDxFormData.id,
+                      url: `${$('form#family-attr-update-popup-form').attr('action')}${Attendees.datagridUpdate.familyAttrPopupDxFormData.id}/`,
                       method: 'DELETE',
                       success: (response) => {
                         Attendees.datagridUpdate.familyAttrPopup.hide();
@@ -3048,7 +3057,7 @@ Attendees.datagridUpdate = {
       const fetchedFamily = Attendees.datagridUpdate.families && Attendees.datagridUpdate.families.find(x => x.id === familyAttrButton.value);
       if (!Attendees.utilities.editingEnabled && fetchedFamily) {
         $('p.family-member-count')[0].textContent = fetchedFamily.attendees.length;
-        if (fetchedFamily.attendees.length > 1) {$('.family-delete-button').text('Remove attendee from Family')}
+        if (fetchedFamily.attendees.length > 1) {$('div.family-delete-button span.dx-button-text').text('Remove attendee from Family')}  // FolkService.destroy_with_associations will preserve Family if other families exists
         Attendees.datagridUpdate.familyAttrPopupDxFormData = fetchedFamily;
         Attendees.datagridUpdate.familyAttrPopupDxForm.option('formData', fetchedFamily);
       } else {
@@ -3056,13 +3065,15 @@ Attendees.datagridUpdate = {
           url: $('form#family-attr-update-popup-form').attr('action') + familyAttrButton.value + '/',
           success: (response) => {
             $('p.family-member-count')[0].textContent = response.attendees.length;
-            if (response.attendees.length > 1) {$('.family-delete-button').text('Remove attendee from Family')}
+            if (response.attendees.length > 1) {$('div.family-delete-button span.dx-button-text').text('Remove attendee from Family')}  // FolkService.destroy_with_associations will preserve Family if other families exists
             Attendees.datagridUpdate.familyAttrPopupDxFormData = response;
             Attendees.datagridUpdate.familyAttrPopupDxForm.option('formData', response);
           },
           error: (response) => console.log('Failed to fetch data for Family Attr Form in Popup, error: ', response),
         });
       }
+    } else {
+      $('div.family-delete-button').remove();  // new family not saved yet.
     }
   },
 
