@@ -136,7 +136,7 @@ class Utility:
     @staticmethod
     def folk_infos():
         return {
-            "pdf_export": True,
+            "print_directory": True,
         }
 
     @staticmethod
