@@ -146,9 +146,9 @@ def post_save_handler_for_attendee_to_folk_and_attending(sender, **kwargs):
         ):  # skip for access importer
             print("creating non-family folk for ", created_attendee)
             defaults = {
-                "category": "auto-created",
-                "infos": {
-                    "created_reason": "Auto created by Attendee creation",
+                'category': 'auto-created',
+                'infos': {
+                    'created_reason': 'Auto created by Attendee save',
                 },
             }
 

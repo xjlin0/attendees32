@@ -805,6 +805,7 @@ class Command(BaseCommand):
         AttendingMeet.objects.update_or_create(
             attending=data_attending,
             meet=visitor_meet,
+            character=general_character,
             defaults={
                 'character': general_character,
                 'category_id': -1,
@@ -817,6 +818,7 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
                 meet=roaster_meet,
+                character=general_character,
                 defaults={
                     'character': general_character,
                     'category_id': -1,
@@ -847,28 +849,28 @@ class Command(BaseCommand):
 
     def update_attendee_membership_and_other(self, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_character, member_gathering, baptisee_character, believer_meet, believer_character, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
-        data_registration, data_registration_created = Registration.objects.update_or_create(
-            assembly=data_assembly,
-            registrant=attendee,
-            defaults={
-                'registrant': attendee,  # admin/secretary may change for future members.
-                'assembly': data_assembly,
-                'infos': {
-                    'access_household_id': access_household_id,
-                    'created_reason': 'CFCCH member/directory registration from importer',
-                }
-            }
-        )
+        # data_registration, data_registration_created = Registration.objects.update_or_create(
+        #     assembly=data_assembly,
+        #     registrant=attendee,
+        #     defaults={
+        #         'registrant': attendee,  # admin/secretary may change for future members.
+        #         'assembly': data_assembly,
+        #         'infos': {
+        #             'access_household_id': access_household_id,
+        #             'created_reason': 'CFCCH member/directory registration from importer',
+        #         }
+        #     }
+        # )
 
         data_attending, data_attending_created = Attending.objects.update_or_create(
             attendee=attendee,
-            registration=data_registration,
+            # registration=data_registration,
             defaults={
-                'registration': data_registration,
+                # 'registration': data_registration,
                 'attendee': attendee,
                 'infos': {
                     'access_household_id': access_household_id,
-                    'created_reason': 'CFCCH member/directory registration from importer',
+                    'created_reason': 'CFCCH member/directory attending from importer',
                 }
             }
         )
@@ -885,6 +887,7 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
                 meet=believer_meet,
+                character=believer_character,
                 defaults={
                     'attending': data_attending,
                     'meet': believer_meet,
@@ -921,6 +924,7 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
                 meet=baptized_meet,
+                character=baptisee_character,
                 defaults={
                     'attending': data_attending,
                     'meet': baptized_meet,
@@ -962,6 +966,7 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
                 meet=member_meet,
+                character=member_character,
                 defaults=member_attending_meet_default,
             )
 
@@ -987,8 +992,7 @@ class Command(BaseCommand):
 
     def update_directory_data(self, data_assembly, folk, directory_meet, directory_character, directory_gathering):
         """
-        update assembly and gathering for directory. Instead of data_attending, here it creates directory_attending
-        since people may want to join/leave directory by they own rather by coworkers.
+        update assembly and gathering for directory. using attendees own attending.
 
         :param data_assembly: data_assembly
         :param folk: each family folk
@@ -999,68 +1003,52 @@ class Command(BaseCommand):
         """
         if Utility.boolean_or_datetext_or_original(folk.infos.get('access_household_values', {}).get('PrintDir')):
             access_household_id = folk.infos.get('access_household_id')
-            househead = folk.attendees.order_by('folkattendee__display_order').first()
 
-            if househead:
-                data_registration, data_registration_created = Registration.objects.update_or_create(
-                    assembly=data_assembly,
-                    registrant=househead,
+            for family_member in folk.attendees.all():
+                directory_attending, directory_attending_created = Attending.objects.update_or_create(
+                    attendee=family_member,
                     defaults={
-                        'registrant': househead,
-                        'assembly': data_assembly,
+                        'attendee': family_member,
                         'infos': {
                             'access_household_id': access_household_id,
-                            'created_reason': 'CFCCH member/directory registration from importer',
+                            'created_reason': 'CFCCH member/directory attending from importer',
                         }
                     }
                 )
-    
-                for family_member in folk.attendees.all():
-                    directory_attending, directory_attending_created = Attending.objects.update_or_create(
-                        registration=data_registration,
-                        attendee=family_member,
-                        defaults={
-                            'registration': data_registration,
-                            'attendee': family_member,
-                            'infos': {
-                                'access_household_id': access_household_id,
-                                'created_reason': 'CFCCH member/directory registration from importer',
-                            }
-                        }
-                    )
 
-                    AttendingMeet.objects.update_or_create(
-                        attending=directory_attending,
-                        meet=directory_meet,
-                        defaults={
-                            'attending': directory_attending,
-                            'meet': directory_meet,
-                            'character': directory_character,
-                            'category_id': -1,
-                            'start': directory_gathering.start,
-                            'finish': directory_gathering.finish,
-                        }
-                    )
+                AttendingMeet.objects.update_or_create(
+                    attending=directory_attending,
+                    meet=directory_meet,
+                    character=directory_character,
+                    defaults={
+                        'attending': directory_attending,
+                        'meet': directory_meet,
+                        'character': directory_character,
+                        'category_id': -1,
+                        'start': directory_gathering.start,
+                        'finish': directory_gathering.finish,
+                    }
+                )
 
-                    Attendance.objects.update_or_create(
-                        gathering=directory_gathering,
-                        attending=directory_attending,
-                        character=directory_character,
-                        team=None,
-                        defaults={
-                            'gathering': directory_gathering,
-                            'attending': directory_attending,
-                            'character': directory_character,
-                            'category_id': 6,  # Active
-                            'team': None,
-                            'start': directory_gathering.start,
-                            'finish': directory_gathering.finish,
-                            'infos': {
-                                'access_household_id': access_household_id,
-                                'created_reason': 'CFCCH member/directory registration from importer',
-                            },
-                        }
-                    )
+                Attendance.objects.update_or_create(
+                    gathering=directory_gathering,
+                    attending=directory_attending,
+                    character=directory_character,
+                    team=None,
+                    defaults={
+                        'gathering': directory_gathering,
+                        'attending': directory_attending,
+                        'character': directory_character,
+                        'category_id': 6,  # Active
+                        'team': None,
+                        'start': directory_gathering.start,
+                        'finish': directory_gathering.finish,
+                        'infos': {
+                            'access_household_id': access_household_id,
+                            'created_reason': 'CFCCH member/directory registration from importer',
+                        },
+                    }
+                )
 
     def update_attendee_photo(self, attendee, photo_names):
         """

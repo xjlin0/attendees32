@@ -37,9 +37,8 @@ class AttendeeUpdateView(LoginRequiredMixin, RouteAndSpyGuard, UpdateView):
         )
         context.update(
             {
-                "attendee_contenttype_id": ContentType.objects.get_for_model(
-                    Attendee
-                ).id,
+                "attendee_contenttype_id": ContentType.objects.get_for_model(Attendee).id,
+                'user_organization_directory_meet': self.request.user.organization.infos.get('settings', {}).get('default_directory_meet'),
                 "teams_endpoint": "/occasions/api/organization_meet_teams/",
                 "folk_contenttype_id": ContentType.objects.get_for_model(Folk).id,
                 "empty_image_link": f"{settings.STATIC_URL}images/empty.png",

@@ -1,11 +1,73 @@
+import logging
+from datetime import timedelta
+
 from django.db.models import F, Q, CharField, Value as V
 from django.db.models.functions import Concat, Trim
 
 from rest_framework.utils import json
-from attendees.persons.models import AttendingMeet
+
+from attendees.occasions.models import Meet
+from attendees.persons.models import AttendingMeet, Attending, Utility
+
+logger = logging.getLogger(__name__)
 
 
 class AttendingMeetService:
+    @staticmethod
+    def flip_attendingmeet_by_existing_attending(current_user, attendees, meet_id, join=True):
+        """
+        If current_user has the permission, let attendees join/leave a meet. If there's no attending, create one
+        attending.  Notice: This will overwrite existing attendingmeet, means mass assign will tkae higher priority
+        of individual's previous attendingmeet.
+
+        :param current_user:
+        :param join: True is to join, false is to leave the meet
+        :param attendees:
+        :param meet_id:
+        :return: attendingmeet results in the form of {attendee_id: attendingmeet object}
+        """
+        attendee_to_attendingmeets = {}
+        meet = Meet.objects.filter(pk=meet_id).first()
+        if meet:
+            for attendee in attendees:
+                if current_user.privileged_to_edit(attendee.id) or (current_user.attendee and current_user.attendee.can_schedule_attendee(attendee.id)):
+                    attending = attendee.attendings.first()  # every attendee should already have an attending by signal
+                    if join:
+                        if not attending:
+                            attending_attrs = {
+                                'attendee': attendee,
+                                'defaults': {
+                                    'attendee': attendee,
+                                    'infos': {},
+                                }
+                            }
+                            logging.info(f"Because attending already auto-created upon attendee creation, creating attending for directory shouldn't happen for attendee id: {attendee.id}")
+                            attending, attending_created = Attending.objects.update_or_create(**attending_attrs)
+
+                        attendingmeet_attrs = {
+                            'attending': attending,
+                            'meet': meet,
+                            'character': meet.major_character,
+                        }
+
+                        attendingmeet, attendingmeet_created = Utility.update_or_create_last(
+                            AttendingMeet,
+                            update=True,  # if attendee already joined before, don't change it
+                            filters=attendingmeet_attrs,
+                            defaults={**attendingmeet_attrs, 'finish': Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_period_in_weeks', 99999))},
+                        )
+                        attendee_to_attendingmeets[attendee] = attendingmeet
+                    else:
+                        AttendingMeet.objects.filter(
+                            attending__in=attendee.attendings.all(),
+                            meet=meet,
+                            character=meet.major_character,
+                            finish__gt=Utility.now_with_timezone()
+                        ).update(finish=Utility.now_with_timezone())
+
+                        attendee_to_attendingmeets[attendee] = None
+
+        return attendee_to_attendingmeets
 
     @staticmethod
     def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, orderbys, search_value=None, search_expression=None, search_operation=None, filter=None):
@@ -13,7 +75,7 @@ class AttendingMeetService:
         extra_filters = Q(
             meet__assembly__division__organization=current_user.organization
         ).add(Q(meet__slug__in=meet_slugs), Q.AND).add(Q(character__slug__in=character_slugs), Q.AND)
-        # Todo 20220512 let scheduler see other attenings too?
+        # Todo 20220512 let scheduler see other attendings too?
         if not current_user.can_see_all_organizational_meets_attendees():
             extra_filters.add((Q(attending__attendee__in=current_user.attendee.scheduling_attendees())
                                |

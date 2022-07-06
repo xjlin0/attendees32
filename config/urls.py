@@ -59,7 +59,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
-        r"^(console|login|script|jenkins/login|files|images|uploads|\.local|\.production|\.env|\.remote)/?$",  # no preceding strings
+        r"^(console|login|script|jenkins/login|files|images|uploads|\.local|\.production|\.env|\.remote|\.git|favicon.ico)/?$",  # no preceding strings
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(

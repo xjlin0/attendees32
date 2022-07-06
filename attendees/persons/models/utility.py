@@ -109,6 +109,7 @@ class Utility:
             "acronym": "change me in infos",
             "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE,
             "settings": {
+                "default_directory_meet": None,
                 "attendee_to_attending": True,
                 "past_category_to_attendingmeet_meet": {},
                 "attendingmeet_pdf_export_groups": {},
@@ -144,6 +145,7 @@ class Utility:
         return {
             'allowed_models': ['gathering', 'attendingmeet', 'attendance', 'eventrelation'],
             'allowed_groups': [],
+            'default_period_in_weeks': 99999,  # 1886 years
             "automatic_creation": {
               "Gathering": True,
               "Attendance": True

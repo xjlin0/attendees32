@@ -36,7 +36,7 @@ class FolkService:
 
         for family in families_in_directory:
             attrs = {}
-            attendees = family.attendees.filter(deathday=None).order_by('folkattendee__display_order')
+            attendees = family.attendees.filter(deathday=None).exclude(folkattendee__role="masked").order_by('folkattendee__display_order')
             parents = attendees.filter(
                 folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife']  # no father/mother-in-law
             )
