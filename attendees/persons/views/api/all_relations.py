@@ -31,7 +31,7 @@ class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
                 AttendeeService.filter_parser(filters_list, None, self.request.user),
                 Q.AND,
             )
-            return Relation.objects.filter(final_query).order_by("display_order")
+            return Relation.objects.filter(final_query).exclude(pk=0).order_by("display_order")  # pk 0 is for code use
 
 
 api_all_relations_viewset = ApiAllRelationsViewsSet

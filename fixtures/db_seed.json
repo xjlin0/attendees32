@@ -4677,6 +4677,7 @@
         "contacts": {},
         "hostname": "organization.archived",
         "settings": {
+          "default_directory_meet": null,
           "opencc_convert": true,
           "attendee_to_attending": false,
           "attendingmeet_pdf_export": {},
@@ -4702,6 +4703,7 @@
         "contacts": {},
         "hostname": "organization.none",
         "settings": {
+          "default_directory_meet": null,
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_pdf_export_groups": {},
@@ -4727,6 +4729,7 @@
         "contacts": {},
         "hostname": "192.168.99.100",
         "settings": {
+          "default_directory_meet": 8,
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_pdf_export_groups": {
@@ -4775,6 +4778,7 @@
         "contacts": {},
         "hostname": "heaven.heaven",
         "settings": {
+          "default_directory_meet": null,
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_pdf_export_groups": {},
@@ -7883,6 +7887,23 @@
   },
   {
     "model": "persons.relation",
+    "pk": -1,
+    "fields": {
+      "created": "2020-04-30T15:14:56.581Z",
+      "modified": "2020-04-30T15:33:25.085Z",
+      "is_removed": false,
+      "gender": "UNSPECIFIED",
+      "reciprocal_ids": "[]",
+      "title": "masked",
+      "display_order": -1,
+      "emergency_contact": true,
+      "scheduler": true,
+      "relative": true,
+      "consanguinity": true
+    }
+  },
+  {
+    "model": "persons.relation",
     "pk": 0,
     "fields": {
       "created": "2020-04-30T15:14:56.581Z",
@@ -7891,7 +7912,7 @@
       "gender": "UNSPECIFIED",
       "reciprocal_ids": "[]",
       "title": "hidden",
-      "display_order": -1,
+      "display_order": 0,
       "emergency_contact": true,
       "scheduler": true,
       "relative": true,
@@ -11580,6 +11601,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -11623,6 +11645,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -11665,6 +11688,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 30,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
@@ -11707,6 +11731,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 30,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
@@ -11746,6 +11771,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 60,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
@@ -11783,6 +11809,7 @@
           "eventrelation"
         ],
         "default_time_zone": "UTC",
+        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
@@ -11825,6 +11852,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 160,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
@@ -11867,6 +11895,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 160,
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
@@ -11906,6 +11935,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 30,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
@@ -11945,6 +11975,7 @@
           "attendance"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 60,
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
@@ -11983,6 +12014,7 @@
           "attendance"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": 5,
           "Gathering": null,
@@ -12022,6 +12054,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -12061,6 +12094,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -12099,6 +12133,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -12138,6 +12173,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -12177,6 +12213,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -12216,6 +12253,7 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
@@ -12253,6 +12291,7 @@
           "attendingmeet"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": 5,
           "Gathering": null,
@@ -12290,6 +12329,7 @@
           "attendingmeet"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": 4,
           "Gathering": null,

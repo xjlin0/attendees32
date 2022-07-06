@@ -170,6 +170,8 @@ Attendees.datagridUpdate = {
       const urlParams = new URLSearchParams(window.location.search);
       Attendees.datagridUpdate.familyAttrDefaults.id = urlParams.get('familyId');
       Attendees.datagridUpdate.familyAttrDefaults.name = urlParams.get('familyName');
+      Attendees.datagridUpdate.familyAttrDefaults.joinMeet = urlParams.get('joinMeet');
+      Attendees.datagridUpdate.familyAttrDefaults.joinGathering = urlParams.get('joinGathering');
       const titleWithFamilyName = Attendees.datagridUpdate.familyAttrDefaults.name ? Attendees.datagridUpdate.familyAttrDefaults.name + ' family': '';
 
       Attendees.datagridUpdate.attendeeAjaxUrl = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeEndpoint;
@@ -228,6 +230,7 @@ Attendees.datagridUpdate = {
         $newAttendeeLinkWithFamily.attr('href', `new?familyId=${family.id}&familyName=for%20${family.display_name}`);
         $newAttendeeLinkWithFamily.attr('title', `Add a new member to ${family.display_name} family`);
         $newAttendeeLinkWithFamily.text(`+New member to ${family.display_name} family`);
+        $newAttendeeLinkWithFamily.attr('target', '_blank');
         $newAttendeeLinkWithFamily.insertBefore($newAttendeeLinkWithoutFamily);
       });
     }
@@ -859,6 +862,14 @@ Attendees.datagridUpdate = {
         extraHeaders['X-Add-Folk'] = Attendees.datagridUpdate.familyAttrDefaults.id;
         extraHeaders['X-Folk-Role'] = userData.get('role');
         userData.delete('role');
+      }
+
+      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeet) {
+        extraHeaders['X-Join-Meet'] = Attendees.datagridUpdate.familyAttrDefaults.joinMeet;  // join by self attending
+      }
+
+      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinGathering) {
+        extraHeaders['X-Join-Gathering'] = Attendees.datagridUpdate.familyAttrDefaults.joinGathering;
       }
 
       const userInfos = Attendees.datagridUpdate.attendeeFormConfigs.formData.infos;
@@ -2550,6 +2561,11 @@ Attendees.datagridUpdate = {
         },
       },
       {
+        dataField: "display_order",
+        caption: 'Rank',
+        dataType: 'number',
+      },
+      {
         apiUrlName: 'api_attendee_folkattendee_scheduler_column',
         dataField: 'schedulers',
         caption: 'Scheduler',
@@ -2720,7 +2736,7 @@ Attendees.datagridUpdate = {
         allowDeleting: false,
       },
       onEditingStart: (info) => {  // forbid editing names or names on top of page will be inconsistent.
-        if (info.data.attendee && info.data.attendee === Attendees.datagridUpdate.attendeeId && !['start', 'finish', 'infos.show_secret'].includes(info.column.dataField)) {
+        if (info.data.attendee && info.data.attendee === Attendees.datagridUpdate.attendeeId && !['start', 'finish', 'role', 'display_order','infos.show_secret'].includes(info.column.dataField)) {
           info.cancel = true;
         }
       },
@@ -2907,6 +2923,7 @@ Attendees.datagridUpdate = {
             },
             {
               colSpan: 1,
+              visible: Attendees.datagridUpdate.attendeeAttrs.dataset.userOrganizationDirectoryMeet,
               dataField: 'infos.print_directory',
               label: {
                 text: 'Print in directory?',
@@ -2932,8 +2949,14 @@ Attendees.datagridUpdate = {
                   if (Attendees.datagridUpdate.familyAttrPopupDxForm.validate().isValid && confirm('are you sure to submit the popup Family attr Form?')) {
                     const userData = Attendees.datagridUpdate.familyAttrPopupDxForm.option('formData');
                     userData['categoryId'] = Attendees.datagridUpdate.attendeeAttrs.dataset.familyCategoryId;
+                    extraHeaders = {};
+
+                    if (userData.infos && userData.infos.print_directory){
+                      extraHeaders['X-Print-Directory'] = true;
+                    }
                     $.ajax({
                       url: ajaxUrl,
+                      headers: extraHeaders,
                       data: JSON.stringify(userData),
                       dataType: 'json',
                       contentType: 'application/json; charset=utf-8',
@@ -3673,7 +3696,7 @@ Attendees.datagridUpdate = {
       title: 'Editing Attendee activities'
     },
     texts: {
-      confirmDeleteMessage: 'Are you sure to delete it and all future attendances? Instead, setting the "finish" date is usually enough!',
+      confirmDeleteMessage: "Warning! Please don't delete unless it's purely typo/entry error.  For real process such as terminating activities, please set the 'finish date' to expire it instead. Otherwise mass assignments will revert the deletion.",
     },
     form: {
       items: [

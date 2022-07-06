@@ -29,7 +29,7 @@ class FolkAttendee(TimeStampedModel, SoftDeletableModel):
         help_text="[Title] the family role of the attendee?",
     )
     display_order = models.SmallIntegerField(
-        default=30000,
+        default=3000,
         blank=False,
         null=False,
         db_index=True,
@@ -80,7 +80,7 @@ class FolkAttendeesHistory(pghistory.get_event_model(
     created = model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')
     is_removed = models.BooleanField(default=False)
-    display_order = models.SmallIntegerField(default=30000, help_text='0 will be first family')
+    display_order = models.SmallIntegerField(default=3000, help_text='0 will be first family')
     folk = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.folk')
     attendee = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.attendee')
     role = models.ForeignKey(db_constraint=False, help_text='[Title] the family role of the attendee?', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.relation', verbose_name='attendee is')

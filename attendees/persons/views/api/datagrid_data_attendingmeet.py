@@ -64,7 +64,7 @@ class ApiDatagridDataAttendingMeetViewSet(
         ):
             Attendance.objects.filter(
                 gathering__meet=instance.meet,
-                gathering__start_gte=Utility.now_with_timezone(),
+                gathering__start__gte=Utility.now_with_timezone(),
                 attending=instance.attending
             ).delete()  # delete only future attendance
             instance.delete()

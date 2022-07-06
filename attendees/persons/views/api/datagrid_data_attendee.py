@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import ModelViewSet
 
+from attendees.occasions.models import Gathering, Meet
 from attendees.persons.models import (  # , Relationship
     Attendee,
     Folk,
@@ -16,7 +17,7 @@ from attendees.persons.models import (  # , Relationship
     Relation,
 )
 from attendees.persons.serializers import AttendeeMinimalSerializer
-from attendees.persons.services import AttendeeService
+from attendees.persons.services import AttendeeService, AttendingMeetService
 
 
 class ApiDatagridDataAttendeeViewSet(
@@ -105,15 +106,30 @@ class ApiDatagridDataAttendeeViewSet(
         return qs.filter(division__organization=current_user.organization)
 
     def perform_create(self, serializer):
+        """
+        Some post processing can be added for a new attendee just created.  Gathering_id is higher priority than meet.
+        """
         instance = serializer.save()
         folk_id = self.request.META.get("HTTP_X_ADD_FOLK")
         role_id = self.request.META.get("HTTP_X_FAMILY_ROLE")
+        meet_id = self.request.META.get("HTTP_X_JOIN_MEET")
+        gathering_id = self.request.META.get("HTTP_X_JOIN_GATHERING")
+
+        meet = Meet.objects.filter(pk=meet_id).first()
+
         if folk_id and role_id:
             FolkAttendee.objects.create(
                 folk=get_object_or_404(Folk, pk=folk_id),
                 attendee=instance,
                 role=get_object_or_404(Relation, pk=role_id),
             )
+
+        if gathering_id:
+            gathering = get_object_or_404(Gathering, pk=gathering_id)
+            attendee_to_attendingmeets_cache = AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance], gathering.meet.id, True)
+            # AttendanceService.join_attendance([instance], gathering, attendee_to_attendingmeets_cache)
+        elif meet and meet.assembly.division.organization == self.request.user.organization:
+            AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance], meet_id, True)
 
     def perform_update(self, serializer):
         target_attendee = get_object_or_404(
