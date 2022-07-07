@@ -34,7 +34,7 @@ class ApiAttendeeFolksViewsSet(LoginRequiredMixin, SpyGuard, viewsets.ModelViewS
 
     def perform_update(self, serializer):  # Todo 20220706 respond for joining and families count
         instance = serializer.save()
-        print_directory = self.request.META.get("HTTP_X_PRINT_DIRECTORY")
+        print_directory = self.request.META.get("HTTP_X_PRINT_DIRECTORY") and instance.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
         AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, instance.attendees.all(), directory_meet_id, print_directory)
 
