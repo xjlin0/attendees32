@@ -7,6 +7,7 @@ from rest_framework import viewsets
 
 from attendees.persons.models import Attendee, FolkAttendee
 from attendees.persons.serializers import FolkAttendeeSerializer
+from attendees.persons.services import AttendingMeetService
 from attendees.users.authorization.route_guard import SpyGuard
 
 
@@ -61,6 +62,18 @@ class ApiDatagridDataFolkAttendeesViewsSet(
                     "role__display_order",
                 )
             )
+
+    def perform_update(self, serializer):  # Todo 20220706 respond for joining and families count
+        instance = serializer.save()
+        print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
+        directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
+        AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance.attendee], directory_meet_id, print_directory)
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
+        directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
+        AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance.attendee], directory_meet_id, print_directory)
 
 
 api_datagrid_data_folkattendees_viewset = ApiDatagridDataFolkAttendeesViewsSet
