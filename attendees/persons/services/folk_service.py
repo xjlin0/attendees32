@@ -36,17 +36,17 @@ class FolkService:
 
         for family in families_in_directory:
             attrs = {}
-            attendees = family.attendees.filter(deathday=None).exclude(folkattendee__role="masked").order_by('folkattendee__display_order')
+            attendees = family.attendees.filter(deathday=None).exclude(folkattendee__role__title="masked").order_by('folkattendee__display_order')
             parents = attendees.filter(
                 folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife']  # no father/mother-in-law
             )
             attrs['household_last_name'] = attendees.first().last_name
 
-            phone1 = parents.first().infos['contacts']['phone1']  # only phone1 published in directory
+            phone1 = parents.first() and parents.first().infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
             phone2 = None
             if phone1:
                 attrs['phone1'] = Utility.phone_number_formatter(phone1)
-            email1 = parents.first().infos['contacts']['email1']  # only email1 published in directory
+            email1 = parents.first() and parents.first().infos.get('contacts', {}).get('email1')  # only email1 published in directory
             if email1:
                 attrs['email1'] = email1
 
@@ -57,23 +57,24 @@ class FolkService:
                 name2_title += f' {parents[1].name2()}'
                 is_parent1_member = AttendingMeet.check_participation_of(parents[1], member_meet)
                 householder_title += f' & {parents[1].first_name}{"*" if is_parent1_member else ""}'
-                phone2 = parents[1].infos['contacts']['phone1']  # only phone1 published in directory
+                phone2 = parents[1].infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
                 if phone2 and phone1 != phone2:
                     attrs['phone2'] = Utility.phone_number_formatter(phone2)
-                email2 = parents[1].infos['contacts']['email1']  # only email1 published in directory
+                email2 = parents[1].infos.get('contacts', {}).get('email1')  # only email1 published in directory
                 if email2 and email1 != email2:
                     attrs['email2'] = email2
             attrs['household_title'] = householder_title
 
-            family_address = family.places.first().address  # implicitly ordered by display_order of place
-            address_line1 = f'{family_address.street_number} {family_address.route}'
-            address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
-            if family_address.extra:
-                address_line1 += f' {family_address.extra}'
-            attrs['address_line1'] = address_line1
-            attrs['address_line2'] = address_line2
+            family_address = family.places.first() and family.places.first().address  # implicitly ordered by display_order of place
+            if family_address:
+                address_line1 = f'{family_address.street_number} {family_address.route}'
+                address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
+                if family_address.extra:
+                    address_line1 += f' {family_address.extra}'
+                attrs['address_line1'] = address_line1
+                attrs['address_line2'] = address_line2
 
-            index[family_address.locality.name][f'{householder_title} {name2_title}'.strip()] = Utility.phone_number_formatter(phone1 or phone2)
+                index[family_address.locality.name][f'{householder_title} {name2_title}'.strip()] = Utility.phone_number_formatter(phone1 or phone2)
 
             attendees_attr = []
             for attendee in attendees:

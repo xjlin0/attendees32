@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Please Print</title>
+    <title>{{directory_header}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Activities/Attendees Management">
     <meta name="author" content="Jack Jack">
@@ -36,7 +36,7 @@
   <body>
     <div class="family-directory-container">
       <h1>This directory is strictly only for internal use. </h1>
-      <h2>Please print the page from a desktop browser, then "save as pdf".</h2>
+      <h2>After the page finish loading, please print the page from a desktop browser, then "save as pdf".</h2>
       <h3>Please double check if the extra page break needed before the index.</h3>
       <h4>Please use browser's Back button to go back to the previous page.</h4>
       <h5>ps. Dark theme may not be compatible for font display and pdf generation.</h5>
@@ -58,7 +58,7 @@
           <div class="right"></div>
         </div>
         <div class="attendees-container">
-          {% for attendee in family.attendees %}
+          {% for attendee in family.attendees|slice:"0:6" %}
           <div class="attendee">
             {{attendee.name2}}      <br>
             {{attendee.first_name}} <br>
