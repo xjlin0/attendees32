@@ -15,8 +15,9 @@ services:
     depends_on:
       - postgres
       - redis
-#    volumes:
-#      - .:/app:z
+    user: "1001"
+    volumes:
+      - .:/app:rw
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres

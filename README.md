@@ -206,6 +206,10 @@ CELERY_FLOWER_USER=<<YOUR CELERY_FLOWER_USER NAME>>
 CELERY_FLOWER_PASSWORD=<<YOUR CELERY_FLOWER_PASSWORD>>
 
 ```
+* double check user id of your web user in production.yml:
+```
+user: "1001"
+```
 * create a production setting by `vi .envs/.production/.postgres` and save the following content. Ensure the db password changed.
 ```
 # PostgreSQL
@@ -222,7 +226,7 @@ SENDGRID_API_KEY=YOUR_REAL_API_KEY
 DJANGO_DEFAULT_FROM_EMAIL=your@email.com
 DJANGO_SECRET_KEY=your_django_secret_key
 ```
-* if other staging ran previously (such as local), please remove it like `docker-compose -f local.yml down -v`
+* if other staging ran previously (such as local), please remove it like `docker-compose -f local.yml down -v`. Also please remove previous private media photos at attendees32/attendees/media/private-media/attendee_portrait/*
 * double check if previous [docker images needs to be removed](https://medium.com/@wlarch/no-space-left-on-device-when-using-docker-compose-why-c4a2c783c6f6). It will also remove attendees user images too.
 * double check the domain name in `compose/production/traefik/traefik.yml` and `attendees/contrib/sites/migrations/0003_set_site_domain_and_name.py`
 * setup env variables for django secret key:
@@ -244,10 +248,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/<ADMIN_URL>/users/user/
 
-* upload a photo to a user and keep note of the photo filename.
-
-* as a root, visit `cd /var/lib/docker/overlay2/` and search for the photo file name `find . -name "filename.jpg"` . Note down the path/folder.
-* As a root, copy all members' photos from the other server to the above path/folder, then change owner of all photos to `chown systemd-resolve:systemd-journal *`
+* For keeping the site surviving reboot, add starting of the Django upon system reboot, such as `sudo su user_name sh -c 'sleep 99 && cd ~user_name/repo_dir && docker-compose -f production.yml up -d' >> /tmp/attendee_startup.log` (need work)
 </details>
 
 ## [How to start dev env on Linux](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
@@ -468,7 +469,7 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
 - [ ] i18n Translation on model data, django-parler maybe?
 - [ ] db currently allow non-uniq email, but duplicated email will cause send mail failure.
 - [ ] retire django summer note
-- [ ] restart production docker lost all images, perhaps because docker was not installed correctly with rootless mode, thus the user become first available non-root user 1001.
+- [x] restart production docker lost all images, perhaps because docker was not installed correctly with rootless mode, thus the user become first available non-root user 1001. (resolved by add user option in production yaml)
 - [ ] modify django-allauth so that the host in the email activation link won't be http://127.0.0.1:8008/ even in production 
 </details>
 
