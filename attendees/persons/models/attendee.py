@@ -262,7 +262,7 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
         )
 
     def age(self):
-        birthday = self.actual_birthday or (self.estimated_birthday and self.estimated_birthday.date)
+        birthday = self.actual_birthday or (self.estimated_birthday and hasattr(self.estimated_birthday, 'date') and self.estimated_birthday.date)
         try:
             if birthday:
                 age = (date.today() - birthday) // timedelta(days=365.2425)
