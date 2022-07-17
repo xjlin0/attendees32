@@ -4678,6 +4678,7 @@
         "hostname": "organization.archived",
         "settings": {
           "default_directory_meet": null,
+          "default_member_meet": null,
           "opencc_convert": true,
           "attendee_to_attending": false,
           "attendingmeet_pdf_export": {},
@@ -4704,6 +4705,7 @@
         "hostname": "organization.none",
         "settings": {
           "default_directory_meet": null,
+          "default_member_meet": null,
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_pdf_export_groups": {},
@@ -4730,6 +4732,7 @@
         "hostname": "192.168.99.100",
         "settings": {
           "default_directory_meet": 8,
+          "default_member_meet": 9,
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_pdf_export_groups": {
@@ -4779,6 +4782,7 @@
         "hostname": "heaven.heaven",
         "settings": {
           "default_directory_meet": null,
+          "default_member_meet": null,
           "opencc_convert": true,
           "attendee_to_attending": true,
           "attendingmeet_pdf_export_groups": {},

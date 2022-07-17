@@ -19,7 +19,8 @@ class DirectoryReportListView(LoginRequiredMixin, RouteGuard, ListView):
         context = super().get_context_data(**kwargs)
         index_row_per_page = int(self.request.GET.get("indexRowPerPage", '26'))
         page_breaks_before_index = int(self.request.GET.get("pageBreaksBeforeIndex", '2'))
-        indexes, families = FolkService.families_in_directory(index_row_per_page)
+        user_org_settings = self.request.user.organization.infos.get("settings", {})
+        indexes, families = FolkService.families_in_directory(user_org_settings.get('default_directory_meet'), user_org_settings.get('default_member_meet'), index_row_per_page)
         context.update({
             'directory_header': self.request.GET.get('directoryHeader', ''),
             'index_header': self.request.GET.get('indexHeader', ''),

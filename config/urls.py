@@ -59,7 +59,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
-        r"^(console|login|script|jenkins/login|files|images|uploads|\.local|\.production|\.env|\.remote|\.git|favicon.ico|feed)/?$",  # no preceding strings
+        r"^(console|login|script|jenkins/login|files|images|uploads|\.local|\.production|\.env|\.remote|\.git|favicon.ico|feed|sitemap.xml|arttype|webfig|invoker\/readonly|solr)/?$",  # no preceding strings
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
@@ -71,7 +71,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
     re_path(
-        "^.*(/services/LogService|/j_security_check|category/latestnews/comments/feed|sites/default/files|wp-admin/css)/?$",  # allow preceding strings
+        "^.*(/services/LogService|/j_security_check|category/latestnews/comments/feed|sites/default/files|wp-admin/css|gb)/?$",  # allow preceding strings
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
     ),
 ]

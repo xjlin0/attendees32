@@ -24,7 +24,7 @@
   </h3>
 
   <h5>
-    Showing up publicly in the directory can be configured from both family and individual levels. Here're steps to control (order matters):
+    Once people joined the directory meet, showing up publicly in the directory can be configured from both family and individual levels. Here're steps to control (order matters):
   </h5>
   <ol>
     <li>
@@ -40,82 +40,86 @@
   <p>
     ps. Currently only supported up to 6 members displayed per family.
   </p>
-  <form id="directory-print-configuration"
-        action="{{pdf_url}}"
-        name="directoryPrintConfiguration">
-    <div class="row mb-3">
-      <label for="directory-header"
-             class="col-sm-2 col-form-label">
-        Directory Header
-      </label>
-      <div class="col-sm-10">
-        <input required
-               name="directoryHeader"
-               type="text"
-               title="Directory header on the upper right corner of every directory page."
-               class="form-control"
-               value="2023 Directory"
-               placeholder="For example: 2023 Directory"
-               id="directory-header">
+  {% if organization_direct_meet %}
+    <form id="directory-print-configuration"
+          action="{{pdf_url}}"
+          name="directoryPrintConfiguration">
+      <div class="row mb-3">
+        <label for="directory-header"
+               class="col-sm-2 col-form-label">
+          Directory Header
+        </label>
+        <div class="col-sm-10">
+          <input required
+                 name="directoryHeader"
+                 type="text"
+                 title="Directory header on the upper right corner of every directory page."
+                 class="form-control"
+                 value="2023 Directory"
+                 placeholder="For example: 2023 Directory"
+                 id="directory-header">
+        </div>
       </div>
-    </div>
-    <div class="row mb-3">
-      <label for="page-breaks-before-index"
-             class="col-sm-2 col-form-label">
-        Page breaks before index
-      </label>
-      <div class="col-sm-10">
-        <input required
-               name="pageBreaksBeforeIndex"
-               type="number"
-               placeholder="number of page breaks to be inserted for page number matching"
-               class="form-control"
-               value="2"
-               min="0"
-               max="50"
-               title="Number of page breaks inserted after Directory before Index for page number matching"
-               id="page-breaks-before-index">
+      <div class="row mb-3">
+        <label for="page-breaks-before-index"
+               class="col-sm-2 col-form-label">
+          Page breaks before index
+        </label>
+        <div class="col-sm-10">
+          <input required
+                 name="pageBreaksBeforeIndex"
+                 type="number"
+                 placeholder="number of page breaks to be inserted for page number matching"
+                 class="form-control"
+                 value="2"
+                 min="0"
+                 max="50"
+                 title="Number of page breaks inserted after Directory before Index for page number matching"
+                 id="page-breaks-before-index">
+        </div>
       </div>
-    </div>
-    <div class="row mb-3">
-      <label for="index-header"
-             class="col-sm-2 col-form-label">
-        Index Header
-      </label>
-      <div class="col-sm-10">
-        <input required
-               name="indexHeader"
-               type="text"
-               class="form-control"
-               title="Index header on the upper right corner of every index page."
-               value="2023 Area Directory"
-               placeholder="For example: 2023 Area Directory"
-               id="index-header">
+      <div class="row mb-3">
+        <label for="index-header"
+               class="col-sm-2 col-form-label">
+          Index Header
+        </label>
+        <div class="col-sm-10">
+          <input required
+                 name="indexHeader"
+                 type="text"
+                 class="form-control"
+                 title="Index header on the upper right corner of every index page."
+                 value="2023 Area Directory"
+                 placeholder="For example: 2023 Area Directory"
+                 id="index-header">
+        </div>
       </div>
-    </div>
-    <div class="row mb-3">
-      <label for="index-row-per-page"
-             class="col-sm-2 col-form-label">
-        Index Rows Per Page
-      </label>
-      <div class="col-sm-10">
-        <input required
-               name="indexRowPerPage"
-               type="number"
-               placeholder="26"
-               class="form-control"
-               value="26"
-               min="1"
-               max="50"
-               title="number of lines per page in the index page, including empty lines and city names"
-               id="index-row-per-page">
+      <div class="row mb-3">
+        <label for="index-row-per-page"
+               class="col-sm-2 col-form-label">
+          Index Rows Per Page
+        </label>
+        <div class="col-sm-10">
+          <input required
+                 name="indexRowPerPage"
+                 type="number"
+                 placeholder="26"
+                 class="form-control"
+                 value="26"
+                 min="1"
+                 max="50"
+                 title="number of lines per page in the index page, including empty lines and city names"
+                 id="index-row-per-page">
+        </div>
       </div>
-    </div>
-    <button class="btn btn-primary"
-            title="Get the directory for print (it will take some time)."
-            type="submit">
-      Generate Directory for Print
-    </button>
-  </form>
+      <button class="btn btn-primary"
+              title="Get the directory for print (it will take some time)."
+              type="submit">
+        Generate Directory for Print
+      </button>
+    </form>
+  {% else %}
+    <h2>Your organization infos settings didn't configure organization_direct_meet, can't print directory!</h2>
+  {% endif %}
 </div>
 {% endblock content %}

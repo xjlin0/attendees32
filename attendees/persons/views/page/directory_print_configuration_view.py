@@ -17,6 +17,7 @@ class DirectoryPrintConfigurationView(LoginRequiredMixin, RouteGuard, ListView):
         context = super().get_context_data(**kwargs)
         context.update({
             'pdf_url': '/persons/directory_report/',
+            'organization_direct_meet': self.request.user.organization.infos.get("settings", {}).get("default_directory_meet")
         })
         return context
 
