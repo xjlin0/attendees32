@@ -54,6 +54,10 @@ urlpatterns = [
         "humans.txt",
         TemplateView.as_view(template_name="humans.txt", content_type="text/plain"),
     ),
+    path(
+        "ads.txt",
+        TemplateView.as_view(template_name="ads.txt", content_type="text/plain"),
+    ),
     re_path(
         r"[^\.](.*)(\.jsp|\.php|\.cgi|log_upload_wsgi.py|admin/controller)(.*)",
         TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
