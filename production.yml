@@ -17,7 +17,7 @@ services:
       - redis
     user: "1001"
     volumes:
-      - .:/app:rw
+      - .:/app:z
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
