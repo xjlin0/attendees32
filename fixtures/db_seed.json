@@ -1814,7 +1814,7 @@
     "model": "django_celery_beat.periodictasks",
     "pk": 1,
     "fields": {
-      "last_update": "2022-07-02T04:20:14.034Z"
+      "last_update": "2022-07-17T23:57:39.540Z"
     }
   },
   {
@@ -1869,7 +1869,7 @@
       "enabled": true,
       "last_run_at": null,
       "total_run_count": 0,
-      "date_changed": "2022-07-02T04:20:14.036Z",
+      "date_changed": "2022-07-17T23:57:39.544Z",
       "description": ""
     }
   },
@@ -2730,7 +2730,7 @@
         "data-bs-toggle": "dropdown"
       },
       "lft": 1,
-      "rght": 32,
+      "rght": 30,
       "tree_id": 11,
       "level": 0
     }
@@ -2740,23 +2740,23 @@
     "pk": 2,
     "fields": {
       "created": "2020-04-13T04:45:48.466Z",
-      "modified": "2020-04-26T18:16:02.214Z",
+      "modified": "2022-07-18T00:25:04.797Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
-      "parent": 1,
+      "parent": 4,
       "html_type": "a",
       "urn": "/occasions/datagrid_coworker_organization_attendances/",
       "url_name": "datagrid_coworker_organization_attendances",
       "display_name": "Coworkers activities 同工行程",
-      "display_order": 1400,
+      "display_order": 2100,
       "infos": {
         "class": "dropdown-item",
         "title": "Coworkers attendance"
       },
-      "lft": 22,
-      "rght": 23,
-      "tree_id": 11,
+      "lft": 2,
+      "rght": 3,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -2765,7 +2765,7 @@
     "pk": 3,
     "fields": {
       "created": "2020-04-13T04:51:13.160Z",
-      "modified": "2020-04-26T18:16:15.179Z",
+      "modified": "2022-07-18T00:16:34.987Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
@@ -2774,13 +2774,13 @@
       "urn": "/occasions/datagrid_user_organization_attendances/",
       "url_name": "datagrid_user_organization_attendances",
       "display_name": "My activities 個人行程",
-      "display_order": 1300,
+      "display_order": 1200,
       "infos": {
         "class": "dropdown-item",
         "title": "My (families) attendance"
       },
-      "lft": 20,
-      "rght": 21,
+      "lft": 18,
+      "rght": 19,
       "tree_id": 11,
       "level": 1
     }
@@ -2790,7 +2790,7 @@
     "pk": 4,
     "fields": {
       "created": "2020-04-13T05:09:06.273Z",
-      "modified": "2020-04-26T18:14:42.372Z",
+      "modified": "2022-07-18T00:28:05.016Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
@@ -2798,7 +2798,7 @@
       "html_type": "a",
       "urn": "#",
       "url_name": "Children_Ministry",
-      "display_name": "Children Ministry 兒童部",
+      "display_name": "Coworkers Info 同工資料",
       "display_order": 2000,
       "infos": {
         "role": "tab",
@@ -2808,7 +2808,7 @@
         "data-bs-toggle": "dropdown"
       },
       "lft": 1,
-      "rght": 8,
+      "rght": 16,
       "tree_id": 12,
       "level": 0
     }
@@ -2842,10 +2842,10 @@
     "pk": 6,
     "fields": {
       "created": "2020-04-13T05:14:05.406Z",
-      "modified": "2021-04-08T18:09:25.581Z",
+      "modified": "2022-07-18T00:07:49.692Z",
       "is_removed": false,
       "organization": 1,
-      "category": "main",
+      "category": "archived",
       "parent": 4,
       "html_type": "a",
       "urn": "/persons/cfcch_children_ministry/cfcch_junior_regular_activity/datagrid_assembly_all_attendings/?characters=d7c8Fd_cfcch_kid_student",
@@ -2856,8 +2856,8 @@
         "class": "dropdown-item",
         "title": "Student Roaster"
       },
-      "lft": 2,
-      "rght": 3,
+      "lft": 4,
+      "rght": 5,
       "tree_id": 12,
       "level": 1
     }
@@ -2867,10 +2867,10 @@
     "pk": 7,
     "fields": {
       "created": "2020-04-13T05:17:33.909Z",
-      "modified": "2021-04-08T18:09:43.883Z",
+      "modified": "2022-07-18T00:08:12.556Z",
       "is_removed": false,
       "organization": 1,
-      "category": "main",
+      "category": "archived",
       "parent": 4,
       "html_type": "a",
       "urn": "/occasions/cfcch_children_ministry/cfcch_junior_regular_activity/datagrid_assembly_all_attendances/",
@@ -2881,8 +2881,8 @@
         "class": "dropdown-item",
         "title": "Leader List"
       },
-      "lft": 6,
-      "rght": 7,
+      "lft": 8,
+      "rght": 9,
       "tree_id": 12,
       "level": 1
     }
@@ -2892,7 +2892,7 @@
     "pk": 10,
     "fields": {
       "created": "2020-04-17T16:56:21.296Z",
-      "modified": "2021-10-12T15:47:40.620Z",
+      "modified": "2022-07-18T00:16:34.971Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
@@ -2901,12 +2901,12 @@
       "urn": null,
       "url_name": "divider_between_registration_activities",
       "display_name": "divider between registration&activities",
-      "display_order": 1200,
+      "display_order": 1300,
       "infos": {
         "class": "dropdown-divider"
       },
-      "lft": 18,
-      "rght": 19,
+      "lft": 20,
+      "rght": 21,
       "tree_id": 11,
       "level": 1
     }
@@ -2916,7 +2916,7 @@
     "pk": 11,
     "fields": {
       "created": "2020-04-17T16:58:47.210Z",
-      "modified": "2020-04-17T16:58:47.210Z",
+      "modified": "2022-07-18T00:26:05.196Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
@@ -2925,12 +2925,12 @@
       "urn": null,
       "url_name": "divider_between_participation_attendances",
       "display_name": "divider between participation & attendance date",
-      "display_order": 2400,
+      "display_order": 2600,
       "infos": {
         "class": "dropdown-divider"
       },
-      "lft": 4,
-      "rght": 5,
+      "lft": 10,
+      "rght": 11,
       "tree_id": 12,
       "level": 1
     }
@@ -2940,10 +2940,10 @@
     "pk": 12,
     "fields": {
       "created": "2020-05-11T01:06:34.974Z",
-      "modified": "2020-05-11T01:17:31.734Z",
+      "modified": "2022-07-18T00:07:14.815Z",
       "is_removed": false,
       "organization": 1,
-      "category": "main",
+      "category": "archived",
       "parent": null,
       "html_type": "a",
       "urn": "#",
@@ -2958,7 +2958,7 @@
         "data-bs-toggle": "dropdown"
       },
       "lft": 1,
-      "rght": 8,
+      "rght": 6,
       "tree_id": 13,
       "level": 0
     }
@@ -2968,10 +2968,10 @@
     "pk": 13,
     "fields": {
       "created": "2020-05-11T01:12:54.878Z",
-      "modified": "2021-04-08T17:37:42.297Z",
+      "modified": "2022-07-18T00:06:55.496Z",
       "is_removed": false,
       "organization": 1,
-      "category": "main",
+      "category": "archived",
       "parent": 12,
       "html_type": "a",
       "urn": "/occasions/cfcch_data_management/cfcch_congregation_data/datagrid_assembly_all_attendances/",
@@ -2993,10 +2993,10 @@
     "pk": 14,
     "fields": {
       "created": "2020-11-09T00:11:23.118Z",
-      "modified": "2021-04-08T17:36:04.658Z",
+      "modified": "2022-07-18T00:07:07.318Z",
       "is_removed": false,
       "organization": 1,
-      "category": "main",
+      "category": "archived",
       "parent": 12,
       "html_type": "a",
       "urn": "/persons/cfcch_data_management/cfcch_congregation_data/datagrid_assembly_data_attendings/?characters=d7c8Fd_cfcch_congregation_data_roaster",
@@ -3203,7 +3203,7 @@
     "pk": 26,
     "fields": {
       "created": "2021-07-17T23:36:05.745Z",
-      "modified": "2021-10-13T15:18:01.077Z",
+      "modified": "2022-07-18T00:11:35.316Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
@@ -3217,8 +3217,8 @@
         "class": "dropdown-item",
         "title": "Gatherings list"
       },
-      "lft": 26,
-      "rght": 27,
+      "lft": 24,
+      "rght": 25,
       "tree_id": 11,
       "level": 1
     }
@@ -3252,10 +3252,10 @@
     "pk": 28,
     "fields": {
       "created": "2021-10-12T15:49:33.093Z",
-      "modified": "2021-10-12T15:49:33.093Z",
+      "modified": "2022-07-18T00:10:08.530Z",
       "is_removed": false,
       "organization": 1,
-      "category": "main",
+      "category": "archived",
       "parent": 1,
       "html_type": "div",
       "urn": null,
@@ -3265,8 +3265,8 @@
       "infos": {
         "class": "dropdown-divider"
       },
-      "lft": 24,
-      "rght": 25,
+      "lft": 22,
+      "rght": 23,
       "tree_id": 11,
       "level": 1
     }
@@ -3290,8 +3290,8 @@
         "class": "dropdown-item",
         "title": "attendance list"
       },
-      "lft": 30,
-      "rght": 31,
+      "lft": 28,
+      "rght": 29,
       "tree_id": 11,
       "level": 1
     }
@@ -3315,8 +3315,8 @@
         "class": "dropdown-item",
         "title": "Gatherings list"
       },
-      "lft": 28,
-      "rght": 29,
+      "lft": 26,
+      "rght": 27,
       "tree_id": 11,
       "level": 1
     }
@@ -3370,24 +3370,24 @@
     "pk": 33,
     "fields": {
       "created": "2022-06-28T16:10:05.478Z",
-      "modified": "2022-07-02T04:30:39.005Z",
+      "modified": "2022-07-18T00:26:05.214Z",
       "is_removed": false,
       "organization": 1,
       "category": "sublink",
-      "parent": null,
+      "parent": 4,
       "html_type": "a",
       "urn": "/persons/directory_report/",
       "url_name": "directory_report_list_view",
       "display_name": "通訊錄PDF directory PDF",
-      "display_order": 3900,
+      "display_order": 2900,
       "infos": {
         "class": "dropdown-item",
         "title": "directory pdf"
       },
-      "lft": 1,
-      "rght": 2,
-      "tree_id": 14,
-      "level": 0
+      "lft": 14,
+      "rght": 15,
+      "tree_id": 12,
+      "level": 1
     }
   },
   {
@@ -3395,23 +3395,48 @@
     "pk": 34,
     "fields": {
       "created": "2022-07-02T04:30:28.461Z",
-      "modified": "2022-07-02T04:33:30.735Z",
+      "modified": "2022-07-18T00:26:05.206Z",
       "is_removed": false,
       "organization": 1,
       "category": "main",
-      "parent": 12,
+      "parent": 4,
       "html_type": "a",
       "urn": "/persons/directory_print_configuration/",
       "url_name": "directory_print_configuration_view",
-      "display_name": "通訊錄 directory",
-      "display_order": 3800,
+      "display_name": "directory 通訊錄",
+      "display_order": 2800,
       "infos": {
         "class": "dropdown-item",
         "title": "directory print"
       },
-      "lft": 6,
-      "rght": 7,
-      "tree_id": 13,
+      "lft": 12,
+      "rght": 13,
+      "tree_id": 12,
+      "level": 1
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 35,
+    "fields": {
+      "created": "2022-07-18T00:23:30.418Z",
+      "modified": "2022-07-18T00:25:04.814Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "main",
+      "parent": 4,
+      "html_type": "a",
+      "urn": "/occasions/roll_call/",
+      "url_name": "occasions_roll_call_view",
+      "display_name": "roll call 點名單",
+      "display_order": 2400,
+      "infos": {
+        "class": "dropdown-item",
+        "title": "Roll call"
+      },
+      "lft": 10,
+      "rght": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3550,11 +3575,11 @@
     "pk": 11,
     "fields": {
       "created": "2020-04-13T15:13:27.599Z",
-      "modified": "2020-05-10T14:28:29.510Z",
+      "modified": "2022-07-18T00:05:49.803Z",
       "is_removed": false,
-      "auth_group": 3,
-      "read": false,
-      "write": false,
+      "auth_group": 6,
+      "read": true,
+      "write": true,
       "menu": 4
     }
   },
@@ -4664,6 +4689,136 @@
     }
   },
   {
+    "model": "users.menuauthgroup",
+    "pk": 119,
+    "fields": {
+      "created": "2022-07-18T00:05:49.783Z",
+      "modified": "2022-07-18T00:05:49.783Z",
+      "is_removed": false,
+      "auth_group": 5,
+      "read": true,
+      "write": true,
+      "menu": 4
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 120,
+    "fields": {
+      "created": "2022-07-18T00:05:49.783Z",
+      "modified": "2022-07-18T00:05:49.783Z",
+      "is_removed": false,
+      "auth_group": 4,
+      "read": true,
+      "write": true,
+      "menu": 4
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 121,
+    "fields": {
+      "created": "2022-07-18T00:09:22.239Z",
+      "modified": "2022-07-18T00:09:22.239Z",
+      "is_removed": false,
+      "auth_group": 5,
+      "read": true,
+      "write": true,
+      "menu": 2
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 122,
+    "fields": {
+      "created": "2022-07-18T00:09:22.240Z",
+      "modified": "2022-07-18T00:09:22.240Z",
+      "is_removed": false,
+      "auth_group": 6,
+      "read": true,
+      "write": true,
+      "menu": 2
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 123,
+    "fields": {
+      "created": "2022-07-18T00:09:22.241Z",
+      "modified": "2022-07-18T00:09:22.241Z",
+      "is_removed": false,
+      "auth_group": 4,
+      "read": true,
+      "write": true,
+      "menu": 2
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 124,
+    "fields": {
+      "created": "2022-07-18T00:23:30.432Z",
+      "modified": "2022-07-18T00:23:30.432Z",
+      "is_removed": false,
+      "auth_group": 2,
+      "read": true,
+      "write": true,
+      "menu": 35
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 125,
+    "fields": {
+      "created": "2022-07-18T00:23:30.433Z",
+      "modified": "2022-07-18T00:23:30.433Z",
+      "is_removed": false,
+      "auth_group": 1,
+      "read": true,
+      "write": true,
+      "menu": 35
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 126,
+    "fields": {
+      "created": "2022-07-18T00:23:30.434Z",
+      "modified": "2022-07-18T00:23:30.434Z",
+      "is_removed": false,
+      "auth_group": 5,
+      "read": true,
+      "write": true,
+      "menu": 35
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 127,
+    "fields": {
+      "created": "2022-07-18T00:23:30.434Z",
+      "modified": "2022-07-18T00:23:30.434Z",
+      "is_removed": false,
+      "auth_group": 6,
+      "read": true,
+      "write": true,
+      "menu": 35
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 128,
+    "fields": {
+      "created": "2022-07-18T00:23:30.435Z",
+      "modified": "2022-07-18T00:23:30.435Z",
+      "is_removed": false,
+      "auth_group": 4,
+      "read": true,
+      "write": true,
+      "menu": 35
+    }
+  },
+  {
     "model": "whereabouts.organization",
     "pk": -1,
     "fields": {
@@ -4677,10 +4832,10 @@
         "contacts": {},
         "hostname": "organization.archived",
         "settings": {
-          "default_directory_meet": null,
-          "default_member_meet": null,
           "opencc_convert": true,
+          "default_member_meet": null,
           "attendee_to_attending": false,
+          "default_directory_meet": null,
           "attendingmeet_pdf_export": {},
           "past_category_to_attendingmeet_meet": {}
         },
@@ -4704,10 +4859,10 @@
         "contacts": {},
         "hostname": "organization.none",
         "settings": {
-          "default_directory_meet": null,
-          "default_member_meet": null,
           "opencc_convert": true,
+          "default_member_meet": null,
           "attendee_to_attending": true,
+          "default_directory_meet": null,
           "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
@@ -4731,10 +4886,10 @@
         "contacts": {},
         "hostname": "192.168.99.100",
         "settings": {
-          "default_directory_meet": 8,
-          "default_member_meet": 9,
           "opencc_convert": true,
+          "default_member_meet": 9,
           "attendee_to_attending": true,
+          "default_directory_meet": 8,
           "attendingmeet_pdf_export_groups": {
             "d7c8Fd_cfcch_congregation_directory": [
               "data_organizer"
@@ -4781,10 +4936,10 @@
         "contacts": {},
         "hostname": "heaven.heaven",
         "settings": {
-          "default_directory_meet": null,
-          "default_member_meet": null,
           "opencc_convert": true,
+          "default_member_meet": null,
           "attendee_to_attending": true,
+          "default_directory_meet": null,
           "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
@@ -6219,7 +6374,9 @@
       "category": 25,
       "display_name": "Sarah 撒拉 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6233,7 +6390,9 @@
       "category": 0,
       "display_name": "Abraham & Sarah",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": true
+      }
     }
   },
   {
@@ -6247,7 +6406,9 @@
       "category": 25,
       "display_name": "Esau 以掃 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6261,7 +6422,9 @@
       "category": 25,
       "display_name": "John 約翰 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6275,7 +6438,9 @@
       "category": 25,
       "display_name": "Esther 以斯帖 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6289,7 +6454,9 @@
       "category": 0,
       "display_name": "David&Abigail",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": true
+      }
     }
   },
   {
@@ -6303,7 +6470,9 @@
       "category": 25,
       "display_name": "James 雅各 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6317,7 +6486,9 @@
       "category": 0,
       "display_name": "Issac & Rebecca",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": true
+      }
     }
   },
   {
@@ -6331,7 +6502,9 @@
       "category": 25,
       "display_name": "Deborah 底波拉 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6345,7 +6518,9 @@
       "category": 25,
       "display_name": "Abraham 亞伯拉罕 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6359,7 +6534,9 @@
       "category": 25,
       "display_name": "Isaac 以撒 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6373,7 +6550,9 @@
       "category": 25,
       "display_name": "Samson 參孫 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6387,7 +6566,9 @@
       "category": 25,
       "display_name": "David 大衛 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6401,7 +6582,9 @@
       "category": 25,
       "display_name": "Elizabeth 以利沙伯 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6415,7 +6598,9 @@
       "category": 25,
       "display_name": "Chileab 基利押 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6429,7 +6614,9 @@
       "category": 25,
       "display_name": "Abigail 亞比該 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6443,7 +6630,9 @@
       "category": 0,
       "display_name": "Hagar & Ishmael",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": true
+      }
     }
   },
   {
@@ -6457,7 +6646,9 @@
       "category": 25,
       "display_name": "Lydia 呂底亞 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6471,7 +6662,9 @@
       "category": 25,
       "display_name": "Hagar 夏甲 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6485,7 +6678,9 @@
       "category": 25,
       "display_name": "Rebecca 利百加 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6499,7 +6694,9 @@
       "category": 25,
       "display_name": "Nabal 拿八 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6513,7 +6710,9 @@
       "category": 25,
       "display_name": "superuser system admin 超級使用者管理員 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -6527,7 +6726,9 @@
       "category": 25,
       "display_name": "Ishmael 以實瑪利 relationship",
       "display_order": 0,
-      "infos": {"print_directory": true}
+      "infos": {
+        "print_directory": false
+      }
     }
   },
   {
@@ -11605,12 +11806,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 99999
       },
       "site_type": 45,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
@@ -11649,12 +11850,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 99999
       },
       "site_type": 45,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
@@ -11692,12 +11893,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 30,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        }
+        },
+        "default_period_in_weeks": 30
       },
       "site_type": 54,
       "site_id": "1"
@@ -11735,12 +11936,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 30,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        }
+        },
+        "default_period_in_weeks": 30
       },
       "site_type": 54,
       "site_id": "1"
@@ -11775,12 +11976,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 60,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        }
+        },
+        "default_period_in_weeks": 60
       },
       "site_type": 52,
       "site_id": "1"
@@ -11813,12 +12014,12 @@
           "eventrelation"
         ],
         "default_time_zone": "UTC",
-        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
           "Attendance": false
-        }
+        },
+        "default_period_in_weeks": 99999
       },
       "site_type": 50,
       "site_id": "2"
@@ -11856,12 +12057,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 160,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
-        }
+        },
+        "default_period_in_weeks": 160
       },
       "site_type": 52,
       "site_id": "1"
@@ -11899,12 +12100,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 160,
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
           "Attendance": false
-        }
+        },
+        "default_period_in_weeks": 160
       },
       "site_type": 50,
       "site_id": "2"
@@ -11939,12 +12140,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 30,
         "automatic_creation": {
           "Past": null,
           "Gathering": true,
           "Attendance": true
         },
+        "default_period_in_weeks": 30,
         "extending_attending_days": 90
       },
       "site_type": 46,
@@ -11979,12 +12180,12 @@
           "attendance"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 60,
         "automatic_creation": {
           "Past": null,
           "Gathering": false,
           "Attendance": false
-        }
+        },
+        "default_period_in_weeks": 60
       },
       "site_type": 46,
       "site_id": "1"
@@ -12018,12 +12219,12 @@
           "attendance"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": 5,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 99999
       },
       "site_type": 46,
       "site_id": "1"
@@ -12058,12 +12259,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12098,12 +12299,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12137,12 +12338,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12177,12 +12378,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12217,12 +12418,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12257,12 +12458,12 @@
           "eventrelation"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 50,
         "automatic_creation": {
           "Past": null,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12295,12 +12496,12 @@
           "attendingmeet"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": 5,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 99999
       },
       "site_type": 46,
       "site_id": "1"
@@ -12333,12 +12534,12 @@
           "attendingmeet"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_period_in_weeks": 99999,
         "automatic_creation": {
           "Past": 4,
           "Gathering": null,
           "Attendance": null
-        }
+        },
+        "default_period_in_weeks": 99999
       },
       "site_type": 46,
       "site_id": "1"
