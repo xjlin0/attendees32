@@ -9,7 +9,7 @@ Attendees.attendances = {
   selectedMeetSlugs: [],
   meetData: {},
   init: () => {
-    console.log('static/js/occasions/attendances_list_view.js.js');
+    console.log('static/js/occasions/attendances_list_view.js');
     Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListView']); // remove saved search text without interfering column visibility
     Attendees.attendances.initFilterMeetCheckbox();
     Attendees.attendances.initEditingSwitch();

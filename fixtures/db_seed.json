@@ -3427,7 +3427,7 @@
       "parent": 4,
       "html_type": "a",
       "urn": "/occasions/roll_call/",
-      "url_name": "occasions_roll_call_view",
+      "url_name": "roll_call_list_view",
       "display_name": "roll call 點名單",
       "display_order": 2400,
       "infos": {
@@ -12038,7 +12038,7 @@
       "audience_editable": true,
       "start": "2020-05-12T14:54:57Z",
       "finish": "2099-12-31T15:54:58Z",
-      "display_name": "Vacation Bible School 兒少聖經營",
+      "display_name": "Vacation Bible School 假期聖經營",
       "slug": "d7c8Fd_cfcch_junior_vacation_bible_school",
       "infos": {
         "gathering": {},
