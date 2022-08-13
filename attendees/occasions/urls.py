@@ -24,6 +24,7 @@ from attendees.occasions.views import (
     organization_meets_viewset,
     organization_characters_viewset,
     series_gatherings_viewset,
+    roll_call_list_view,
 )
 
 app_name = "occasions"
@@ -148,5 +149,10 @@ urlpatterns = [
         "attendances/",
         view=attendances_list_view,
         name="attendances_list_view",
+    ),
+    path(
+        "roll_call/",
+        view=roll_call_list_view,
+        name='roll_call_list_view',
     ),
 ]

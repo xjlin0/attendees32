@@ -144,7 +144,7 @@ class Utility:
     @staticmethod
     def meet_infos():
         return {
-            'allowed_models': ['gathering', 'attendingmeet', 'attendance', 'eventrelation'],
+            'allowed_models': ['gathering', 'attendingmeet', 'attendance', 'eventrelation'],  # suppress believe/baptize meets shows up in attendances, etc.
             'allowed_groups': [],
             'default_period_in_weeks': 99999,  # 1886 years
             "automatic_creation": {
