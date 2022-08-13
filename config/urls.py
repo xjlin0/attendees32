@@ -58,26 +58,26 @@ urlpatterns = [
         "ads.txt",
         TemplateView.as_view(template_name="ads.txt", content_type="text/plain"),
     ),
-    re_path(
-        r"[^\.](.*)(\.jsp|\.php|\.cgi|log_upload_wsgi.py|admin/controller)(.*)",
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(
-        r"^(console|login|script|jenkins/login|files|images|uploads|\.local|\.production|\.env|\.remote|\.git|favicon.ico|feed|sitemap.xml|arttype|webfig|invoker\/readonly|solr)/?$",  # no preceding strings
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(
-        "^:443:.*$",
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(  # Todo 20220702  check if this break django-allauth community login
-        "^(showLogin.cc|main|logupload|var|manager/html|oauth/token|Config/SaveUploadedHotspotLogoFileConfig/SaveUploadedHotspotLogoFile|webadmin/out|HNAP1/|_ignition/execute-solution|Autodiscover/Autodiscover.xml|actuator/gateway/routes|admin/controller/extension)",
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
-    re_path(
-        "^.*(/services/LogService|/j_security_check|category/latestnews/comments/feed|sites/default/files|wp-admin/css|gb)/?$",  # allow preceding strings
-        TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
-    ),
+    # re_path(
+    #     r"[^\.](.*)(\.jsp|\.php|\.cgi|log_upload_wsgi.py|admin/controller|wp-content)(.*)",  # need precedings
+    #     TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    # ),
+    # re_path(
+    #     r"^(console|login|script|jenkins/login|files|images|uploads|\.local|\.production|\.env|\.remote|\.git|favicon.ico|feed|sitemap.xml|arttype|webfig|invoker\/readonly|solr|new|home|backup|wp|old|bc|bk|wordpress|99vt)/?$",  # no preceding strings
+    #     TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    # ),
+    # re_path(
+    #     "^:443:.*$",
+    #     TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    # ),
+    # re_path(  # Todo 20220702  check if this break django-allauth community login
+    #     "^(showLogin.cc|main|logupload|var|manager/html|oauth/token|Config/SaveUploadedHotspotLogoFileConfig/SaveUploadedHotspotLogoFile|webadmin/out|HNAP1/|_ignition/execute-solution|Autodiscover/Autodiscover.xml|actuator/gateway/routes|admin/controller/extension)",
+    #     TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    # ),
+    # re_path(
+    #     "^.*(services/LogService|j_security_check|category/latestnews/comments/feed|sites/default/files|wp-admin|/css|gb)/?$",  # need preceding strings
+    #     TemplateView.as_view(template_name="404.txt", content_type="text/plain"),
+    # ),
 ]
 if settings.DEBUG:
     # Static file serving when using Gunicorn + Uvicorn for local web socket development
@@ -116,3 +116,10 @@ if settings.DEBUG:
         import debug_toolbar
 
         urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+
+else:  # catch all for soft 404 without sending email or using django.core.cache in PRODUCTION
+    urlpatterns += [
+        re_path(
+            r'^.*$', TemplateView.as_view(template_name='404.txt', content_type='text/plain'),
+        ),
+    ]
