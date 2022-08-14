@@ -3309,7 +3309,7 @@
       "html_type": "a",
       "urn": "/persons/attendingmeets/",
       "url_name": "attendingmeets_list_view",
-      "display_name": "attending meet 活動登記綜覽",
+      "display_name": "enrollment 活動登記綜覽",
       "display_order": 1700,
       "infos": {
         "class": "dropdown-item",

@@ -23,6 +23,7 @@ Attendees.rollCall = {
       }
     });
     Attendees.rollCall.filtersForm = $('form.filters-dxform').dxForm(Attendees.rollCall.filterFormConfigs).dxForm('instance');
+    Attendees.rollCall.filtersForm.getEditor('meets').getDataSource().reload();
   },
 
   filterFormConfigs: {
@@ -48,7 +49,6 @@ Attendees.rollCall = {
           searchEnabled: false,
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.rollCall.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules.";
             const $meetHelpText = Attendees.rollCall.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -56,6 +56,8 @@ Attendees.rollCall = {
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
 
             if (e.value) {
+              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs', e.value);
+              Attendees.rollCall.attendancesDatagrid.refresh();
               const newHelpTexts = [];
               let finalHelpText = '';
               let lastDuration = 0;
@@ -93,7 +95,7 @@ Attendees.rollCall = {
                 const d = new $.Deferred();
                 const params = {
                   start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-                  finish: new Date(new Date().setMonth(new Date().getDate() + 5)).toISOString(),
+                  finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
                   grouping: 'assembly_name',  // for grouped: true
                   model: 'attendance',  // for suppressing no-attendance meets such as believe
                 };
@@ -110,12 +112,14 @@ Attendees.rollCall = {
                       });
                     }
                     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs') || [];
-                    Attendees.utilities.selectAllGroupedTags(Attendees.rollCall.filtersForm.getEditor('meets'), selectedMeetSlugs);
+                    if (selectedMeetSlugs && selectedMeetSlugs[0]) {
+                      Attendees.rollCall.filtersForm.getEditor('meets').option('value', selectedMeetSlugs[0]);
+                    }
                   });
                 return d.promise();
               },
               byKey: (key) => {
-                console.log("Somehow dxSelectBox needs byKey, here is key: ", key);
+                // Somehow dxSelectBox needs byKey
               },
             }),
             key: 'slug',
@@ -150,11 +154,14 @@ Attendees.rollCall = {
         load: (loadOptions) => {
           Attendees.rollCall.loadOptions = loadOptions;
           const deferred = $.Deferred();
+          const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
           const args = {
-            meets: $('div.selected-meets select').val(),
             start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-            finish: new Date(new Date().setMonth(new Date().getDate() + 5)).toISOString(),
+            finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
           };
+          if (meet) {
+            args['meets'] = [meet];
+          }
 
           [
             'skip',
@@ -187,7 +194,6 @@ Attendees.rollCall = {
             },
             timeout: 60000,
           });
-
           return deferred.promise();
         },
         byKey: (key) => {
@@ -388,7 +394,7 @@ Attendees.rollCall = {
     },
     onInitNewRow: (e) => {
       e.data.start = new Date();
-      Attendees.rollCall.attendancesDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
+      Attendees.rollCall.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
     },
     onEditingStart: (e) => {
       const grid = e.component;
@@ -419,16 +425,21 @@ Attendees.rollCall = {
               key: 'id',
               load: (loadOptions) => {
                 const deferred = $.Deferred();
+                const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
                 loadOptions['sort'] = Attendees.rollCall.attendancesDatagrid && Attendees.rollCall.attendancesDatagrid.getDataSource().loadOptions().group;
                 const args = {
-                  meets: $('div.selected-meets select').val(),
+                  // meets: $('div.selected-meets select').val(),
 //                  characters: $('div.selected-characters select').val(),
                   searchOperation: loadOptions['searchOperation'],
                   searchValue: loadOptions['searchValue'],
                   searchExpr: loadOptions['searchExpr'],
                   start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-                  finish: new Date(new Date().setMonth(new Date().getDate() + 5)).toISOString(),
+                  finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
                 };
+
+                if (meet) {
+                  args['meets'] = [meet];
+                }
 
                 [
                   'skip',
@@ -630,8 +641,9 @@ Attendees.rollCall = {
                   if (options.data && options.data.gathering) {  // for popup editor drop down limiting by chosen meet
                     searchOpts['gathering'] = options.data.gathering;
                   } else {  // for datagrid column lookup limiting by meet
-                    const meetSlugs = $('div.selected-meets select').val();
-                    const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                    const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
+                    // const meetSlugs = $('div.selected-meets select').val();
+                    const meets = meet ? [meet] : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs');
                     if (meets && meets.length) {
                       searchOpts['meets[]'] = meets;
                     }

@@ -126,7 +126,11 @@ class AttendanceService:
         orderby_list = AttendanceService.orderby_parser(orderbys)
         extra_filters = Q(
             gathering__meet__assembly__division__organization=current_user.organization
-        ).add(Q(gathering__meet__slug__in=meet_slugs), Q.AND).add(Q(character__slug__in=character_slugs), Q.AND)
+        ).add(Q(gathering__meet__slug__in=meet_slugs), Q.AND)
+
+        if character_slugs:  # attendance list UI prevent sending no character, but roll call UI will send no character
+            extra_filters.add(Q(character__slug__in=character_slugs), Q.AND)
+
         # Todo 20220512 let scheduler see other attendings too?
         if not current_user.can_see_all_organizational_meets_attendees():
             extra_filters.add((Q(attending__attendee__in=current_user.attendee.scheduling_attendees())
