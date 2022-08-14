@@ -100,6 +100,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
                     finish=self.request.query_params.get("finish"),
                     gatherings=self.request.query_params.getlist("gatherings[]", []),
                     orderbys=orderby_list,
+                    photo_instead_of_gathering_assembly=self.request.query_params.get("photoInsteadOfGatheringAssembly"),
                     filter=self.request.query_params.get("filter"),
                 )
 

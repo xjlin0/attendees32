@@ -49,6 +49,7 @@ Attendees.rollCall = {
           searchEnabled: false,
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
+            Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', null);
             Attendees.rollCall.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules.";
             const $meetHelpText = Attendees.rollCall.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -234,6 +235,7 @@ Attendees.rollCall = {
               finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
               meets: [meet],
               gatherings: [gathering],
+              photoInsteadOfGatheringAssembly: true,
             };
 
             [
