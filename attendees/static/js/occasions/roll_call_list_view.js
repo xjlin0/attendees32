@@ -56,7 +56,7 @@ Attendees.rollCall = {
             Attendees.rollCall.selectedMeetHasRule = false;
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
 
-            if (e.value) {
+            if (e.value && Object.keys(Attendees.rollCall.meetScheduleRules).length > 0) {
               Attendees.rollCall.filtersForm.getEditor('gatherings').getDataSource().reload();
               Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs', e.value);
               Attendees.rollCall.attendancesDatagrid.refresh();
@@ -492,7 +492,7 @@ Attendees.rollCall = {
         width: 100,
         allowFiltering: false,
         allowSorting: false,
-        cellTemplate(container, options) {
+        cellTemplate: (container, options) => {
           $('<div>')
             .append($('<img>', { class: 'attendee-photo-img', src: options.value }))
             .appendTo(container);
@@ -641,43 +641,39 @@ Attendees.rollCall = {
 //          },
 //        },
 //      },
-//      {
-//        dataField: 'character',
-//        validationRules: [{type: 'required'}],
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: (options) => {
-//            return {
-//              // filter: options.data ? {'assemblies[]': options.data.gathering__meet__assembly} : null,
-//              store: new DevExpress.data.CustomStore({
-//                key: 'id',
-//                load: (searchOpts) => {
-//                  searchOpts['take'] = 9999;
-//                  if (options.data && options.data.gathering__meet__assembly) {
-//                    searchOpts['assemblies[]'] = options.data.gathering__meet__assembly;
-//                  } else {
-//                    const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
-//                    const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.rollCall.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
-//                    if (assemblies && assemblies.size){
-//                      searchOpts['assemblies[]'] = Array.from(assemblies);
-//                    }
-//                  }
-//                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
-//                },
-//                byKey: (key) => {
-//                  const d = new $.Deferred();
-//                  $.get($('form.filters-dxform').data('characters-endpoint') + key + '/')
-//                    .done((result) => {
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                },
-//              }),
-//            };
-//          }
-//        },
-//      },
+     {
+       dataField: 'character',
+       validationRules: [{type: 'required'}],
+       lookup: {
+         valueExpr: 'id',
+         displayExpr: 'display_name',
+         dataSource: (options) => {
+           return {
+             // filter: options.data ? {'assemblies[]': options.data.gathering__meet__assembly} : null,
+             store: new DevExpress.data.CustomStore({
+               key: 'id',
+               load: (searchOpts) => {
+                 searchOpts['take'] = 9999;
+                 const meets = [ Attendees.rollCall.filtersForm.getEditor('meets').option('value') || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs') ];
+                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.rollCall.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                 if (assemblies && assemblies.size){
+                   searchOpts['assemblies[]'] = Array.from(assemblies);
+                   }
+                 return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
+               },
+               byKey: (key) => {
+                 const d = new $.Deferred();
+                 $.get($('form.filters-dxform').data('characters-endpoint') + key + '/')
+                   .done((result) => {
+                     d.resolve(result);
+                   });
+                 return d.promise();
+               },
+             }),
+           };
+         }
+       },
+     },
       {
         dataField: 'category',
         validationRules: [{type: 'required'}],
