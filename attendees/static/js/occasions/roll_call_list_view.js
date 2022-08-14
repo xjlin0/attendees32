@@ -161,39 +161,41 @@ Attendees.rollCall = {
           };
           if (meet) {
             args['meets'] = [meet];
+
+            [
+              'skip',
+              'take',
+              'requireTotalCount',
+              'requireGroupCount',
+              'sort',
+              'filter',
+              'totalSummary',
+              'group',
+              'groupSummary',
+            ].forEach((i) => {
+              if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+                args[i] = JSON.stringify(loadOptions[i]);
+            });
+
+            $.ajax({
+              url: $('form.filters-dxform').data('attendances-endpoint'),
+              dataType: "json",
+              data: args,
+              success: (result) => {
+                deferred.resolve(result.data, {
+                  totalCount: result.totalCount,
+                  summary: result.summary,
+                  groupCount: result.groupCount,
+                });
+              },
+              error: () => {
+                deferred.reject("Data Loading Error for attendances datagrid, probably time out?");
+              },
+              timeout: 60000,
+            });
+          } else {
+            deferred.resolve([], {totalCount: 0, groupCount: 0});
           }
-
-          [
-            'skip',
-            'take',
-            'requireTotalCount',
-            'requireGroupCount',
-            'sort',
-            'filter',
-            'totalSummary',
-            'group',
-            'groupSummary',
-          ].forEach((i) => {
-            if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
-              args[i] = JSON.stringify(loadOptions[i]);
-          });
-
-          $.ajax({
-            url: $('form.filters-dxform').data('attendances-endpoint'),
-            dataType: "json",
-            data: args,
-            success: (result) => {
-              deferred.resolve(result.data, {
-                totalCount: result.totalCount,
-                summary:    result.summary,
-                groupCount: result.groupCount,
-              });
-            },
-            error: () => {
-              deferred.reject("Data Loading Error for attendances datagrid, probably time out?");
-            },
-            timeout: 60000,
-          });
           return deferred.promise();
         },
         byKey: (key) => {
