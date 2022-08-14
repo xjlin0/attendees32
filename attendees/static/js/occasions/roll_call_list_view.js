@@ -144,7 +144,6 @@ Attendees.rollCall = {
           displayExpr: 'display_name',  // gathering service only support search in display_name, not gathering_name
           searchEnabled: true,
           onValueChanged: (e)=> {
-            console.log("hi 146 onValueChanged here is e: ", e);
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedGatheringId', e.value);
             Attendees.rollCall.filtersForm.validate();
             const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
@@ -488,6 +487,17 @@ Attendees.rollCall = {
       grid.endUpdate();
     },
     columns: [
+      {
+        dataField: 'photo',
+        width: 100,
+        allowFiltering: false,
+        allowSorting: false,
+        cellTemplate(container, options) {
+          $('<div>')
+            .append($('<img>', { class: 'attendee-photo-img', src: options.value }))
+            .appendTo(container);
+        },
+      },
       {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
