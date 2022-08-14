@@ -33,7 +33,7 @@ Attendees.rollCall = {
     items: [
       {
         dataField: 'meets',
-        colSpan: 12,
+        colSpan: 6,
         helpText: "Can't show schedules yet. Select one to view its schedules",
         cssClass: 'selected-meets',
         validationRules: [{type: 'required'}],
@@ -56,6 +56,7 @@ Attendees.rollCall = {
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
 
             if (e.value) {
+              Attendees.rollCall.filtersForm.getEditor('gatherings').getDataSource().reload();
               Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs', e.value);
               Attendees.rollCall.attendancesDatagrid.refresh();
               const newHelpTexts = [];
@@ -111,15 +112,85 @@ Attendees.rollCall = {
                         })
                       });
                     }
-                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs') || [];
-                    if (selectedMeetSlugs && selectedMeetSlugs[0]) {
-                      Attendees.rollCall.filtersForm.getEditor('meets').option('value', selectedMeetSlugs[0]);
+                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs');
+                    if (selectedMeetSlugs) {
+                      Attendees.rollCall.filtersForm.getEditor('meets').option('value', selectedMeetSlugs);
                     }
                   });
                 return d.promise();
               },
               byKey: (key) => {
                 // Somehow dxSelectBox needs byKey
+              },
+            }),
+            key: 'slug',
+          }),
+        },
+      },
+      {
+        dataField: 'gatherings',
+        colSpan: 6,
+        helpText: 'Select one to filter results',
+        cssClass: 'selected-gatherings',
+        validationRules: [{type: 'required'}],
+        label: {
+          location: 'top',
+          text: 'Select a gathering',
+        },
+        editorType: 'dxSelectBox',
+        editorOptions: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',  // gathering service only support search in display_name, not gathering_name
+          searchEnabled: true,
+          onValueChanged: (e)=> {
+            console.log("hi 146 onValueChanged here is e: ", e);
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedGatheringId', e.value);
+            Attendees.rollCall.filtersForm.validate();
+            const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
+            if (e.value && meet && Attendees.rollCall.attendancesDatagrid) {
+              Attendees.rollCall.attendancesDatagrid.refresh();
+            }
+          },
+          dataSource: new DevExpress.data.DataSource({
+            store: new DevExpress.data.CustomStore({
+              key: 'id',
+              load: (searchOpts) => {
+                const d = new $.Deferred();
+                const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
+                if (meet) {
+                  const params = {
+                    take: 9999,
+                    meets: [meet],
+                    start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
+                    finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
+                  };
+
+                  if (searchOpts['searchValue']) {
+                    params['searchValue'] = searchOpts['searchValue'];
+                    params['searchOperation'] = searchOpts['searchOperation'];
+                    params['searchExpr'] = searchOpts['searchExpr'];
+                  }
+
+                  $.get($('form.filters-dxform').data('gatherings-endpoint'), params)
+                    .done((result) => {
+                      d.resolve(result.data);
+                      // const selectedGatheringId = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedGatheringId');
+                      // if (selectedGatheringId) {
+                      //   Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', selectedMeetSlugs[0]);
+                      // }
+                    });
+                } else {
+                  d.resolve([], {totalCount: 0, groupCount: 0});
+                }
+                return d.promise();
+              },
+              byKey: (key) => {
+                const d = new $.Deferred();
+                $.get($('form.filters-dxform').data('gatherings-endpoint') + key + '/')
+                  .done((result) => {
+                    d.resolve(result);
+                  });
+                return d.promise();
               },
             }),
             key: 'slug',
@@ -155,12 +226,15 @@ Attendees.rollCall = {
           Attendees.rollCall.loadOptions = loadOptions;
           const deferred = $.Deferred();
           const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
-          const args = {
-            start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-            finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
-          };
-          if (meet) {
-            args['meets'] = [meet];
+          const gathering = Attendees.rollCall.filtersForm.getEditor('gatherings').option('value');
+
+          if (meet && gathering) {
+            const args = {
+              start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
+              finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
+              meets: [meet],
+              gatherings: [gathering],
+            };
 
             [
               'skip',

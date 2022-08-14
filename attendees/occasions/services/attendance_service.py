@@ -122,11 +122,14 @@ class AttendanceService:
         )
 
     @staticmethod
-    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, orderbys, search_value=None, search_expression=None, search_operation=None, filter=None):
+    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, gatherings, orderbys, search_value=None, search_expression=None, search_operation=None, filter=None):
         orderby_list = AttendanceService.orderby_parser(orderbys)
         extra_filters = Q(
             gathering__meet__assembly__division__organization=current_user.organization
         ).add(Q(gathering__meet__slug__in=meet_slugs), Q.AND)
+
+        if gatherings:
+            extra_filters.add(Q(gathering__in=gatherings), Q.AND)
 
         if character_slugs:  # attendance list UI prevent sending no character, but roll call UI will send no character
             extra_filters.add(Q(character__slug__in=character_slugs), Q.AND)
