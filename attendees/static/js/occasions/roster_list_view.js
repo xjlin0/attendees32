@@ -1,4 +1,4 @@
-Attendees.rollCall = {
+Attendees.roster = {
   filtersForm: null,
   meetScheduleRules: {},
   selectedMeetHasRule: false,
@@ -9,16 +9,16 @@ Attendees.rollCall = {
   selectedMeetSlugs: [],
   meetData: {},
   init: () => {
-    console.log('static/js/occasions/roll_call_list_view.js');
-    Attendees.rollCall.initFiltersForm();
+    console.log('static/js/occasions/roster_list_view.js');
+    Attendees.roster.initFiltersForm();
   },
 
   toggleEditing: (enabled) => {
-    if (Attendees.rollCall.attendancesDatagrid) {
-      Attendees.rollCall.attendancesDatagrid.option('editing.allowUpdating', enabled);
-      Attendees.rollCall.attendancesDatagrid.option('editing.allowAdding', enabled);
-      Attendees.rollCall.attendancesDatagrid.option('editing.allowDeleting', enabled);
-      // Attendees.rollCall.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+    if (Attendees.roster.attendancesDatagrid) {
+      Attendees.roster.attendancesDatagrid.option('editing.allowUpdating', enabled);
+      Attendees.roster.attendancesDatagrid.option('editing.allowAdding', enabled);
+      Attendees.roster.attendancesDatagrid.option('editing.allowDeleting', enabled);
+      // Attendees.roster.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
   },
 
@@ -28,11 +28,11 @@ Attendees.rollCall = {
         'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
       }
     });
-    Attendees.rollCall.filtersForm = $('form.filters-dxform').dxForm(Attendees.rollCall.filterFormConfigs).dxForm('instance');
-    Attendees.rollCall.filtersForm.getEditor('meets').getDataSource().reload();
+    Attendees.roster.filtersForm = $('form.filters-dxform').dxForm(Attendees.roster.filterFormConfigs).dxForm('instance');
+    Attendees.roster.filtersForm.getEditor('meets').getDataSource().reload();
     Attendees.utilities.editingEnabled = true;
-    // Attendees.rollCall.toggleEditing(true);
-    // Attendees.rollCall.attendancesDatagrid.columnOption("command:edit", "visible", false);
+    // Attendees.roster.toggleEditing(true);
+    // Attendees.roster.attendancesDatagrid.columnOption("command:edit", "visible", false);
   },
 
   filterFormConfigs: {
@@ -68,8 +68,8 @@ Attendees.rollCall = {
           value: new Date(new Date().setDate(new Date().getDate() - 1)),
           type: 'datetime',
           onValueChanged: (e) => {
-            Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', null);
-            Attendees.rollCall.filtersForm.getEditor('gatherings').getDataSource().reload();
+            Attendees.roster.filtersForm.getEditor('gatherings').option('value', null);
+            Attendees.roster.filtersForm.getEditor('gatherings').getDataSource().reload();
           },
         },
       },
@@ -100,8 +100,8 @@ Attendees.rollCall = {
           value: new Date(new Date().setDate(new Date().getDate() + 6)),
           type: 'datetime',
           onValueChanged: (e) => {
-            Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', null);
-            Attendees.rollCall.filtersForm.getEditor('gatherings').getDataSource().reload();
+            Attendees.roster.filtersForm.getEditor('gatherings').option('value', null);
+            Attendees.roster.filtersForm.getEditor('gatherings').getDataSource().reload();
           },
         },
       },
@@ -123,29 +123,29 @@ Attendees.rollCall = {
           searchEnabled: false,
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
-            Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', null);
-            Attendees.rollCall.filtersForm.validate();
+            Attendees.roster.filtersForm.getEditor('gatherings').option('value', null);
+            Attendees.roster.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules.";
-            const $meetHelpText = Attendees.rollCall.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            Attendees.rollCall.selectedMeetHasRule = false;
+            const $meetHelpText = Attendees.roster.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
+            Attendees.roster.selectedMeetHasRule = false;
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
 
-            if (e.value && Object.keys(Attendees.rollCall.meetScheduleRules).length > 0) {
-              Attendees.rollCall.filtersForm.getEditor('gatherings').getDataSource().reload();
+            if (e.value && Object.keys(Attendees.roster.meetScheduleRules).length > 0) {
+              Attendees.roster.filtersForm.getEditor('gatherings').getDataSource().reload();
               Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs', e.value);
-              Attendees.rollCall.attendancesDatagrid.refresh();
+              Attendees.roster.attendancesDatagrid.refresh();
               const newHelpTexts = [];
               let finalHelpText = '';
               let lastDuration = 0;
               const noRuleText = 'This meet does not have schedules in EventRelation';
-              const ruleData = Attendees.rollCall.meetScheduleRules[ e.value ];
+              const ruleData = Attendees.roster.meetScheduleRules[ e.value ];
               const timeRules = ruleData.rules;
               const meetStart = new Date(ruleData.meetStart).toDateString();
               const meetFinish = new Date(ruleData.meetFinish).toDateString();
               if (timeRules && timeRules.length > 0) {
                 timeRules.forEach(timeRule => {
                   if (timeRule.rule) {
-                    Attendees.rollCall.selectedMeetHasRule = true;
+                    Attendees.roster.selectedMeetHasRule = true;
                     const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
                     const startTime = new Date(timeRule.start);
                     const endTime = new Date(timeRule.end);
@@ -181,17 +181,17 @@ Attendees.rollCall = {
                 $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
                   .done((result) => {
                     d.resolve(result.data);
-                    if (Object.keys(Attendees.rollCall.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+                    if (Object.keys(Attendees.roster.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.rollCall.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
-                          Attendees.rollCall.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
+                          Attendees.roster.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
+                          Attendees.roster.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
                         })
                       });
                     }
                     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs');
                     if (selectedMeetSlugs) {
-                      Attendees.rollCall.filtersForm.getEditor('meets').option('value', selectedMeetSlugs);
+                      Attendees.roster.filtersForm.getEditor('meets').option('value', selectedMeetSlugs);
                     }
                   });
                 return d.promise();
@@ -221,10 +221,10 @@ Attendees.rollCall = {
           searchEnabled: true,
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedGatheringId', e.value);
-            Attendees.rollCall.filtersForm.validate();
-            const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
-            if (e.value && meet && Attendees.rollCall.attendancesDatagrid) {
-              Attendees.rollCall.attendancesDatagrid.refresh();
+            Attendees.roster.filtersForm.validate();
+            const meet = Attendees.roster.filtersForm.getEditor('meets').option('value');
+            if (e.value && meet && Attendees.roster.attendancesDatagrid) {
+              Attendees.roster.attendancesDatagrid.refresh();
             }
           },
           dataSource: new DevExpress.data.DataSource({
@@ -234,7 +234,7 @@ Attendees.rollCall = {
                 const filterFrom = $('div.filter-from input')[1].value;
                 const filterTill = $('div.filter-till input')[1].value;
                 const d = new $.Deferred();
-                const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
+                const meet = Attendees.roster.filtersForm.getEditor('meets').option('value');
                 if (meet) {
                   const params = {
                     take: 9999,
@@ -254,7 +254,7 @@ Attendees.rollCall = {
                       d.resolve(result.data);
                       // const selectedGatheringId = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedGatheringId');
                       // if (selectedGatheringId) {
-                      //   Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', selectedMeetSlugs[0]);
+                      //   Attendees.roster.filtersForm.getEditor('gatherings').option('value', selectedMeetSlugs[0]);
                       // }
                     });
                 } else {
@@ -284,14 +284,14 @@ Attendees.rollCall = {
           showColon: false,
         },
         template: (data, itemElement) => {
-          Attendees.rollCall.attendancesDatagrid = Attendees.rollCall.initFilteredattendancesDatagrid(data, itemElement);
+          Attendees.roster.attendancesDatagrid = Attendees.roster.initFilteredattendancesDatagrid(data, itemElement);
         },
       },
     ],
   },
 
   initFilteredattendancesDatagrid: (data, itemElement) => {
-    const $attendanceDatagrid = $("<div id='attendances-datagrid-container'>").dxDataGrid(Attendees.rollCall.attendanceDatagridConfig);
+    const $attendanceDatagrid = $("<div id='attendances-datagrid-container'>").dxDataGrid(Attendees.roster.attendanceDatagridConfig);
     itemElement.append($attendanceDatagrid);
     return $attendanceDatagrid.dxDataGrid('instance');
   },
@@ -301,12 +301,12 @@ Attendees.rollCall = {
       store: new DevExpress.data.CustomStore({
         key: 'id',
         load: (loadOptions) => {
-          Attendees.rollCall.loadOptions = loadOptions;
+          Attendees.roster.loadOptions = loadOptions;
           const deferred = $.Deferred();
           const filterFrom = $('div.filter-from input')[1].value;
           const filterTill = $('div.filter-till input')[1].value;
-          const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
-          const gathering = Attendees.rollCall.filtersForm.getEditor('gatherings').option('value');
+          const meet = Attendees.roster.filtersForm.getEditor('meets').option('value');
+          const gathering = Attendees.roster.filtersForm.getEditor('gatherings').option('value');
 
           if (meet && gathering && filterFrom && filterTill) {
             const args = {
@@ -477,9 +477,9 @@ Attendees.rollCall = {
           icon: 'pulldown',
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets) in this page?')) {
-              Attendees.rollCall.attendancesDatagrid.state(null);
+              Attendees.roster.attendancesDatagrid.state(null);
               window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts']);
-              Attendees.rollCall.filtersForm.getEditor('meets').option('value', null);
+              Attendees.roster.filtersForm.getEditor('meets').option('value', null);
             }
           },
         },
@@ -542,7 +542,7 @@ Attendees.rollCall = {
     },
     onInitNewRow: (e) => {
       e.data.start = new Date();
-      Attendees.rollCall.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
+      Attendees.roster.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
     },
     onEditingStart: (e) => {
       const grid = e.component;
@@ -591,9 +591,9 @@ Attendees.rollCall = {
                 const deferred = $.Deferred();
                 const filterFrom = $('div.filter-from input')[1].value;
                 const filterTill = $('div.filter-till input')[1].value;
-                const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
-                const gathering = Attendees.rollCall.filtersForm.getEditor('gatherings').option('value');
-                loadOptions['sort'] = Attendees.rollCall.attendancesDatagrid && Attendees.rollCall.attendancesDatagrid.getDataSource().loadOptions().group;
+                const meet = Attendees.roster.filtersForm.getEditor('meets').option('value');
+                const gathering = Attendees.roster.filtersForm.getEditor('gatherings').option('value');
+                loadOptions['sort'] = Attendees.roster.attendancesDatagrid && Attendees.roster.attendancesDatagrid.getDataSource().loadOptions().group;
                 const args = {
                   searchOperation: loadOptions['searchOperation'],
                   searchValue: loadOptions['searchValue'],
@@ -671,8 +671,8 @@ Attendees.rollCall = {
                key: 'id',
                load: (searchOpts) => {
                  searchOpts['take'] = 9999;
-                 const meets = [ Attendees.rollCall.filtersForm.getEditor('meets').option('value') || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs') ];
-                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.rollCall.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                 const meets = [ Attendees.roster.filtersForm.getEditor('meets').option('value') || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs') ];
+                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.roster.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                  if (assemblies && assemblies.size){
                    searchOpts['assemblies[]'] = Array.from(assemblies);
                    }
@@ -737,7 +737,7 @@ Attendees.rollCall = {
                   if (options.data && options.data.gathering) {  // for popup editor drop down limiting by chosen meet
                     searchOpts['gathering'] = options.data.gathering;
                   } else {  // for datagrid column lookup limiting by meet
-                    const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
+                    const meet = Attendees.roster.filtersForm.getEditor('meets').option('value');
                     // const meetSlugs = $('div.selected-meets select').val();
                     const meets = meet ? [meet] : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs');
                     if (meets && meets.length) {
@@ -787,5 +787,5 @@ Attendees.rollCall = {
 };
 
 $(document).ready(() => {
-  Attendees.rollCall.init();
+  Attendees.roster.init();
 });

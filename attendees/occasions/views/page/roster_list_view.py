@@ -6,9 +6,9 @@ from attendees.users.authorization import RouteGuard
 from attendees.users.services import MenuService
 
 
-class RollCallListView(LoginRequiredMixin, RouteGuard, ListView):
+class RosterListView(LoginRequiredMixin, RouteGuard, ListView):
     queryset = []
-    template_name = "occasions/roll_call_list_view.html"
+    template_name = "occasions/roster_list_view.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -38,4 +38,4 @@ class RollCallListView(LoginRequiredMixin, RouteGuard, ListView):
             return render(self.request, self.get_template_names()[0], context)
 
 
-roll_call_list_view = RollCallListView.as_view()
+roster_list_view = RosterListView.as_view()
