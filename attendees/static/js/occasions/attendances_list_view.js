@@ -618,7 +618,7 @@ Attendees.attendances = {
       }
     },
     onInitNewRow: (e) => {
-      e.data.start = new Date();
+      // e.data.start = new Date();
       Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
     },
     onEditingStart: (e) => {
@@ -903,6 +903,7 @@ Attendees.attendances = {
         format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
+          showClearButton: true,
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
         },
       },
