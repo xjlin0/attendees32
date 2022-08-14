@@ -619,7 +619,7 @@ Attendees.attendances = {
     },
     onInitNewRow: (e) => {
       e.data.start = new Date();
-      Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
+      Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
     },
     onEditingStart: (e) => {
       const grid = e.component;
