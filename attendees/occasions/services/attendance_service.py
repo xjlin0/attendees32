@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import F, Q, CharField, Value, When, Case
 from django.db.models.functions import Concat, Trim
 from rest_framework.utils import json
@@ -122,7 +123,7 @@ class AttendanceService:
         )
 
     @staticmethod
-    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, gatherings, orderbys, search_value=None, search_expression=None, search_operation=None, filter=None):
+    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, gatherings, orderbys, photo_instead_of_gathering_assembly=False, search_value=None, search_expression=None, search_operation=None, filter=None):
         orderby_list = AttendanceService.orderby_parser(orderbys)
         extra_filters = Q(
             gathering__meet__assembly__division__organization=current_user.organization
@@ -193,8 +194,8 @@ class AttendanceService:
             )
         )
 
-        return Attendance.objects.annotate(
-            attending_name=Case(
+        annotations = {
+            'attending_name': Case(
                 When(attending__registration__isnull=True, then=attendee_name),
                 When(attending__registration__isnull=False, then=Concat(
                     attendee_name,
@@ -203,14 +204,28 @@ class AttendanceService:
                     output_field=CharField()
                 )),
                 output_field=CharField()
-            ),
-            gathering_name=Trim(
+            )
+        }
+
+        if photo_instead_of_gathering_assembly:
+            annotations['photo'] = Case(
+                When(attending__attendee__photo='', then=Value(f"{settings.STATIC_URL}images/empty.png")),
+                default=Concat(
+                    Value('/private-media/'),
+                    "attending__attendee__photo",
+                    output_field=CharField()
+                ),
+                output_field=CharField()
+            )
+        else:
+            annotations['gathering_name'] = Trim(
                 Concat("gathering__display_name",
                        Value(' in '),
                        "gathering__meet__display_name",
-                        output_field=CharField())),
-            assembly=F("gathering__meet__assembly"),
-        ).filter(extra_filters).order_by(*orderby_list)
+                        output_field=CharField()))
+            annotations['assembly'] = F("gathering__meet__assembly")
+
+        return Attendance.objects.annotate(**annotations).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
     def orderby_parser(orderbys):
