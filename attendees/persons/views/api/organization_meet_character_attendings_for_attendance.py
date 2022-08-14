@@ -67,7 +67,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendance(LoginRequiredMi
                                 character_slugs=self.request.query_params.getlist("characters[]", []),
                                 start=self.request.query_params.get("start"),
                                 finish=self.request.query_params.get("finish"),
-                                gatherings=None,
+                                gatherings=self.request.query_params.getlist("gatherings[]", []),
                                 orderbys=orderby_list,
                                 search_value=search_value,
                                 search_expression=search_expression,
