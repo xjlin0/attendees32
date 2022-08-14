@@ -451,7 +451,7 @@ Attendees.attendances = {
             },
           });
         },
-        insert: function (values) {
+        insert: (values) => {
           return $.ajax({
             url: $('form.filters-dxform').data('attendances-endpoint'),
             method: 'POST',

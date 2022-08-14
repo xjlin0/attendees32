@@ -98,6 +98,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
                     character_slugs=self.request.query_params.getlist("characters[]", []),
                     start=self.request.query_params.get("start"),
                     finish=self.request.query_params.get("finish"),
+                    gatherings=self.request.query_params.getlist("gatherings[]", []),
                     orderbys=orderby_list,
                     filter=self.request.query_params.get("filter"),
                 )
