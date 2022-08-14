@@ -18,7 +18,7 @@ Attendees.rollCall = {
       Attendees.rollCall.attendancesDatagrid.option('editing.allowUpdating', enabled);
       Attendees.rollCall.attendancesDatagrid.option('editing.allowAdding', enabled);
       Attendees.rollCall.attendancesDatagrid.option('editing.allowDeleting', enabled);
-      Attendees.rollCall.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+      // Attendees.rollCall.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
   },
 
@@ -31,8 +31,8 @@ Attendees.rollCall = {
     Attendees.rollCall.filtersForm = $('form.filters-dxform').dxForm(Attendees.rollCall.filterFormConfigs).dxForm('instance');
     Attendees.rollCall.filtersForm.getEditor('meets').getDataSource().reload();
     Attendees.utilities.editingEnabled = true;
-    Attendees.rollCall.toggleEditing(true);
-    Attendees.rollCall.attendancesDatagrid.columnOption("command:edit", "visible", false);
+    // Attendees.rollCall.toggleEditing(true);
+    // Attendees.rollCall.attendancesDatagrid.columnOption("command:edit", "visible", false);
   },
 
   filterFormConfigs: {
@@ -384,7 +384,7 @@ Attendees.rollCall = {
       message: 'Fetching...',
       enabled: true,
     },
-    wordWrapEnabled: false,
+    wordWrapEnabled: true,
     width: '100%',
     grouping: {
       autoExpandAll: true,
@@ -408,7 +408,7 @@ Attendees.rollCall = {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets) in this page?')) {
               Attendees.rollCall.attendancesDatagrid.state(null);
               window.sessionStorage.removeItem('rollCallListViewOpts');
-              Attendees.utilities.selectAllGroupedTags(Attendees.rollCall.filtersForm.getEditor('meets'), []);
+              Attendees.rollCall.filtersForm.getEditor('meets').option('value', null);
             }
           },
         },
@@ -425,7 +425,7 @@ Attendees.rollCall = {
       popup: {
         showTitle: true,
         title: 'attendanceEditingArgs',
-        onContentReady: e => e.component.option('toolbarItems[0].visible', false),  // assembly
+        // onContentReady: e => e.component.option('toolbarItems[0].visible', false),  // assembly
       },
       form: {
         colCount: 2,
@@ -470,7 +470,7 @@ Attendees.rollCall = {
       },
     },
     onCellClick: (e) => {
-      if (e.rowType === 'data' && e.column.dataField === 'attending') {
+      if (e.rowType === 'data' && e.column.dataField === 'photo') {
         e.component.editRow(e.row.rowIndex);
       }
     },
@@ -505,10 +505,15 @@ Attendees.rollCall = {
       },
       {
         dataField: 'attending',
+        width: 200,
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
+          cellElement.append ('<strong>' + cellInfo.displayValue + '</strong>');
+          cellElement.append('<br>');
+          cellElement.append('<button type="button" class="btn btn-outline-success btn-xs">Present</button>');
+          cellElement.append('<br>');
+          cellElement.append('<button type="button" class="btn btn-outline-danger btn-xs">Absent</button>');
         },
         lookup: {
           valueExpr: 'id',
@@ -519,10 +524,9 @@ Attendees.rollCall = {
               load: (loadOptions) => {
                 const deferred = $.Deferred();
                 const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
+                const gathering = Attendees.rollCall.filtersForm.getEditor('gatherings').option('value');
                 loadOptions['sort'] = Attendees.rollCall.attendancesDatagrid && Attendees.rollCall.attendancesDatagrid.getDataSource().loadOptions().group;
                 const args = {
-                  // meets: $('div.selected-meets select').val(),
-//                  characters: $('div.selected-characters select').val(),
                   searchOperation: loadOptions['searchOperation'],
                   searchValue: loadOptions['searchValue'],
                   searchExpr: loadOptions['searchExpr'],
@@ -532,6 +536,10 @@ Attendees.rollCall = {
 
                 if (meet) {
                   args['meets'] = [meet];
+                }
+
+                if (gathering) {
+                  args['gatherings'] = [gathering];
                 }
 
                 [
@@ -617,7 +625,6 @@ Attendees.rollCall = {
       {
         dataField: 'category',
         validationRules: [{type: 'required'}],
-        visible: false,
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
@@ -645,7 +652,6 @@ Attendees.rollCall = {
       },
       {
         dataField: 'team',
-        visible: false,
         editorOptions: {
           showClearButton: true,
         },
@@ -704,7 +710,6 @@ Attendees.rollCall = {
 //      },
      {
        dataField: 'infos.note',
-       visible: false,
        caption: 'Note',
        dataType: 'string',
      },
