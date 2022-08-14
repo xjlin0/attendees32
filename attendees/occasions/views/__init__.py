@@ -35,4 +35,4 @@ from .page.datagrid_user_organization_attendances import (
 )
 from .page.gatherings_list_view import gatherings_list_view
 from .api.organization_meet_character_attendances import api_organization_meet_character_attendances_viewset
-from .page.roll_call_list_view import roll_call_list_view
+from .page.roster_list_view import roster_list_view
