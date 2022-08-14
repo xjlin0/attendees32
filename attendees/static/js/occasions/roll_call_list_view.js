@@ -10,10 +10,16 @@ Attendees.rollCall = {
   meetData: {},
   init: () => {
     console.log('static/js/occasions/roll_call_list_view.js');
-//    Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListView']); // remove saved search text without interfering column visibility
-//    Attendees.rollCall.initFilterMeetCheckbox();
-//    Attendees.rollCall.initEditingSwitch();
     Attendees.rollCall.initFiltersForm();
+  },
+
+  toggleEditing: (enabled) => {
+    if (Attendees.rollCall.attendancesDatagrid) {
+      Attendees.rollCall.attendancesDatagrid.option('editing.allowUpdating', enabled);
+      Attendees.rollCall.attendancesDatagrid.option('editing.allowAdding', enabled);
+      Attendees.rollCall.attendancesDatagrid.option('editing.allowDeleting', enabled);
+      Attendees.rollCall.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+    }
   },
 
   initFiltersForm: () => {
@@ -24,6 +30,9 @@ Attendees.rollCall = {
     });
     Attendees.rollCall.filtersForm = $('form.filters-dxform').dxForm(Attendees.rollCall.filterFormConfigs).dxForm('instance');
     Attendees.rollCall.filtersForm.getEditor('meets').getDataSource().reload();
+    Attendees.utilities.editingEnabled = true;
+    Attendees.rollCall.toggleEditing(true);
+    Attendees.rollCall.attendancesDatagrid.columnOption("command:edit", "visible", false);
   },
 
   filterFormConfigs: {
@@ -421,18 +430,14 @@ Attendees.rollCall = {
       form: {
         colCount: 2,
         items: [
-//          {
-//            dataField: 'gathering',
-//            helpText: "What's the activity?",
-//          },
           {
             dataField: 'attending',
             helpText: "who?",
           },
-//          {
-//            dataField: 'character',
-//            helpText: 'define participation role',
-//          },
+         {
+           dataField: 'character',
+           helpText: 'define participation role',
+         },
           {
             dataField: 'team',
             helpText: '(Optional) joining team',
@@ -441,13 +446,13 @@ Attendees.rollCall = {
             dataField: 'category',
             helpText: 'What type of participation?',
           },
-//          {
-//            dataField: 'infos.note',
-//            helpText: 'special memo',
-//            editorOptions: {
-//              autoResizeEnabled: true,
-//            },
-//          },
+         {
+           dataField: 'infos.note',
+           helpText: 'special memo',
+           editorOptions: {
+             autoResizeEnabled: true,
+           },
+         },
 //          {
 //            dataField: 'start',
 //            helpText: 'participation start time in browser timezone',
@@ -576,75 +581,10 @@ Attendees.rollCall = {
           },
         },
       },
-//      {
-//        dataField: 'gathering',
-//        validationRules: [{type: 'required'}],
-//        caption: 'Gathering in Meet',
-//        calculateDisplayValue: 'gathering_name',  // can't use function for remote operations https://supportcenter.devexpress.com/ticket/details/t897726
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: (options) => {
-//            return {
-//              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
-//              store: new DevExpress.data.CustomStore({
-//                key: 'id',
-//                load: (searchOpts) => {
-//                  if (options.data && options.data.meet) {
-//                    searchOpts['meets[]'] = options.data.meet;
-//                  } else {
-//                    searchOpts['meets[]'] = $('div.selected-meets select').val();
-//                  }
-//                  return $.getJSON($('form.filters-dxform').data('gatherings-endpoint'), searchOpts);
-//                },
-//                byKey: (key) => {
-//                  const d = new $.Deferred();
-//                  $.get($('form.filters-dxform').data('gatherings-endpoint') + key + '/')
-//                    .done((result) => {
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                },
-//              }),
-//            };
-//          }
-//        },
-//      },
-//      {
-//        dataField: 'gathering__meet__assembly',
-//        groupIndex: 0,
-//        validationRules: [{type: 'required'}],
-//        caption: 'Group (Assembly)',
-//        setCellValue: (newData, value, currentData) => {
-//          newData.assembly = value;
-//          newData.meet = null;
-//          newData.character = null;
-//          newData.team = null;
-//        },
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: {
-//            store: new DevExpress.data.CustomStore({
-//              key: 'id',
-//              load: () => $.getJSON($('form.filters-dxform').data('assemblies-endpoint')),
-//              byKey: (key) => {
-//                if (key) {
-//                  const d = $.Deferred();
-//                  $.get($('form.filters-dxform').data('assemblies-endpoint') + key + '/').done((response) => {
-//                    d.resolve(response);
-//                  });
-//                  return d.promise();
-//                }
-//              },
-//            }),
-//          },
-//        },
-//      },
-     {
-       dataField: 'character',
-       validationRules: [{type: 'required'}],
-       lookup: {
+      {
+        dataField: 'character',
+        validationRules: [{type: 'required'}],
+        lookup: {
          valueExpr: 'id',
          displayExpr: 'display_name',
          dataSource: (options) => {
@@ -672,15 +612,12 @@ Attendees.rollCall = {
              }),
            };
          }
-       },
-     },
+        },
+      },
       {
         dataField: 'category',
         validationRules: [{type: 'required'}],
         visible: false,
-        editorOptions: {
-          showClearButton: true,
-        },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
@@ -748,19 +685,6 @@ Attendees.rollCall = {
         },
       },
 //      {
-//        dataField: 'create_attendances_till',
-//        visible: false,
-//        dataType: 'datetime',
-//        label: {
-//          text: 'Reserve attendances to',
-//        },
-//        editorOptions: {
-//          type: 'datetime',
-//          showClearButton: true,
-//          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-//        }
-//      },
-//      {
 //        dataField: 'start',
 //        dataType: 'datetime',
 //        format: 'MM/dd/yyyy',
@@ -778,11 +702,12 @@ Attendees.rollCall = {
 //          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
 //        },
 //      },
-//      {
-//        dataField: 'infos.note',
-//        caption: 'Note',
-//        dataType: 'string',
-//      },
+     {
+       dataField: 'infos.note',
+       visible: false,
+       caption: 'Note',
+       dataType: 'string',
+     },
     ],
   },
 };
