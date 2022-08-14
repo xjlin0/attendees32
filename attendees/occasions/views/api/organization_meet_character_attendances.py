@@ -27,6 +27,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
         group_string = request.query_params.get(
             "group", '[{}]'
         )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
+        characters = request.query_params.getlist("characters[]", [])
         group_column = json.loads(group_string)[0].get('selector')
         search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]  # could be [[null,"contains","jack"],"or",[null,"contains","jack"]] or [[[null,"contains","jack"],"or",[null,"contains","jack"]],"and",["gathering__meet__assembly","=",5]]
         queryset = self.filter_queryset(self.get_queryset())
@@ -35,8 +36,10 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
         if page is not None:
             if group_column:
                 filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
-                    Q(character__slug__in=request.query_params.getlist("characters[]", [])), Q.AND).add(
                     Q(gathering__meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                if characters:  # attendance UI always send characters but roaster UI never send characters
+                    filters.add(Q(character__slug__in=characters), Q.AND)
 
                 if isinstance(search_value, str):
                     filters.add((Q(attending__registration__registrant__infos__icontains=search_value)

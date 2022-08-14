@@ -41,8 +41,73 @@ Attendees.rollCall = {
     itemType: 'group',
     items: [
       {
+        colSpan: 2,
+        cssClass: 'filter-from',
+        dataField: 'filter-from',
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
+        validationRules: [
+          {
+            type: 'required'
+          },
+          {
+            reevaluate: true,
+            type: 'custom',
+            message: 'filter date "Till" is earlier than "From"',
+            validationCallback: (e) => {
+              const filterTill = $('div.filter-till input')[1].value;
+              return e.value && filterTill ? new Date(filterTill) > e.value : true;
+            },
+          }
+        ],
+        label: {
+          location: 'top',
+          text: 'From (mm/dd/yyyy)',
+        },
+        editorType: 'dxDateBox',
+        editorOptions: {
+          value: new Date(new Date().setDate(new Date().getDate() - 1)),
+          type: 'datetime',
+          onValueChanged: (e) => {
+            Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', null);
+            Attendees.rollCall.filtersForm.getEditor('gatherings').getDataSource().reload();
+          },
+        },
+      },
+      {
+        colSpan: 2,
+        cssClass: 'filter-till',
+        dataField: 'filter-till',
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
+        validationRules: [
+          {
+            type: 'required'
+          },
+          {
+            reevaluate: true,
+            type: 'custom',
+            message: 'filter date "Till" is earlier than "From"',
+            validationCallback: (e) => {
+              const filterFrom = $('div.filter-from input')[1].value;
+              return e.value && filterFrom ? new Date(filterFrom) < e.value : true;
+          },
+        }],
+        label: {
+          location: 'top',
+          text: 'Till(exclude)',
+        },
+        editorType: 'dxDateBox',
+        editorOptions: {
+          value: new Date(new Date().setDate(new Date().getDate() + 6)),
+          type: 'datetime',
+          onValueChanged: (e) => {
+            Attendees.rollCall.filtersForm.getEditor('gatherings').option('value', null);
+            Attendees.rollCall.filtersForm.getEditor('gatherings').getDataSource().reload();
+          },
+        },
+      },
+      {
         dataField: 'meets',
-        colSpan: 6,
+        colSpan: 3,
         helpText: "Can't show schedules yet. Select one to view its schedules",
         cssClass: 'selected-meets',
         validationRules: [{type: 'required'}],
@@ -103,10 +168,12 @@ Attendees.rollCall = {
             store: new DevExpress.data.CustomStore({
               key: 'slug',
               load: (loadOptions) => {
+                const filterFrom = $('div.filter-from input')[1].value;
+                const filterTill = $('div.filter-till input')[1].value;
                 const d = new $.Deferred();
                 const params = {
-                  start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-                  finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
+                  start: new Date(filterFrom).toISOString(),
+                  finish: new Date(filterTill).toISOString(),
                   grouping: 'assembly_name',  // for grouped: true
                   model: 'attendance',  // for suppressing no-attendance meets such as believe
                 };
@@ -139,7 +206,7 @@ Attendees.rollCall = {
       },
       {
         dataField: 'gatherings',
-        colSpan: 6,
+        colSpan: 5,
         helpText: 'Select one to filter results',
         cssClass: 'selected-gatherings',
         validationRules: [{type: 'required'}],
@@ -164,14 +231,16 @@ Attendees.rollCall = {
             store: new DevExpress.data.CustomStore({
               key: 'id',
               load: (searchOpts) => {
+                const filterFrom = $('div.filter-from input')[1].value;
+                const filterTill = $('div.filter-till input')[1].value;
                 const d = new $.Deferred();
                 const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
                 if (meet) {
                   const params = {
                     take: 9999,
                     meets: [meet],
-                    start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-                    finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
+                    start: new Date(filterFrom).toISOString(),
+                    finish: new Date(filterTill).toISOString(),
                   };
 
                   if (searchOpts['searchValue']) {
@@ -234,13 +303,15 @@ Attendees.rollCall = {
         load: (loadOptions) => {
           Attendees.rollCall.loadOptions = loadOptions;
           const deferred = $.Deferred();
+          const filterFrom = $('div.filter-from input')[1].value;
+          const filterTill = $('div.filter-till input')[1].value;
           const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
           const gathering = Attendees.rollCall.filtersForm.getEditor('gatherings').option('value');
 
-          if (meet && gathering) {
+          if (meet && gathering && filterFrom && filterTill) {
             const args = {
-              start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-              finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
+              start: new Date(filterFrom).toISOString(),
+              finish: new Date(filterTill).toISOString(),
               meets: [meet],
               gatherings: [gathering],
               photoInsteadOfGatheringAssembly: true,
@@ -355,7 +426,7 @@ Attendees.rollCall = {
     searchPanel: {
       visible: true,
       width: 240,
-      placeholder: 'search name or activities ...',
+      placeholder: 'search name or notes ...',
     },
     allowColumnReordering: true,
     columnAutoWidth: true,
@@ -407,7 +478,7 @@ Attendees.rollCall = {
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets) in this page?')) {
               Attendees.rollCall.attendancesDatagrid.state(null);
-              window.sessionStorage.removeItem('rollCallListViewOpts');
+              window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts']);
               Attendees.rollCall.filtersForm.getEditor('meets').option('value', null);
             }
           },
@@ -460,11 +531,6 @@ Attendees.rollCall = {
 //          {
 //            dataField: 'finish',
 //            helpText: 'participation end time in browser timezone',
-//          },
-//          {
-//            dataField: 'create_attendances_till',
-//            disabled: true,
-//            helpText: 'Auto create future attendances (not supported yet)',
 //          },
         ],
       },
@@ -523,6 +589,8 @@ Attendees.rollCall = {
               key: 'id',
               load: (loadOptions) => {
                 const deferred = $.Deferred();
+                const filterFrom = $('div.filter-from input')[1].value;
+                const filterTill = $('div.filter-till input')[1].value;
                 const meet = Attendees.rollCall.filtersForm.getEditor('meets').option('value');
                 const gathering = Attendees.rollCall.filtersForm.getEditor('gatherings').option('value');
                 loadOptions['sort'] = Attendees.rollCall.attendancesDatagrid && Attendees.rollCall.attendancesDatagrid.getDataSource().loadOptions().group;
@@ -530,8 +598,8 @@ Attendees.rollCall = {
                   searchOperation: loadOptions['searchOperation'],
                   searchValue: loadOptions['searchValue'],
                   searchExpr: loadOptions['searchExpr'],
-                  start: new Date(new Date().setHours(new Date().getHours() - 1)).toISOString(),
-                  finish: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString(),
+                  start: new Date(filterFrom).toISOString(),
+                  finish: new Date(filterTill).toISOString(),
                 };
 
                 if (meet) {
@@ -591,6 +659,7 @@ Attendees.rollCall = {
       },
       {
         dataField: 'character',
+        groupIndex: 0,
         validationRules: [{type: 'required'}],
         lookup: {
          valueExpr: 'id',
