@@ -201,6 +201,7 @@ Attendees.attendances = {
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               const characters = $('div.selected-characters select').val();
+              Attendees.attendances.filtersForm.getEditor('characters').option('value', []);
               Attendees.attendances.filtersForm.getEditor('characters').getDataSource().reload();
               if (characters.length) {
                 Attendees.attendances.attendancesDatagrid.refresh();

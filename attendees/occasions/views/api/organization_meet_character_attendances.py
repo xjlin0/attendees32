@@ -24,6 +24,9 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
     serializer_class = AttendanceEtcSerializer
 
     def list(self, request, *args, **kwargs):
+        start = self.request.query_params.get("start")
+        finish = self.request.query_params.get("finish")
+        gatherings = self.request.query_params.getlist("gatherings[]", [])
         group_string = request.query_params.get(
             "group", '[{}]'
         )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
@@ -37,6 +40,14 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
             if group_column:
                 filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
                     Q(gathering__meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                if start:
+                    filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
+                if finish:
+                    filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
+
+                if gatherings:
+                    filters.add(Q(gathering__in=gatherings), Q.AND)
 
                 if characters:  # attendance UI always send characters but roaster UI never send characters
                     filters.add(Q(character__slug__in=characters), Q.AND)
