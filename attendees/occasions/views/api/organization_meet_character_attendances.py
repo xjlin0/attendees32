@@ -61,7 +61,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
                                  |
                                  Q(infos__icontains=search_value)), Q.AND)
 
-                counters = Attendance.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count(group_column))
+                counters = Attendance.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count('*'))  # Count(group_column) won't count null values
                 return Response(Utility.group_count(group_column, counters))
 
             serializer = self.get_serializer(page, many=True)

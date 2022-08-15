@@ -945,6 +945,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'infos.note',
+        allowGrouping: false,
         caption: 'Note',
         dataType: 'string',
       },

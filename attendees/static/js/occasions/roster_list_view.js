@@ -563,6 +563,7 @@ Attendees.roster = {
         width: 100,
         allowFiltering: false,
         allowSorting: false,
+        allowGrouping: false,
         cellTemplate: (container, options) => {
           $('<div>')
             .append($('<img>', { class: 'attendee-photo-img', src: options.value }))

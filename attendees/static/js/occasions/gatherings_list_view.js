@@ -705,6 +705,7 @@ Attendees.gatherings = {
       },
       {
         dataField: 'site',
+        allowGrouping: false,
         width: '30%',
         readOnly: true,
         caption: 'Location',
@@ -826,6 +827,7 @@ Attendees.gatherings = {
       },
       {
         dataField: 'infos.note',
+        allowGrouping: false,
         caption: 'Note',
         dataType: 'string',
       },
