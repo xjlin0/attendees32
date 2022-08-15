@@ -218,7 +218,7 @@ class TeamAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("display_name",)
-    list_display = ("id", "display_name", "slug", "meet", "display_order", "modified")
+    list_display = ("id", "display_name", "slug", "meet", "display_order", "site")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "meet":
