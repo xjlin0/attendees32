@@ -5926,7 +5926,13 @@
       "type": "attendance",
       "display_order": 0,
       "display_name": "attended",
-      "infos": {}
+      "infos": {
+        "ROSTER_DATA_DO_NOT_CHANGE": {
+          "open": "btn-outline-success",
+          "chosen": "btn-success",
+          "label": "Present"
+        }
+      }
     }
   },
   {
@@ -5939,7 +5945,13 @@
       "type": "attendance",
       "display_order": 0,
       "display_name": "absent",
-      "infos": {}
+      "infos": {
+        "ROSTER_DATA_DO_NOT_CHANGE": {
+          "open": "btn-outline-danger",
+          "chosen": "btn-danger",
+          "label": "Absent"
+        }
+      }
     }
   },
   {
@@ -6226,8 +6238,14 @@
       "is_removed": false,
       "type": "attendance",
       "display_order": 0,
-      "display_name": "RSVPed",
-      "infos": {}
+      "display_name": "leave/off/vacation",
+      "infos": {
+        "ROSTER_DATA_DO_NOT_CHANGE": {
+          "open": "btn-outline-warning",
+          "chosen": "btn-warning",
+          "label": "Leave"
+        }
+      }
     }
   },
   {

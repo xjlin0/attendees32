@@ -40,9 +40,17 @@ class FolkAttendeeInline(admin.TabularInline):
 
 
 class CategoryAdmin(PgHistoryPage, admin.ModelAdmin):
+    formfield_overrides = {
+        models.JSONField: {"widget": JSONEditorWidget},
+    }
+    list_filter = ("type",)
     readonly_fields = ["id", "created", "modified"]
     list_display_links = ("display_name",)
     list_display = ("id", "type", "display_name", "display_order", "infos")
+
+    class Media:
+        css = {"all": ("css/admin.css",)}
+        js = ["js/admin/list_filter_collapse.js"]
 
 
 class PastAdmin(PgHistoryPage, admin.ModelAdmin):

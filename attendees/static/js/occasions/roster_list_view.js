@@ -1,6 +1,8 @@
 Attendees.roster = {
   filtersForm: null,
   meetScheduleRules: {},
+  buttonCategories: {},
+  allCategories: {},
   selectedMeetHasRule: false,
   initialized: false,
   filterMeetCheckbox: null,
@@ -575,12 +577,30 @@ Attendees.roster = {
         width: 200,
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
-        cellTemplate: (cellElement, cellInfo) => {
+        cellTemplate: (cellElement, cellInfo) => {  // squeeze to name column for better mobile experience.
           cellElement.append ('<strong>' + cellInfo.displayValue + '</strong>');
-          cellElement.append('<br>');
-          cellElement.append('<button type="button" class="btn btn-outline-success btn-xs">Present</button>');
-          cellElement.append('<br>');
-          cellElement.append('<button type="button" class="btn btn-outline-danger btn-xs">Absent</button>');
+          const buttonCategoryKeys = Object.keys(Attendees.roster.buttonCategories);
+          if (buttonCategoryKeys.length > 0) {
+            html = `<div class="roll-call-buttons" id="attendance-${cellInfo.data.id}">`;
+            buttonCategoryKeys.forEach((id, index) => {
+              const buttonCategory = Attendees.roster.buttonCategories[id];
+              html += `<br>
+                       <button type="button"
+                               class="btn btn-sm ${cellInfo.data.id === id ? buttonCategory.chosen : buttonCategory.open}"
+                               value="${buttonCategory.label}">
+                         ${buttonCategory.label}
+                       </button>`
+            });
+            if (cellInfo.data.category !== 1 && !(cellInfo.data.category in Attendees.roster.buttonCategories)) {  // 1 is scheduled
+              html += `<br>
+                       <button disabled
+                               type="button"
+                               class="btn btn-sm btn-secondary">
+                         ${Attendees.roster.allCategories[cellInfo.data.category]}
+                       </button>`
+            }
+            cellElement.append(html)
+          }
         },
         lookup: {
           valueExpr: 'id',
@@ -703,9 +723,22 @@ Attendees.roster = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
+                  const d = new $.Deferred();
                   searchOpts['type'] = 'attendance';
                   searchOpts['take'] = 9999;
-                  return $.getJSON($('form.filters-dxform').data('categories-endpoint'), searchOpts);
+                  $.get($('form.filters-dxform').data('categories-endpoint'), searchOpts)
+                    .done((result) => {
+                      d.resolve(result.data);
+                      if (Object.keys(Attendees.roster.buttonCategories).length < 1 && result.data && result.data[0]) {
+                        result.data.forEach( category => {
+                          if (category && category.infos && category.infos.ROSTER_DATA_DO_NOT_CHANGE) {
+                            Attendees.roster.buttonCategories[category.id] = category.infos.ROSTER_DATA_DO_NOT_CHANGE
+                          }
+                          Attendees.roster.allCategories[category.id] = category.display_name;
+                        });
+                      }
+                    });
+                return d.promise();
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
