@@ -29,6 +29,7 @@
 
 {% block content %}
 <div class="attendingmeet-container">
+  {% csrf_token %}
   <div class="d-flex justify-content-between">
     <div class="d-flex">
       <h3>
@@ -68,7 +69,6 @@
        data-categories-endpoint="{{categories_endpoint}}"
        data-teams-endpoint="{{teams_endpoint}}"
        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
-    {% csrf_token %}
   </form>
 </div>
 {% endblock content %}
