@@ -16,16 +16,32 @@ Attendees.roster = {
   },
 
   updateAttendance: (event) => {
-    console.log('19 in updateAttendance here is event: ', event);
-    if (true) {  // delegate to buttons
-      // ajax to update
-    }
-  },  // rollCallerButtonListener
+    const $radioInput = $(event.currentTarget);
+    const attendanceId = $radioInput.prop('name');
+    const categoryId = $radioInput.prop('value');
+    console.log("22 here is event.currentTarget: ", event.currentTarget);
+    $.ajax({
+      url: $('form.filters-dxform').data('attendances-endpoint') + attendanceId + '/',
+      method: 'PATCH',
+      dataType: "json",
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify({category: categoryId}),
+      success: (result) => {
+        console.log("28 success here is result: ", result);
+      },
+      error: (e) => {
+        console.log("31 failed here is e: ", e);
+        $radioInput.prop('checked', false);
+      },
+      timeout: 10000,
+    });
+
+  },
 
   reloadRollCallerButtons: () => {
-    console.log('26 reloading reloadRollCallerButtons ');
-    // $('div#attendances-datagrid-container').off('div.roll-call', Attendees.roster.updateAttendance);
-    // $('div#attendances-datagrid-container').on('div.roll-call', Attendees.roster.updateAttendance);
+    console.log('47 reloading reloadRollCallerButtons ');
+    // $('div#attendances-datagrid-container').off('input.roll-call-button', Attendees.roster.updateAttendance);
+    $('div#attendances-datagrid-container').off('click', 'input.roll-call-button').on('click','input.roll-call-button', Attendees.roster.updateAttendance);
   },
 
   initFiltersForm: () => {
@@ -592,19 +608,19 @@ Attendees.roster = {
         cellTemplate: (cellElement, cellInfo) => {  // squeeze to name column for better mobile experience.
           cellElement.append ('<strong>' + cellInfo.displayValue + '</strong><br>');
           const buttonCategoryKeys = Object.keys(Attendees.roster.buttonCategories);
-          if (buttonCategoryKeys.length > 0) {
-            let html = `<div class="btn-group-vertical btn-group-sm roll-call-buttons"
-                             aria-label="${cellInfo.data.id}"
+          if (cellInfo && cellInfo.data && buttonCategoryKeys.length > 0) {
+            let html = `<div class="btn-group-vertical btn-group-sm roll-call-button-group"
                              role="group">`;
             buttonCategoryKeys.forEach((categoryId, index) => {
               const buttonCategory = Attendees.roster.buttonCategories[categoryId];
               const buttonId = `btn-${cellInfo.data.id}-${categoryId}`;
               html += `<input type="radio"
-                              class="btn-check"
-                              name="btn-${cellInfo.data.id}"
+                              class="btn-check roll-call-button"
+                              name="${cellInfo.data.id}"
                               id="${buttonId}"
+                              value="${categoryId}"
                               autocomplete="off"
-                              ${cellInfo.data.id === categoryId ? 'checked' : ''}>
+                              ${cellInfo.data.category && cellInfo.data.category.toString() === categoryId ? 'checked' : ''}>
                        <label class="roll-call btn ${buttonCategory.class}"
                               for="${buttonId}">
                          ${buttonCategory.label}
