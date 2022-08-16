@@ -5928,8 +5928,7 @@
       "display_name": "attended",
       "infos": {
         "ROSTER_DATA_DO_NOT_CHANGE": {
-          "open": "btn-outline-success",
-          "chosen": "btn-success",
+          "class": "btn-outline-success",
           "label": "Present"
         }
       }
@@ -5947,8 +5946,7 @@
       "display_name": "absent",
       "infos": {
         "ROSTER_DATA_DO_NOT_CHANGE": {
-          "open": "btn-outline-danger",
-          "chosen": "btn-danger",
+          "class": "btn-outline-danger",
           "label": "Absent"
         }
       }
@@ -6241,8 +6239,7 @@
       "display_name": "leave/off/vacation",
       "infos": {
         "ROSTER_DATA_DO_NOT_CHANGE": {
-          "open": "btn-outline-warning",
-          "chosen": "btn-warning",
+          "class": "btn-outline-warning",
           "label": "Leave"
         }
       }
