@@ -17,30 +17,13 @@ Attendees.roster = {
 
   updateAttendance: (event) => {
     const $radioInput = $(event.currentTarget);
-    const attendanceId = $radioInput.prop('name');
+    const rowIndex = $radioInput.prop('name');
     const categoryId = $radioInput.prop('value');
-    console.log("22 here is event.currentTarget: ", event.currentTarget);
-    $.ajax({
-      url: $('form.filters-dxform').data('attendances-endpoint') + attendanceId + '/',
-      method: 'PATCH',
-      dataType: "json",
-      contentType: 'application/json; charset=utf-8',
-      data: JSON.stringify({category: categoryId}),
-      success: (result) => {
-        console.log("28 success here is result: ", result);
-      },
-      error: (e) => {
-        console.log("31 failed here is e: ", e);
-        $radioInput.prop('checked', false);
-      },
-      timeout: 10000,
-    });
-
+    Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', categoryId);
+    Attendees.roster.attendancesDatagrid.saveEditData();
   },
 
   reloadRollCallerButtons: () => {
-    console.log('47 reloading reloadRollCallerButtons ');
-    // $('div#attendances-datagrid-container').off('input.roll-call-button', Attendees.roster.updateAttendance);
     $('div#attendances-datagrid-container').off('click', 'input.roll-call-button').on('click','input.roll-call-button', Attendees.roster.updateAttendance);
   },
 
@@ -491,9 +474,7 @@ Attendees.roster = {
       mode: 'select',
     },
     onOptionChanged: (e) => {  // https://supportcenter.devexpress.com/ticket/details/t710995
-      console.log("478 in columnonOptionChanged here is e: ", e);
-      if(e.fullName === "paging.pageIndex") {
-        console.log("hi 480 new page index is " + e.value);
+      if(['paging.pageSize', 'paging.pageIndex'].includes(e.fullName)) {
         Attendees.roster.reloadRollCallerButtons();
       }
     },
@@ -616,7 +597,7 @@ Attendees.roster = {
               const buttonId = `btn-${cellInfo.data.id}-${categoryId}`;
               html += `<input type="radio"
                               class="btn-check roll-call-button"
-                              name="${cellInfo.data.id}"
+                              name="${cellInfo.rowIndex}"
                               id="${buttonId}"
                               value="${categoryId}"
                               autocomplete="off"
