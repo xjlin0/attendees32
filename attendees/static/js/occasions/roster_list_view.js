@@ -15,13 +15,17 @@ Attendees.roster = {
     Attendees.roster.initFiltersForm();
   },
 
-  toggleEditing: (enabled) => {
-    if (Attendees.roster.attendancesDatagrid) {
-      Attendees.roster.attendancesDatagrid.option('editing.allowUpdating', enabled);
-      Attendees.roster.attendancesDatagrid.option('editing.allowAdding', enabled);
-      Attendees.roster.attendancesDatagrid.option('editing.allowDeleting', enabled);
-      // Attendees.roster.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+  updateAttendance: (event) => {
+    console.log('19 in updateAttendance here is event: ', event);
+    if (true) {  // delegate to buttons
+      // ajax to update
     }
+  },  // rollCallerButtonListener
+
+  reloadRollCallerButtons: () => {
+    console.log('26 reloading reloadRollCallerButtons ');
+    // $('div#attendances-datagrid-container').off('div.roll-call', Attendees.roster.updateAttendance);
+    // $('div#attendances-datagrid-container').on('div.roll-call', Attendees.roster.updateAttendance);
   },
 
   initFiltersForm: () => {
@@ -33,8 +37,6 @@ Attendees.roster = {
     Attendees.roster.filtersForm = $('form.filters-dxform').dxForm(Attendees.roster.filterFormConfigs).dxForm('instance');
     Attendees.roster.filtersForm.getEditor('meets').getDataSource().reload();
     Attendees.utilities.editingEnabled = true;
-    // Attendees.roster.toggleEditing(true);
-    // Attendees.roster.attendancesDatagrid.columnOption("command:edit", "visible", false);
   },
 
   filterFormConfigs: {
@@ -344,6 +346,9 @@ Attendees.roster = {
                   summary: result.summary,
                   groupCount: result.groupCount,
                 });
+                if (result.totalCount > 0) {
+                  Attendees.roster.reloadRollCallerButtons();
+                }
               },
               error: () => {
                 deferred.reject("Data Loading Error for attendances datagrid, probably time out?");
@@ -469,6 +474,13 @@ Attendees.roster = {
       enabled: true,
       mode: 'select',
     },
+    onOptionChanged: (e) => {  // https://supportcenter.devexpress.com/ticket/details/t710995
+      console.log("478 in columnonOptionChanged here is e: ", e);
+      if(e.fullName === "paging.pageIndex") {
+        console.log("hi 480 new page index is " + e.value);
+        Attendees.roster.reloadRollCallerButtons();
+      }
+    },
     onToolbarPreparing: (e) => {
       const toolbarItems = e.toolbarOptions.items;
       toolbarItems.unshift({
@@ -578,24 +590,32 @@ Attendees.roster = {
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {  // squeeze to name column for better mobile experience.
-          cellElement.append ('<strong>' + cellInfo.displayValue + '</strong>');
+          cellElement.append ('<strong>' + cellInfo.displayValue + '</strong><br>');
           const buttonCategoryKeys = Object.keys(Attendees.roster.buttonCategories);
           if (buttonCategoryKeys.length > 0) {
-            html = `<div class="roll-call-buttons" id="attendance-${cellInfo.data.id}">`;
-            buttonCategoryKeys.forEach((id, index) => {
-              const buttonCategory = Attendees.roster.buttonCategories[id];
-              html += `<br>
-                       <button type="button"
-                               class="btn btn-sm ${cellInfo.data.id === id ? buttonCategory.chosen : buttonCategory.open}"
-                               value="${buttonCategory.label}">
+            let html = `<div class="btn-group-vertical btn-group-sm roll-call-buttons"
+                             aria-label="${cellInfo.data.id}"
+                             role="group">`;
+            buttonCategoryKeys.forEach((categoryId, index) => {
+              const buttonCategory = Attendees.roster.buttonCategories[categoryId];
+              const buttonId = `btn-${cellInfo.data.id}-${categoryId}`;
+              html += `<input type="radio"
+                              class="btn-check"
+                              name="btn-${cellInfo.data.id}"
+                              id="${buttonId}"
+                              autocomplete="off"
+                              ${cellInfo.data.id === categoryId ? 'checked' : ''}>
+                       <label class="roll-call btn ${buttonCategory.class}"
+                              for="${buttonId}">
                          ${buttonCategory.label}
-                       </button>`
+                       </label>`
             });
+            html += '</div>';
             if (cellInfo.data.category !== 1 && !(cellInfo.data.category in Attendees.roster.buttonCategories)) {  // 1 is scheduled
-              html += `<br>
-                       <button disabled
+              html += `<button disabled
                                type="button"
-                               class="btn btn-sm btn-secondary">
+                               class="btn btn-sm btn-secondary"
+                               value="Other">
                          ${Attendees.roster.allCategories[cellInfo.data.category]}
                        </button>`
             }
