@@ -16,12 +16,11 @@ Attendees.roster = {
   },
 
   updateAttendance: (event) => {
-    console.log('hi 19 here is event: ', event);
     const $radioInput = $(event.currentTarget);
     const rowIndex = $radioInput.prop('name');
     const categoryId = $radioInput.prop('value');
     Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', categoryId);
-    Attendees.roster.attendancesDatagrid.saveEditData();
+    Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
   },
 
   reloadRollCallerButtons: () => {

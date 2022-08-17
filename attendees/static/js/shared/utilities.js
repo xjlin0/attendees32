@@ -111,6 +111,16 @@ Attendees.utilities = {
     Weekly: {weekday: 'long', hour: 'numeric', minute: 'numeric'},
   },  // convert Django Schedule rule name to JS toLocaleString option
 
+  callOnce: (func, within=400, timerId=null) => {
+    window.callOnceTimers = window.callOnceTimers || {};
+    if (timerId == null)
+      timerId = func;
+    var timer = window.callOnceTimers[timerId];
+    clearTimeout(timer);
+    timer = setTimeout(() => func(), within);
+    window.callOnceTimers[timerId] = timer;
+  },  // https://stackoverflow.com/a/70085772/4257237
+
   debounce : (delay, fn) => {
     let timer = null;
     return (...arguments) => {
