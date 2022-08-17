@@ -16,6 +16,7 @@ Attendees.roster = {
   },
 
   updateAttendance: (event) => {
+    console.log('hi 19 here is event: ', event);
     const $radioInput = $(event.currentTarget);
     const rowIndex = $radioInput.prop('name');
     const categoryId = $radioInput.prop('value');
@@ -526,7 +527,7 @@ Attendees.roster = {
           },
           {
             dataField: 'category',
-            helpText: 'What type of participation?',
+            helpText: 'attendance status',
           },
          {
            dataField: 'infos.note',
@@ -590,7 +591,7 @@ Attendees.roster = {
           cellElement.append ('<strong>' + cellInfo.displayValue + '</strong><br>');
           const buttonCategoryKeys = Object.keys(Attendees.roster.buttonCategories);
           if (cellInfo && cellInfo.data && buttonCategoryKeys.length > 0) {
-            let html = `<div class="btn-group-vertical btn-group-sm roll-call-button-group"
+            let html = `<div class="btn-group-vertical btn-group-sm"
                              role="group">`;
             buttonCategoryKeys.forEach((categoryId, index) => {
               const buttonCategory = Attendees.roster.buttonCategories[categoryId];
@@ -609,12 +610,7 @@ Attendees.roster = {
             });
             html += '</div>';
             if (cellInfo.data.category !== 1 && !(cellInfo.data.category in Attendees.roster.buttonCategories)) {  // 1 is scheduled
-              html += `<button disabled
-                               type="button"
-                               class="btn btn-sm btn-secondary"
-                               value="Other">
-                         ${Attendees.roster.allCategories[cellInfo.data.category]}
-                       </button>`
+              html += `<i>(${Attendees.roster.allCategories[cellInfo.data.category]})</i>`
             }
             cellElement.append(html)
           }
@@ -731,6 +727,7 @@ Attendees.roster = {
       },
       {
         dataField: 'category',
+        visible: false,
         validationRules: [{type: 'required'}],
         lookup: {
           valueExpr: 'id',
