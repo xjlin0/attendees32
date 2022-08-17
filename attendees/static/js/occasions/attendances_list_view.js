@@ -544,7 +544,7 @@ Attendees.attendances = {
         widget: 'dxButton',
         options: {
           hint: 'Reset Sort/Group/Columns/Meets/Character/Time settings',
-          icon: 'pulldown',
+          icon: 'clearsquare',
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
               Attendees.attendances.attendancesDatagrid.state(null);

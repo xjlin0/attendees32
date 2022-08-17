@@ -646,7 +646,7 @@ Attendees.gatherings = {
         widget: 'dxButton',
         options: {
           hint: 'Clear Sort/Group/Columns/Meets/Character/Time settings',
-          icon: 'pulldown',
+          icon: 'clearsquare',
           onClick() {
             if(confirm('Are you sure to clear all settings (Sort/Group/Columns/Meets/Character/Time) in this page?')) {
               Attendees.gatherings.gatheringsDatagrid.state(null);

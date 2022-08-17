@@ -431,7 +431,7 @@ Attendees.roster = {
     },
     searchPanel: {
       visible: true,
-      width: 240,
+      width: 150,
       placeholder: 'search name or notes ...',
     },
     allowColumnReordering: true,
@@ -485,12 +485,27 @@ Attendees.roster = {
         widget: 'dxButton',
         options: {
           hint: 'Reset Sort/Group/Columns/Meets settings',
-          icon: 'pulldown',
+          icon: 'clearsquare',
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets) in this page?')) {
               Attendees.roster.attendancesDatagrid.state(null);
               window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts']);
               Attendees.roster.filtersForm.getEditor('meets').option('value', null);
+            }
+          },
+        },
+      });
+      toolbarItems.unshift({
+        location: 'after',
+        widget: 'dxButton',
+        options: {
+          hint: 'add existing attendee',
+          icon: 'add',
+          onClick() {
+            if (Attendees.roster.filtersForm.getEditor('gatherings').option('value')) {
+              Attendees.roster.attendancesDatagrid.addRow();
+            } else {
+              alert('Please select a gathering first!');
             }
           },
         },
@@ -552,8 +567,9 @@ Attendees.roster = {
       }
     },
     onInitNewRow: (e) => {
-      e.data.start = new Date();
-      Attendees.roster.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
+      e.data.gathering = Attendees.roster.filtersForm.getEditor('gatherings').option('value');
+      e.data.category = 1;  // scheduled.
+      Attendees.roster.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance for ' + Attendees.roster.filtersForm.getEditor('gatherings').option('text'));
     },
     onEditingStart: (e) => {
       const grid = e.component;
@@ -627,21 +643,19 @@ Attendees.roster = {
                 const meet = Attendees.roster.filtersForm.getEditor('meets').option('value');
                 const gathering = Attendees.roster.filtersForm.getEditor('gatherings').option('value');
                 loadOptions['sort'] = Attendees.roster.attendancesDatagrid && Attendees.roster.attendancesDatagrid.getDataSource().loadOptions().group;
-                const args = {
-                  searchOperation: loadOptions['searchOperation'],
-                  searchValue: loadOptions['searchValue'],
-                  searchExpr: loadOptions['searchExpr'],
-                  start: new Date(filterFrom).toISOString(),
-                  finish: new Date(filterTill).toISOString(),
-                };
+                const args = {meets: [meet]};
 
-                if (meet) {
-                  args['meets'] = [meet];
-                }
-
-                if (gathering) {
-                  args['gatherings'] = [gathering];
-                }
+                if (loadOptions['searchValue']){
+                  args['searchValue'] = loadOptions['searchValue'];
+                  args['searchExpr'] = loadOptions['searchExpr'];
+                  args['searchOperation'] = loadOptions['searchOperation'];
+                } else {
+                  args['start'] = new Date(filterFrom).toISOString();
+                  args['finish'] = new Date(filterTill).toISOString();
+                  if (gathering) {
+                    args['gatherings'] = [gathering];
+                  }
+                }  // in search mode user wants what's NOT included in current gatherings
 
                 [
                   'skip',
@@ -667,7 +681,7 @@ Attendees.roster = {
                       totalCount: result.totalCount,
                       summary:    result.summary,
                       groupCount: result.groupCount,
-                    });
+                    });  // Todo 20220817 fetch attendingmeet defaults when user searching & adding attendance.
                   },
                   error: () => {
                     deferred.reject("Data Loading Error for attending lookup, probably time out?");
