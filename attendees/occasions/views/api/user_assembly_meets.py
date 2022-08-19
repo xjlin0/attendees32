@@ -36,6 +36,13 @@ class ApiUserAssemblyMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
         if current_user_organization:
             filters = {"assembly__division__organization": current_user_organization}
             assemblies = self.request.query_params.getlist("assemblies[]")
+            search_value = self.request.query_params.get("searchValue")
+            search_operation = self.request.query_params.get("searchOperation")
+
+            if search_value and search_operation == 'contains':
+                search_column = self.request.query_params.get("searchExpr")
+                filters[f'{search_column}__icontains'] = search_value
+
             if assemblies:
                 filters["assembly__in"] = assemblies
             return (
