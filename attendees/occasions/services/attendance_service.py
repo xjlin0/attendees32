@@ -131,10 +131,10 @@ class AttendanceService:
         extra_filters = Q(
             gathering__meet__assembly__division__organization=current_user.organization
         ).add(Q(gathering__meet__slug__in=meet_slugs), Q.AND)
-        print("hi 132 here is original filter reading from params: ", filter)
+
         if gatherings:
             extra_filters.add(Q(gathering__in=gatherings), Q.AND)
-        print("hi 135 here is original meet_slugs: ", meet_slugs)
+
         if character_slugs:  # attendance list UI prevent sending no character, but roll call UI will send no character
             extra_filters.add(Q(character__slug__in=character_slugs), Q.AND)
 
@@ -157,23 +157,12 @@ class AttendanceService:
 
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)
-
-            print("hi 161 here is type(filter): ", type(filter))
-            print("hi 162 here is type(filter_list): ", type(filter_list))
             search_term = (filter_list[-1][-1]
                            if filter_list[1] == 'or'
                            else filter_list[0][0][-1]) if isinstance(filter_list[-1], list) else filter_list[-1]
-            print("hi 166 here is filter_list by json.load: ", filter_list)
-            print("hi 167 here is search_term by crazy dig: ", search_term)
-            search_column = (filter_list[0][0]
-                             if filter_list[1] == 'or'
-                             else filter_list[0][0][0]) if isinstance(filter_list[-1], list) else filter_list[0]
             searching_by_panel = isinstance(search_term, str) and filter.count(search_term) == 3
-            print("hi 172 here is search_column: ", search_column)
-            print("hi 173 here is searching_by_panel: ", searching_by_panel)
 
             if isinstance(search_term, str) and searching_by_panel:
-                print("hi 173 here is search_term: ", search_term)
                 extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_term)
                                    |
                                    Q(gathering__display_name__icontains=search_term)
@@ -252,10 +241,8 @@ class AttendanceService:
         orderby_dict = {}  # [{"selector":"<<dataField value in DataGrid>>","desc":false}]
         field_converter = {
             'gathering': 'gathering__display_name',
-            # 'gathering_name': 'gathering__display_name',
             'character': 'character__display_name',
             'attending': 'attending__attendee__infos__names__original',
-            'attending_name': 'attending__attendee__infos__names__original',
         }
 
         for orderby in orderbys:

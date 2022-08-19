@@ -32,23 +32,10 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
         )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
         characters = request.query_params.getlist("characters[]", [])
         group_column = json.loads(group_string)[0].get('selector')
-        filter = self.request.query_params.get("filter")
-
-
-        # if filter:
-        #     meet_slugs = request.query_params.getlist("meets[]", [])
-        #     filters = AttendeeService.filter_parser(filter, Meet.objects.filter(slug__in=meet_slugs), self.request.user)
-        #     queryset = self.filter_queryset(self.get_queryset().filter(filters))
-        # else:
-        #     queryset = self.filter_queryset(self.get_queryset())
         search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]  # could be [[null,"contains","jack"],"or",[null,"contains","jack"]] or [[[null,"contains","jack"],"or",[null,"contains","jack"]],"and",["gathering__meet__assembly","=",5]]
         queryset = self.filter_queryset(self.get_queryset())
-        print("hi 46 here is queryset.count(): ", queryset.count())
         page = self.paginate_queryset(queryset)
-        print("hi 48 here is page: ", page)
-        print("hi 49 here is group_column: ", group_column)
-        print("hi 50 here is search_value: ", search_value)
-        print("hi 51 here is filter: ", filter)
+
         if page is not None:  # Todo 20220818 this is always there unless pagination removed on UI.
             if group_column:  # generating counter without the defined queryset
                 filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
@@ -75,11 +62,9 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
                                  Q(infos__icontains=search_value)), Q.AND)
 
                 counters = Attendance.objects.filter(filters).values(group_column).order_by(group_column).annotate(count=Count('*'))  # Count(group_column) won't count null values
-                print("hi 70 here is counters: ", counters)
                 return Response(Utility.group_count(group_column, counters))
-            print("hi 80 Not in group_column")
+
             serializer = self.get_serializer(page, many=True)
-            # print("hi 77 here is  serializer.data: ", serializer.data)
             return self.get_paginated_response(
                 Utility.transform_result(serializer.data, group_column)
             )
