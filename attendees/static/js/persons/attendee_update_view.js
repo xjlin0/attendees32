@@ -1148,6 +1148,7 @@ Attendees.datagridUpdate = {
         },
         editorOptions: {
           placeholder: '+1(000)000-0000',
+          attr: { 'autocomplete': false },
         },
         template: (data, itemElement) => {
           const options = {
@@ -1176,6 +1177,7 @@ Attendees.datagridUpdate = {
         },
         editorOptions: {
           placeholder: '+1(000)000-0000',
+          attr: { 'autocomplete': false },
         },
         template: (data, itemElement) => {
           const options = {
@@ -2340,7 +2342,6 @@ Attendees.datagridUpdate = {
 //        return [Attendees.datagridUpdate.placePopupDxFormData.address];
 //      }else{
       const d = new $.Deferred();
-//        console.log("hi 1647 here is state key: ", key);
       $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.statesEndpoint, {id: key})
         .done((result) => {
           d.resolve(result.data);
@@ -2368,10 +2369,10 @@ Attendees.datagridUpdate = {
           const lastName = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('last_name').option('value');
           const firstName2 = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('first_name2').option('value');
           const lastName2 = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('last_name2').option('value');
-          const phone1 = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('last_name2').option('value');
-
-          if (firstName || lastName || firstName2 || lastName2 || phone1) {
-            const searchData = [firstName, lastName, firstName2, lastName2, phone1].filter(name => name).map(name => ["infos", "contains", name]).flatMap(e => [e, 'or']);
+          const phone1 = Attendees.datagridUpdate.phone1.option('value');
+          const phone2 = Attendees.datagridUpdate.phone2.option('value');
+          if (firstName || lastName || firstName2 || lastName2 || phone1 || phone2) {
+            const searchData = [firstName, lastName, firstName2, lastName2, phone1, phone2].filter(name => name).map(name => ["infos", "contains", name]).flatMap(e => [e, 'or']);
             const d = new $.Deferred();
             $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeSearch, {include_dead: true, take: 10, filter: JSON.stringify(searchData)})
               .done( result => {
@@ -2451,7 +2452,14 @@ Attendees.datagridUpdate = {
         },
       },
       {
-        dataField: "deathday",
+        dataField: "families",
+        cellTemplate: (container, rowData) => {
+          if (Array.isArray(rowData.data && rowData.data.folkattendee_set)) {
+            const familyAttendees = rowData.data.folkattendee_set.filter(folkAttendee => folkAttendee.folk.category===0);
+            const familyNames = familyAttendees.reduce((all, now) => {all.push(now.folk.display_name); return all}, []);
+            $($('<span>').html(familyNames.join(', '))).appendTo(container);
+          }
+        },
       },
     ],
   },
