@@ -200,9 +200,11 @@ Attendees.attendances = {
             // Attendees.attendances.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
+              if (Attendees.attendances.attendancesDatagrid.totalCount() > 0) {
+                Attendees.attendances.filtersForm.getEditor('characters').option('value', []);
+                Attendees.attendances.filtersForm.getEditor('characters').getDataSource().reload();
+              }
               const characters = $('div.selected-characters select').val();
-              Attendees.attendances.filtersForm.getEditor('characters').option('value', []);
-              Attendees.attendances.filtersForm.getEditor('characters').getDataSource().reload();
               if (characters.length) {
                 Attendees.attendances.attendancesDatagrid.refresh();
               }
@@ -537,6 +539,11 @@ Attendees.attendances = {
       enabled: true,
       mode: 'select',
     },
+    onOptionChanged: (e) => {
+      if(e.fullName === "searchPanel.text") {
+        console.log("searching! here is e: ", e);
+      }
+    },
     onToolbarPreparing: (e) => {
       const toolbarItems = e.toolbarOptions.items;
       toolbarItems.unshift({
@@ -719,7 +726,7 @@ Attendees.attendances = {
         dataField: 'gathering',
         validationRules: [{type: 'required'}],
         caption: 'Gathering in Meet',
-        calculateDisplayValue: 'gathering_name',  // can't use function for remote operations https://supportcenter.devexpress.com/ticket/details/t897726
+        calculateDisplayValue: 'gathering__display_name',  // can't use function for remote operations https://supportcenter.devexpress.com/ticket/details/t897726
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',
@@ -904,6 +911,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'start',
+        visible: false,
         dataType: 'datetime',
         format: 'MM/dd/yyyy',
         editorOptions: {
@@ -914,6 +922,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'finish',
+        visible: false,
         dataType: 'datetime',
         format: 'MM/dd/yyyy',
         editorOptions: {
