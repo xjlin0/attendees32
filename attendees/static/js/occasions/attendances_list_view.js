@@ -540,11 +540,6 @@ Attendees.attendances = {
       enabled: true,
       mode: 'select',
     },
-//    onOptionChanged: (e) => {
-//      if(e.fullName === "searchPanel.text") {
-//        console.log("user searching! here is e: ", e);
-//      }
-//    },
     onToolbarPreparing: (e) => {
       const toolbarItems = e.toolbarOptions.items;
       toolbarItems.unshift({
