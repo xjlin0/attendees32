@@ -37,7 +37,7 @@ jobs:
 
   # With no caching at all the entire ci process takes 4m 30s to complete!
   pytest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -49,9 +49,6 @@ jobs:
 
       - name: Build the Stack
         run:  docker-compose -f local.yml build
-
-      - name: Wait for 30 sec
-        run: sleep 30
 
       - name: Run DB Migrations
         run:  docker-compose -f local.yml run --rm django python manage.py migrate
