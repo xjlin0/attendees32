@@ -63,7 +63,7 @@ class GatheringService:
                                |
                                Q(attendings__registration__registrant=current_user.attendee)), Q.AND)
 
-        if search_value and search_operation == 'contains' and search_expression == 'display_name':  # for searching in drop down of popup editor
+        if search_value and search_operation == 'contains' and search_expression == 'gathering_label':  # for searching in drop down of popup editor
             extra_filters.add((Q(display_name__icontains=search_value)
                                |
                                Q(infos__icontains=search_value)), Q.AND)

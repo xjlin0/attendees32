@@ -8,6 +8,7 @@ Attendees.attendances = {
   selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
   meetData: {},
+  gatheringMeet: {},
   init: () => {
     console.log('static/js/occasions/attendances_list_view.js');
     Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListView']); // remove saved search text without interfering column visibility
@@ -539,11 +540,11 @@ Attendees.attendances = {
       enabled: true,
       mode: 'select',
     },
-    onOptionChanged: (e) => {
-      if(e.fullName === "searchPanel.text") {
-        console.log("searching! here is e: ", e);
-      }
-    },
+//    onOptionChanged: (e) => {
+//      if(e.fullName === "searchPanel.text") {
+//        console.log("user searching! here is e: ", e);
+//      }
+//    },
     onToolbarPreparing: (e) => {
       const toolbarItems = e.toolbarOptions.items;
       toolbarItems.unshift({
@@ -603,23 +604,23 @@ Attendees.attendances = {
           },
           {
             dataField: 'infos.note',
-            helpText: 'special memo',
+            helpText: '(Optional)special memo',
             editorOptions: {
               autoResizeEnabled: true,
             },
           },
           {
             dataField: 'start',
-            helpText: 'participation start time in browser timezone',
+            helpText: '(Optional)participation start time in browser timezone',
           },
           {
             dataField: 'finish',
-            helpText: 'participation end time in browser timezone',
+            helpText: '(Optional)participation end time in browser timezone',
           },
           {
             dataField: 'create_attendances_till',
             disabled: true,
-            helpText: 'Auto create future attendances (not supported yet)',
+            helpText: '(Optional)Auto create future attendances (not supported yet)',
           },
         ],
       },
@@ -630,7 +631,7 @@ Attendees.attendances = {
       }
     },
     onInitNewRow: (e) => {
-      // e.data.start = new Date();
+      e.data.category = 1;
       Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
     },
     onEditingStart: (e) => {
@@ -653,6 +654,10 @@ Attendees.attendances = {
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
+        },
+        placeholder: "Select or search...",
+        editorOptions: {
+           noDataText: "Nothing! Ever enrolled?",
         },
         lookup: {
           valueExpr: 'id',
@@ -726,10 +731,21 @@ Attendees.attendances = {
         dataField: 'gathering',
         validationRules: [{type: 'required'}],
         caption: 'Gathering in Meet',
+        placeholder: "Select or search...",
         calculateDisplayValue: 'gathering__display_name',  // can't use function for remote operations https://supportcenter.devexpress.com/ticket/details/t897726
+        setCellValue: (newData, value, currentData) => {
+          if (value) {
+            newData.gathering = value;
+            const gatheringsMeet = Attendees.attendances.gatheringMeet[value];
+            if (gatheringsMeet && !currentData.character) {
+              const [meetEnd, majorCharacter] = Attendees.attendances.meetData[gatheringsMeet];
+              newData.character = majorCharacter;
+            }  // when no character's define, set default character for user.
+          }
+        },
         lookup: {
           valueExpr: 'id',
-          displayExpr: 'display_name',
+          displayExpr: 'gathering_label',
           dataSource: (options) => {
             return {
               // filter: options.data ? {'meets[]': [options.data.meet]} : null,
@@ -741,7 +757,15 @@ Attendees.attendances = {
                   } else {
                     searchOpts['meets[]'] = $('div.selected-meets select').val();
                   }
-                  return $.getJSON($('form.filters-dxform').data('gatherings-endpoint'), searchOpts);
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('gatherings-endpoint'), searchOpts)
+                    .done((result) => {
+                      result && result.data && result.data.forEach( gathering => {
+                        Attendees.attendances.gatheringMeet[gathering.id] = gathering.meet;
+                      })
+                      d.resolve(result);
+                    });
+                  return d.promise();
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
@@ -788,8 +812,38 @@ Attendees.attendances = {
         },
       },
       {
+        dataField: 'gathering__meet',
+        visible: false,
+        validationRules: [{type: 'required'}],
+        caption: 'Meet',
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: {
+            store: new DevExpress.data.CustomStore({
+              key: 'id',
+              load: () => $.getJSON($('form.filters-dxform').data('meets-endpoint-by-id'), {take: 9999}),
+              byKey: (key) => {
+                if (key) {
+                  const d = $.Deferred();
+                  $.get($('form.filters-dxform').data('meets-endpoint-by-id') + key + '/').done((response) => {
+                    d.resolve(response);
+                  });
+                  return d.promise();
+                }
+              },
+            }),
+          },
+        },
+      },
+      {
         dataField: 'character',
         validationRules: [{type: 'required'}],
+        setCellValue: (newData, value, currentData) => {
+          if (value) {
+            newData.character = value;
+          }  // for preventing gathering default character overwriting
+        },
         lookup: {
           valueExpr: 'id',
           displayExpr: 'display_name',

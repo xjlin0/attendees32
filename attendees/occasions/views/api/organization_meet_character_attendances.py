@@ -40,7 +40,6 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
             if group_column:  # generating counter without the defined queryset
                 filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
                     Q(gathering__meet__assembly__division__organization=request.user.organization), Q.AND)
-                print("hi 56 in if group_column")
                 if start:
                     filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
                 if finish:
