@@ -673,15 +673,16 @@ Attendees.gatherings = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => {
+              load: (searchOpts) => {
                 const d = new $.Deferred();
-                $.get($('form.filters-dxform').data('meets-endpoint-by-id'), {model: 'gathering'})
+                const params = {model: 'gathering'};
+                if (searchOpts["searchValue"]) {
+                  params["searchValue"] = searchOpts["searchValue"];
+                  params["searchExpr"] = searchOpts['searchExpr'];
+                  params["searchOperation"] = searchOpts['searchOperation'];
+                }
+                $.get($('form.filters-dxform').data('meets-endpoint-by-id'), params)
                   .done((result) => {
-                    // if (Object.keys(Attendees.gatherings.meetScheduleRules).length < 1 && result.data && result.data[0]) {
-                    //   result.data.forEach(meet=>{
-                    //     Attendees.gatherings.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
-                    //   }); // schedule rules needed for gathering generation
-                    // }
                     d.resolve(result.data);
                   });
                 return d.promise();
