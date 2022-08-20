@@ -33,6 +33,15 @@ class PgHistoryPage:
         )
 
 
+class AttendanceBatchCreateResult(object):
+    # class Meta:
+    #     pass
+
+    def __init__(self, **kwargs):
+        for field in ("number_created", "begin", "end", "meet_slug"):
+            setattr(self, field, kwargs.get(field, None))
+
+
 class GatheringBatchCreateResult(object):
     # class Meta:
     #     pass

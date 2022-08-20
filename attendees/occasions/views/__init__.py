@@ -19,6 +19,7 @@ from .api.organization_meet_teams import api_organization_meet_team_viewset
 from .api.organization_meets import organization_meets_viewset
 from .api.organization_characters import organization_characters_viewset
 from .api.series_gatherings import series_gatherings_viewset
+from .api.series_attendances import series_attendances_viewset
 from .api.user_assemblies import api_user_assembly_viewset
 from .api.user_assembly_characters import api_user_assembly_characters_viewset
 from .api.user_assembly_meets import api_user_assembly_meets_viewset
