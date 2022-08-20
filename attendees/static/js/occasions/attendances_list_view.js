@@ -48,8 +48,8 @@ Attendees.attendances = {
   },
 
   initGenerateButton: () => {  // it doesn't need characters but still check so user won't generate repeating attendances
-    const generateGatheringsButtonDiv = document.querySelector('div#generate-attendances');
-    if (generateGatheringsButtonDiv) {
+    const generateAttendancesButtonDiv = document.querySelector('div#generate-attendances');
+    if (generateAttendancesButtonDiv) {
       Attendees.attendances.generateGatheringsButton = $('div#generate-attendances').dxButton({
         disabled: true,
         text: 'Generate Attendances',
@@ -57,7 +57,7 @@ Attendees.attendances = {
         hint: 'Generate attendances based on attendingmeet. Disabled when multiple meets selected or "Till" empty',
         onClick: () => {
           const filterTill = $('div.filter-till input')[1].value;
-          if (filterTill && confirm('Are you sure to auto generate all attendances of the chosen meet before the filtered date from the enrollment?')) {
+          if (filterTill && confirm('Are you sure to auto generate all attendances of the chosen meet before the filtered date from character defined in the enrollment?')) {
             const params = {};
             const filterFrom = $('div.filter-from input')[1].value;
             params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : new Date().toISOString();
@@ -84,7 +84,7 @@ Attendees.attendances = {
                     }, 'success', 3000);
                 },
                 error: (result) => {
-                  console.log("hi gatherings_list_view.js 86 here is error result: ", result);
+                  console.log("hi gatherings_list_view.js 87 here is error result: ", result);
                   DevExpress.ui.notify(
                     {
                       message: 'Batch processing error. ' + result && result.responseText,
@@ -98,7 +98,7 @@ Attendees.attendances = {
                 },
                 complete: () => {
                   Attendees.attendances.gatheringsDatagrid.refresh();
-                }, // partial gatherings may have generated even when errors
+                }, // partial attendances may have generated even when errors
               });
             } else {
               DevExpress.ui.notify(
@@ -157,7 +157,7 @@ Attendees.attendances = {
         colSpan: 3,
         cssClass: 'filter-from',
         dataField: 'filter-from',
-        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} time`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
@@ -179,7 +179,6 @@ Attendees.attendances = {
           onValueChanged: (e) => {
             const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString', filterFromString);
-            // Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
             if (Attendees.attendances.filterMeetCheckbox.option('value')) {
               Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
             }
@@ -195,7 +194,7 @@ Attendees.attendances = {
         colSpan: 3,
         cssClass: 'filter-till',
         dataField: 'filter-till',
-        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} timezone`,
+        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} time`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
@@ -390,6 +389,7 @@ Attendees.attendances = {
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedCharacterSlugs', e.value);
             Attendees.attendances.filtersForm.validate();
+            Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
             const meets = $('div.selected-meets select').val();
             if (meets.length && e.value && e.value.length > 0 && Attendees.attendances.attendancesDatagrid) {
               Attendees.attendances.attendancesDatagrid.refresh();

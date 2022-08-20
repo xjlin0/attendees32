@@ -601,7 +601,7 @@ Attendees.roster = {
         dataField: 'attending',
         width: 200,
         validationRules: [{type: 'required'}],
-        calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
+        calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {  // squeeze to name column for better mobile experience.
           cellElement.append ('<strong>' + cellInfo.displayValue + '</strong><br>');
           const buttonCategoryKeys = Object.keys(Attendees.roster.buttonCategories);

@@ -241,6 +241,7 @@ class AttendanceService:
         :param user_time_zone:
         :return: number of attendances created
         """
+        print("hi 244 here is begin, end, meet, user_time_zone: ", begin, end, meet, user_time_zone)
         number_created = 0
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_begin_time = datetime.strptime(begin, iso_time_format)
