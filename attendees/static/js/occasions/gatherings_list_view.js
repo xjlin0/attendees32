@@ -83,7 +83,7 @@ Attendees.gatherings = {
                     }, 'success', 3000);
                 },
                 error: (result) => {
-                  console.log("hi gatherings_list_view.js 85 here is error result: ", result);
+                  console.log("hi gatherings_list_view.js 86 here is error result: ", result);
                   DevExpress.ui.notify(
                     {
                       message: 'Batch processing error. ' + result && result.responseText,
@@ -831,6 +831,9 @@ Attendees.gatherings = {
         allowGrouping: false,
         caption: 'Note',
         dataType: 'string',
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
       },
     ],
   },
