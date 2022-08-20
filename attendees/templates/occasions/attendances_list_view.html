@@ -44,15 +44,8 @@
       <div id="custom-control-edit-switch">
       </div>
       <div class="d-flex">
-        <a target="_blank"
-           style="padding: 5px; text-decoration: none; height: 1.6rem;"
-           role="button"
-           class="btn btn-outline-secondary btn-sm add-attendee"
-           title="add a new attendee without assigning families in a new tab"
-           aria-label="+ Attendee">
-          <span class="fas fa-user-plus" aria-hidden="true"></span>
-          Add Attendee
-        </a>
+        <div id="generate-attendances">
+        </div>
       </div>
     {% else %}
       <div id="user-cannot-write">
@@ -62,15 +55,16 @@
   </div>
 
   <form class="filters-dxform"
-       data-characters-endpoint="{{characters_endpoint}}"
-       data-attendances-endpoint="{{attendances_endpoint}}"
-       data-gatherings-endpoint="{{gatherings_endpoint}}"
-       data-categories-endpoint="{{categories_endpoint}}"
-       data-assemblies-endpoint="{{assemblies_endpoint}}"
-       data-attendings-endpoint="{{attendings_endpoint}}"
-       data-teams-endpoint="{{teams_endpoint}}"
-       data-meets-endpoint-by-id="{{meets_endpoint_by_id}}"
-       data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
+        data-characters-endpoint="{{characters_endpoint}}"
+        data-attendances-endpoint="{{attendances_endpoint}}"
+        data-gatherings-endpoint="{{gatherings_endpoint}}"
+        data-categories-endpoint="{{categories_endpoint}}"
+        data-assemblies-endpoint="{{assemblies_endpoint}}"
+        data-attendings-endpoint="{{attendings_endpoint}}"
+        data-teams-endpoint="{{teams_endpoint}}"
+        data-series-attendances-endpoint="{{series_attendances_endpoint}}"
+        data-meets-endpoint-by-id="{{meets_endpoint_by_id}}"
+        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
   </form>
 </div>
 {% endblock content %}

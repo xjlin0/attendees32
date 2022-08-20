@@ -65,6 +65,11 @@ router.register(
     series_gatherings_viewset,
     basename="series_gatherings",  # request.resolver_match.url_name will be series_gatherings-list
 )
+# router.register(
+#     "api/series_attendances",
+#     series_attendances_viewset,
+#     basename="series_attendances",  # request.resolver_match.url_name will be series_attendance-list
+# )
 router.register(
     "api/user_assembly_characters",
     api_user_assembly_characters_viewset,

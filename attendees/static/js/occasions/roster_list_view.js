@@ -838,11 +838,14 @@ Attendees.roster = {
 //          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
 //        },
 //      },
-     {
-       dataField: 'infos.note',
-       caption: 'Note',
-       dataType: 'string',
-     },
+      {
+        dataField: 'infos.note',
+        caption: 'Note',
+        dataType: 'string',
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
+      },
     ],
   },
 };

@@ -15,6 +15,7 @@ Attendees.attendances = {
     Attendees.attendances.initFilterMeetCheckbox();
     Attendees.attendances.initEditingSwitch();
     Attendees.attendances.initFiltersForm();
+    Attendees.attendances.initGenerateButton();
   },
 
   initEditingSwitch: () => {
@@ -46,6 +47,77 @@ Attendees.attendances = {
     }).dxCheckBox('instance');
   },
 
+  initGenerateButton: () => {  // it doesn't need characters but still check so user won't generate repeating attendances
+    const generateGatheringsButtonDiv = document.querySelector('div#generate-attendances');
+    if (generateGatheringsButtonDiv) {
+      Attendees.attendances.generateGatheringsButton = $('div#generate-attendances').dxButton({
+        disabled: true,
+        text: 'Generate Attendances',
+        height: '1.5rem',
+        hint: 'Generate attendances based on attendingmeet. Disabled when multiple meets selected or "Till" empty',
+        onClick: () => {
+          const filterTill = $('div.filter-till input')[1].value;
+          if (filterTill && confirm('Are you sure to auto generate all attendances of the chosen meet before the filtered date from the enrollment?')) {
+            const params = {};
+            const filterFrom = $('div.filter-from input')[1].value;
+            params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : new Date().toISOString();
+            params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
+            const meetSlugs = $('div.selected-meets select').val();
+            if (params['end'] && Attendees.attendances.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
+              params['meet_slug'] = meetSlugs[0];
+              return $.ajax({
+                url: $('form.filters-dxform').data('series-attendances-endpoint'),
+                method: 'POST',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(params),
+                success: (result) => {
+                  DevExpress.ui.notify(
+                    {
+                      message: 'Batch processed, ' + result.number_created + ' successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
+                      width: 500,
+                      position: {
+                        my: 'center',
+                        at: 'center',
+                        of: window,
+                      },
+                    }, 'success', 3000);
+                },
+                error: (result) => {
+                  console.log("hi gatherings_list_view.js 86 here is error result: ", result);
+                  DevExpress.ui.notify(
+                    {
+                      message: 'Batch processing error. ' + result && result.responseText,
+                      width: 500,
+                      position: {
+                        my: 'center',
+                        at: 'center',
+                        of: window,
+                      },
+                    }, 'error', 5000);
+                },
+                complete: () => {
+                  Attendees.attendances.gatheringsDatagrid.refresh();
+                }, // partial gatherings may have generated even when errors
+              });
+            } else {
+              DevExpress.ui.notify(
+                {
+                  message: "Can't generate, Please select one single meet with duration, and Filter 'till' earlier than filter 'from'",
+                  width: 500,
+                  position: {
+                    my: 'center',
+                    at: 'center',
+                    of: window,
+                  },
+                }, 'error', 2000);
+            }
+          }
+        },
+      }).dxButton('instance');
+    }
+  },
+
   toggleEditing: (enabled) => {
     if (Attendees.attendances.attendancesDatagrid) {
       Attendees.attendances.attendancesDatagrid.option('editing.allowUpdating', enabled);
@@ -53,18 +125,18 @@ Attendees.attendances = {
       Attendees.attendances.attendancesDatagrid.option('editing.allowDeleting', enabled);
       Attendees.attendances.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
-    const addAttendeeLink = document.querySelector('a.add-attendee');
-    if (addAttendeeLink) {
-      if (enabled) {
-        addAttendeeLink.classList.remove("btn-outline-secondary");
-        addAttendeeLink.classList.add("btn-outline-success");
-        addAttendeeLink.href = '/persons/attendee/new?familyName=without';
-      } else {
-        addAttendeeLink.removeAttribute("href");
-        addAttendeeLink.classList.add("btn-outline-secondary");
-        addAttendeeLink.classList.remove("btn-outline-success");
-      }
-    }
+    Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
+  },
+
+  readyToGenerate: () => {
+    const filterFrom = Attendees.attendances.filtersForm.getEditor('filter-from').option('value');
+    const filterTill = Attendees.attendances.filtersForm.getEditor('filter-till').option('value');
+    const selectedMeet = Attendees.attendances.filtersForm.getEditor('meets').option('value');
+    const intervalValid = filterTill && (filterFrom ? filterTill > filterFrom : true);
+
+    return Attendees.attendances.selectedMeetHasRule &&
+      Attendees.attendances.filtersForm.validate().isValid &&
+      intervalValid && selectedMeet && selectedMeet.length === 1
   },
 
   initFiltersForm: () => {
@@ -143,7 +215,7 @@ Attendees.attendances = {
           value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString') === undefined ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString')) : null,
           type: 'datetime',
           onValueChanged: (e) => {
-            // Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
+            Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
             const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString', filterTillString);
             if (Attendees.attendances.filterMeetCheckbox.option('value')) {
@@ -984,6 +1056,9 @@ Attendees.attendances = {
         allowGrouping: false,
         caption: 'Note',
         dataType: 'string',
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
       },
     ],
   },

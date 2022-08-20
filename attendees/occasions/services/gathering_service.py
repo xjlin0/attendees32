@@ -97,7 +97,7 @@ class GatheringService:
     @staticmethod
     def batch_create(begin, end, meet_slug, duration, meet, user_time_zone):
         """
-        Ideopotently create gatherings based on the following params.  Created Gatherings are associated with Occurrence
+        Idempotently create gatherings based on the following params.  Created Gatherings are associated with Occurrence
         Todo 20210821 Hardcoded tzinfo for strptime to get event.get_occurrences() working as of now, needs improvement.
         :param begin:
         :param end:
@@ -141,7 +141,7 @@ class GatheringService:
                             "start": occurrence.start,
                             "finish": occurrence_end,
                             "infos": meet.infos.get('gathering', {}),
-                            "display_name": f'{meet.display_name} {occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")}',
+                            "display_name": f'{occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}',
                         },
                     )  # don't update gatherings if exist since it may have customizations
 
