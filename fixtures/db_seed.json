@@ -1915,7 +1915,7 @@
     "fields": {
       "start": "2020-02-09T18:00:00Z",
       "end": "2020-02-09T20:00:00Z",
-      "title": "The Rock's event",
+      "title": "The Rock's time",
       "description": "",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -11892,7 +11892,9 @@
       "display_name": "The Rock",
       "slug": "d7c8Fd_cfcch_junior_regular_the_rock",
       "infos": {
-        "gathering": {},
+        "gathering": {
+          "generate_attendance": true
+        },
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
@@ -11935,7 +11937,9 @@
       "display_name": "Little foot",
       "slug": "d7c8Fd_cfcch_junior_regular_little_foot",
       "infos": {
-        "gathering": {},
+        "gathering": {
+          "generate_attendance": true
+        },
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
