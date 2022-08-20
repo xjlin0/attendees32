@@ -161,6 +161,7 @@ MIDDLEWARE = [
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "pghistory.middleware.HistoryMiddleware",
+    "attendees.middleware.TimezoneMiddleware",
 ]
 
 # STATIC
