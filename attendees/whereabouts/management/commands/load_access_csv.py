@@ -836,7 +836,7 @@ class Command(BaseCommand):
                     'gathering': roaster_gathering,
                     'attending': data_attending,
                     'character': general_character,
-                    'category_id': 6,   # Active
+                    # 'category_id': 6,   # Active
                     'team': None,
                     'start': roaster_gathering.start,
                     'finish': roaster_gathering.finish,
@@ -980,7 +980,7 @@ class Command(BaseCommand):
                     'attending': data_attending,
                     'character': member_character,
                     'team': None,
-                    'category_id': 6,  # Active, membership can be inactive temporarily
+                    # 'category_id': 6,  # Active, membership can be inactive temporarily
                     'start': member_attending_meet_default['start'],
                     'finish': member_gathering.finish,
                     'infos': {
@@ -1039,7 +1039,7 @@ class Command(BaseCommand):
                         'gathering': directory_gathering,
                         'attending': directory_attending,
                         'character': directory_character,
-                        'category_id': 6,  # Active
+                        # 'category_id': 6,  # Active
                         'team': None,
                         'start': directory_gathering.start,
                         'finish': directory_gathering.finish,
