@@ -601,6 +601,7 @@ Attendees.roster = {
       },
       {
         dataField: 'attending',
+        sortOrder: 'asc',
         width: 200,
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
