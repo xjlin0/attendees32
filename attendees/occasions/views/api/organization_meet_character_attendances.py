@@ -82,8 +82,8 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
             )  # [{"selector":"gathering","desc":false,"isExpanded":false}] if grouping
             orderby_list = json.loads(
                 self.request.query_params.get(
-                    "sort",
-                    '[{"selector":"gathering","desc":false},{"selector":"start","desc":false}]',
+                    "sort",   # default sort on NON-NULLABLE column is needed for pagination
+                    '[{"selector":"gathering","desc":false},{"selector":"id","desc":false}]',
                 )
             )  # order_by('gathering','start')
             # Todo: add group colume to orderby_list
