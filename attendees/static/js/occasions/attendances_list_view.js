@@ -670,13 +670,6 @@ Attendees.attendances = {
             helpText: 'What type of participation?',
           },
           {
-            dataField: 'infos.note',
-            helpText: '(Optional)special memo',
-            editorOptions: {
-              autoResizeEnabled: true,
-            },
-          },
-          {
             dataField: 'start',
             helpText: '(Optional)participation start time in browser timezone',
           },
@@ -684,10 +677,19 @@ Attendees.attendances = {
             dataField: 'finish',
             helpText: '(Optional)participation end time in browser timezone',
           },
+//          {
+//            dataField: 'create_attendances_till',
+//            disabled: true,
+//            helpText: '(Optional)Auto create future attendances (not supported yet)',
+//          },
           {
-            dataField: 'create_attendances_till',
-            disabled: true,
-            helpText: '(Optional)Auto create future attendances (not supported yet)',
+            dataField: 'infos.note',
+            helpText: '(Optional)special memo',
+            editorType: 'dxTextArea',
+//            colSpan: 2,
+            editorOptions: {
+              autoResizeEnabled: true,
+            },
           },
         ],
       },
@@ -1017,19 +1019,19 @@ Attendees.attendances = {
           }
         },
       },
-      {
-        dataField: 'create_attendances_till',
-        visible: false,
-        dataType: 'datetime',
-        label: {
-          text: 'Reserve attendances to',
-        },
-        editorOptions: {
-          type: 'datetime',
-          showClearButton: true,
-          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-        }
-      },
+//      {
+//        dataField: 'create_attendances_till',
+//        visible: false,
+//        dataType: 'datetime',
+//        label: {
+//          text: 'Reserve attendances to',
+//        },
+//        editorOptions: {
+//          type: 'datetime',
+//          showClearButton: true,
+//          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+//        }
+//      },
       {
         dataField: 'start',
         visible: false,
@@ -1056,9 +1058,6 @@ Attendees.attendances = {
         allowGrouping: false,
         caption: 'Note',
         dataType: 'string',
-        editorOptions: {
-          autoResizeEnabled: true,
-        },
       },
     ],
   },

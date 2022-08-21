@@ -525,7 +525,7 @@ Attendees.roster = {
         // onContentReady: e => e.component.option('toolbarItems[0].visible', false),  // assembly
       },
       form: {
-        colCount: 2,
+
         items: [
           {
             dataField: 'attending',
@@ -543,21 +543,23 @@ Attendees.roster = {
             dataField: 'category',
             helpText: 'attendance status',
           },
-         {
-           dataField: 'infos.note',
-           helpText: 'special memo',
-           editorOptions: {
-             autoResizeEnabled: true,
-           },
-         },
-//          {
-//            dataField: 'start',
-//            helpText: 'participation start time in browser timezone',
-//          },
-//          {
-//            dataField: 'finish',
-//            helpText: 'participation end time in browser timezone',
-//          },
+          {
+            dataField: 'start',
+            helpText: 'participation start time in browser timezone',
+          },
+          {
+            dataField: 'finish',
+            helpText: 'participation end time in browser timezone',
+          },
+          {
+            dataField: 'infos.note',
+            helpText: 'special memo',
+            editorType: 'dxTextArea',
+            colSpan: 2,
+            editorOptions: {
+              autoResizeEnabled: true,
+            },
+          },
         ],
       },
     },
@@ -820,24 +822,26 @@ Attendees.roster = {
           }
         },
       },
-//      {
-//        dataField: 'start',
-//        dataType: 'datetime',
-//        format: 'MM/dd/yyyy',
-//        editorOptions: {
-//          type: 'datetime',
-//          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-//        },
-//      },
-//      {
-//        dataField: 'finish',
-//        dataType: 'datetime',
-//        format: 'MM/dd/yyyy',
-//        editorOptions: {
-//          type: 'datetime',
-//          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-//        },
-//      },
+      {
+        dataField: 'start',
+        visible: false,
+        dataType: 'datetime',
+        format: 'MM/dd/yyyy',
+        editorOptions: {
+          type: 'datetime',
+          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+        },
+      },
+      {
+        dataField: 'finish',
+        visible: false,
+        dataType: 'datetime',
+        format: 'MM/dd/yyyy',
+        editorOptions: {
+          type: 'datetime',
+          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+        },
+      },
       {
         dataField: 'infos.note',
         caption: 'Note',
