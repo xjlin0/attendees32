@@ -1814,7 +1814,7 @@
     "model": "django_celery_beat.periodictasks",
     "pk": 1,
     "fields": {
-      "last_update": "2022-08-14T22:18:35.309Z"
+      "last_update": "2022-08-21T16:11:00.899Z"
     }
   },
   {
@@ -1869,7 +1869,7 @@
       "enabled": true,
       "last_run_at": null,
       "total_run_count": 0,
-      "date_changed": "2022-08-14T22:18:35.313Z",
+      "date_changed": "2022-08-21T16:11:00.903Z",
       "description": ""
     }
   },
@@ -2731,7 +2731,7 @@
       },
       "lft": 1,
       "rght": 30,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 0
     }
   },
@@ -2756,7 +2756,7 @@
       },
       "lft": 2,
       "rght": 3,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 1
     }
   },
@@ -2781,7 +2781,7 @@
       },
       "lft": 18,
       "rght": 19,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -2809,7 +2809,7 @@
       },
       "lft": 1,
       "rght": 16,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 0
     }
   },
@@ -2833,7 +2833,7 @@
       },
       "lft": 16,
       "rght": 17,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -2858,7 +2858,7 @@
       },
       "lft": 4,
       "rght": 5,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 1
     }
   },
@@ -2883,7 +2883,7 @@
       },
       "lft": 10,
       "rght": 11,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 1
     }
   },
@@ -2907,7 +2907,7 @@
       },
       "lft": 20,
       "rght": 21,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -2931,7 +2931,7 @@
       },
       "lft": 8,
       "rght": 9,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 1
     }
   },
@@ -2959,7 +2959,7 @@
       },
       "lft": 1,
       "rght": 6,
-      "tree_id": 13,
+      "tree_id": 14,
       "level": 0
     }
   },
@@ -2984,7 +2984,7 @@
       },
       "lft": 4,
       "rght": 5,
-      "tree_id": 13,
+      "tree_id": 14,
       "level": 1
     }
   },
@@ -3009,7 +3009,7 @@
       },
       "lft": 2,
       "rght": 3,
-      "tree_id": 13,
+      "tree_id": 14,
       "level": 1
     }
   },
@@ -3034,7 +3034,7 @@
       },
       "lft": 14,
       "rght": 15,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3059,7 +3059,7 @@
       },
       "lft": 6,
       "rght": 7,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3169,7 +3169,7 @@
       "infos": {},
       "lft": 10,
       "rght": 11,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3194,7 +3194,7 @@
       },
       "lft": 8,
       "rght": 9,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3219,7 +3219,7 @@
       },
       "lft": 26,
       "rght": 27,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3243,7 +3243,7 @@
       },
       "lft": 1,
       "rght": 2,
-      "tree_id": 10,
+      "tree_id": 11,
       "level": 0
     }
   },
@@ -3267,7 +3267,7 @@
       },
       "lft": 22,
       "rght": 23,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3292,7 +3292,7 @@
       },
       "lft": 28,
       "rght": 29,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3317,7 +3317,7 @@
       },
       "lft": 26,
       "rght": 27,
-      "tree_id": 11,
+      "tree_id": 12,
       "level": 1
     }
   },
@@ -3386,7 +3386,7 @@
       },
       "lft": 14,
       "rght": 15,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 1
     }
   },
@@ -3411,7 +3411,7 @@
       },
       "lft": 12,
       "rght": 13,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 1
     }
   },
@@ -3436,8 +3436,32 @@
       },
       "lft": 8,
       "rght": 9,
-      "tree_id": 12,
+      "tree_id": 13,
       "level": 1
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 36,
+    "fields": {
+      "created": "2022-08-21T16:15:26.412Z",
+      "modified": "2022-08-21T16:15:26.412Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "API",
+      "parent": null,
+      "html_type": "",
+      "urn": "/occasions/api/series_attendances/",
+      "url_name": "series_attendance-list",
+      "display_name": "series_attendances_viewset",
+      "display_order": 0,
+      "infos": {
+        "note": "url_name is for coworkers to batch create series of attendance from /occasions/attendances/"
+      },
+      "lft": 1,
+      "rght": 2,
+      "tree_id": 10,
+      "level": 0
     }
   },
   {
@@ -4816,6 +4840,71 @@
       "read": true,
       "write": true,
       "menu": 35
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 129,
+    "fields": {
+      "created": "2022-08-21T16:15:26.419Z",
+      "modified": "2022-08-21T16:15:26.419Z",
+      "is_removed": false,
+      "auth_group": 2,
+      "read": true,
+      "write": true,
+      "menu": 36
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 130,
+    "fields": {
+      "created": "2022-08-21T16:15:26.420Z",
+      "modified": "2022-08-21T16:15:26.420Z",
+      "is_removed": false,
+      "auth_group": 1,
+      "read": true,
+      "write": true,
+      "menu": 36
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 131,
+    "fields": {
+      "created": "2022-08-21T16:15:26.421Z",
+      "modified": "2022-08-21T16:15:26.421Z",
+      "is_removed": false,
+      "auth_group": 5,
+      "read": true,
+      "write": true,
+      "menu": 36
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 132,
+    "fields": {
+      "created": "2022-08-21T16:15:26.422Z",
+      "modified": "2022-08-21T16:15:26.422Z",
+      "is_removed": false,
+      "auth_group": 6,
+      "read": true,
+      "write": true,
+      "menu": 36
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 133,
+    "fields": {
+      "created": "2022-08-21T16:15:26.423Z",
+      "modified": "2022-08-21T16:15:26.423Z",
+      "is_removed": false,
+      "auth_group": 4,
+      "read": true,
+      "write": true,
+      "menu": 36
     }
   },
   {
