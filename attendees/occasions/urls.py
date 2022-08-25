@@ -69,7 +69,7 @@ router.register(
 router.register(
     "api/series_attendances",
     series_attendances_viewset,
-    basename="series_attendances",  # request.resolver_match.url_name will be series_attendance-list
+    basename="series_attendances",  # request.resolver_match.url_name will be series_attendances-list
 )
 router.register(
     "api/user_assembly_characters",

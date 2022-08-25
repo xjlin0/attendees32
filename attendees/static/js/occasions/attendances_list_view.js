@@ -97,7 +97,7 @@ Attendees.attendances = {
                     }, 'error', 5000);
                 },
                 complete: () => {
-                  Attendees.attendances.gatheringsDatagrid.refresh();
+                  Attendees.attendances.attendancesDatagrid.refresh();
                 }, // partial attendances may have generated even when errors
               });
             } else {

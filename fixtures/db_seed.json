@@ -3452,7 +3452,7 @@
       "parent": null,
       "html_type": "",
       "urn": "/occasions/api/series_attendances/",
-      "url_name": "series_attendance-list",
+      "url_name": "series_attendances-list",
       "display_name": "series_attendances_viewset",
       "display_order": 0,
       "infos": {
@@ -11899,6 +11899,7 @@
         "gathering": {
           "notice": "the finish date of attending_meets of 'archived' is always forever to show all attendees."
         },
+        "attendance": {},
         "allowed_groups": [
           "data_organizer",
           "data_counselor"
@@ -11940,6 +11941,7 @@
         "gathering": {
           "notice": "the finish date of attending_meets of visitor is always forever to show all attendees."
         },
+        "attendance": {},
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
@@ -11984,6 +11986,7 @@
         "gathering": {
           "generate_attendance": true
         },
+        "attendance": {},
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
@@ -12029,6 +12032,7 @@
         "gathering": {
           "generate_attendance": true
         },
+        "attendance": {},
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
@@ -12072,6 +12076,7 @@
       "slug": "d7c8Fd_cfcch_adault_sunday_recording_av_control",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "worship_organizer",
           "conference_organizer",
@@ -12112,6 +12117,7 @@
       "slug": "faBd6C_heaven_sea_of_glass_angel_choir",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "worship_organizer"
         ],
@@ -12150,6 +12156,7 @@
       "slug": "d7c8Fd_cfcch_junior_vacation_bible_school",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
@@ -12193,6 +12200,7 @@
       "slug": "d7c8Fd_cfcch_junior_retreat",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
@@ -12236,6 +12244,7 @@
       "slug": "d7c8Fd_cfcch_congregation_roaster",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12277,6 +12286,7 @@
       "slug": "d7c8Fd_cfcch_congregation_directory",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12316,6 +12326,7 @@
       "slug": "d7c8Fd_cfcch_congregation_member",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12355,6 +12366,7 @@
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_accommodation",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12395,6 +12407,7 @@
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_transportation",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12435,6 +12448,7 @@
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_panel",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "conference_organizer"
@@ -12474,6 +12488,7 @@
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_chinese_program",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12514,6 +12529,7 @@
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_junior_program",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12554,6 +12570,7 @@
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_english_program",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12594,6 +12611,7 @@
       "slug": "d7c8Fd_cfcch_congregation_baptized",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",
@@ -12632,6 +12650,7 @@
       "slug": "d7c8Fd_cfcch_congregation_believer",
       "infos": {
         "gathering": {},
+        "attendance": {},
         "allowed_groups": [
           "data_counselor",
           "children_organizer",

@@ -696,7 +696,12 @@ Attendees.gatherings = {
       {
         dataField: 'display_name',
         width: '30%',
-//        visible: false,
+        validationRules: [
+          {
+            type: 'stringLength',
+            max: 254,
+          }
+        ],
         editorOptions: {
           placeholder: 'Example: "The Rock - 12/25/2022"',
         },
