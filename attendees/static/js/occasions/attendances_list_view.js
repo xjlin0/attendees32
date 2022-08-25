@@ -54,7 +54,7 @@ Attendees.attendances = {
         disabled: true,
         text: 'Generate Attendances',
         height: '1.5rem',
-        hint: 'Generate attendances based on attendingmeet. Disabled when multiple meets selected or "Till" empty',
+        hint: 'Generate attendances based on attendingmeet. Disabled when multiple meets selected, "Till" empty or not all characters selected.',
         onClick: () => {
           const filterTill = $('div.filter-till input')[1].value;
           if (filterTill && confirm('Are you sure to auto generate all attendances of the chosen meet before the filtered date from character defined in the enrollment?')) {
@@ -136,7 +136,8 @@ Attendees.attendances = {
 
     return Attendees.attendances.selectedMeetHasRule &&
       Attendees.attendances.filtersForm.validate().isValid &&
-      intervalValid && selectedMeet && selectedMeet.length === 1
+      intervalValid && selectedMeet && selectedMeet.length === 1 &&
+      Attendees.utilities.isAllGroupedTagsSelected(Attendees.attendances.filtersForm.getEditor('characters'));
   },
 
   initFiltersForm: () => {
