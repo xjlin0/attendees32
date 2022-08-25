@@ -193,6 +193,15 @@ Attendees.utilities = {
     tagBoxEditor.option('value', availableTagSlugs);
   },  // loop in loop/flatMap because of options grouped by assembly/category
 
+  isAllGroupedTagsSelected: (tagBoxEditor) => {
+    if(tagBoxEditor){
+      const availableTagSlugs = tagBoxEditor.option('items').flatMap(category => category.items.map(item => item.slug));
+      return Attendees.utilities.testArraysEqualAfterSort(tagBoxEditor.option('value'), availableTagSlugs);
+    } else {
+      return null;
+    }
+  },
+
   accessItemFromSessionStorage: (storageMasterKey, itemKey, itemValue) => {
     if (storageMasterKey) {
       const storedObject = JSON.parse(window.sessionStorage.getItem(storageMasterKey) || '{}');
