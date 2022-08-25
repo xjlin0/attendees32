@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.conf import settings
 from django.db.models import F, Q, CharField, Value, When, Case
 from django.db.models.functions import Concat, Trim
 from rest_framework.utils import json
 from attendees.occasions.models import Attendance, Meet
+from attendees.persons.models import AttendingMeet
 from attendees.persons.services import AttendeeService
 
 
@@ -231,17 +232,17 @@ class AttendanceService:
         return Attendance.objects.annotate(**annotations).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
-    def batch_create(begin, end, meet, user_time_zone):
+    def batch_create(begin, end, meet_slug, meet, user_time_zone):
         """
         Idempotently create attendances based on the following params and attendingmeet.
 
         :param begin:
         :param end:
         :param meet:
+        :param meet_slug:
         :param user_time_zone:
         :return: number of attendances created
         """
-        print("hi 244 here is begin, end, meet, user_time_zone: ", begin, end, meet, user_time_zone)
         number_created = 0
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_begin_time = datetime.strptime(begin, iso_time_format)
@@ -254,33 +255,24 @@ class AttendanceService:
             end_time = (
                 user_end_time if meet.finish > user_end_time else meet.finish
             ).astimezone(user_time_zone)
-            # gathering_time = (
-            #     timedelta(minutes=duration) if duration and duration > 0 else None
-            # )
-            for er in meet.event_relations.all():
-                for occurrence in er.event.get_occurrences(begin_time, end_time):
-                    occurrence_end = (
-                        occurrence.start + gathering_time
-                        if gathering_time
-                        else occurrence.end
-                    )
-                    gathering, gathering_created = Gathering.objects.get_or_create(
-                        meet=meet,
-                        site_id=meet.site_id,
-                        site_type=meet.site_type,
-                        start=occurrence.start,
-                        defaults={
-                            "site_type": meet.site_type,
-                            "site_id": meet.site_id,
-                            "meet": meet,
-                            "start": occurrence.start,
-                            "finish": occurrence_end,
-                            "infos": meet.infos.get('gathering', {}),
-                            "display_name": f'{occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}',
-                        },
-                    )  # don't update gatherings if exist since it may have customizations
 
-                    if gathering_created:
+            for gathering in meet.gathering_set.filter(finish__gte=begin_time, start__lte=end_time):
+                for attendingmeet in AttendingMeet.objects.filter(meet=meet, finish__gte=gathering.start, start__lte=gathering.finish):
+                    attendance, attendance_created = Attendance.objects.get_or_create(
+                        gathering=gathering,
+                        attending=attendingmeet.attending,
+                        character=attendingmeet.character,
+                        team=attendingmeet.team,
+                        defaults={
+                            "gathering": gathering,
+                            "attending": attendingmeet.attending,
+                            "character": attendingmeet.character,
+                            "team": attendingmeet.team,
+                            "infos": meet.infos.get('attendance', {}),
+                        },  # don't put time/place in attendance, since time/place may suddenly change by manager
+                    )  # don't update attendance if exist since it may have customizations
+
+                    if attendance_created:
                         number_created += 1
 
             results = {
@@ -289,14 +281,14 @@ class AttendanceService:
                 "meet_slug": meet.slug,
                 "begin": begin_time,
                 "end": end_time,
-                "explain": "Begin&end dates are restrained by Event's default dates.",
+                "explain": "Please be aware that people can join the same gathering with different character and team.",
             }
 
         else:
             results = {
                 "success": False,
                 "number_created": number_created,
-                "meet_slug": meet_slug,
+                "meet_slug": meet.slug if meet else meet_slug,
                 "begin": begin,
                 "end": end,
                 "explain": "Meet or begin&end time invalid.",

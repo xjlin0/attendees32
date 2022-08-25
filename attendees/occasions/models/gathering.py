@@ -1,5 +1,5 @@
 # from django.core.exceptions import ValidationError
-import pghistory
+import pghistory, pytz
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -25,7 +25,7 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
     )
     attendings = models.ManyToManyField("persons.Attending", through="Attendance")
     display_name = models.CharField(
-        max_length=50, blank=True, null=True, help_text="02/09/2020, etc"
+        max_length=255, blank=True, null=True, help_text="02/09/2020, etc"
     )
     infos = models.JSONField(
         null=True,
@@ -87,6 +87,12 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
             self.site or "",
         )
 
+    # def time_and_location_dict(self, timezone='UTC', timeformat='%Y/%m/%d,%H:%M %p %Z'):
+    #     return {
+    #         "time": self.start.astimezone(pytz.timezone(timezone)).strftime(timeformat),
+    #         "location": str(self.site),
+    #     }
+
 
 class GatheringsHistory(pghistory.get_event_model(
     Gathering,
@@ -108,7 +114,7 @@ class GatheringsHistory(pghistory.get_event_model(
     site_type = models.ForeignKey(db_constraint=False, help_text='site: django_content_type id for table name', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='contenttypes.contenttype')
     infos = models.JSONField(blank=True, default=dict, help_text='Example: {"LG_location": "F207", "link": "https://..."}. Please keep {} here even no data', null=True)
     site_id = models.CharField(default='0', max_length=36)
-    display_name = models.CharField(blank=True, help_text='02/09/2020, etc', max_length=50, null=True)
+    display_name = models.CharField(blank=True, help_text='02/09/2020, etc', max_length=255, null=True)
     pgh_context = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')
 
     class Meta:

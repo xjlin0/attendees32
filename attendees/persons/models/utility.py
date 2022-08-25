@@ -162,6 +162,7 @@ class Utility:
             },
             "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE,
             "gathering": {},
+            "attendance": {},
         }
 
     @staticmethod

@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('site_id', models.CharField(max_length=36, null=False, blank=False, default='0')),
                 ('meet', models.ForeignKey(on_delete=models.SET(0), to='occasions.Meet')),
                 ('site_type', models.ForeignKey(help_text='site: django_content_type id for table name', on_delete=models.SET(0), to='contenttypes.ContentType')),
-                ('display_name', models.CharField(blank=True, null=True, max_length=50, help_text="02/09/2020, etc")),
+                ('display_name', models.CharField(blank=True, null=True, max_length=255, help_text="02/09/2020, etc")),
                 ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"LG_location": "F207", "link": "https://..."}. Please keep {} here even no data', null=True)),
             ],
             options={
@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
                 ('site_type', models.ForeignKey(db_constraint=False, help_text='site: django_content_type id for table name', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='contenttypes.contenttype')),
                 ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"LG_location": "F207", "link": "https://..."}. Please keep {} here even no data', null=True)),
                 ('site_id', models.CharField(default='0', max_length=36)),
-                ('display_name', models.CharField(blank=True, help_text='02/09/2020, etc', max_length=50, null=True)),
+                ('display_name', models.CharField(blank=True, help_text='02/09/2020, etc', max_length=255, null=True)),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
             ],
             options={

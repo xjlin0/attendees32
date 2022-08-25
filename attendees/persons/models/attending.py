@@ -59,7 +59,7 @@ class Attending(TimeStampedModel, SoftDeletableModel, Utility):
             self.registration
             and self.registration.assembly.need_age
             and self.infos.bed_needs < 1
-            and self.info.age is None
+            and self.infos.age is None
         ):
             raise ValidationError("You must specify age for the participant")
 
