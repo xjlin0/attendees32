@@ -277,7 +277,7 @@ class AttendanceService:
 
             results = {
                 "success": True,
-                "number_created": number_created,
+                "attendance_created": number_created,
                 "meet_slug": meet.slug,
                 "begin": begin_time,
                 "end": end_time,
@@ -287,7 +287,7 @@ class AttendanceService:
         else:
             results = {
                 "success": False,
-                "number_created": number_created,
+                "attendance_created": number_created,
                 "meet_slug": meet.slug if meet else meet_slug,
                 "begin": begin,
                 "end": end,

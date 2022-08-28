@@ -52,9 +52,9 @@ Attendees.attendances = {
     if (generateAttendancesButtonDiv) {
       Attendees.attendances.generateGatheringsButton = $('div#generate-attendances').dxButton({
         disabled: true,
-        text: 'Generate Attendances',
+        text: 'Generate Attendances & Gatherings',
         height: '1.5rem',
-        hint: 'Generate attendances based on attendingmeet. Disabled when multiple meets selected, "Till" empty or not all characters selected.',
+        hint: 'Generate gatherings from existing event schedule and attendances based on attendingmeet. Disabled when multiple meets selected, "Till" empty or not all characters selected.',
         onClick: () => {
           const filterTill = $('div.filter-till input')[1].value;
           if (filterTill && confirm('Are you sure to auto generate all attendances of the chosen meet before the filtered date from character defined in the enrollment?')) {
@@ -62,6 +62,7 @@ Attendees.attendances = {
             const filterFrom = $('div.filter-from input')[1].value;
             params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : new Date().toISOString();
             params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
+            params['duration'] = Attendees.attendances.filtersForm.getEditor('duration').option('value');
             const meetSlugs = $('div.selected-meets select').val();
             if (params['end'] && Attendees.attendances.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
               params['meet_slug'] = meetSlugs[0];
@@ -74,7 +75,7 @@ Attendees.attendances = {
                 success: (result) => {
                   DevExpress.ui.notify(
                     {
-                      message: 'Batch processed, ' + result.number_created + ' successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
+                      message: 'Batch processed, ' + result.gathering_created + ' gatherings and ' + result.attendance_created + ' attendances successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
                       width: 500,
                       position: {
                         my: 'center',
@@ -125,7 +126,11 @@ Attendees.attendances = {
       Attendees.attendances.attendancesDatagrid.option('editing.allowDeleting', enabled);
       Attendees.attendances.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
-    Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
+    if (enabled) {
+      Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
+    } else {
+      Attendees.attendances.generateGatheringsButton.option('disabled', !enabled);
+    }
   },
 
   readyToGenerate: () => {
@@ -137,6 +142,8 @@ Attendees.attendances = {
     return Attendees.attendances.selectedMeetHasRule &&
       Attendees.attendances.filtersForm.validate().isValid &&
       intervalValid && selectedMeet && selectedMeet.length === 1 &&
+      Attendees.attendances.filtersForm.getEditor('duration').option('value') &&
+      Attendees.attendances.filtersForm.getEditor('duration').option('value') > 0 &&
       Attendees.utilities.isAllGroupedTagsSelected(Attendees.attendances.filtersForm.getEditor('characters'));
   },
 
@@ -231,7 +238,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'meets',
-        colSpan: 6,
+        colSpan: 5,
         helpText: "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely",
         cssClass: 'selected-meets',
         validationRules: [{type: 'required'}],
@@ -313,7 +320,7 @@ Attendees.attendances = {
                   finalHelpText = noRuleText;
                 }
                 $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
-                // Attendees.attendances.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
+                Attendees.attendances.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
               }
             }
           },
@@ -350,6 +357,19 @@ Attendees.attendances = {
             }),
             key: 'slug',
           }),
+        },
+      },
+      {
+        colSpan: 1,
+        dataField: 'duration',
+        editorType: 'dxTextBox',
+        helpText: '(minutes)',
+        label: {
+          location: 'top',
+          text: 'duration',
+        },
+        editorOptions: {
+          value: 90,
         },
       },
       {

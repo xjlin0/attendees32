@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from attendees.occasions.models import Meet
 from attendees.occasions.serializers import BatchAttendancesSerializer
 
-from attendees.occasions.services import AttendanceService
+from attendees.occasions.services import AttendanceService, GatheringService
 from attendees.users.authorization import RouteGuard
 
 
@@ -34,12 +34,21 @@ class SeriesAttendancesViewSet(LoginRequiredMixin, RouteGuard, viewsets.ViewSet)
             or organization.infos["default_time_zone"]
             or settings.CLIENT_DEFAULT_TIME_ZONE
         )
-        results = AttendanceService.batch_create(
+        gathering_results = GatheringService.batch_create(
             **request.data,
             meet=meet,
             user_time_zone=pytz.timezone(parse.unquote(tzname)),
         )
-        return Response(results)
+        attendance_results = AttendanceService.batch_create(
+            begin=request.data['begin'],
+            end=request.data['end'],
+            meet_slug=request.data['meet_slug'],
+            meet=meet,
+            user_time_zone=pytz.timezone(parse.unquote(tzname)),
+        )
+        attendance_results['gathering_generation_success'] = gathering_results['success']
+        attendance_results['gathering_created'] = gathering_results['number_created']
+        return Response(attendance_results)
 
 
 series_attendances_viewset = SeriesAttendancesViewSet
