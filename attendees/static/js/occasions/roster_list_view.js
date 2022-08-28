@@ -576,10 +576,8 @@ Attendees.roster = {
     onEditingStart: (e) => {
       const grid = e.component;
       grid.beginUpdate();
-
       if (e.data && typeof e.data === 'object') {
-        const title = Attendees.utilities.editingEnabled ? 'Editing Attendance' : 'Read only Info, please enable editing for modifications';
-        grid.option('editing.popup.title', title);
+        grid.option('editing.popup.title', 'Editing Attendance of ' + e.data.attending__attendee__infos__names__original);
       }
       grid.option("columns").forEach((column) => {
         grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
@@ -606,7 +604,13 @@ Attendees.roster = {
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {  // squeeze to name column for better mobile experience.
-          cellElement.append ('<strong>' + cellInfo.displayValue + '</strong><br>');
+          // cellElement.append ('<strong>' + cellInfo.displayValue + '</strong><br>');
+          const editorButton = `<button type="button"
+                                        class="btn btn-link btn-sm"
+                                        onclick="Attendees.roster.attendancesDatagrid.editRow(${cellInfo.rowIndex})">
+                                  ${cellInfo.displayValue}
+                                </button>`;
+          cellElement.append (editorButton);
           const buttonCategoryKeys = Object.keys(Attendees.roster.buttonCategories);
           if (cellInfo && cellInfo.data && buttonCategoryKeys.length > 0) {
             let html = `<div class="btn-group-vertical btn-group-sm"
@@ -825,6 +829,7 @@ Attendees.roster = {
       },
       {
         dataField: 'start',
+        caption: 'Time in',
         visible: false,
         dataType: 'datetime',
         format: 'MM/dd/yyyy',
@@ -835,6 +840,7 @@ Attendees.roster = {
       },
       {
         dataField: 'finish',
+        caption: 'Time out',
         visible: false,
         dataType: 'datetime',
         format: 'MM/dd/yyyy',
