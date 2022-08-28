@@ -283,6 +283,11 @@ class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all meets across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":

@@ -17,7 +17,7 @@ class AttendingMeetService:
     def flip_attendingmeet_by_existing_attending(current_user, attendees, meet_id, join=True):
         """
         If current_user has the permission, let attendees join/leave a meet. If there's no attending, create one
-        attending.  Notice: This will overwrite existing attendingmeet, means mass assign will tkae higher priority
+        attending.  Notice: This will overwrite existing attendingmeet, means mass assign will take higher priority
         of individual's previous attendingmeet.
 
         :param current_user:

@@ -126,7 +126,11 @@ Attendees.gatherings = {
       Attendees.gatherings.gatheringsDatagrid.option('editing.allowDeleting', enabled);
       Attendees.gatherings.gatheringsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
-    Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
+    if (enabled) {
+      Attendees.gatherings.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
+    } else {
+      Attendees.gatherings.generateGatheringsButton.option('disabled', !enabled);
+    }
   },
 
   readyToGenerate: () => {
@@ -357,7 +361,6 @@ Attendees.gatherings = {
         },
         editorOptions: {
           value: 90,
-          // disabled: true,
         },
       },
       {

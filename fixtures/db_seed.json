@@ -12152,8 +12152,8 @@
       "audience_editable": true,
       "start": "2020-05-12T14:54:57Z",
       "finish": "2099-12-31T15:54:58Z",
-      "display_name": "Vacation Bible School 假期聖經營",
-      "slug": "d7c8Fd_cfcch_junior_vacation_bible_school",
+      "display_name": "Shining Star 閃亮之星",
+      "slug": "d7c8Fd_cfcch_junior_shining_star",
       "infos": {
         "gathering": {},
         "attendance": {},
@@ -12177,7 +12177,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_period_in_weeks": 160
+        "default_period_in_weeks": 30
       },
       "site_type": 52,
       "site_id": "1"
