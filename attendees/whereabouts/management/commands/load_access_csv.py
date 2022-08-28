@@ -488,7 +488,7 @@ class Command(BaseCommand):
                                 display_order = 10
 
                             some_household_values = {attendee_header: Utility.boolean_or_datetext_or_original(folk.infos.get('access_household_values', {}).get(access_header)) for (access_header, attendee_header) in family_to_attendee_infos_converter.items() if Utility.presence(folk.infos.get('access_household_values', {}).get(access_header)) is not None}
-                            some_household_values['print_directory'] = [str(folk.id)]
+                            # some_household_values['print_directory'] = [str(folk.id)]
                             attendee.infos = {
                                 'mobility': 2,
                                 'created_reason': attendee.infos.get('created_reason'),
@@ -506,7 +506,7 @@ class Command(BaseCommand):
                                 attendee_non_family_folk.division = attendee.division
                                 attendee_non_family_folk.save()
                             else:
-                                self.stdout.write("no friend circle!!! for attendee!! ", attendee)
+                                self.stdout.write("no friend circle!!! for attendee: ", attendee)
 
                             attendee.save()
                             FolkAttendee.objects.update_or_create(

@@ -280,10 +280,10 @@ Attendees.attendances = {
             // Attendees.attendances.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
-              if (Attendees.attendances.attendancesDatagrid.totalCount() > 0) {
+              // if (Attendees.attendances.attendancesDatagrid.totalCount() > 0) {
                 Attendees.attendances.filtersForm.getEditor('characters').option('value', []);
                 Attendees.attendances.filtersForm.getEditor('characters').getDataSource().reload();
-              }
+              // }
               const characters = $('div.selected-characters select').val();
               if (characters.length) {
                 Attendees.attendances.attendancesDatagrid.refresh();
@@ -729,7 +729,7 @@ Attendees.attendances = {
       grid.beginUpdate();
 
       if (e.data && typeof e.data === 'object') {
-        const title = Attendees.utilities.editingEnabled ? 'Editing Attendance' : 'Read only Info, please enable editing for modifications';
+        const title = Attendees.utilities.editingEnabled ? 'Editing Attendance of ' + e.data.attending__attendee__infos__names__original : 'Read only Info, please enable editing for modifications';
         grid.option('editing.popup.title', title);
       }
       grid.option("columns").forEach((column) => {
