@@ -716,7 +716,7 @@ Attendees.attendances = {
       },
     },
     onCellClick: (e) => {
-      if (e.rowType === 'data' && e.column.dataField === 'attending') {
+      if (e.rowType === 'data' && e.column.dataField === 'character') {
         e.component.editRow(e.row.rowIndex);
       }
     },
@@ -743,7 +743,7 @@ Attendees.attendances = {
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
+          cellElement.append (`<a target="_blank" href="/persons/attendee/${cellInfo.data.attendee_id}">${cellInfo['displayValue']}</a>`);
         },
         placeholder: "Select or search...",
         editorOptions: {
@@ -815,6 +815,51 @@ Attendees.attendances = {
               },
             }),
           },
+        },
+      },
+      {
+        dataField: 'character',
+        validationRules: [{type: 'required'}],
+        cellTemplate: (cellElement, cellInfo) => {
+          cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
+        },
+        setCellValue: (newData, value, currentData) => {
+          if (value) {
+            newData.character = value;
+          }  // for preventing gathering default character overwriting
+        },
+        lookup: {
+          valueExpr: 'id',
+          displayExpr: 'display_name',
+          dataSource: (options) => {
+            return {
+              // filter: options.data ? {'assemblies[]': options.data.gathering__meet__assembly} : null,
+              store: new DevExpress.data.CustomStore({
+                key: 'id',
+                load: (searchOpts) => {
+                  searchOpts['take'] = 9999;
+                  if (options.data && options.data.gathering__meet__assembly) {
+                    searchOpts['assemblies[]'] = options.data.gathering__meet__assembly;
+                  } else {
+                    const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                    const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                    if (assemblies && assemblies.size){
+                      searchOpts['assemblies[]'] = Array.from(assemblies);
+                    }
+                  }
+                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
+                },
+                byKey: (key) => {
+                  const d = new $.Deferred();
+                  $.get($('form.filters-dxform').data('characters-endpoint') + key + '/')
+                    .done((result) => {
+                      d.resolve(result);
+                    });
+                  return d.promise();
+                },
+              }),
+            };
+          }
         },
       },
       {
@@ -927,48 +972,6 @@ Attendees.attendances = {
         },
       },
       {
-        dataField: 'character',
-        validationRules: [{type: 'required'}],
-        setCellValue: (newData, value, currentData) => {
-          if (value) {
-            newData.character = value;
-          }  // for preventing gathering default character overwriting
-        },
-        lookup: {
-          valueExpr: 'id',
-          displayExpr: 'display_name',
-          dataSource: (options) => {
-            return {
-              // filter: options.data ? {'assemblies[]': options.data.gathering__meet__assembly} : null,
-              store: new DevExpress.data.CustomStore({
-                key: 'id',
-                load: (searchOpts) => {
-                  searchOpts['take'] = 9999;
-                  if (options.data && options.data.gathering__meet__assembly) {
-                    searchOpts['assemblies[]'] = options.data.gathering__meet__assembly;
-                  } else {
-                    const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
-                    const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
-                    if (assemblies && assemblies.size){
-                      searchOpts['assemblies[]'] = Array.from(assemblies);
-                    }
-                  }
-                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
-                },
-                byKey: (key) => {
-                  const d = new $.Deferred();
-                  $.get($('form.filters-dxform').data('characters-endpoint') + key + '/')
-                    .done((result) => {
-                      d.resolve(result);
-                    });
-                  return d.promise();
-                },
-              }),
-            };
-          }
-        },
-      },
-      {
         dataField: 'category',
         validationRules: [{type: 'required'}],
         visible: false,
@@ -1055,6 +1058,7 @@ Attendees.attendances = {
 //      },
       {
         dataField: 'start',
+        caption: 'Time in',
         visible: false,
         dataType: 'datetime',
         format: 'MM/dd/yyyy',
@@ -1066,6 +1070,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'finish',
+        caption: 'Time out',
         visible: false,
         dataType: 'datetime',
         format: 'MM/dd/yyyy',

@@ -207,7 +207,8 @@ class AttendanceService:
                     output_field=CharField()
                 )),
                 output_field=CharField()
-            )
+            ),
+            'attendee_id': F("attending__attendee__id"),
         }
 
         if photo_instead_of_gathering_assembly:

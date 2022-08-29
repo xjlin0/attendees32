@@ -7,6 +7,7 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
     gathering__meet__assembly = serializers.IntegerField(read_only=True, source='assembly')
     gathering__meet = serializers.IntegerField(read_only=True, source='meet')
     gathering__display_name = serializers.CharField(read_only=True, source='gathering_name')
+    attendee_id = serializers.CharField(read_only=True)
     attending__attendee__infos__names__original = serializers.CharField(read_only=True, source='attending_name')
     photo = serializers.CharField(read_only=True)
 

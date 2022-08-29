@@ -563,11 +563,11 @@ Attendees.roster = {
         ],
       },
     },
-    onCellClick: (e) => {
-      if (e.rowType === 'data' && e.column.dataField === 'photo') {
-        e.component.editRow(e.row.rowIndex);
-      }
-    },
+    // onCellClick: (e) => {
+    //   if (e.rowType === 'data' && e.column.dataField === 'photo') {
+    //     e.component.editRow(e.row.rowIndex);
+    //   }
+    // },
     onInitNewRow: (e) => {
       e.data.gathering = Attendees.roster.filtersForm.getEditor('gatherings').option('value');
       e.data.category = 1;  // scheduled.
@@ -592,7 +592,7 @@ Attendees.roster = {
         allowSorting: false,
         allowGrouping: false,
         cellTemplate: (container, options) => {
-          $('<div>')
+          $(`<a target="_blank" href="/persons/attendee/${options.data.attendee_id}"></a>`)
             .append($('<img>', { class: 'attendee-photo-img', src: options.value }))
             .appendTo(container);
         },
