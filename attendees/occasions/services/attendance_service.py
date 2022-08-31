@@ -257,7 +257,7 @@ class AttendanceService:
                 user_end_time if meet.finish > user_end_time else meet.finish
             ).astimezone(user_time_zone)
 
-            for gathering in meet.gathering_set.filter(finish__gte=begin_time, start__lte=end_time):
+            for gathering in meet.gathering_set.filter(finish__gte=begin_time, start__lte=end_time, infos__generate_attendance=True):
                 for attendingmeet in AttendingMeet.objects.filter(meet=meet, finish__gte=gathering.start, start__lte=gathering.finish):
                     attendance, attendance_created = Attendance.objects.get_or_create(
                         gathering=gathering,

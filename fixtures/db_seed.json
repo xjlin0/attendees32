@@ -12692,6 +12692,25 @@
     }
   },
   {
+    "model": "occasions.messagetemplate",
+    "pk": 2,
+    "fields": {
+      "created": "2021-08-28T18:50:58.723Z",
+      "modified": "2021-08-28T18:50:58.723Z",
+      "is_removed": false,
+      "organization": 1,
+      "templates": {
+        "subject": "[Attendees {env_name}] Batch_create_attendances started at {time_triggered}({tzname}), {number_created} attendance(s) created.",
+        "email_log": "Auto generating attendances for the meet '{meet_name}' from {begin} to {end}({tzname}), result: {number_created} attendance(s) created. Info: {explain}, emailing to {recipient}, email status: {email_status}",
+        "html_content": "Dear managers/coworkers of {organization}:<br><br>Auto generating attendances for the meet <strong>{meet_name}</strong> processed,<br>from {begin} to {end}({tzname}),<br>{number_created} attendance(s) created.<br>Info: {explain}<br><br>Best regards,<br>Attendees administrator."
+      },
+      "defaults": {
+        "gatherings": []
+      },
+      "type": "batch_create_attendances"
+    }
+  },
+  {
     "model": "occasions.team",
     "pk": 1,
     "fields": {
