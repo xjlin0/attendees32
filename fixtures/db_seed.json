@@ -2854,7 +2854,7 @@
       "display_order": 2300,
       "infos": {
         "class": "dropdown-item",
-        "title": "Student Roaster"
+        "title": "Student Roster"
       },
       "lft": 4,
       "rght": 5,
@@ -2980,7 +2980,7 @@
       "display_order": 3500,
       "infos": {
         "class": "dropdown-item",
-        "title": "roaster list"
+        "title": "roster list"
       },
       "lft": 4,
       "rght": 5,
@@ -2999,7 +2999,7 @@
       "category": "archived",
       "parent": 12,
       "html_type": "a",
-      "urn": "/persons/cfcch_data_management/cfcch_congregation_data/datagrid_assembly_data_attendings/?characters=d7c8Fd_cfcch_congregation_data_roaster",
+      "urn": "/persons/cfcch_data_management/cfcch_congregation_data/datagrid_assembly_data_attendings/?characters=d7c8Fd_cfcch_congregation_data_roster",
       "url_name": "datagrid_assembly_data_attendings",
       "display_name": "會眾參與 attending",
       "display_order": 3200,
@@ -11203,7 +11203,7 @@
       "assembly": 5,
       "display_name": "常做禮拜會眾",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_congregation_data_roaster",
+      "slug": "d7c8Fd_cfcch_congregation_data_roster",
       "infos": {},
       "type": "audience"
     }
@@ -12147,7 +12147,7 @@
       "modified": "2021-04-08T16:37:02.414Z",
       "is_removed": false,
       "assembly": 1,
-      "major_character": null,
+      "major_character": 1,
       "shown_audience": true,
       "audience_editable": true,
       "start": "2020-05-12T14:54:57Z",
@@ -12240,8 +12240,8 @@
       "audience_editable": false,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
-      "display_name": "常做禮拜 Worship roaster",
-      "slug": "d7c8Fd_cfcch_congregation_roaster",
+      "display_name": "常做禮拜 Worship roster",
+      "slug": "d7c8Fd_cfcch_congregation_roster",
       "infos": {
         "gathering": {},
         "attendance": {},

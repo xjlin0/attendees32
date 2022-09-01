@@ -344,20 +344,16 @@ class Command(BaseCommand):
         default_division = Division.objects.first()
         division3 = Division.objects.get(slug=division3_slug)  # kid
         data_assembly = Assembly.objects.get(slug=data_assembly_slug)
-        visitor_meet = Meet.objects.get(pk=0)
-        member_meet = Meet.objects.get(slug=member_meet_slug)
+        visitor_meet = Meet.objects.select_related('major_character').get(pk=0)
+        member_meet = Meet.objects.select_related('major_character').get(slug=member_meet_slug)
         member_gathering = Gathering.objects.filter(meet=member_meet).last()
-        roaster_meet = Meet.objects.get(slug=roaster_meet_slug)
+        roaster_meet = Meet.objects.select_related('major_character').get(slug=roaster_meet_slug)
         roaster_gathering = Gathering.objects.filter(meet=roaster_meet).last()
-        member_character = member_meet.major_character
-        roaster_character = roaster_meet.major_character
         attendee_content_type = ContentType.objects.get_for_model(Attendee)
-        baptized_meet = Meet.objects.get(slug=baptized_meet_slug)
+        baptized_meet = Meet.objects.select_related('major_character').get(slug=baptized_meet_slug)
         baptized_category = Category.objects.filter(type='status', display_name='baptized').first()
-        baptisee_character = baptized_meet.major_character
         believer_category = Category.objects.filter(type='status', display_name='receive').first()
-        believer_meet = Meet.objects.get(slug=believer_meet_slug)
-        believer_character = believer_meet.major_character
+        believer_meet = Meet.objects.select_related('major_character').get(slug=believer_meet_slug)
         successfully_processed_count = 0  # Somehow peoples.line_num incorrect, maybe csv file come with extra new lines.
         photo_import_results = []
         for people in peoples:
@@ -462,7 +458,7 @@ class Command(BaseCommand):
                     # )
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
-                    self.update_attendee_membership_and_other(baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_character, member_gathering, baptisee_character, believer_meet, believer_character, believer_category)
+                    self.update_attendee_membership_and_other(baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
 
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
@@ -543,7 +539,7 @@ class Command(BaseCommand):
                         else:
                             self.stdout.write(f"\nBad data, cannot find the household id: {household_id} for people: {people}, Other columns of this people will still be saved. Continuing. \n")
 
-                    self.update_attendee_worship_roaster(attendee, data_assembly, visitor_meet, roaster_meet, roaster_character, roaster_gathering)
+                    self.update_attendee_worship_roster(attendee, data_assembly, visitor_meet, roaster_meet, roaster_gathering)
                 else:
                     self.stdout.write(f'There is no household_id or first/lastname of the people: {people}')
                 successfully_processed_count += 1
@@ -573,10 +569,10 @@ class Command(BaseCommand):
             title='wife',
             gender=GenderEnum.FEMALE.name,
         )
-        data_assembly = Assembly.objects.get(slug=data_assembly_slug)
+        # data_assembly = Assembly.objects.get(slug=data_assembly_slug)
         directory_meet = Meet.objects.get(slug=directory_meet_slug)
         directory_gathering = Gathering.objects.filter(meet=directory_meet).last()
-        directory_character = directory_meet.major_character
+        # directory_character = directory_meet.major_character
         imported_family_folks = Folk.objects.filter(category=Attendee.FAMILY_CATEGORY, infos__access_household_id__isnull=False).order_by('created')  # excludes seed data
         successfully_processed_count = 0
         for folk in imported_family_folks:
@@ -780,7 +776,7 @@ class Command(BaseCommand):
                         successfully_processed_count += 2
                     parent.save()
                     successfully_processed_count += 1
-                self.update_directory_data(data_assembly, folk, directory_meet, directory_character, directory_gathering)
+                self.update_directory_data(folk, directory_meet, directory_gathering)
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -789,7 +785,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def update_attendee_worship_roaster(self, attendee, data_assembly, visitor_meet, roaster_meet, general_character, roaster_gathering):
+    def update_attendee_worship_roster(self, attendee, data_assembly, visitor_meet, roster_meet, roster_gathering):
         pdt = pytz.timezone('America/Los_Angeles')
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         data_registration = Registration.objects.filter(
@@ -805,9 +801,9 @@ class Command(BaseCommand):
         AttendingMeet.objects.update_or_create(
             attending=data_attending,
             meet=visitor_meet,
-            character=general_character,
+            character=visitor_meet.major_character,
             defaults={
-                'character': general_character,
+                'character': visitor_meet.major_character,
                 'category_id': -1,
                 'start': visitor_meet.start,
                 'finish': visitor_meet.finish,
@@ -817,29 +813,29 @@ class Command(BaseCommand):
         if attendee.infos.get('fixed', {}).get('attendance_count') in ['1', 'TRUE', 1]:
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
-                meet=roaster_meet,
-                character=general_character,
+                meet=roster_meet,
+                character=roster_meet.major_character,
                 defaults={
-                    'character': general_character,
-                    'category_id': -1,
-                    'start': roaster_meet.start,
+                    'character': roster_meet.major_character,
+                    'category_id': -1,  # This stop auto create Past via post-save signal
+                    'start': roster_meet.start,
                     'finish': datetime.now(pdt) + timedelta(365),  # whoever don't attend for a year won't be counted anymore
                 },
             )
 
             Attendance.objects.update_or_create(
-                gathering=roaster_gathering,
+                gathering=roster_gathering,
                 attending=data_attending,
-                character=general_character,
+                character=roster_meet.major_character,
                 team=None,
                 defaults={
-                    'gathering': roaster_gathering,
+                    'gathering': roster_gathering,
                     'attending': data_attending,
-                    'character': general_character,
+                    'character': roster_meet.major_character,
                     # 'category_id': 6,   # Active
                     'team': None,
-                    'start': roaster_gathering.start,
-                    'finish': roaster_gathering.finish,
+                    'start': roster_gathering.start,
+                    'finish': roster_gathering.finish,
                     'infos': {
                         'access_household_id': access_household_id,
                         'created_reason': 'CFCCH member/directory registration from importer',
@@ -847,7 +843,7 @@ class Command(BaseCommand):
                 }
             )
 
-    def update_attendee_membership_and_other(self, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_character, member_gathering, baptisee_character, believer_meet, believer_character, believer_category):
+    def update_attendee_membership_and_other(self, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         # data_registration, data_registration_created = Registration.objects.update_or_create(
         #     assembly=data_assembly,
@@ -887,11 +883,11 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
                 meet=believer_meet,
-                character=believer_character,
+                character=believer_meet.major_character,
                 defaults={
                     'attending': data_attending,
                     'meet': believer_meet,
-                    'character': believer_character,
+                    'character': believer_meet.major_character,
                     'category_id': -1,  # This stop auto create Past via post-save signal
                     'start': Utility.now_with_timezone(),
                     'finish': believer_meet.finish,
@@ -924,11 +920,11 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
                 meet=baptized_meet,
-                character=baptisee_character,
+                character=baptized_meet.major_character,
                 defaults={
                     'attending': data_attending,
                     'meet': baptized_meet,
-                    'character': baptisee_character,
+                    'character': baptized_meet.major_character,
                     'category_id': -1,  # This stops auto create Past via post-save signal
                     'start': baptized_date_or_now,
                     'finish': baptized_meet.finish,
@@ -957,7 +953,7 @@ class Command(BaseCommand):
             member_attending_meet_default = {
                 'attending': data_attending,
                 'meet': member_meet,
-                'character': member_character,
+                'character': member_meet.major_character,
                 'category_id': -1,  # member category has to be converted to active later
                 'start': member_since_or_now,
                 'finish': member_meet.finish,
@@ -966,19 +962,19 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
                 meet=member_meet,
-                character=member_character,
+                character=member_meet.major_character,
                 defaults=member_attending_meet_default,
             )
 
             Attendance.objects.update_or_create(
                 gathering=member_gathering,
                 attending=data_attending,
-                character=member_character,
+                character=member_meet.major_character,
                 team=None,
                 defaults={
                     'gathering': member_gathering,
                     'attending': data_attending,
-                    'character': member_character,
+                    'character': member_meet.major_character,
                     'team': None,
                     # 'category_id': 6,  # Active, membership can be inactive temporarily
                     'start': member_attending_meet_default['start'],
@@ -990,14 +986,12 @@ class Command(BaseCommand):
                 }
             )
 
-    def update_directory_data(self, data_assembly, folk, directory_meet, directory_character, directory_gathering):
+    def update_directory_data(self, folk, directory_meet, directory_gathering):
         """
         update assembly and gathering for directory. using attendees own attending.
 
-        :param data_assembly: data_assembly
         :param folk: each family folk
         :param directory_meet: directory_meet
-        :param directory_character: directory_character
         :param directory_gathering: directory_gathering
         :return: None, but print out importing status and write to Attendees db (create or update)
         """
@@ -1019,11 +1013,11 @@ class Command(BaseCommand):
                 AttendingMeet.objects.update_or_create(
                     attending=directory_attending,
                     meet=directory_meet,
-                    character=directory_character,
+                    character=directory_meet.major_character,
                     defaults={
                         'attending': directory_attending,
                         'meet': directory_meet,
-                        'character': directory_character,
+                        'character': directory_meet.major_character,
                         'category_id': -1,
                         'start': directory_gathering.start,
                         'finish': directory_gathering.finish,
@@ -1033,12 +1027,12 @@ class Command(BaseCommand):
                 Attendance.objects.update_or_create(
                     gathering=directory_gathering,
                     attending=directory_attending,
-                    character=directory_character,
+                    character=directory_meet.major_character,
                     team=None,
                     defaults={
                         'gathering': directory_gathering,
                         'attending': directory_attending,
-                        'character': directory_character,
+                        'character': directory_meet.major_character,
                         # 'category_id': 6,  # Active
                         'team': None,
                         'start': directory_gathering.start,
