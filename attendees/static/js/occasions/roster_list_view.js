@@ -859,6 +859,53 @@ Attendees.roster = {
       },
     ],
   },
+
+  resizeCanvas => () {
+      const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+      signaturePad.clear(); // otherwise isEmpty() might return incorrect value
+  },  // copied from https://github.com/szimek/signature_pad#tips-and-tricks
+
+  getCroppedCanvasImage => (canvas, type = "image/svg+xml") {
+
+      let originalCtx = canvas.getContext('2d');
+
+      let originalWidth = canvas.width;
+      let originalHeight = canvas.height;
+      let imageData = originalCtx.getImageData(0,0, originalWidth, originalHeight);
+
+      let minX = originalWidth + 1, maxX = -1, minY = originalHeight + 1, maxY = -1, x = 0, y = 0, currentPixelColorValueIndex;
+
+      for (y = 0; y < originalHeight; y++) {
+          for (x = 0; x < originalWidth; x++) {
+              currentPixelColorValueIndex = (y * originalWidth + x) * 4;
+              let currentPixelAlphaValue = imageData.data[currentPixelColorValueIndex + 3];
+              if (currentPixelAlphaValue > 0) {
+                  if (minX > x) minX = x;
+                  if (maxX < x) maxX = x;
+                  if (minY > y) minY = y;
+                  if (maxY < y) maxY = y;
+              }
+          }
+      }
+
+      let croppedWidth = maxX - minX;
+      let croppedHeight = maxY - minY;
+      if (croppedWidth <= 0 || croppedHeight <= 0) return null;
+      let cuttedImageData = originalCtx.getImageData(minX, minY, croppedWidth, croppedHeight);
+
+      let croppedCanvas = document.createElement('canvas'),
+          croppedCtx    = croppedCanvas.getContext('2d');
+
+      croppedCanvas.width = croppedWidth;
+      croppedCanvas.height = croppedHeight;
+      croppedCtx.putImageData(cuttedImageData, 0, 0);
+
+      return croppedCanvas.toDataURL(type);
+  },  //  modified from https://github.com/szimek/signature_pad/issues/49#issuecomment-1104035775
+
 };
 
 $(document).ready(() => {

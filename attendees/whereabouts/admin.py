@@ -2,10 +2,6 @@ from django.contrib import admin, messages
 from django.db import models
 from django_json_widget.widgets import JSONEditorWidget
 
-# from attendees.occasions.models import *
-# from attendees.persons.models import *
-#
-# from .models import *
 from attendees.persons.models import PgHistoryPage
 from attendees.whereabouts.models import Place, Campus, Property, Suite, Room, Division, Organization
 
@@ -41,6 +37,11 @@ class DivisionAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":
@@ -106,6 +107,11 @@ class OrganizationAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":
