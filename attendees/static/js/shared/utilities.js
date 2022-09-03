@@ -258,7 +258,7 @@ Attendees.utilities = {
       }
     }
     return '';
-  }
+  },
 };
 
 $(document).ready(() => {

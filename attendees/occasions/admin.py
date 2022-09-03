@@ -39,6 +39,11 @@ class MessageTemplateAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":
@@ -69,6 +74,11 @@ class AssemblyAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":
@@ -90,6 +100,11 @@ class PriceAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":
@@ -144,6 +159,11 @@ class AttendanceAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view" and not messages.get_messages(request):
@@ -200,6 +220,11 @@ class CharacterAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view" and not messages.get_messages(request):
@@ -228,6 +253,11 @@ class TeamAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
+            if request.resolver_match.func.__name__ == "changelist_view":
+                messages.info(
+                    request,
+                    "You are seeing all records across organizations as a superuser.",
+                )
             return qs
         else:
             if request.resolver_match.func.__name__ == "changelist_view":
@@ -286,7 +316,7 @@ class MeetAdmin(PgHistoryPage, admin.ModelAdmin):
             if request.resolver_match.func.__name__ == "changelist_view":
                 messages.info(
                     request,
-                    "You are seeing all meets across organizations as a superuser.",
+                    "You are seeing all records across organizations as a superuser.",
                 )
             return qs
         else:
