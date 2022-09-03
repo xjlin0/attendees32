@@ -8,7 +8,8 @@ import pghistory
 import django.utils.timezone
 import model_utils.fields
 import partial_date.fields
-import private_storage.fields
+# import private_storage.fields
+from private_storage.storage.files import PrivateFileSystemStorage
 from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -369,7 +370,7 @@ class AttendeesHistory(pghistory.get_event_model(
     last_name = models.CharField(blank=True, max_length=25, null=True)
     first_name2 = models.CharField(blank=True, max_length=12, null=True)
     last_name2 = models.CharField(blank=True, max_length=8, null=True)
-    photo = private_storage.fields.PrivateFileField(blank=True, null=True, storage=private_storage.storage.files.PrivateFileSystemStorage(), upload_to='attendee_portrait', verbose_name='Photo')
+    photo = PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='attendee_portrait', verbose_name='Photo')
     actual_birthday = models.DateField(blank=True, null=True)
     estimated_birthday = partial_date.fields.PartialDateField(blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)
     deathday = models.DateField(blank=True, null=True)

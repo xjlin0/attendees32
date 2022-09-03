@@ -271,7 +271,7 @@ class Command(BaseCommand):
                             if address and not address.name:
                                 full_address_name = display_name + ' family: ' + address.raw
                                 address.name = display_name
-                                address.raw = str(folk.id)
+                                # address.raw = str(folk.id)  # Todo 20220902 double check if folk id needed
                                 address.formatted = full_address_name
                                 address.save()
 

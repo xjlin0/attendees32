@@ -35,6 +35,7 @@ class ApiAllAddressViewSet(LoginRequiredMixin, ModelViewSet):
                     Q(street_number__icontains=keyword)
                     | Q(route__icontains=keyword)
                     | Q(raw__icontains=keyword)
+                    | Q(name__icontains=keyword)
                 )
 
         else:
