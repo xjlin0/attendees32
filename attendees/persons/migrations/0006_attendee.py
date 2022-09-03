@@ -7,7 +7,8 @@ from private_storage.fields import PrivateFileField
 from private_storage.storage.files import PrivateFileSystemStorage
 import django.utils.timezone
 import model_utils.fields
-import partial_date.fields
+# import partial_date.fields
+from partial_date.fields import PartialDateField
 from attendees.persons.models.enum import GenderEnum
 from attendees.persons.models import Utility
 
@@ -38,7 +39,7 @@ class Migration(migrations.Migration):
                 ('gender', models.CharField(choices=GenderEnum.choices(), default=GenderEnum.UNSPECIFIED, max_length=11)),
                 ('photo', PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='attendee_portrait', verbose_name='Photo')),
                 ('actual_birthday', models.DateField(blank=True, null=True)),
-                ('estimated_birthday', partial_date.fields.PartialDateField(blank=True, null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')),
+                ('estimated_birthday', PartialDateField(blank=True, null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')),
                 ('deathday', models.DateField(blank=True, null=True)),
                 # ('progressions', models.JSONField(blank=True, default=dict, help_text='Example: {"Christian": true, "baptized": {"time": "12/31/2020", "place":"SF"}}. Please keep {} here even no data', null=True)),
                 ('infos', models.JSONField(blank=True, default=Utility.attendee_infos, help_text=('Example: {"fixed": {"food_pref": "peanut allergy", "nick_name": "John"}}.Please keep {} here even no data'), null=True)),
@@ -96,7 +97,7 @@ class Migration(migrations.Migration):
                 ('last_name2', models.CharField(blank=True, max_length=8, null=True)),
                 ('photo', PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='attendee_portrait', verbose_name='Photo')),
                 ('actual_birthday', models.DateField(blank=True, null=True)),
-                ('estimated_birthday', partial_date.fields.PartialDateField(blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)),
+                ('estimated_birthday', PartialDateField(blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)),
                 ('deathday', models.DateField(blank=True, null=True)),
             ],
             options={

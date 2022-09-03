@@ -3,6 +3,8 @@ from attendees.persons.models.utility import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+from private_storage.fields import PrivateFileField
+from private_storage.storage.files import PrivateFileSystemStorage
 
 
 class Migration(migrations.Migration):
@@ -22,6 +24,7 @@ class Migration(migrations.Migration):
                 ('attendee', models.ForeignKey(on_delete=models.CASCADE, to='persons.Attendee')),
                 ('folk', models.ForeignKey(on_delete=models.CASCADE, to='persons.Folk')),
                 ('role', models.ForeignKey(help_text='[Title] the family role of the attendee?', on_delete=models.SET(0), related_name='role', to='persons.Relation', verbose_name='attendee is')),
+                ('file', PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='folk_attendee_file', verbose_name='file')),
                 ('start', models.DateField(blank=True, null=True, help_text='date joining folk')),
                 ('finish', models.DateField(blank=True, null=True, help_text='date leaving folk')),
                 ('infos', models.JSONField(blank=True, null=True, default=Utility.relationship_infos, help_text='Example: {"show_secret": {"attendee1id": true, "attendee2id": false}}. Please keep {} here even no data')),
@@ -66,6 +69,7 @@ class Migration(migrations.Migration):
                 ('folk', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.folk')),
                 ('attendee', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.attendee')),
                 ('role', models.ForeignKey(db_constraint=False, help_text='[Title] the family role of the attendee?', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.relation', verbose_name='attendee is')),
+                ('file', PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='folk_attendee_file', verbose_name='file')),
                 ('start', models.DateField(blank=True, help_text='date joining folk', null=True)),
                 ('finish', models.DateField(blank=True, help_text='date leaving folk', null=True)),
                 ('infos', models.JSONField(blank=True, default=Utility.relationship_infos, help_text='Example: {"show_secret": {"attendee1id": true, "attendee2id": false}}. Please keep {} here even no data', null=True)),

@@ -228,8 +228,8 @@ Attendees.datagridUpdate = {
       Attendees.datagridUpdate.families.forEach(family => {
         const $newAttendeeLinkWithFamily = $newAttendeeLinkWithoutFamily.clone();
         $newAttendeeLinkWithFamily.attr('href', `new?familyId=${family.id}&familyName=for%20${family.display_name}`);
-        $newAttendeeLinkWithFamily.attr('title', `Add a new member to ${family.display_name} family`);
-        $newAttendeeLinkWithFamily.text(`+New member to ${family.display_name} family`);
+        $newAttendeeLinkWithFamily.attr('title', `Add a new member to ${family.display_name} ${family.category === 0 ? 'family' : ''}`);
+        $newAttendeeLinkWithFamily.text(`+New member to ${family.display_name}  ${family.category === 0 ? 'family' : ''}`);
         $newAttendeeLinkWithFamily.attr('target', '_blank');
         $newAttendeeLinkWithFamily.insertBefore($newAttendeeLinkWithoutFamily);
       });
@@ -1856,6 +1856,19 @@ Attendees.datagridUpdate = {
                 showClearButton: true,
                 dateSerializationFormat: 'yyyy-MM-dd',
                 placeholder: 'click calendar',
+              },
+            },
+            {
+              dataField: 'address',
+              label: {
+                text: 'Google Map Link',
+                location: 'left',
+              },
+              colSpan: 12,
+              template: (data, itemElement) => {
+                console.log("hi 1869 here is data: ", data);
+                console.log("hi 1870 here is data.component.option('formData'): ", data.component.option('formData'));
+                itemElement.append( $(`<a target="_blank" href="/persons/attendee/">hi 1871</a>`));
               },
             },
             {

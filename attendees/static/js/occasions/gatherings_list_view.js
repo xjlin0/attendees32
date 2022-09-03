@@ -597,7 +597,7 @@ Attendees.gatherings = {
           },
           {
             dataField: 'site_id',
-            helpText: 'Where the event be hold',
+            helpText: 'Address search only works with family name',
           },
           {
             dataField: 'infos.note',
