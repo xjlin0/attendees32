@@ -21,7 +21,7 @@ class AddressSerializer(serializers.ModelSerializer):
         return locality.state.id if locality else None
 
     def get_display_name(self, obj):
-        return f'{obj.name}: {str(obj)}' if obj.name else str(obj)  # for gatherings_list_view page
+        return str(obj)  # for gatherings_list_view page
 
     class Meta:
         model = Address

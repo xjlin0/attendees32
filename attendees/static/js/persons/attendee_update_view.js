@@ -451,6 +451,7 @@ Attendees.datagridUpdate = {
                   text: (place.display_name && !addressName.includes(place.display_name) ? place.display_name + ': ' : '') + addressName,
                   'data-object-id': Attendees.datagridUpdate.attendeeId,
                   'data-object-name': Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original,
+                  'data-address-raw': place.address && place.address.raw,
                 });
                 $personalLi = $personalLi.append($button);
               });
@@ -482,6 +483,7 @@ Attendees.datagridUpdate = {
                       text: (place.display_name && !addressName.includes(place.display_name) ? place.display_name + ': ' : '') + addressName,
                       'data-object-id': family.id,
                       'data-object-name': family.display_name,
+                      'data-address-raw': place.address && place.address.raw,
                     });
                     $familyLi = $familyLi.append($button);
                   });
@@ -1861,14 +1863,15 @@ Attendees.datagridUpdate = {
             {
               dataField: 'address',
               label: {
-                text: 'Google Map Link',
                 location: 'left',
+                text: ' ',  // empty space required for removing label
+                showColon: false,
               },
               colSpan: 12,
               template: (data, itemElement) => {
-                console.log("hi 1869 here is data: ", data);
-                console.log("hi 1870 here is data.component.option('formData'): ", data.component.option('formData'));
-                itemElement.append( $(`<a target="_blank" href="/persons/attendee/">hi 1871</a>`));
+                if (placeButton.dataset.addressRaw) {
+                  itemElement.append($(`<span>Google Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
+                }
               },
             },
             {
@@ -1889,7 +1892,7 @@ Attendees.datagridUpdate = {
                 placeholder: 'Select a value...',
                 searchExpr: ['street_number', 'formatted'],
 //                searchMode: 'startswith',
-                searchPlaceholder: 'Search addresses',
+                searchPlaceholder: 'Search addresses by family name or address',
                 minSearchLength: 3,  // cause values disappeared in drop down
                 searchTimeout: 200,  // cause values disappeared in drop down
                 dropDownOptions: {
@@ -1996,7 +1999,7 @@ Attendees.datagridUpdate = {
                     // onValueChanged: (e) => {
                     //   if (e.previousValue && e.previousValue !== e.value) {
                     //     const selectedState = $('div.state-lookup-search').dxLookup('instance')._dataSource._items.find(x => x.id === e.value);
-                    //     console.log("hi 1401 here is selectedState: ", selectedState);
+                    //     console.log("hi 2004 here is selectedState: ", selectedState);
                     //   }
                     // },
                   },
