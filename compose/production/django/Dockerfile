@@ -7,7 +7,6 @@ FROM python:${PYTHON_VERSION} as python
 
 # Python build stage
 FROM python as python-build-stage
-RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list
 ARG BUILD_ENVIRONMENT=production
 
 # Install apt packages
