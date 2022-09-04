@@ -911,19 +911,6 @@ Attendees.attendingmeets = {
         },
       },
       {
-        dataField: 'create_attendances_till',
-        visible: false,
-        dataType: 'datetime',
-        label: {
-          text: 'Reserve attendances to',
-        },
-        editorOptions: {
-          type: 'datetime',
-          showClearButton: true,
-          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-        }
-      },
-      {
         dataField: 'start',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',

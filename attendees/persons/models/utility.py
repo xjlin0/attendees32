@@ -161,7 +161,7 @@ class Utility:
               "Attendance": True
             },
             "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE,
-            "gathering": {},
+            "gathering_infos": {},
             "attendance": {},
         }
 

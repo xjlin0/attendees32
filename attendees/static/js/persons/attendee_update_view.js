@@ -2054,6 +2054,7 @@ Attendees.datagridUpdate = {
                           },
                         };
                       }else{
+                        userData.address.raw = newAddressText;
                         userData.address.formatted = placeButton.dataset.objectName + ': ' + newAddressText;
                       }
                     }
@@ -2134,7 +2135,7 @@ Attendees.datagridUpdate = {
                 type: 'success',
                 useSubmitBehavior: false,
                 onClick: (clickEvent) => {
-                  if (confirm('Are you sure to edit the current address?')) {
+                  if (confirm(`Are you sure to edit the ${placeButton.dataset.objectName}'s address?`)) {
                     Attendees.datagridUpdate.placePopupDxForm.itemOption('NewAddressItems', 'visible', true);
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.id').option('visible', false);
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.id').option('disable', true);

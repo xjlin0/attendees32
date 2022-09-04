@@ -364,9 +364,9 @@ class GatheringAdmin(PgHistoryPage, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
-            messages.warning(
+            messages.info(
                 request,
-                "You are superuser hence all records from all organizations shown here.",
+                "You are seeing all records across organizations as a superuser.",
             )
             return qs
         else:

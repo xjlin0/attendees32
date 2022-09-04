@@ -606,6 +606,10 @@ Attendees.gatherings = {
               autoResizeEnabled: true,
             },
           },
+          {
+            dataField: 'infos.generate_attendance',
+            helpText: 'Need auto generation of attendance?',
+          },
         ],
       },
     },
@@ -835,8 +839,17 @@ Attendees.gatherings = {
         },
       },
       {
+        dataField: 'infos.generate_attendance',
+        visible: false,
+        allowGrouping: false,
+        caption: 'Auto generating attendance?',
+        dataType: 'boolean',
+        editorType: 'dxCheckBox',
+      },
+      {
         dataField: 'infos.note',
         allowGrouping: false,
+        editorType: 'dxTextArea',
         caption: 'Note',
         dataType: 'string',
         editorOptions: {

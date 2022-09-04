@@ -448,7 +448,7 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
   - [x] [2PR#23](https://github.com/xjlin0/attendees32/pull/23) auto-generation attendance by attending meet and recent attendance status
   - [x] Easier UI for batch add attendingmeet
   - [ ] member list (attendance level with editing category, with sort by family/last names)
-- [ ] Folk List
+- [ ] Folkattendee List grouped by Folk
   - [ ] For carpooling, needs consent too, as well as shown in Attendee update page.
 - [x] [2PR#22](https://github.com/xjlin0/attendees32/pull/22) Create roaster page (no real-time update for multiple coworkers in v1)
   - [ ] Coworker roaster on phone/web, X: characters, Y: dates(gatherings)
