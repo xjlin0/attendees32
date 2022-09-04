@@ -2026,8 +2026,8 @@ Attendees.datagridUpdate = {
                     const addressMaybeEdited = Attendees.datagridUpdate.placePopupDxForm.itemOption('NewAddressItems').visible;
 
                     if (addressMaybeEdited) {  // no address id means user creating new address
-                      const newAddressExtra = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.extra").option('value').trim();
-                      const newStreetNumber = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value').trim();
+                      const newAddressExtra = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.extra").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.extra").option('value').trim();
+                      const newStreetNumber = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value').trim();
                       const newRoute = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value').trim();
                       const newCity = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value').trim();
                       const newZIP = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value').trim();
@@ -2039,7 +2039,7 @@ Attendees.datagridUpdate = {
                         userData.address = {
                           raw: 'new',     // for bypassing DRF validations from Django-Address model
                           new_address: {  // for creating new django-address instance bypassing DRF model validations
-                            raw: userData.object_id,
+                            raw: newAddressText,
                             type: 'street',   // use Django-admin to change if needed
                             extra: newAddressExtra,
                             formatted: placeButton.dataset.objectName + ': ' + newAddressText,
@@ -2083,6 +2083,7 @@ Attendees.datagridUpdate = {
                         if (placeButton.value) {
                           placeButton.dataset.desc = newDesc;
                           placeButton.textContent = newText;
+                          placeButton.dataset.addressRaw = savedPlace.address && savedPlace.address.raw;
                         } else {
                           Attendees.datagridUpdate.familyButtonFactory({
                             class: placeButton.className.replace('place-button-new', '').replace('btn-outline-primary', 'btn-outline-success'),
@@ -2093,6 +2094,7 @@ Attendees.datagridUpdate = {
                             'data-object-id': placeButton.dataset.objectId,
                             'data-object-name': placeButton.dataset.objectName,
                             'data-content-type': placeButton.dataset.contentType,
+                            'data-address-raw': savedPlace.address && savedPlace.address.raw,
                           }).insertAfter(placeButton);
                         }
                       },

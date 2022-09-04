@@ -1782,7 +1782,7 @@
     "model": "django_celery_beat.intervalschedule",
     "pk": 1,
     "fields": {
-      "every": 1,
+      "every": 2,
       "period": "minutes"
     }
   },
@@ -1802,9 +1802,9 @@
     "model": "django_celery_beat.crontabschedule",
     "pk": 2,
     "fields": {
-      "minute": "0",
-      "hour": "4",
-      "day_of_week": "*",
+      "minute": "30",
+      "hour": "2",
+      "day_of_week": "1",
       "day_of_month": "*",
       "month_of_year": "*",
       "timezone": "UTC"
@@ -1828,7 +1828,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t  \t\"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t  \t\"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -1849,28 +1849,28 @@
     "model": "django_celery_beat.periodictask",
     "pk": 2,
     "fields": {
-      "name": "celery.backend_cleanup",
-      "task": "celery.backend_cleanup",
+      "name": "attendees.occasions.tasks.batch_create_attendances",
+      "task": "attendees.occasions.tasks.batch_create_attendances",
       "interval": null,
       "crontab": 2,
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t  \t\"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 6,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
       "headers": "{}",
       "priority": null,
       "expires": null,
-      "expire_seconds": 43200,
+      "expire_seconds": null,
       "one_off": false,
-      "start_time": null,
+      "start_time": "2020-08-27T22:37:02Z",
       "enabled": true,
       "last_run_at": null,
       "total_run_count": 0,
-      "date_changed": "2022-08-21T16:11:00.903Z",
-      "description": ""
+      "date_changed": "2021-08-28T18:59:47.395Z",
+      "description": "test desc: attendees.occasions.tasks.batch_create_attendances"
     }
   },
   {
@@ -6357,6 +6357,19 @@
       "type": "assembly",
       "display_order": 0,
       "display_name": "internal",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 35,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "folk",
+      "display_order": 0,
+      "display_name": "Carpool",
       "infos": {}
     }
   },
