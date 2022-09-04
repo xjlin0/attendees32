@@ -11926,7 +11926,7 @@
       "display_name": "封存 archived",
       "slug": "d7c8Fd_cfcch_congregation_archived",
       "infos": {
-        "gathering": {
+        "gathering_infos": {
           "notice": "the finish date of attending_meets of 'archived' is always forever to show all attendees."
         },
         "attendance": {},
@@ -11968,7 +11968,7 @@
       "display_name": "訪客 visitor",
       "slug": "d7c8Fd_cfcch_congregation_visitor",
       "infos": {
-        "gathering": {
+        "gathering_infos": {
           "notice": "the finish date of attending_meets of visitor is always forever to show all attendees."
         },
         "attendance": {},
@@ -12013,7 +12013,7 @@
       "display_name": "The Rock",
       "slug": "d7c8Fd_cfcch_junior_regular_the_rock",
       "infos": {
-        "gathering": {
+        "gathering_infos": {
           "generate_attendance": true
         },
         "attendance": {},
@@ -12059,7 +12059,7 @@
       "display_name": "Little foot",
       "slug": "d7c8Fd_cfcch_junior_regular_little_foot",
       "infos": {
-        "gathering": {
+        "gathering_infos": {
           "generate_attendance": true
         },
         "attendance": {},
@@ -12105,7 +12105,7 @@
       "display_name": "影音中控 AV control",
       "slug": "d7c8Fd_cfcch_adault_sunday_recording_av_control",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "worship_organizer",
@@ -12146,7 +12146,7 @@
       "display_name": "天堂 玻璃海天使詩班",
       "slug": "faBd6C_heaven_sea_of_glass_angel_choir",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "worship_organizer"
@@ -12185,7 +12185,7 @@
       "display_name": "Shining Star 閃亮之星",
       "slug": "d7c8Fd_cfcch_junior_shining_star",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "children_organizer",
@@ -12229,7 +12229,7 @@
       "display_name": "青少退休會",
       "slug": "d7c8Fd_cfcch_junior_retreat",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "children_organizer",
@@ -12273,7 +12273,7 @@
       "display_name": "常做禮拜 Worship roster",
       "slug": "d7c8Fd_cfcch_congregation_roster",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12315,7 +12315,7 @@
       "display_name": "通訊錄 directory",
       "slug": "d7c8Fd_cfcch_congregation_directory",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12355,7 +12355,7 @@
       "display_name": "會員 member",
       "slug": "d7c8Fd_cfcch_congregation_member",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12395,7 +12395,7 @@
       "display_name": "2020夏令會食宿",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_accommodation",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12436,7 +12436,7 @@
       "display_name": "2020夏令會接送",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_transportation",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12477,7 +12477,7 @@
       "display_name": "2020夏令會討論小組",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_panel",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12517,7 +12517,7 @@
       "display_name": "2020夏令會中文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_chinese_program",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12558,7 +12558,7 @@
       "display_name": "2020夏令會兒童活動",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_junior_program",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12599,7 +12599,7 @@
       "display_name": "2020夏令會英文議程",
       "slug": "d7c8Fd_cfcch_summer_retreat_2020_english_program",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12640,7 +12640,7 @@
       "display_name": "已受洗 baptized",
       "slug": "d7c8Fd_cfcch_congregation_baptized",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -12679,7 +12679,7 @@
       "display_name": "已信主 believer",
       "slug": "d7c8Fd_cfcch_congregation_believer",
       "infos": {
-        "gathering": {},
+        "gathering_infos": {},
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
