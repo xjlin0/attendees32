@@ -9,6 +9,8 @@ import django.utils.timezone
 import model_utils.fields
 from django.utils.functional import cached_property
 from model_utils.models import SoftDeletableModel, TimeStampedModel
+from private_storage.fields import PrivateFileField
+from private_storage.storage.files import PrivateFileSystemStorage
 
 from attendees.persons.models import Note, Utility
 
@@ -58,6 +60,9 @@ class Attendance(TimeStampedModel, SoftDeletableModel, Utility):
         default=dict,
         help_text='Example: {"kid_points": 5}. Please keep {} here even no data',
     )
+    file = PrivateFileField(
+        "file", blank=True, null=True, upload_to="attendance_file"
+    )  # https://github.com/edoburu/django-private-storage
 
     def clean(self):
         if (
@@ -65,7 +70,7 @@ class Attendance(TimeStampedModel, SoftDeletableModel, Utility):
             or self.gathering.meet not in self.attending.meets.all()
         ):
             raise ValidationError(
-                "The charater assembly, gathering's meet/assembly, and attendings meets needed to be matched,"
+                "The character assembly, gathering's meet/assembly, and attendings meets needed to be matched,"
                 "please pick another gathering, character or attending"
             )
 
@@ -138,6 +143,7 @@ class AttendancesHistory(pghistory.get_event_model(
     character = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.character')
     gathering = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.gathering')
     category = models.ForeignKey(db_constraint=False, help_text="RSVPed, leave, remote, etc", default=1, on_delete=models.SET(1), related_name='+', related_query_name='+', to='persons.category')
+    file = PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='attendance_file', verbose_name='file')
     team = models.ForeignKey(blank=True, db_constraint=False, default=None, help_text='empty for main meet', null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.team')
     start = models.DateTimeField(blank=True, help_text='optional', null=True)
     finish = models.DateTimeField(blank=True, help_text='optional', null=True)

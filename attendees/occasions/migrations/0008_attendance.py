@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+from private_storage.fields import PrivateFileField
+from private_storage.storage.files import PrivateFileSystemStorage
 
 
 class Migration(migrations.Migration):
@@ -27,7 +29,7 @@ class Migration(migrations.Migration):
                 ('character', models.ForeignKey(on_delete=models.SET(0), to='occasions.Character')),
                 ('gathering', models.ForeignKey(on_delete=models.SET(0), to='occasions.Gathering')),
                 ('team', models.ForeignKey(blank=True, default=None, help_text='empty for main meet', null=True, on_delete=django.db.models.deletion.SET_NULL, to='occasions.Team')),
-                # ('free', models.SmallIntegerField(blank=True, default=0, help_text='multitasking: the person cannot join other gatherings if negative', null=True)),
+                ('file', PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='attendance_file', verbose_name='file')),
                 ('display_order', models.SmallIntegerField(blank=False, default=0, null=False)),
                 ('category', models.ForeignKey(default=1, help_text='RSVPed, leave, remote, etc', on_delete=models.SET(1), to='persons.category')),
                 ('infos', models.JSONField(blank=True, default=dict, help_text='Example: {"kid_points": 5}. Please keep {} here even no data', null=True)),
@@ -69,6 +71,7 @@ class Migration(migrations.Migration):
                 ('gathering', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.gathering')),
                 ('category', models.ForeignKey(db_constraint=False, default=1, help_text='RSVPed, leave, remote, etc', on_delete=models.SET(1), related_name='+', related_query_name='+', to='persons.category')),
                 ('team', models.ForeignKey(blank=True, db_constraint=False, default=None, help_text='empty for main meet', null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='occasions.team')),
+                ('file', PrivateFileField(blank=True, null=True, storage=PrivateFileSystemStorage(), upload_to='attendance_file', verbose_name='file')),
                 ('start', models.DateTimeField(blank=True, help_text='optional', null=True)),
                 ('finish', models.DateTimeField(blank=True, help_text='optional', null=True)),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),
