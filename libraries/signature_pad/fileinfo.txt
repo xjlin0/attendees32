@@ -1,0 +1,1 @@
+// signature_pad 4.0.7 https://github.com/szimek/signature_pad

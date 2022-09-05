@@ -15,17 +15,17 @@ Attendees.roster = {
     Attendees.roster.initFiltersForm();
   },
 
-  updateAttendance: (event) => {
-    const $radioInput = $(event.currentTarget);
-    const rowIndex = $radioInput.prop('name');
-    const categoryId = $radioInput.prop('value');
-    Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', categoryId);
-    Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
-  },
-
-  reloadRollCallerButtons: () => {
-    $('div#attendances-datagrid-container').off('click', 'input.roll-call-button').on('click','input.roll-call-button', Attendees.roster.updateAttendance);
-  },
+  // updateAttendance: (event) => {
+  //   const $radioInput = $(event.currentTarget);
+  //   const rowIndex = $radioInput.prop('name');
+  //   const categoryId = $radioInput.prop('value');
+  //   Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', categoryId);
+  //   Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+  // },
+  //
+  // reloadRollCallerButtons: () => {
+  //   $('div#attendances-datagrid-container').off('click', 'input.roll-call-button').on('click','input.roll-call-button', Attendees.roster.updateAttendance);
+  // },
 
   initFiltersForm: () => {
     $.ajaxSetup({
@@ -611,26 +611,31 @@ Attendees.roster = {
                                   ${cellInfo.displayValue}
                                 </button>`;
           cellElement.append (editorButton);
-          const buttonCategoryKeys = Object.keys(Attendees.roster.buttonCategories);
-          if (cellInfo && cellInfo.data && buttonCategoryKeys.length > 0) {
+          if (cellInfo && cellInfo.data) {
+
             let html = `<div class="btn-group-vertical btn-group-sm"
-                             role="group">`;
-            buttonCategoryKeys.forEach((categoryId, index) => {
-              const buttonCategory = Attendees.roster.buttonCategories[categoryId];
-              const buttonId = `btn-${cellInfo.data.id}-${categoryId}`;
-              html += `<input type="radio"
-                              class="btn-check roll-call-button"
-                              name="${cellInfo.rowIndex}"
-                              id="${buttonId}"
-                              value="${categoryId}"
-                              autocomplete="off"
-                              ${cellInfo.data.category && cellInfo.data.category.toString() === categoryId ? 'checked' : ''}>
-                       <label class="roll-call btn ${buttonCategory.class}"
-                              for="${buttonId}">
-                         ${buttonCategory.label}
-                       </label>`
-            });
-            html += '</div>';
+                             role="group">
+                          <label class="roll-call btn btn-outline-success">
+                            Check in
+                            <input type="checkbox"
+                                   class="btn-check roll-call-button"
+                                   name="${cellInfo.rowIndex}"
+                                   value="checkIn"
+                                   autocomplete="off"
+                                   ${cellInfo.data.category === 9 ? 'checked' : ''}>
+                          </label>
+  
+                          <label class="roll-call btn btn-outline-primary">
+                            Check out
+                            <input type="checkbox"
+                                   class="btn-check roll-call-button"
+                                   name="${cellInfo.rowIndex}"
+                                   value="checkOut"
+                                   autocomplete="off"
+                                   ${cellInfo.data.finish ? 'checked' : ''}>
+                          </label>
+                        </div>`;
+
             if (cellInfo.data.category !== 1 && !(cellInfo.data.category in Attendees.roster.buttonCategories)) {  // 1 is scheduled
               html += `<i>(${Attendees.roster.allCategories[cellInfo.data.category]})</i>`
             }
@@ -765,9 +770,6 @@ Attendees.roster = {
                       d.resolve(result.data);
                       if (Object.keys(Attendees.roster.buttonCategories).length < 1 && result.data && result.data[0]) {
                         result.data.forEach( category => {
-                          if (category && category.infos && category.infos.ROSTER_DATA_DO_NOT_CHANGE) {
-                            Attendees.roster.buttonCategories[category.id] = category.infos.ROSTER_DATA_DO_NOT_CHANGE
-                          }
                           Attendees.roster.allCategories[category.id] = category.display_name;
                         });
                       }
@@ -860,7 +862,7 @@ Attendees.roster = {
     ],
   },
 
-  resizeCanvas => () {
+  resizeCanvas: () => {
       const ratio =  Math.max(window.devicePixelRatio || 1, 1);
       canvas.width = canvas.offsetWidth * ratio;
       canvas.height = canvas.offsetHeight * ratio;
@@ -868,7 +870,7 @@ Attendees.roster = {
       signaturePad.clear(); // otherwise isEmpty() might return incorrect value
   },  // copied from https://github.com/szimek/signature_pad#tips-and-tricks
 
-  getCroppedCanvasImage => (canvas, type = "image/svg+xml") {
+  getCroppedCanvasImage: (canvas, type = "image/svg+xml") => {
 
       let originalCtx = canvas.getContext('2d');
 

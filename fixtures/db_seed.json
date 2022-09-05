@@ -6015,12 +6015,7 @@
       "type": "attendance",
       "display_order": 0,
       "display_name": "attended",
-      "infos": {
-        "ROSTER_DATA_DO_NOT_CHANGE": {
-          "class": "btn-outline-success",
-          "label": "Present"
-        }
-      }
+      "infos": {}
     }
   },
   {
@@ -6033,12 +6028,7 @@
       "type": "attendance",
       "display_order": 0,
       "display_name": "absent",
-      "infos": {
-        "ROSTER_DATA_DO_NOT_CHANGE": {
-          "class": "btn-outline-danger",
-          "label": "Absent"
-        }
-      }
+      "infos": {}
     }
   },
   {
@@ -6326,12 +6316,7 @@
       "type": "attendance",
       "display_order": 0,
       "display_name": "leave/off/vacation",
-      "infos": {
-        "ROSTER_DATA_DO_NOT_CHANGE": {
-          "class": "btn-outline-warning",
-          "label": "Leave"
-        }
-      }
+      "infos": {}
     }
   },
   {
