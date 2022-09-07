@@ -22,13 +22,20 @@
 
   <script defer
           type="text/javascript"
+          src="{% static 'signature_pad/signature_pad.umd.min.js' %}"
+          integrity="sha256-CMptYYXRcNVLvNSGRK6ZLrOBRO729Cg5aAC8l34V+nI="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
           src="{% static 'js/occasions/roster_list_view.js' %}">
   </script>
 
 {% endblock extra_head %}
 
 {% block content %}
-<div class="gathering-container">
+<div class="roster-container">
   {% csrf_token %}
   <div class="d-flex justify-content-between">
     <div class="d-flex">
@@ -49,7 +56,7 @@
       </a>
     </div>
   </div>
-
+  <div id="signature-canvas-container"></div>
   <form class="filters-dxform"
        data-series-gatherings-endpoint="{{series_gatherings_endpoint}}"
        data-characters-endpoint="{{characters_endpoint}}"
