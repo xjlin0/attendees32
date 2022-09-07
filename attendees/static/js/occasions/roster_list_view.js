@@ -15,6 +15,7 @@ Attendees.roster = {
     console.log('static/js/occasions/roster_list_view.js');
     Attendees.roster.initFiltersForm();
     Attendees.roster.initCheckOutPopup();
+    Attendees.roster.addRemoveBlanksToSignaturePad();
   },
 
   updateAttendance: (event) => {
@@ -53,7 +54,7 @@ Attendees.roster = {
           Attendees.roster.signaturePad = new SignaturePad(canvas, {
             // minWidth: 5,
             // maxWidth: 10,
-            // backgroundColor: "rgb(255,255,255)",  // we don't use jpg
+            // backgroundColor: "rgb(255,255,255)",  // for jpg
           });
         } else {  // maybe user clicking wrong row
           const resultPromise = DevExpress.ui.dialog.confirm(`<strong>Clear the time-out record of ${attendeeName} and REMOVE signature?</strong>${checkboxInput.dataset.file ? '<br><img src="' + checkboxInput.dataset.file + '">' : ''}`, "UNDO check-out record?");
@@ -112,29 +113,12 @@ Attendees.roster = {
           onClick() {
             if (!Attendees.roster.signaturePad.isEmpty()) {
               const currentRowIndex = Attendees.roster.currentCheckbox.getAttribute("name");
-              console.log("hi 115 here is the svg: ", Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
-              // const canvas = document.querySelector("canvas.signature");
-
-              // canvas.toBlob(function(blob){
-              //   console.log("hi hi 119 here is the blob: ", blob);
-              //   // Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'file', blob);
-              //   Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'finish', new Date().toISOString());
-              //   Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
-              //   Attendees.roster.signaturePad.clear();
-              //   Attendees.roster.checkOutPopup.hide();
-              //
-              // });
-
-
-              console.log("hi 129 here is the svg: ", Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
-
-              // Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'file', Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
-              // Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'file', 'test');
+              Attendees.roster.checkOutPopup.hide();
+              Attendees.roster.signaturePad.removeBlanks();
               Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'encoded_file', Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
               Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'finish', new Date().toISOString());
               Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
               Attendees.roster.signaturePad.clear();
-              Attendees.roster.checkOutPopup.hide();
             } else {
               const message = `Checking out requires signature!`;
               DevExpress.ui.notify({
@@ -1041,42 +1025,57 @@ Attendees.roster = {
       signaturePad.clear(); // otherwise isEmpty() might return incorrect value
   },  // copied from https://github.com/szimek/signature_pad#tips-and-tricks
 
-  getCroppedCanvasImage: (canvas, type = "image/svg+xml") => {
+  addRemoveBlanksToSignaturePad: () => {  // https://github.com/szimek/signature_pad/issues/49
+    SignaturePad.prototype.removeBlanks = function () {
+      var imgWidth = this._ctx.canvas.width;
+      var imgHeight = this._ctx.canvas.height;
+      var imageData = this._ctx.getImageData(0, 0, imgWidth, imgHeight),
+        data = imageData.data,
+        getAlpha = function(x, y) {
+          return data[(imgWidth*y + x) * 4 + 3]
+        },
+        scanY = function (fromTop) {
+          var offset = fromTop ? 1 : -1;
 
-      let originalCtx = canvas.getContext('2d');
+          // loop through each row
+          for(var y = fromTop ? 0 : imgHeight - 1; fromTop ? (y < imgHeight) : (y > -1); y += offset) {
 
-      let originalWidth = canvas.width;
-      let originalHeight = canvas.height;
-      let imageData = originalCtx.getImageData(0,0, originalWidth, originalHeight);
-
-      let minX = originalWidth + 1, maxX = -1, minY = originalHeight + 1, maxY = -1, x = 0, y = 0, currentPixelColorValueIndex;
-
-      for (y = 0; y < originalHeight; y++) {
-          for (x = 0; x < originalWidth; x++) {
-              currentPixelColorValueIndex = (y * originalWidth + x) * 4;
-              let currentPixelAlphaValue = imageData.data[currentPixelColorValueIndex + 3];
-              if (currentPixelAlphaValue > 0) {
-                  if (minX > x) minX = x;
-                  if (maxX < x) maxX = x;
-                  if (minY > y) minY = y;
-                  if (maxY < y) maxY = y;
+            // loop through each column
+            for(var x = 0; x < imgWidth; x++) {
+              if (getAlpha(x, y)) {
+                return y;
               }
+            }
           }
-      }
+          return null; // all image is white
+        },
+        scanX = function (fromLeft) {
+          var offset = fromLeft? 1 : -1;
 
-      let croppedWidth = maxX - minX;
-      let croppedHeight = maxY - minY;
-      if (croppedWidth <= 0 || croppedHeight <= 0) return null;
-      let cuttedImageData = originalCtx.getImageData(minX, minY, croppedWidth, croppedHeight);
+          // loop through each column
+          for(var x = fromLeft ? 0 : imgWidth - 1; fromLeft ? (x < imgWidth) : (x > -1); x += offset) {
 
-      let croppedCanvas = document.createElement('canvas'),
-          croppedCtx    = croppedCanvas.getContext('2d');
+            // loop through each row
+            for(var y = 0; y < imgHeight; y++) {
+              if (getAlpha(x, y)) {
+                return x;
+              }
+            }
+          }
+          return null; // all image is white
+        };
 
-      croppedCanvas.width = croppedWidth;
-      croppedCanvas.height = croppedHeight;
-      croppedCtx.putImageData(cuttedImageData, 0, 0);
+      var cropTop = scanY(true),
+        cropBottom = scanY(false),
+        cropLeft = scanX(true),
+        cropRight = scanX(false);
 
-      return croppedCanvas.toDataURL(type);
+      var relevantData = this._ctx.getImageData(cropLeft, cropTop, cropRight-cropLeft, cropBottom-cropTop);
+      this._ctx.canvas.width = cropRight-cropLeft;
+      this._ctx.canvas.height = cropBottom-cropTop;
+      this._ctx.clearRect(0, 0, cropRight-cropLeft, cropBottom-cropTop);
+      this._ctx.putImageData(relevantData, 0, 0);
+    };
   },  //  modified from https://github.com/szimek/signature_pad/issues/49#issuecomment-1104035775
 
 };
