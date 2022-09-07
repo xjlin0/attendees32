@@ -123,5 +123,17 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(LoginRequiredMixin, viewset
                 detail="Have you registered any events of the organization?"
             )
 
+    # def perform_update(self, serializer):
+    #     # target_attendee = get_object_or_404(
+    #     #     Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+    #     # )
+    #     # if self.request.user.privileged_to_edit(
+    #     #     target_attendee.id
+    #     # ):  # intentionally forbid user delete him/herself
+    #         print("hi 133 here is perform_updadte, self.request.META: ", self.request.META)
+    #
+    #         user_serializer = self.get_serializer(Attendance, data=self.request.data, partial=True)
+    #         user_serializer.is_valid()
+    #         instance = user_serializer.save()
 
 api_organization_meet_character_attendances_viewset = ApiOrganizationMeetCharacterAttendancesViewSet

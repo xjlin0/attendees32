@@ -1,5 +1,7 @@
 import re
 import sys
+import base64
+from django.core.files.base import ContentFile
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
 from operator import itemgetter
@@ -351,6 +353,13 @@ class Utility:
             total_count += group.get('count')
         return {'data': group_counts, 'totalCount': total_count}
 
+    @staticmethod
+    def base64_file(data, name=None):  # https://stackoverflow.com/a/54274739
+        _format, _img_str = data.split(';base64,')
+        _name, ext = _format.split('/')
+        if not name:
+            name = _name.split(":")[-1]
+        return ContentFile(base64.b64decode(_img_str), name='{}.{}'.format(name, ext))
 
     # @property
     # def notes(self):
