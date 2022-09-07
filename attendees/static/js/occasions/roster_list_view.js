@@ -1,5 +1,6 @@
 Attendees.roster = {
   filtersForm: null,
+  currentCheckbox: null,
   meetScheduleRules: {},
   buttonCategories: {},
   allCategories: {},
@@ -13,6 +14,7 @@ Attendees.roster = {
   init: () => {
     console.log('static/js/occasions/roster_list_view.js');
     Attendees.roster.initFiltersForm();
+    Attendees.roster.initCheckOutPopup();
   },
 
   updateAttendance: (event) => {
@@ -44,20 +46,108 @@ Attendees.roster = {
         break;
       case "checkOut":
         if (checkboxInput.checked) {
-          // set finish as current if event.currentTarget.checked is true, plus signature
-          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', new Date().toISOString());
+          Attendees.roster.checkOutPopup.option('title', `Sign to check out ${attendeeName}`);
+          Attendees.roster.currentCheckbox = checkboxInput;
+          Attendees.roster.checkOutPopup.show();
+          const canvas = document.querySelector("canvas.signature");
+          Attendees.roster.signaturePad = new SignaturePad(canvas);
         } else {  // maybe user clicking wrong row
-          // remove signature
-          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
+          const resultPromise = DevExpress.ui.dialog.confirm(`Clear the time-out record of ${attendeeName} and REMOVE signature?`, "UNDO check-out record?");
+          resultPromise.done(dialogResult => {
+            if (dialogResult) {
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file', null);  // delete file at server!!!
+              Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+            } else {
+              checkboxInput.checked = true;
+            }
+          });
         }
         break;
-      default:
-      // nothing so far
+      default:  // nothing so far
     }
   },
 
   reloadRollCallerButtons: () => {
-    $('div#attendances-datagrid-container').off('click', 'input.roll-call-button').on('click','input.roll-call-button', Attendees.roster.updateAttendance);
+    $('div#attendances-datagrid-container')
+      .off('click', 'input.roll-call-button')  // in case of datagrid data change
+      .on('click','input.roll-call-button', Attendees.roster.updateAttendance);
+  },
+
+  initCheckOutPopup: () => {
+    Attendees.roster.checkOutPopup = $('#signature-canvas-popup').dxPopup(Attendees.roster.checkOutPopupConfig).dxPopup('instance');
+  },
+
+  checkOutPopupConfig: {
+    visible: false,
+    contentTemplate: () => {
+      return $('<div>').append(
+        $(`<canvas class="signature"></canvas>`),
+      );
+    },
+    width: 300,
+    height: 280,
+    container: '.roster-container',
+    showTitle: true,
+    title: 'Sign here to check out',
+    dragEnabled: false,
+    hideOnOutsideClick: false,
+    showCloseButton: false,
+    position: {
+      at: 'center',
+      my: 'center',
+    },
+    toolbarItems: [
+      {
+        widget: 'dxButton',
+        toolbar: 'bottom',
+        location: 'before',
+        options: {
+          icon: 'email',
+          text: 'Check out',
+          onClick() {
+            if (!Attendees.roster.signaturePad.isEmpty()) {
+              Attendees.roster.attendancesDatagrid.cellValue(Attendees.roster.currentCheckbox.getAttribute("name"), 'finish', new Date().toISOString());
+              Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+              Attendees.roster.signaturePad.clear();
+              Attendees.roster.checkOutPopup.hide();
+            } else {
+              const message = `Checking out requires signature!`;
+              DevExpress.ui.notify({
+                message,
+                position: {
+                  my: 'center top',
+                  at: 'center top',
+                },
+              }, 'error', 3000);
+            }
+          },
+        },
+      },
+      {
+        widget: 'dxButton',
+        toolbar: 'bottom',
+        location: 'after',
+        options: {
+          text: 'Clear',
+          onClick() {
+            Attendees.roster.signaturePad.clear();
+          },
+        },
+      },
+      {
+        widget: 'dxButton',
+        toolbar: 'bottom',
+        location: 'after',
+        options: {
+          text: 'Cancel',
+          onClick() {
+            Attendees.roster.currentCheckbox.checked = false;
+            Attendees.roster.checkOutPopup.hide();
+          },
+        },
+      }
+    ],
   },
 
   initFiltersForm: () => {
@@ -663,13 +753,13 @@ Attendees.roster = {
                           </label>
 
                           <input type="checkbox"
-                                 class="btn-check roll-call-button"
+                                 class="btn-check roll-call-button ${cellInfo.data.start ? '' : 'd-none'}"
                                  name="${cellInfo.rowIndex}"
                                  value="checkOut"
                                  id="out-${cellInfo.data.id}"
                                  autocomplete="off"
                                  ${cellInfo.data.finish ? 'checked' : ''}>
-                          <label class="btn btn-outline-primary"
+                          <label class="btn btn-outline-primary ${cellInfo.data.start ? '' : 'd-none'}"
                                  for="out-${cellInfo.data.id}">
                             Check out
                           </label>
