@@ -30,7 +30,7 @@ Attendees.roster = {
           Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', new Date().toISOString());
           Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
         } else {  // maybe user clicking wrong row
-          const resultPromise = DevExpress.ui.dialog.confirm(`UNDO the time-in record of ${attendeeName} and make the attendance back to "scheduled"?`, "Undo check-in record?");
+          const resultPromise = DevExpress.ui.dialog.confirm(`Remove the time-in record of ${attendeeName} and revert the status back to "scheduled"?`, "UNDO check-in record?");
           resultPromise.done(dialogResult => {
             if (dialogResult) {
               Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', scheduledCategory);
@@ -791,6 +791,7 @@ Attendees.roster = {
       },
       {
         dataField: 'category',
+        caption: 'Status',
         visible: false,
         validationRules: [{type: 'required'}],
         lookup: {
