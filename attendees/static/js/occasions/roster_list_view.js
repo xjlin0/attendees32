@@ -46,17 +46,21 @@ Attendees.roster = {
         break;
       case "checkOut":
         if (checkboxInput.checked) {
-          Attendees.roster.checkOutPopup.option('title', `Sign to check out ${attendeeName}`);
+          Attendees.roster.checkOutPopup.option('title', `Checking out ${attendeeName}`);
           Attendees.roster.currentCheckbox = checkboxInput;
           Attendees.roster.checkOutPopup.show();
           const canvas = document.querySelector("canvas.signature");
-          Attendees.roster.signaturePad = new SignaturePad(canvas);
+          Attendees.roster.signaturePad = new SignaturePad(canvas, {
+            // minWidth: 5,
+            // maxWidth: 10,
+            // backgroundColor: "rgb(255,255,255)",  // we don't use jpg
+          });
         } else {  // maybe user clicking wrong row
-          const resultPromise = DevExpress.ui.dialog.confirm(`Clear the time-out record of ${attendeeName} and REMOVE signature?`, "UNDO check-out record?");
+          const resultPromise = DevExpress.ui.dialog.confirm(`<strong>Clear the time-out record of ${attendeeName} and REMOVE signature?</strong>${checkboxInput.dataset.file ? '<br><img src="' + checkboxInput.dataset.file + '">' : ''}`, "UNDO check-out record?");
           resultPromise.done(dialogResult => {
             if (dialogResult) {
               Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
-              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file', null);  // delete file at server!!!
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file', null);  // don't delete file for Audit!!!
               Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
             } else {
               checkboxInput.checked = true;
@@ -86,7 +90,7 @@ Attendees.roster = {
       );
     },
     width: 300,
-    height: 280,
+    height: 200,
     container: '.roster-container',
     showTitle: true,
     title: 'Sign here to check out',
@@ -103,11 +107,31 @@ Attendees.roster = {
         toolbar: 'bottom',
         location: 'before',
         options: {
-          icon: 'email',
-          text: 'Check out',
+          icon: 'edit',
+          text: 'Sign',
           onClick() {
             if (!Attendees.roster.signaturePad.isEmpty()) {
-              Attendees.roster.attendancesDatagrid.cellValue(Attendees.roster.currentCheckbox.getAttribute("name"), 'finish', new Date().toISOString());
+              const currentRowIndex = Attendees.roster.currentCheckbox.getAttribute("name");
+              console.log("hi 115 here is the svg: ", Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
+              // const canvas = document.querySelector("canvas.signature");
+
+              // canvas.toBlob(function(blob){
+              //   console.log("hi hi 119 here is the blob: ", blob);
+              //   // Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'file', blob);
+              //   Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'finish', new Date().toISOString());
+              //   Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+              //   Attendees.roster.signaturePad.clear();
+              //   Attendees.roster.checkOutPopup.hide();
+              //
+              // });
+
+
+              console.log("hi 129 here is the svg: ", Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
+
+              // Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'file', Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
+              // Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'file', 'test');
+              Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'encoded_file', Attendees.roster.signaturePad.toDataURL("image/svg+xml"));
+              Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'finish', new Date().toISOString());
               Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
               Attendees.roster.signaturePad.clear();
               Attendees.roster.checkOutPopup.hide();
@@ -129,7 +153,8 @@ Attendees.roster = {
         toolbar: 'bottom',
         location: 'after',
         options: {
-          text: 'Clear',
+          icon: 'clear',
+          text: 'Clear signing',
           onClick() {
             Attendees.roster.signaturePad.clear();
           },
@@ -758,6 +783,7 @@ Attendees.roster = {
                                  value="checkOut"
                                  id="out-${cellInfo.data.id}"
                                  autocomplete="off"
+                                 data-file="${cellInfo.data.file ? cellInfo.data.file : ''}"
                                  ${cellInfo.data.finish ? 'checked' : ''}>
                           <label class="btn btn-outline-primary ${cellInfo.data.start ? '' : 'd-none'}"
                                  for="out-${cellInfo.data.id}">
@@ -962,7 +988,6 @@ Attendees.roster = {
       {
         dataField: 'start',
         caption: 'Time in',
-        visible: false,
         dataType: 'datetime',
         editorOptions: {
           type: 'datetime',
@@ -972,11 +997,24 @@ Attendees.roster = {
       {
         dataField: 'finish',
         caption: 'Time out',
-        visible: false,
         dataType: 'datetime',
         editorOptions: {
           type: 'datetime',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
+        },
+      },
+      {
+        dataField: 'file',
+        caption: 'signature',
+        width: 100,
+        allowFiltering: false,
+        allowSorting: false,
+        allowGrouping: false,
+        cellTemplate: (container, options) => {
+          if (options.value){
+            $('<img>', { src: options.value })
+              .appendTo(container);
+          }
         },
       },
       {
@@ -986,6 +1024,11 @@ Attendees.roster = {
         editorOptions: {
           autoResizeEnabled: true,
         },
+      },
+      {
+        dataField: 'encoded_file',
+        dataType: 'string',
+        visible: false,
       },
     ],
   },
