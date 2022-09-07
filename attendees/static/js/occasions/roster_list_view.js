@@ -15,17 +15,50 @@ Attendees.roster = {
     Attendees.roster.initFiltersForm();
   },
 
-  // updateAttendance: (event) => {
-  //   const $radioInput = $(event.currentTarget);
-  //   const rowIndex = $radioInput.prop('name');
-  //   const categoryId = $radioInput.prop('value');
-  //   Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', categoryId);
-  //   Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
-  // },
-  //
-  // reloadRollCallerButtons: () => {
-  //   $('div#attendances-datagrid-container').off('click', 'input.roll-call-button').on('click','input.roll-call-button', Attendees.roster.updateAttendance);
-  // },
+  updateAttendance: (event) => {
+    const checkboxInput = event.currentTarget;
+    const rowIndex = checkboxInput.getAttribute("name");  // $radioInput.prop('name');
+    const buttonValue =  checkboxInput.getAttribute("value"); // $radioInput.prop('value');
+    const attendeeName = checkboxInput.parentElement.previousSibling.outerText;
+
+    switch(buttonValue) {
+      case "checkIn":
+        const checkInCategory = parseInt(checkboxInput.dataset.checkInCategory);
+        const scheduledCategory = parseInt(checkboxInput.dataset.scheduledCategory);
+        if (checkboxInput.checked) {
+          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', checkInCategory);
+          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', new Date().toISOString());
+          Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+        } else {  // maybe user clicking wrong row
+          const resultPromise = DevExpress.ui.dialog.confirm(`UNDO the time-in record of ${attendeeName} and make the attendance back to "scheduled"?`, "Undo check-in record?");
+          resultPromise.done(dialogResult => {
+            if (dialogResult) {
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', scheduledCategory);
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', null);
+              Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+            } else {
+              checkboxInput.checked = true;
+            }
+          });
+        }
+        break;
+      case "checkOut":
+        if (checkboxInput.checked) {
+          // set finish as current if event.currentTarget.checked is true, plus signature
+          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', new Date().toISOString());
+        } else {  // maybe user clicking wrong row
+          // remove signature
+          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
+        }
+        break;
+      default:
+      // nothing so far
+    }
+  },
+
+  reloadRollCallerButtons: () => {
+    $('div#attendances-datagrid-container').off('click', 'input.roll-call-button').on('click','input.roll-call-button', Attendees.roster.updateAttendance);
+  },
 
   initFiltersForm: () => {
     $.ajaxSetup({
@@ -615,28 +648,34 @@ Attendees.roster = {
 
             let html = `<div class="btn-group-vertical btn-group-sm"
                              role="group">
-                          <label class="roll-call btn btn-outline-success">
+                          <input type="checkbox"
+                                 class="btn-check roll-call-button"
+                                 name="${cellInfo.rowIndex}"
+                                 value="checkIn"
+                                 id="in-${cellInfo.data.id}"
+                                 autocomplete="off"
+                                 data-check-in-category="9"
+                                 data-scheduled-category="1"
+                                 ${cellInfo.data.category === 9 ? 'checked' : ''}>
+                          <label class="btn btn-outline-success"
+                                 for="in-${cellInfo.data.id}">
                             Check in
-                            <input type="checkbox"
-                                   class="btn-check roll-call-button"
-                                   name="${cellInfo.rowIndex}"
-                                   value="checkIn"
-                                   autocomplete="off"
-                                   ${cellInfo.data.category === 9 ? 'checked' : ''}>
                           </label>
-  
-                          <label class="roll-call btn btn-outline-primary">
+
+                          <input type="checkbox"
+                                 class="btn-check roll-call-button"
+                                 name="${cellInfo.rowIndex}"
+                                 value="checkOut"
+                                 id="out-${cellInfo.data.id}"
+                                 autocomplete="off"
+                                 ${cellInfo.data.finish ? 'checked' : ''}>
+                          <label class="btn btn-outline-primary"
+                                 for="out-${cellInfo.data.id}">
                             Check out
-                            <input type="checkbox"
-                                   class="btn-check roll-call-button"
-                                   name="${cellInfo.rowIndex}"
-                                   value="checkOut"
-                                   autocomplete="off"
-                                   ${cellInfo.data.finish ? 'checked' : ''}>
                           </label>
                         </div>`;
 
-            if (cellInfo.data.category !== 1 && !(cellInfo.data.category in Attendees.roster.buttonCategories)) {  // 1 is scheduled
+            if (![1, 9].includes(cellInfo.data.category) && !(cellInfo.data.category in Attendees.roster.buttonCategories)) {  // 1 is scheduled
               html += `<i>(${Attendees.roster.allCategories[cellInfo.data.category]})</i>`
             }
             cellElement.append(html)
@@ -834,7 +873,6 @@ Attendees.roster = {
         caption: 'Time in',
         visible: false,
         dataType: 'datetime',
-        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
@@ -845,7 +883,6 @@ Attendees.roster = {
         caption: 'Time out',
         visible: false,
         dataType: 'datetime',
-        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',

@@ -326,6 +326,7 @@ tags
 ### Project template
 attendees/media/private-media/attendee_portrait/*
 attendees/media/private-media/folk_attendee_file/*
+attendees/media/private-media/attendance_file/*
 attendees/scripts/real_data
 .pytest_cache/
 .ipython/
