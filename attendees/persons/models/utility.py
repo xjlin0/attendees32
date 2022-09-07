@@ -354,11 +354,16 @@ class Utility:
         return {'data': group_counts, 'totalCount': total_count}
 
     @staticmethod
-    def base64_file(data, name=None):  # https://stackoverflow.com/a/54274739
+    def base64_file(data, name_with_ext=None):  # https://stackoverflow.com/a/54274739
         _format, _img_str = data.split(';base64,')
-        _name, ext = _format.split('/')
-        if not name:
+        _name, ext_group = _format.split('/')
+        if not name_with_ext:
             name = _name.split(":")[-1]
+            ext = ext_group.split("+")[0]
+            return ContentFile(base64.b64decode(_img_str), name='{}.{}'.format(name, ext))
+        else:
+            return ContentFile(base64.b64decode(_img_str), name='{}'.format(name_with_ext))
+
         return ContentFile(base64.b64decode(_img_str), name='{}.{}'.format(name, ext))
 
     # @property
