@@ -74,7 +74,6 @@ Attendees.gatherings = {
                   DevExpress.ui.notify(
                     {
                       message: 'Batch processed, ' + result.number_created + ' successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
-                      width: 500,
                       position: {
                         my: 'center',
                         at: 'center',
@@ -87,7 +86,6 @@ Attendees.gatherings = {
                   DevExpress.ui.notify(
                     {
                       message: 'Batch processing error. ' + result && result.responseText,
-                      width: 500,
                       position: {
                         my: 'center',
                         at: 'center',
@@ -103,7 +101,6 @@ Attendees.gatherings = {
               DevExpress.ui.notify(
                 {
                   message: "Can't generate, Please select one single meet with duration, and Filter 'till' earlier than filter 'from'",
-                  width: 500,
                   position: {
                     my: 'center',
                     at: 'center',
@@ -461,8 +458,7 @@ Attendees.gatherings = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'update success',
-                  width: 500,
+                  message: 'update gathering success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -482,8 +478,7 @@ Attendees.gatherings = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'Create success',
-                  width: 500,
+                  message: 'Create gathering success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -500,8 +495,7 @@ Attendees.gatherings = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'removed success',
-                  width: 500,
+                  message: 'removed gathering success',
                   position: {
                     my: 'center',
                     at: 'center',

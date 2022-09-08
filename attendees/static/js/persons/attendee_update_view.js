@@ -77,7 +77,6 @@ Attendees.datagridUpdate = {
         DevExpress.ui.notify(
           {
             message: 'Click the "Save Attendee" button to save data',
-            width: 500,
             position: {
               my: 'center',
               at: 'center',
@@ -138,7 +137,6 @@ Attendees.datagridUpdate = {
       DevExpress.ui.notify(
         {
           message: successParamValue,
-          width: 500,
           position: {
             my: 'center',
             at: 'center',
@@ -782,7 +780,6 @@ Attendees.datagridUpdate = {
                   DevExpress.ui.notify(
                     {
                       message: 'delete attendee success',
-                      width: 500,
                       position: {
                         my: 'center',
                         at: 'center',
@@ -796,7 +793,6 @@ Attendees.datagridUpdate = {
                   DevExpress.ui.notify(
                     {
                       message: 'saving attendee error',
-                      width: 500,
                       position: {
                         my: 'center',
                         at: 'center',
@@ -903,7 +899,6 @@ Attendees.datagridUpdate = {
           DevExpress.ui.notify(
             {
               message: 'saving attendee error',
-              width: 500,
               position: {
                 my: 'center',
                 at: 'center',
@@ -917,7 +912,6 @@ Attendees.datagridUpdate = {
       DevExpress.ui.notify(
         {
           message: validationMessages.join('. '),
-          width: 500,
           position: {
             my: 'center',
             at: 'center',
@@ -1388,7 +1382,6 @@ Attendees.datagridUpdate = {
                       DevExpress.ui.notify(
                         {
                           message: "saving custom contact success",
-                          width: 500,
                           position: {
                             my: 'center',
                             at: 'center',
@@ -1402,7 +1395,6 @@ Attendees.datagridUpdate = {
                       DevExpress.ui.notify(
                         {
                           message: 'saving custom contact error',
-                          width: 500,
                           position: {
                             my: 'center',
                             at: 'center',
@@ -1579,7 +1571,6 @@ Attendees.datagridUpdate = {
                           DevExpress.ui.notify(
                             {
                               message: 'saving attending success',
-                              width: 500,
                               position: {
                                 my: 'center',
                                 at: 'center',
@@ -1596,7 +1587,6 @@ Attendees.datagridUpdate = {
                           DevExpress.ui.notify(
                             {
                               message: 'saving attending error',
-                              width: 500,
                               position: {
                                 my: 'center',
                                 at: 'center',
@@ -1633,8 +1623,7 @@ Attendees.datagridUpdate = {
                         Attendees.datagridUpdate.attendingPopup.hide();
                         DevExpress.ui.notify(
                           {
-                            message: 'attending deleted',
-                            width: 500,
+                            message: 'attending deleted successfully',
                             position: {
                               my: 'center',
                               at: 'center',
@@ -1648,8 +1637,7 @@ Attendees.datagridUpdate = {
                         console.log('Failed to delete attending in Popup, error: ', response);
                         DevExpress.ui.notify(
                           {
-                            message: 'delete attending error',
-                            width: 500,
+                            message: 'delete attending error!',
                             position: {
                               my: 'center',
                               at: 'center',
@@ -2070,7 +2058,6 @@ Attendees.datagridUpdate = {
                         DevExpress.ui.notify(
                           {
                             message: 'saving place success',
-                            width: 500,
                             position: {
                               my: 'center',
                               at: 'center',
@@ -2105,7 +2092,6 @@ Attendees.datagridUpdate = {
                         DevExpress.ui.notify(
                           {
                             message: 'saving locate error',
-                            width: 500,
                             position: {
                               my: 'center',
                               at: 'center',
@@ -2198,8 +2184,7 @@ Attendees.datagridUpdate = {
                         Attendees.datagridUpdate.placePopup.hide();
                         DevExpress.ui.notify(
                           {
-                            message: 'Place deleted',
-                            width: 500,
+                            message: 'Place deleted successfully',
                             position: {
                               my: 'center',
                               at: 'center',
@@ -2213,7 +2198,6 @@ Attendees.datagridUpdate = {
                         DevExpress.ui.notify(
                           {
                             message: 'delete place error',
-                            width: 500,
                             position: {
                               my: 'center',
                               at: 'center',
@@ -2674,7 +2658,6 @@ Attendees.datagridUpdate = {
                 DevExpress.ui.notify(
                   {
                     message: 'update success, please reload page if changing family',
-                    width: 500,
                     position: {
                       my: 'center',
                       at: 'center',
@@ -2696,7 +2679,6 @@ Attendees.datagridUpdate = {
                 DevExpress.ui.notify(
                   {
                     message: 'Create success, please find the new attendee in the table',
-                    width: 500,
                     position: {
                       my: 'center',
                       at: 'center',
@@ -2713,8 +2695,7 @@ Attendees.datagridUpdate = {
               success: (result) => {
                 DevExpress.ui.notify(
                   {
-                    message: displayName + ' member removed',
-                    width: 500,
+                    message: displayName + ' member removed successfully',
                     position: {
                       my: 'center',
                       at: 'center',
@@ -2730,7 +2711,6 @@ Attendees.datagridUpdate = {
         DevExpress.ui.notify(
           {
             message: "Let's create a new family member, click away or hit Enter to save. Hit Esc to quit without save",
-            width: 500,
             position: {
               my: 'center',
               at: 'center',
@@ -2839,7 +2819,6 @@ Attendees.datagridUpdate = {
             DevExpress.ui.notify(
               {
                 message: 'saving scheduler or emergency contacts error, please try again',
-                width: 500,
                 position: {
                   my: 'center',
                   at: 'center',
@@ -2993,7 +2972,6 @@ Attendees.datagridUpdate = {
                         DevExpress.ui.notify(
                           {
                             message: 'saving Family attr success',
-                            width: 500,
                             position: {
                               my: 'center',
                               at: 'center',
@@ -3015,7 +2993,6 @@ Attendees.datagridUpdate = {
                         DevExpress.ui.notify(
                           {
                             message: 'saving Family error',
-                            width: 500,
                             position: {
                               my: 'center',
                               at: 'center',
@@ -3052,8 +3029,7 @@ Attendees.datagridUpdate = {
                         Attendees.datagridUpdate.familyAttrPopup.hide();
                         DevExpress.ui.notify(
                           {
-                            message: 'Family deleted',
-                            width: 500,
+                            message: 'Family deleted successfully',
                             position: {
                               my: 'center',
                               at: 'center',
@@ -3071,7 +3047,6 @@ Attendees.datagridUpdate = {
                         DevExpress.ui.notify(
                           {
                             message: 'delete Family error',
-                            width: 500,
                             position: {
                               my: 'center',
                               at: 'center',
@@ -3235,7 +3210,6 @@ Attendees.datagridUpdate = {
                 DevExpress.ui.notify(
                   {
                     message: 'update ' + args.type + ' success',
-                    width: 500,
                     position: {
                       my: 'center',
                       at: 'center',
@@ -3260,7 +3234,6 @@ Attendees.datagridUpdate = {
                 DevExpress.ui.notify(
                   {
                     message: 'Create ' + args.type + ' success',
-                    width: 500,
                     position: {
                       my: 'center',
                       at: 'center',
@@ -3281,7 +3254,6 @@ Attendees.datagridUpdate = {
                 DevExpress.ui.notify(
                   {
                     message: 'removed '+ args.type +' success',
-                    width: 500,
                     position: {
                       my: 'center',
                       at: 'center',
@@ -3304,7 +3276,6 @@ Attendees.datagridUpdate = {
         DevExpress.ui.notify(
           {
             message: "Let's create a " + args.type + ", click away or hit Enter to save. Hit Esc to quit without save",
-            width: 500,
             position: {
               my: 'center',
               at: 'center',
@@ -3426,8 +3397,7 @@ Attendees.datagridUpdate = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'update success',
-                  width: 500,
+                  message: 'update attendingmeet success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -3448,7 +3418,6 @@ Attendees.datagridUpdate = {
               DevExpress.ui.notify(
                 {
                   message: 'Create success, please find the new activity in the table',
-                  width: 500,
                   position: {
                     my: 'center',
                     at: 'center',
@@ -3467,7 +3436,6 @@ Attendees.datagridUpdate = {
               DevExpress.ui.notify(
                 {
                   message: 'removed AttendingMeet success',
-                  width: 500,
                   position: {
                     my: 'center',
                     at: 'center',
