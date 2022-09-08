@@ -94,7 +94,8 @@ Attendees.roster = {
         $(`<canvas class="signature" width="100%" height="100%"></canvas>`),
       );
     },
-    width: 300,
+    maxWidth: 400,
+    width: '95%',
     height: 200,
     container: '.roster-container',
     showTitle: true,
@@ -123,12 +124,12 @@ Attendees.roster = {
               Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
               Attendees.roster.signaturePad.clear();
             } else {
-              const message = `Checking out requires signature!`;
               DevExpress.ui.notify({
-                message,
+                message: 'Checking out requires signature!',
                 position: {
-                  my: 'center top',
-                  at: 'center top',
+                  my: 'center',
+                  at: 'center',
+                  of: window,
                 },
               }, 'error', 3000);
             }
@@ -512,8 +513,7 @@ Attendees.roster = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'update success',
-                  width: 500,
+                  message: 'update attendance success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -533,8 +533,7 @@ Attendees.roster = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'Create success',
-                  width: 500,
+                  message: 'Create attendance success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -551,8 +550,7 @@ Attendees.roster = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'removed success',
-                  width: 500,
+                  message: 'removed attendance success',
                   position: {
                     my: 'center',
                     at: 'center',

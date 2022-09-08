@@ -76,7 +76,6 @@ Attendees.attendances = {
                   DevExpress.ui.notify(
                     {
                       message: 'Batch processed, ' + result.gathering_created + ' gatherings and ' + result.attendance_created + ' attendances successfully created between ' + new Date(result.begin).toLocaleString() + ' & ' + new Date(result.end).toLocaleString(),
-                      width: 500,
                       position: {
                         my: 'center',
                         at: 'center',
@@ -89,7 +88,6 @@ Attendees.attendances = {
                   DevExpress.ui.notify(
                     {
                       message: 'Batch processing error. ' + result && result.responseText,
-                      width: 500,
                       position: {
                         my: 'center',
                         at: 'center',
@@ -105,7 +103,6 @@ Attendees.attendances = {
               DevExpress.ui.notify(
                 {
                   message: "Can't generate, Please select one single meet with duration, and Filter 'till' earlier than filter 'from'",
-                  width: 500,
                   position: {
                     my: 'center',
                     at: 'center',
@@ -537,8 +534,7 @@ Attendees.attendances = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'update success',
-                  width: 500,
+                  message: 'update attendance success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -558,8 +554,7 @@ Attendees.attendances = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'Create success',
-                  width: 500,
+                  message: 'Create attendance success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -576,8 +571,7 @@ Attendees.attendances = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'removed success',
-                  width: 500,
+                  message: 'removed attendance success',
                   position: {
                     my: 'center',
                     at: 'center',

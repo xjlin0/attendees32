@@ -441,8 +441,7 @@ Attendees.attendingmeets = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'update success',
-                  width: 500,
+                  message: 'update attendingmeet success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -462,8 +461,7 @@ Attendees.attendingmeets = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'Create success',
-                  width: 500,
+                  message: 'Create attendingmeet success',
                   position: {
                     my: 'center',
                     at: 'center',
@@ -480,8 +478,7 @@ Attendees.attendingmeets = {
             success: (result) => {
               DevExpress.ui.notify(
                 {
-                  message: 'removed success',
-                  width: 500,
+                  message: 'removed attendingmeet success',
                   position: {
                     my: 'center',
                     at: 'center',
