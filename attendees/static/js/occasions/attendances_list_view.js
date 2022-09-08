@@ -1043,25 +1043,11 @@ Attendees.attendances = {
           }
         },
       },
-//      {
-//        dataField: 'create_attendances_till',
-//        visible: false,
-//        dataType: 'datetime',
-//        label: {
-//          text: 'Reserve attendances to',
-//        },
-//        editorOptions: {
-//          type: 'datetime',
-//          showClearButton: true,
-//          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-//        }
-//      },
       {
         dataField: 'start',
         caption: 'Time in',
         visible: false,
         dataType: 'datetime',
-        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
           showClearButton: true,
@@ -1073,7 +1059,6 @@ Attendees.attendances = {
         caption: 'Time out',
         visible: false,
         dataType: 'datetime',
-        format: 'MM/dd/yyyy',
         editorOptions: {
           type: 'datetime',
           dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
