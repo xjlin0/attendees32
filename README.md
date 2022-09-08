@@ -116,21 +116,21 @@ See detailed [cookiecutter-django Docker documentation](http://cookiecutter-djan
 - As a non-parent registering kids, I have to enter kid parent info.
 - As a coworker I need to register withOUT kids
 - As a staff/organizer, when I click each session's class title, I will be linked to google drive for course materials.
-- Last, probably redesign a non row-based listing for staff/organizer's day view or student roaster view (mobil phone friendly)
+- Last, probably redesign a non row-based listing for staff/organizer's day view or student roster view (mobil phone friendly)
 
 ### 20200213 meeting notes
 - As a parent I can be notified for the incoming classes, so that I can respond with RSVP or take absent for my kids.
 - As a parent I can be notified to update contact info/address for my kids.
 - As a coworker I can be notified for the incoming classes, so that I can respond with RSVP or take leave.
 - As a organizer(coworkers?) I can be notified early when coworkers take leaves on the incoming class.
-- As a organizer(coworkers?) I can assign students to different class, maybe or maybe not from student roaster.
+- As a organizer(coworkers?) I can assign students to different class, maybe or maybe not from student roster.
 - As a coworker I can take/retract the students attendance anytime in the class or check students attendance after classes.
 - As a secretary I can receive all class attendance counts summary periodically.
 - As a coworker, I can check or update BOTH age and grade of a student (age and grade of the same student may vary a lot).
 - As a coworker, I can see both age and grade of a student (age and grade may vary a lot) periodically advanced automatically.
 
 #### page priority
-- student roasters (with their medical concerns, parent contact, and possibly other attendances) for the incoming classes
+- student rosters (with their medical concerns, parent contact, and possibly other attendances) for the incoming classes
 - leader/coworker list for the incoming classes (for teacher availability and arrangement)
 
 #### how to direct parents/coworker to use app (my own thoughts)
@@ -242,7 +242,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * import the seed data by `docker-compose -f production.yml run django python manage.py loaddata fixtures/db_seed`
 * do NOT collect static file.
 * prepare all member's photos from different server.
-* copy the real data to attendees/scripts/real_data/ and import real data by `docker-compose -f production.yml run django python manage.py load_access_csv attendees/scripts/real_data/tblHousehold20211026_m.csv attendees/scripts/real_data/tblPeople20211026_pass.csv attendees/scripts/real_data/tblAddress20211026.csv cfcch_chinese_ministry cfcch_crossing_ministry cfcch_children_ministry cfcch_congregation_data d7c8Fd_cfcch_congregation_member d7c8Fd_cfcch_congregation_directory d7c8Fd_cfcch_congregation_baptized d7c8Fd_cfcch_congregation_roaster d7c8Fd_cfcch_congregation_believer`
+* copy the real data to attendees/scripts/real_data/ and import real data by `docker-compose -f production.yml run django python manage.py load_access_csv attendees/scripts/real_data/tblHousehold20211026_m.csv attendees/scripts/real_data/tblPeople20211026_pass.csv attendees/scripts/real_data/tblAddress20211026.csv cfcch_chinese_ministry cfcch_crossing_ministry cfcch_children_ministry cfcch_congregation_data d7c8Fd_cfcch_congregation_member d7c8Fd_cfcch_congregation_directory d7c8Fd_cfcch_congregation_baptized d7c8Fd_cfcch_congregation_roster d7c8Fd_cfcch_congregation_believer`
 
 * start server by `docker-compose -f production.yml up -d`
 
@@ -376,7 +376,7 @@ All libraries are included to facilitate offline development, it will take port 
 - [x] [PR#30](https://github.com/xjlin0/attendees30/pull/30) Past can replace Note on DB level, Attendee.progressions and calls/requests, so that any name lists such as status can be easily queried. (membership remains as AttendingMeet with category for active/inactive)
   - [x] make Past model generic
   - [ ] any past status list (Past level)
-  - [ ] Attendance roaster to Past auto conversion (AttendingMeet <=> Past has been implemented)
+  - [ ] Attendance roster to Past auto conversion (AttendingMeet <=> Past has been implemented)
 - [x] attendee detail page
   - [x] server side process of Attendees list & search page
   - [x] AttendingMeet form of Attendee update page
@@ -447,11 +447,11 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
   - [x] [2PR#20](https://github.com/xjlin0/attendees32/pull/20) new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances & datagrid_coworker_organization_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending -- refresh the datagrid & reloading attending lookup with attendance filters)
   - [x] [2PR#23](https://github.com/xjlin0/attendees32/pull/23) auto-generation attendance by attending meet and recent attendance status
   - [x] Easier UI for batch add attendingmeet
-  - [ ] member list (attendance level with editing category, with sort by family/last names)
+  - [x] member list (attendance level with editing category, with sort by family/last names)
 - [ ] Folkattendee List grouped by Folk
   - [ ] For carpooling, needs consent too, as well as shown in Attendee update page.
-- [x] [2PR#22](https://github.com/xjlin0/attendees32/pull/22) Create roaster page (no real-time update for multiple coworkers in v1)
-  - [ ] Coworker roaster on phone/web, X: characters, Y: dates(gatherings)
+- [x] [2PR#22](https://github.com/xjlin0/attendees32/pull/22) Create roster page (no real-time update for multiple coworkers in v1)
+  - [ ] Coworker roster on phone/web, X: characters, Y: dates(gatherings)
 - [ ] Division specific menu links, such as including selected meets in the search params
   - [ ] Junior
   - [ ] Data
@@ -459,6 +459,7 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
   - [x] find library and install: maybe django-pghistory with AggregateEvent
   - [x] each model level version
   - [ ] document aggregation level version
+  - [ ] upgrade to django-pghistory v2.4+ for various bug fixes.
 - [x] [New repo] upgrade to Django 3.2LTS for support of DEFAULT_AUTO_FIELD
    -[x] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800
    -[x] 3.1: use Django JSONField instead of Postgres JSONField
