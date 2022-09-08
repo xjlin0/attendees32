@@ -55,7 +55,7 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
         encoded_file = validated_data.get('encoded_file')
 
         if encoded_file:  # user signature always overwrites existing file
-            file_name = f"{instance.id}_{Utility.now_with_timezone().strftime('%s')}.svg"
+            file_name = f"{instance.id}_{Utility.now_with_timezone().strftime('%s')}.jpg"
             instance.file.save(file_name, Utility.base64_file(encoded_file, file_name), save=True)
 
         instance.save()
