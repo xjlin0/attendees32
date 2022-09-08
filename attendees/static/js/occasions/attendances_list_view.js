@@ -1080,6 +1080,21 @@ Attendees.attendances = {
         },
       },
       {
+        dataField: 'file',
+        visible: false,
+        caption: 'check out signature',
+        width: 100,
+        allowFiltering: false,
+        allowSorting: false,
+        allowGrouping: false,
+        cellTemplate: (container, options) => {
+          if (options.value){
+            $('<img>', { src: options.value })
+              .appendTo(container);
+          }
+        },
+      },
+      {
         dataField: 'infos.note',
         allowGrouping: false,
         caption: 'Note',
