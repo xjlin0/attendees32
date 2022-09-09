@@ -2524,15 +2524,15 @@
     "model": "address.address",
     "pk": 1,
     "fields": {
-      "street_number": "22416",
-      "route": "Meekland Avenue",
+      "street_number": "157",
+      "route": "Smalley Avenue",
       "extra": null,
       "name": "CFCCH",
       "type": "street",
       "hash": null,
       "locality": 1,
-      "raw": "22416 Meekland Ave. Hayward, CA 94541",
-      "formatted": "CFCCH 22416 Meekland Ave. Hayward, CA 94541",
+      "raw": "157 Smalley Ave. Hayward, CA 94541",
+      "formatted": "CFCCH 157 Smalley Ave. Hayward, CA 94541",
       "latitude": null,
       "longitude": null
     }

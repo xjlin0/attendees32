@@ -82,10 +82,12 @@ class AttendingMeetService:
                                Q(attending__registration__registrant=current_user.attendee)), Q.AND)
 
         if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # for searching in drop down of popup editor
+            print("hi 85 here is search_value: ", search_value)
             extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
                                |
                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
         if filter:  # only support single/double level so far
+            print("hi 90 here is filter: ", filter)
             filter_list = json.loads(filter)
             search_term = (filter_list[-1][-1]
                            if filter_list[1] == 'or'

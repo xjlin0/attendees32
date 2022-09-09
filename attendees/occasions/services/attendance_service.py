@@ -152,7 +152,7 @@ class AttendanceService:
         elif start:   # warning: attendance start&finish is optional, so limiting on gathering is needed in datagrid
             extra_filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
             extra_filters.add(Q(gathering__finish__gte=start), Q.AND)
-        elif finish:  # but if user search in popup editor, relex time limits to allow adding future new ones.
+        elif finish:  # but if user search in popup editor, relax time limits to allow adding future new ones.
             extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
             extra_filters.add(Q(gathering__start__lte=finish), Q.AND)
 

@@ -5,11 +5,9 @@ from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
-from rest_framework.utils import json
 
 from attendees.persons.models import Utility, Attending
 from attendees.persons.serializers.attending_minimal_serializer import AttendingMinimalSerializer
-from attendees.persons.services import AttendingMeetService
 
 
 class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequiredMixin, viewsets.ModelViewSet):
@@ -43,16 +41,7 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
             search_value = self.request.query_params.get("searchValue")
             search_expression = self.request.query_params.get("searchExpr")
             search_operation = self.request.query_params.get("searchOperation")
-            group_string = self.request.query_params.get(
-                "group",
-            )  # [{"selector":"meet","desc":false,"isExpanded":false}] if grouping
-            orderby_list = json.loads(
-                self.request.query_params.get(
-                    "sort",
-                    '[{"selector":"meet","desc":false},{"selector":"start","desc":false}]',
-                )  # default selector of meet is for AttendingMeet queries
-            )  # order_by('meet','start')
-            # Todo: add group column to orderby_list
+
             if pk:
                 filters = Q(meets__assembly__division__organization=current_user_organization).add(Q(pk=pk), Q.AND)
                 if not current_user.can_see_all_organizational_meets_attendees():
@@ -62,27 +51,14 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequire
 
                 return Attending.objects.filter(filters).distinct()
 
-            else:
-                if group_string:
-                    groups = json.loads(group_string)
-                    orderby_list.insert(
-                        0, {"selector": groups[0]["selector"], "desc": groups[0]["desc"]}
-                    )
+            else:  # user might never join any meets before
+                filters = Q(attendee__division__organization=current_user.organization)
+                if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # for searching in drop down of popup editor
+                    filters.add((Q(registration__registrant__infos__icontains=search_value)
+                                   |
+                                   Q(attendee__infos__icontains=search_value)), Q.AND)
 
-                return Attending.objects.filter(
-                    pk__in=AttendingMeetService.by_organization_meet_characters(
-                                current_user=self.request.user,
-                                meet_slugs=self.request.query_params.getlist("meets[]", []),
-                                character_slugs=self.request.query_params.getlist("characters[]", []),
-                                start=self.request.query_params.get("start"),
-                                finish=self.request.query_params.get("finish"),
-                                orderbys=orderby_list,
-                                search_value=search_value,
-                                search_expression=search_expression,
-                                search_operation=search_operation,
-                                filter=self.request.query_params.get("filter"),
-                            ).values_list('attending').order_by()
-                )
+                return Attending.objects.filter(filters).order_by('attendee__last_name')
 
         else:
             time.sleep(2)
