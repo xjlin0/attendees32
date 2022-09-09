@@ -1079,6 +1079,26 @@ Attendees.attendances = {
         caption: 'Note',
         dataType: 'string',
       },
+      {
+        dataField: 'attending__attendee__first_name',
+        caption: 'first name',
+        visible: false,
+      },
+      {
+        dataField: 'attending__attendee__last_name',
+        caption: 'last name',
+        visible: false,
+      },
+      {
+        dataField: 'attending__attendee__first_name2',
+        caption: 'first name 2',
+        visible: false,
+      },
+      {
+        dataField: 'attending__attendee__last_name2',
+        caption: 'last name 2',
+        visible: false,
+      },
     ],
   },
 };

@@ -13,6 +13,10 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
     photo = serializers.CharField(read_only=True)
     file = serializers.FileField(use_url=True, allow_empty_file=True, allow_null=True)  # cause 400
     encoded_file = serializers.CharField(required=False)
+    attending__attendee__first_name = serializers.CharField(read_only=True)
+    attending__attendee__last_name = serializers.CharField(read_only=True)
+    attending__attendee__first_name2 = serializers.CharField(read_only=True)
+    attending__attendee__last_name2 = serializers.CharField(read_only=True)
 
     class Meta:
         model = Attendance
