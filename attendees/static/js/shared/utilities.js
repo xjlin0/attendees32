@@ -259,6 +259,23 @@ Attendees.utilities = {
     }
     return '';
   },
+
+  filterDevExtremeArgs: (loadOptions={}, args={}, filters=[
+                                                    'skip',
+                                                    'take',
+                                                    'requireTotalCount',
+                                                    'requireGroupCount',
+                                                    'sort',
+                                                    'filter',
+                                                    'totalSummary',
+                                                    'group',
+                                                  ]) => {
+    filters.forEach((i) => {
+      if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
+        args[i] = JSON.stringify(loadOptions[i]);
+    });
+    return args
+  },
 };
 
 $(document).ready(() => {

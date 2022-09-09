@@ -5,7 +5,7 @@ Attendees.attendingmeets = {
   initialized: false,
   filterMeetCheckbox: null,
   attendingIds: null,
-  selectedCharacterSlugs: [],
+  // selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
   meetData: null,
   init: () => {
@@ -261,7 +261,7 @@ Attendees.attendingmeets = {
                     if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
+                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, character: meet.major_character, assembly: meet.assembly, id: meet.id, defaultTillInWeeks: meet.infos['default_period_in_weeks']};
                         })
                       }); // schedule rules needed for attendingmeets generation
                     }
@@ -606,14 +606,11 @@ Attendees.attendingmeets = {
           {
             dataField: 'infos.note',
             helpText: 'special memo',
+            editorType: 'dxTextArea',
+            colSpan: 2,
             editorOptions: {
               autoResizeEnabled: true,
             },
-          },
-          {
-            dataField: 'create_attendances_till',
-            disabled: true,
-            helpText: 'Auto create future attendances (not supported yet)',
           },
         ],
       },
@@ -625,7 +622,22 @@ Attendees.attendingmeets = {
     },
     onInitNewRow: (e) => {
       e.data.start = new Date();
+      e.data.category = 1;  // scheduled
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
+      const selectedMeetSlugs = Attendees.attendingmeets.filtersForm.getEditor('meets').option('value');
+      if (selectedMeetSlugs && selectedMeetSlugs.length === 1) {
+        const selectedMeet = Attendees.attendingmeets.meetScheduleRules[selectedMeetSlugs[0]];
+        e.data.meet__assembly = selectedMeet.assembly;
+        e.data.assembly = selectedMeet.assembly;
+        e.data.meet = selectedMeet.id;
+        if (selectedMeet['character']){
+          e.data.character = selectedMeet['character'];
+        }
+
+        if (selectedMeet['defaultTillInWeeks']) {
+          e.data.finish = new Date(new Date().setDate(new Date().getDate()*7 + selectedMeet['defaultTillInWeeks']));
+        }
+      }
     },
     onEditingStart: (e) => {
       const grid = e.component;
@@ -731,6 +743,7 @@ Attendees.attendingmeets = {
         caption: 'Group (Assembly)',
         setCellValue: (newData, value, currentData) => {
           newData.assembly = value;
+          newData.meet__assembly = value;
           newData.meet = null;
           newData.character = null;
           newData.team = null;
@@ -741,7 +754,35 @@ Attendees.attendingmeets = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => $.getJSON($('form.filters-dxform').data('assemblies-endpoint')),
+              load: (loadOptions) => {
+                const deferred = $.Deferred();
+
+                const args = Attendees.utilities.filterDevExtremeArgs(loadOptions, {
+                                take: 9999,
+                                searchOperation: loadOptions['searchOperation'],
+                                searchValue: loadOptions['searchValue'],
+                                searchExpr: loadOptions['searchExpr'],
+                              });
+
+                $.ajax({
+                  url: $('form.filters-dxform').data('assemblies-endpoint'),
+                  dataType: "json",
+                  data: args,
+                  success: (result) => {
+                    deferred.resolve(result.data, {
+                      totalCount: result.totalCount,
+                      summary: result.summary,
+                      groupCount: result.groupCount,
+                    });
+                  },
+                  error: () => {
+                    deferred.reject("Data Loading Error for assemblies lookup, probably time out?");
+                  },
+                  timeout: 5000,
+                });
+
+                return deferred.promise();
+              },
               byKey: (key) => {
                 if (key) {
                   const d = $.Deferred();
@@ -762,9 +803,9 @@ Attendees.attendingmeets = {
         setCellValue: (newData, value, currentData) => {
           newData.meet = value;
           newData.team = null;
-          const [finish, majorCharacter] = Attendees.attendingmeets.meetData[value];
+          const [majorCharacter, tillInWeeks] = Attendees.attendingmeets.meetData[value];
           if (majorCharacter && !currentData.character) {newData.character = majorCharacter;}
-          if (!currentData.finish) { newData.finish = new Date(finish); }
+          if (!currentData.finish) { newData.finish = new Date(new Date().setDate(new Date().getDate()*7 + tillInWeeks)); }
         },
         editorOptions: {
           placeholder: 'Example: "The Rock"',
@@ -780,10 +821,13 @@ Attendees.attendingmeets = {
                 load: (searchOpts) => {
                   const d = new $.Deferred();
                   searchOpts['model'] = 'attendingmeet';
+                  if (options.data) {
+                    searchOpts['assemblies[]'] = options.data.assembly;
+                  }
                   $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
                     .done((result) => {
                       if (result.data && Attendees.attendingmeets.meetData === null) {
-                        Attendees.attendingmeets.meetData = result.data.reduce((all, now)=> {all[now.id] = [now.finish, now.major_character]; return all}, {});
+                        Attendees.attendingmeets.meetData = result.data.reduce((all, now)=> {all[now.id] = [now.major_character, now.infos['default_period_in_weeks']]; return all}, {});
                       }  // cache the every meet's major characters for later use
                       d.resolve(result.data);
                     });
