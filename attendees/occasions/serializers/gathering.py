@@ -17,8 +17,6 @@ class GatheringSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        print("hi 17 here is validated_data: ")
-        print(validated_data)
         obj, created = Gathering.objects.update_or_create(
             id=None,
             defaults=validated_data,
@@ -31,10 +29,6 @@ class GatheringSerializer(serializers.ModelSerializer):
         Update and return an existing `Gathering` instance, given the validated data.
 
         """
-        print("hi 30 here is instance: ")
-        print(instance)
-        print("hi 31 here is validated_data: ")
-        print(validated_data)
         obj, created = Gathering.objects.update_or_create(
             id=instance.id,
             defaults=validated_data,
