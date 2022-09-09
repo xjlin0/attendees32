@@ -222,6 +222,10 @@ class AttendanceService:
                 output_field=CharField()
             )
         else:
+            annotations['attending__attendee__first_name'] = F("attending__attendee__first_name")
+            annotations['attending__attendee__last_name'] = F("attending__attendee__last_name")
+            annotations['attending__attendee__first_name2'] = F("attending__attendee__first_name2")
+            annotations['attending__attendee__last_name2'] = F("attending__attendee__last_name2")
             annotations['gathering_name'] = Trim(
                 Concat("gathering__display_name",
                        Value(' in '),
