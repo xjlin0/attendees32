@@ -44,6 +44,7 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 PGTRIGGER_MIGRATIONS = False
+PGTRIGGER_INSTALL_ON_MIGRATE = True
 DATABASES = pgconnection.configure({
     'default': {
         **env.db("DATABASE_URL"),  # DATABASES = {"default": env.db("DATABASE_URL")}
