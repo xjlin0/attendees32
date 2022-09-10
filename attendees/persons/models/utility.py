@@ -157,7 +157,7 @@ class Utility:
         return {
             'allowed_models': ['gathering', 'attendingmeet', 'attendance', 'eventrelation'],  # suppress believe/baptize meets shows up in attendances, etc.
             'allowed_groups': [],
-            'default_period_in_weeks': 99999,  # 1886 years
+            'default_attendingmeet_in_weeks': 99999,  # 1886 years, for setting new attendingmeet's finish
             "automatic_creation": {
               "Gathering": True,
               "Attendance": True

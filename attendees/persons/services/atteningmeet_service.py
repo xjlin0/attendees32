@@ -54,7 +54,7 @@ class AttendingMeetService:
                             AttendingMeet,
                             update=True,  # if attendee already joined before, don't change it
                             filters=attendingmeet_attrs,
-                            defaults={**attendingmeet_attrs, 'finish': Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_period_in_weeks', 99999))},
+                            defaults={**attendingmeet_attrs, 'finish': Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999))},
                         )
                         attendee_to_attendingmeets[attendee] = attendingmeet
                     else:

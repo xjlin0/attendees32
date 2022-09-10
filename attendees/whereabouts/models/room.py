@@ -27,7 +27,7 @@ class Room(TimeStampedModel, SoftDeletableModel, Utility):
     )
     slug = models.SlugField(max_length=50, blank=False, null=False, unique=True)
     suite = models.ForeignKey("Suite", null=True, on_delete=models.SET_NULL)
-    label = models.CharField(max_length=20, blank=True)
+    label = models.CharField(max_length=20, null=True, blank=True)
     infos = models.JSONField(
         null=True,
         blank=True,
@@ -68,7 +68,7 @@ class RoomsHistory(pghistory.get_event_model(
     infos = models.JSONField(blank=True, default=dict, help_text='Example: {"accessibility": 3}. Please keep {} here even no data', null=True)
     suite = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.suite')
     display_name = models.CharField(max_length=50)
-    label = models.CharField(blank=True, max_length=20)
+    label = models.CharField(blank=True, null=True, max_length=20)
     pgh_context = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')
 
     class Meta:

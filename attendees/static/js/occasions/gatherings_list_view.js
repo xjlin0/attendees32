@@ -1,6 +1,7 @@
 Attendees.gatherings = {
   filtersForm: null,
   meetScheduleRules: {},
+  meetData: {},
   selectedMeetHasRule: false,
   generateGatheringsButton: null,
   filterMeetCheckbox: null,
@@ -333,7 +334,8 @@ Attendees.gatherings = {
                     if (Object.keys(Attendees.gatherings.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.gatherings.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules};
+                          Attendees.gatherings.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, id: meet.id};
+                          Attendees.gatherings.meetScheduleRules[meet.id] = {rules: meet.schedule_rules, slug: meet.slug};
                         })
                       }); // schedule rules needed for gatherings generation
                     }
@@ -614,13 +616,12 @@ Attendees.gatherings = {
     },
     onInitNewRow: (rowData) => {
       Attendees.gatherings.gatheringsDatagrid.option('editing.popup.title', 'Adding Gathering');
+      const selectedMeetSlugs = Attendees.gatherings.filtersForm.getEditor('meets').option('value');
+      if (selectedMeetSlugs && selectedMeetSlugs.length ===1) {
+        const selectedMeetSlug = selectedMeetSlugs[0];
+        rowData.data.meet = Attendees.gatherings.meetScheduleRules[selectedMeetSlug].id;
+      }
     },
-//    onOptionChanged: (e) => {  // somehow only works on second clicks, cannot resolve by cacheEnabled: false !!
-//      console.log("hi 584 here is e: ", e);
-//      if (e.fullName === "paging.pageSize" && e.value > e.previousValue){
-//        Attendees.gatherings.gatheringsDatagrid.refresh();
-//      } // To prevent datagrid only show UI cached data while server may have extra excluded by previous pagination.
-//    },
     onEditingStart: (e) => {
       const grid = e.component;
       grid.beginUpdate();
@@ -723,6 +724,17 @@ Attendees.gatherings = {
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
         format: 'longDateLongTime',
+        setCellValue: (newData, value, currentData) => {
+          if (value && currentData.meet) {  // setting end time based on the first time role of the chosen meet
+            newData.start = value;
+            const selectedMeetData = Attendees.gatherings.meetScheduleRules[currentData.meet];
+            if (currentData.meet && selectedMeetData) {
+              const selectedMeetPrimaryRule = selectedMeetData.rules && selectedMeetData.rules.length > 0 && selectedMeetData.rules[0] || null;
+              const selectedMeetLength = selectedMeetPrimaryRule && (new Date(selectedMeetPrimaryRule.end) - new Date(selectedMeetPrimaryRule.start)) || 90*60000;
+              newData.finish = new Date(new Date(value).getTime() + selectedMeetLength);
+            }
+          }
+        },
         editorOptions: {
           type: 'datetime',
           placeholder: 'Click calendar to select date/time ⇨ ',
