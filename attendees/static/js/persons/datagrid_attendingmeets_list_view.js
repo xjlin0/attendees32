@@ -261,7 +261,7 @@ Attendees.attendingmeets = {
                     if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, character: meet.major_character, assembly: meet.assembly, id: meet.id, defaultTillInWeeks: meet.infos['default_period_in_weeks']};
+                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, character: meet.major_character, assembly: meet.assembly, id: meet.id, defaultTillInWeeks: meet.infos['default_attendingmeet_in_weeks']};
                         })
                       }); // schedule rules needed for attendingmeets generation
                     }
@@ -805,7 +805,7 @@ Attendees.attendingmeets = {
           newData.team = null;
           const [majorCharacter, tillInWeeks] = Attendees.attendingmeets.meetData[value];
           if (majorCharacter && !currentData.character) {newData.character = majorCharacter;}
-          if (!currentData.finish) { newData.finish = new Date(new Date().setDate(new Date().getDate()*7 + tillInWeeks)); }
+          if (!currentData.finish) { newData.finish = new Date(new Date().setDate(new Date().getDate()*7 + (tillInWeeks || 99999))); }
         },
         editorOptions: {
           placeholder: 'Example: "The Rock"',
@@ -827,7 +827,7 @@ Attendees.attendingmeets = {
                   $.getJSON($('form.filters-dxform').data('meets-endpoint-by-slug'), searchOpts)
                     .done((result) => {
                       if (result.data && Attendees.attendingmeets.meetData === null) {
-                        Attendees.attendingmeets.meetData = result.data.reduce((all, now)=> {all[now.id] = [now.major_character, now.infos['default_period_in_weeks']]; return all}, {});
+                        Attendees.attendingmeets.meetData = result.data.reduce((all, now)=> {all[now.id] = [now.major_character, now.infos['default_attendingmeet_in_weeks']]; return all}, {});
                       }  // cache the every meet's major characters for later use
                       d.resolve(result.data);
                     });

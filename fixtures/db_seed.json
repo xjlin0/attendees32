@@ -1877,7 +1877,7 @@
     "model": "schedule.calendar",
     "pk": 1,
     "fields": {
-      "name": "CFCC Main Calendar",
+      "name": "CFCCH Main Calendar",
       "slug": "cfcch_calendar"
     }
   },
@@ -1885,7 +1885,7 @@
     "model": "schedule.calendar",
     "pk": 2,
     "fields": {
-      "name": "CFCC summer retreat 2020 Calendar",
+      "name": "CFCCH summer retreat 2020 Calendar",
       "slug": "cfcch_summer_retreat_2020_calendar"
     }
   },
@@ -1894,7 +1894,7 @@
     "pk": 1,
     "fields": {
       "name": "Weekly",
-      "description": "Weekly",
+      "description": "will recur once every Week",
       "frequency": "WEEKLY",
       "params": ""
     }
@@ -1904,26 +1904,123 @@
     "pk": 2,
     "fields": {
       "name": "Monthly",
-      "description": "Monthly",
+      "description": "will recur once every Month",
       "frequency": "MONTHLY",
       "params": ""
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 3,
+    "fields": {
+      "name": "Yearly",
+      "description": "will recur once every Year",
+      "frequency": "YEARLY",
+      "params": ""
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 4,
+    "fields": {
+      "name": "Daily",
+      "description": "will recur once every Day",
+      "frequency": "DAILY",
+      "params": ""
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 5,
+    "fields": {
+      "name": "Hourly",
+      "description": "will recur once every Hour",
+      "frequency": "HOURLY",
+      "params": ""
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 6,
+    "fields": {
+      "name": "Biweekly",
+      "description": "will recur once every TWO Weeks",
+      "frequency": "WEEKLY",
+      "params": "INTERVAL:2"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 7,
+    "fields": {
+      "name": "Quarterly",
+      "description": "will recur once every Quarter (3 Month)",
+      "frequency": "MONTHLY",
+      "params": "INTERVAL:3"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 8,
+    "fields": {
+      "name": "Every weekday",
+      "description": "will recur once every Weekday (M~F, NO weekend)",
+      "frequency": "DAILY",
+      "params": "BYWEEKDAY:0,1,2,3,4"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 9,
+    "fields": {
+      "name": "Every Sunday",
+      "description": "will recur once every Sunday",
+      "frequency": "DAILY",
+      "params": "BYWEEKDAY:SU"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 10,
+    "fields": {
+      "name": "Every Saturday",
+      "description": "will recur once every Saturday",
+      "frequency": "DAILY",
+      "params": "BYWEEKDAY:SA"
     }
   },
   {
     "model": "schedule.event",
     "pk": 1,
     "fields": {
-      "start": "2020-02-09T18:00:00Z",
-      "end": "2020-02-09T20:00:00Z",
+      "start": "2020-02-09T17:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
       "title": "The Rock's time",
-      "description": "",
+      "description": "Every Sunday 9:15AM ~ 12:40 PM",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
-      "rule": 1,
+      "rule": 9,
       "end_recurring_period": "2930-02-09T19:54:32Z",
       "calendar": 1,
-      "color_event": "#000000"
+      "color_event": "#3D8361"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 2,
+    "fields": {
+      "start": "2020-02-09T17:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
+      "title": "Little foot's time",
+      "description": "Every Sunday 9:15AM ~ 12:40 PM",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 1,
+      "color_event": "#A084CA"
     }
   },
   {
@@ -1934,6 +2031,16 @@
       "content_type": 91,
       "object_id": 1,
       "distinction": "room#1"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 2,
+    "fields": {
+      "event": 2,
+      "content_type": 91,
+      "object_id": 2,
+      "distinction": "room#6"
     }
   },
   {
@@ -5802,10 +5909,10 @@
       "created": "2020-04-11T18:35:55.012Z",
       "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
-      "display_name": "CFCC fellowship 201-F",
-      "slug": "201f",
+      "display_name": "CFCC fellowship 205",
+      "slug": "CFCCH_fellowship_205",
       "suite": 1,
-      "label": "F",
+      "label": null,
       "infos": {
         "accessibility": 2
       }
@@ -5872,6 +5979,22 @@
       "label": "living room",
       "infos": {
         "accessibility": 1
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 6,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "CFCC fellowship 207",
+      "slug": "CFCCH_fellowship_207",
+      "suite": 1,
+      "label": null,
+      "infos": {
+        "accessibility": 2
       }
     }
   },
@@ -11931,7 +12054,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 99999
+        "default_attendingmeet_in_weeks": 99999
       },
       "site_type": 45,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
@@ -11976,7 +12099,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 99999
+        "default_attendingmeet_in_weeks": 99999
       },
       "site_type": 45,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
@@ -12022,7 +12145,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_period_in_weeks": 30
+        "default_attendingmeet_in_weeks": 34
       },
       "site_type": 54,
       "site_id": "1"
@@ -12068,7 +12191,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_period_in_weeks": 30
+        "default_attendingmeet_in_weeks": 30
       },
       "site_type": 54,
       "site_id": "1"
@@ -12109,7 +12232,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_period_in_weeks": 60
+        "default_attendingmeet_in_weeks": 60
       },
       "site_type": 52,
       "site_id": "1"
@@ -12148,7 +12271,7 @@
           "Gathering": false,
           "Attendance": false
         },
-        "default_period_in_weeks": 99999
+        "default_attendingmeet_in_weeks": 99999
       },
       "site_type": 50,
       "site_id": "2"
@@ -12192,7 +12315,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_period_in_weeks": 30
+        "default_attendingmeet_in_weeks": 30
       },
       "site_type": 52,
       "site_id": "1"
@@ -12236,7 +12359,7 @@
           "Gathering": false,
           "Attendance": false
         },
-        "default_period_in_weeks": 160
+        "default_attendingmeet_in_weeks": 160
       },
       "site_type": 50,
       "site_id": "2"
@@ -12277,7 +12400,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_period_in_weeks": 30,
+        "default_attendingmeet_in_weeks": 30,
         "extending_attending_days": 90
       },
       "site_type": 46,
@@ -12318,7 +12441,7 @@
           "Gathering": false,
           "Attendance": false
         },
-        "default_period_in_weeks": 60
+        "default_attendingmeet_in_weeks": 60
       },
       "site_type": 46,
       "site_id": "1"
@@ -12358,7 +12481,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 99999
+        "default_attendingmeet_in_weeks": 99999
       },
       "site_type": 46,
       "site_id": "1"
@@ -12399,7 +12522,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 50
+        "default_attendingmeet_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12440,7 +12563,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 50
+        "default_attendingmeet_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12480,7 +12603,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 50
+        "default_attendingmeet_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12521,7 +12644,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 50
+        "default_attendingmeet_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12562,7 +12685,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 50
+        "default_attendingmeet_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12603,7 +12726,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 50
+        "default_attendingmeet_in_weeks": 50
       },
       "site_type": 50,
       "site_id": "2"
@@ -12642,7 +12765,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 99999
+        "default_attendingmeet_in_weeks": 99999
       },
       "site_type": 46,
       "site_id": "1"
@@ -12681,7 +12804,7 @@
           "Gathering": null,
           "Attendance": null
         },
-        "default_period_in_weeks": 99999
+        "default_attendingmeet_in_weeks": 99999
       },
       "site_type": 46,
       "site_id": "1"
