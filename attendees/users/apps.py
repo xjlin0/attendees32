@@ -17,53 +17,71 @@ class UsersConfig(AppConfig):
 
         user_model._meta.get_field('email')._unique = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('group.snapshot'),
             model_name='GroupsHistory',
             related_name='history',
             app_label='users',
-        )(group_model)
+        )
+        class GroupProxy(group_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(  # Track events to permission group relationships
+        @pghistory.track(  # Track events to permission group relationships
             pghistory.AfterInsert('permission.add'),
             pghistory.BeforeDelete('permission.remove'),
             model_name='GroupPermissionsHistory',
             obj_fk=None,
             related_name='history',
             app_label='users',
-        )(group_model.permissions.through)
+        )
+        class GroupPermissionProxy(group_model.permissions.through):
+            class Meta:
+                proxy = True
 
-        pghistory.track(  # Track events to user group relationships
+        @pghistory.track(  # Track events to user group relationships
             pghistory.AfterInsert('group.add'),
             pghistory.BeforeDelete('group.remove'),
             model_name='UserGroupsHistory',
             obj_fk=None,
             related_name='history',
             app_label='users',
-        )(user_model.groups.through)
+        )
+        class UserGroupProxy(user_model.groups.through):
+            class Meta:
+                proxy = True
 
-        pghistory.track(  # Track events to user group relationships
+        @pghistory.track(  # Track events to user group relationships
             pghistory.AfterInsert('user_permission.add'),
             pghistory.BeforeDelete('user_permission.remove'),
             model_name='UserPermissionsHistory',
             obj_fk=None,
             related_name='history',
             app_label='users',
-        )(user_model.user_permissions.through)
+        )
+        class UserPermissionProxy(user_model.user_permissions.through):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('emailaddress.snapshot'),
             model_name='EmailAddressHistory',
             related_name='history',
             app_label='users',
-        )(emailaddress_model)
+        )
+        class EmailAddressProxy(emailaddress_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('emailconfirmation.snapshot'),
             model_name='EmailConfirmationHistory',
             related_name='history',
             app_label='users',
-        )(emailconfirmation_model)
+        )
+        class EmailConfirmationProxy(emailconfirmation_model):
+            class Meta:
+                proxy = True
 
         try:
             import attendees.users.signals  # noqa F401
