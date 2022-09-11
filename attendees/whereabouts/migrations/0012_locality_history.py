@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('address', '0005_address_extra'),
-        ('pghistory', '0003_auto_20201023_1636'),
+        ('pghistory', '0004_auto_20220906_1625'),
         ('whereabouts', '0011_state_history'),
     ]
 

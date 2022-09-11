@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('whereabouts', '0003_organization'),
         ('users', '0001_initial'),
-        ('pghistory', '0003_auto_20201023_1636'),
+        ('pghistory', '0004_auto_20220906_1625'),
     ]
     operations = [
         migrations.AddField(

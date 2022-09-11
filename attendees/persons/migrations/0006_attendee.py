@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         ('persons', '0005_folk'),
         ('whereabouts', '0004_division'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('pghistory', '0003_auto_20201023_1636'),
+        ('pghistory', '0004_auto_20220906_1625'),
     ]
 
     operations = [
