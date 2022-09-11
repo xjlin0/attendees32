@@ -15,6 +15,8 @@ class UsersConfig(AppConfig):
         emailaddress_model = django_apps.get_model("account.EmailAddress", require_ready=False)
         emailconfirmation_model = django_apps.get_model("account.EmailConfirmation", require_ready=False)
 
+        user_model._meta.get_field('email')._unique = True
+
         pghistory.track(
             pghistory.Snapshot('group.snapshot'),
             model_name='GroupsHistory',
