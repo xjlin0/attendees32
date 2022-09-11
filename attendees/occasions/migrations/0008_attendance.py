@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 from private_storage.fields import PrivateFileField
 from private_storage.storage.files import PrivateFileSystemStorage
 
@@ -81,4 +83,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_attendanceshistory', original_model_table='occasions_attendances')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='attendance',
+            trigger=pgtrigger.compiler.Trigger(name='attendance_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_attendanceshistory" ("id", "created", "modified", "is_removed", "display_order", "infos", "attending_id", "character_id", "gathering_id", "category_id", "file", "team_id", "start", "finish", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."display_order", NEW."infos", NEW."attending_id", NEW."character_id", NEW."gathering_id", NEW."category_id", NEW."file", NEW."team_id", NEW."start", NEW."finish", NOW(), \'attendance.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='61aa2d0d9c11bb612134d2a286fbdddf0c158449', operation='INSERT', pgid='pgtrigger_attendance_snapshot_insert_4ff4a', table='occasions_attendances', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='attendance',
+            trigger=pgtrigger.compiler.Trigger(name='attendance_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."attending_id" IS DISTINCT FROM NEW."attending_id" OR OLD."character_id" IS DISTINCT FROM NEW."character_id" OR OLD."gathering_id" IS DISTINCT FROM NEW."gathering_id" OR OLD."category_id" IS DISTINCT FROM NEW."category_id" OR OLD."file" IS DISTINCT FROM NEW."file" OR OLD."team_id" IS DISTINCT FROM NEW."team_id" OR OLD."start" IS DISTINCT FROM NEW."start" OR OLD."finish" IS DISTINCT FROM NEW."finish")', func='INSERT INTO "occasions_attendanceshistory" ("id", "created", "modified", "is_removed", "display_order", "infos", "attending_id", "character_id", "gathering_id", "category_id", "file", "team_id", "start", "finish", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."display_order", NEW."infos", NEW."attending_id", NEW."character_id", NEW."gathering_id", NEW."category_id", NEW."file", NEW."team_id", NEW."start", NEW."finish", NOW(), \'attendance.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='2839b7ad17cab2e9312212aacc04e0468f80937e', operation='UPDATE', pgid='pgtrigger_attendance_snapshot_update_8e986', table='occasions_attendances', when='AFTER')),
+        ),
     ]

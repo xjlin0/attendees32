@@ -4,6 +4,8 @@ from attendees.persons.models.utility import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -58,4 +60,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_message_templateshistory', original_model_table='occasions_message_templates')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='messagetemplate',
+            trigger=pgtrigger.compiler.Trigger(name='messagetemplate_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_message_templateshistory" ("id", "created", "modified", "is_removed", "organization_id", "templates", "defaults", "type", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."organization_id", NEW."templates", NEW."defaults", NEW."type", NOW(), \'messagetemplate.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='8f4a624ea128d8cac26f98bd05ce2b49291f37b8', operation='INSERT', pgid='pgtrigger_messagetemplate_snapshot_insert_a67d5', table='occasions_message_templates', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='messagetemplate',
+            trigger=pgtrigger.compiler.Trigger(name='messagetemplate_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."organization_id" IS DISTINCT FROM NEW."organization_id" OR OLD."templates" IS DISTINCT FROM NEW."templates" OR OLD."defaults" IS DISTINCT FROM NEW."defaults" OR OLD."type" IS DISTINCT FROM NEW."type")', func='INSERT INTO "occasions_message_templateshistory" ("id", "created", "modified", "is_removed", "organization_id", "templates", "defaults", "type", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."organization_id", NEW."templates", NEW."defaults", NEW."type", NOW(), \'messagetemplate.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='8c69c604124871534d5b4e6978096b9860f21d0e', operation='UPDATE', pgid='pgtrigger_messagetemplate_snapshot_update_594a2', table='occasions_message_templates', when='AFTER')),
+        ),
     ]

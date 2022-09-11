@@ -5,6 +5,8 @@ from django.contrib.postgres.indexes import GinIndex
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -63,4 +65,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_charactershistory', original_model_table='occasions_characters')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='character',
+            trigger=pgtrigger.compiler.Trigger(name='character_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_charactershistory" ("id", "assembly_id", "created", "modified", "is_removed", "infos", "display_order", "slug", "type", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."assembly_id", NEW."created", NEW."modified", NEW."is_removed", NEW."infos", NEW."display_order", NEW."slug", NEW."type", NEW."display_name", NOW(), \'character.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='637574c858c14ecc23cb2934d5ecfcbabb064794', operation='INSERT', pgid='pgtrigger_character_snapshot_insert_bb0be', table='occasions_characters', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='character',
+            trigger=pgtrigger.compiler.Trigger(name='character_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."assembly_id" IS DISTINCT FROM NEW."assembly_id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."type" IS DISTINCT FROM NEW."type" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "occasions_charactershistory" ("id", "assembly_id", "created", "modified", "is_removed", "infos", "display_order", "slug", "type", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."assembly_id", NEW."created", NEW."modified", NEW."is_removed", NEW."infos", NEW."display_order", NEW."slug", NEW."type", NEW."display_name", NOW(), \'character.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='309b99317fa57390c203d6172977c0de66f77894', operation='UPDATE', pgid='pgtrigger_character_snapshot_update_a6f12', table='occasions_characters', when='AFTER')),
+        ),
     ]

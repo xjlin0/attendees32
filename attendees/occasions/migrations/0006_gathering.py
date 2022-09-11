@@ -5,6 +5,8 @@ from django.contrib.postgres.indexes import GinIndex
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -75,4 +77,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_gatheringshistory', original_model_table='occasions_gatherings')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='gathering',
+            trigger=pgtrigger.compiler.Trigger(name='gathering_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_gatheringshistory" ("id", "meet_id", "created", "modified", "is_removed", "start", "finish", "site_type_id", "infos", "site_id", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."meet_id", NEW."created", NEW."modified", NEW."is_removed", NEW."start", NEW."finish", NEW."site_type_id", NEW."infos", NEW."site_id", NEW."display_name", NOW(), \'gathering.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='42fe1de8e1786707f55b9cef8b68b4e214b2c595', operation='INSERT', pgid='pgtrigger_gathering_snapshot_insert_cc35c', table='occasions_gatherings', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='gathering',
+            trigger=pgtrigger.compiler.Trigger(name='gathering_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."meet_id" IS DISTINCT FROM NEW."meet_id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."start" IS DISTINCT FROM NEW."start" OR OLD."finish" IS DISTINCT FROM NEW."finish" OR OLD."site_type_id" IS DISTINCT FROM NEW."site_type_id" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."site_id" IS DISTINCT FROM NEW."site_id" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "occasions_gatheringshistory" ("id", "meet_id", "created", "modified", "is_removed", "start", "finish", "site_type_id", "infos", "site_id", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."meet_id", NEW."created", NEW."modified", NEW."is_removed", NEW."start", NEW."finish", NEW."site_type_id", NEW."infos", NEW."site_id", NEW."display_name", NOW(), \'gathering.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='cf8d488d31f29515c750a4980e75fe516afa5258', operation='UPDATE', pgid='pgtrigger_gathering_snapshot_update_56e8f', table='occasions_gatherings', when='AFTER')),
+        ),
     ]

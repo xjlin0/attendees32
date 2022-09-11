@@ -5,6 +5,8 @@ from django.contrib.postgres.indexes import GinIndex
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -76,4 +78,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_meetshistory', original_model_table='occasions_meets')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='meet',
+            trigger=pgtrigger.compiler.Trigger(name='meet_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_meetshistory" ("id", "created", "modified", "is_removed", "shown_audience", "audience_editable", "start", "finish", "infos", "site_type_id", "slug", "site_id", "assembly_id", "major_character_id", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."shown_audience", NEW."audience_editable", NEW."start", NEW."finish", NEW."infos", NEW."site_type_id", NEW."slug", NEW."site_id", NEW."assembly_id", NEW."major_character_id", NEW."display_name", NOW(), \'meet.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='5281fcd913e11324a5adaed62195702ad8d9f5a7', operation='INSERT', pgid='pgtrigger_meet_snapshot_insert_fd3df', table='occasions_meets', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='meet',
+            trigger=pgtrigger.compiler.Trigger(name='meet_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."shown_audience" IS DISTINCT FROM NEW."shown_audience" OR OLD."audience_editable" IS DISTINCT FROM NEW."audience_editable" OR OLD."start" IS DISTINCT FROM NEW."start" OR OLD."finish" IS DISTINCT FROM NEW."finish" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."site_type_id" IS DISTINCT FROM NEW."site_type_id" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."site_id" IS DISTINCT FROM NEW."site_id" OR OLD."assembly_id" IS DISTINCT FROM NEW."assembly_id" OR OLD."major_character_id" IS DISTINCT FROM NEW."major_character_id" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "occasions_meetshistory" ("id", "created", "modified", "is_removed", "shown_audience", "audience_editable", "start", "finish", "infos", "site_type_id", "slug", "site_id", "assembly_id", "major_character_id", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."shown_audience", NEW."audience_editable", NEW."start", NEW."finish", NEW."infos", NEW."site_type_id", NEW."slug", NEW."site_id", NEW."assembly_id", NEW."major_character_id", NEW."display_name", NOW(), \'meet.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='988cbdcd4c49c599ce3e4e5e460491b2bb66aa71', operation='UPDATE', pgid='pgtrigger_meet_snapshot_update_a7821', table='occasions_meets', when='AFTER')),
+        ),
     ]

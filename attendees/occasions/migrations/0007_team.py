@@ -3,7 +3,8 @@
 from attendees.persons.models import Utility
 from django.contrib.postgres.indexes import GinIndex
 from django.db import migrations, models
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 import django.utils.timezone
 import model_utils.fields
 
@@ -69,4 +70,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_teamshistory', original_model_table='occasions_teams')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='team',
+            trigger=pgtrigger.compiler.Trigger(name='team_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_teamshistory" ("id", "created", "modified", "is_removed", "meet_id", "display_order", "site_type_id", "infos", "site_id", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."meet_id", NEW."display_order", NEW."site_type_id", NEW."infos", NEW."site_id", NEW."slug", NEW."display_name", NOW(), \'team.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='8dca2b915c586d41eee32259a7061f07f93757a9', operation='INSERT', pgid='pgtrigger_team_snapshot_insert_fdbd6', table='occasions_teams', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='team',
+            trigger=pgtrigger.compiler.Trigger(name='team_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."meet_id" IS DISTINCT FROM NEW."meet_id" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."site_type_id" IS DISTINCT FROM NEW."site_type_id" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."site_id" IS DISTINCT FROM NEW."site_id" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "occasions_teamshistory" ("id", "created", "modified", "is_removed", "meet_id", "display_order", "site_type_id", "infos", "site_id", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."meet_id", NEW."display_order", NEW."site_type_id", NEW."infos", NEW."site_id", NEW."slug", NEW."display_name", NOW(), \'team.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='f1fae987bad68963f00488016ec0015e89cf1d53', operation='UPDATE', pgid='pgtrigger_team_snapshot_update_1befd', table='occasions_teams', when='AFTER')),
+        ),
     ]
