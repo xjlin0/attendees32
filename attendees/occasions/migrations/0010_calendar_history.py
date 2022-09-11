@@ -2,7 +2,8 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models import Utility
 
 
@@ -15,6 +16,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='CalendarProxy',
+            fields=[
+            ],
+            options={
+                'proxy': True,
+                'indexes': [],
+                'constraints': [],
+            },
+            bases=('schedule.calendar',),
+        ),
         migrations.CreateModel(
             name='CalendarHistory',
             fields=[
@@ -32,4 +44,17 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_calendarhistory', index_on_id=True, original_model_table='schedule_calendar')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='calendarproxy',
+            trigger=pgtrigger.compiler.Trigger(name='calendar_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_calendarhistory" ("name", "slug", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."slug", NEW."id", NOW(), \'calendar.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='3e81f7cd7bbef8022bb1d621878ae86be7a79091', operation='INSERT', pgid='pgtrigger_calendar_snapshot_insert_608f9', table='schedule_calendar', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='calendarproxy',
+            trigger=pgtrigger.compiler.Trigger(name='calendar_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."name" IS DISTINCT FROM NEW."name" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "occasions_calendarhistory" ("name", "slug", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."slug", NEW."id", NOW(), \'calendar.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='15c814b2b85dbed014431c3ad49ae4da99141305', operation='UPDATE', pgid='pgtrigger_calendar_snapshot_update_c7ecc', table='schedule_calendar', when='AFTER')),
+        ),
+        migrations.AlterField(
+            model_name='calendarhistory',
+            name='pgh_obj',
+            field=models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='occasions.calendarproxy'),
+        ),
     ]

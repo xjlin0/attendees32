@@ -2,7 +2,8 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models import Utility
 
 
@@ -16,6 +17,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='EventRelationProxy',
+            fields=[
+            ],
+            options={
+                'proxy': True,
+                'indexes': [],
+                'constraints': [],
+            },
+            bases=('schedule.eventrelation',),
+        ),
         migrations.CreateModel(
             name='EventRelationHistory',
             fields=[
@@ -35,4 +47,17 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_eventrelationhistory', original_model_table='schedule_eventrelation')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='eventrelationproxy',
+            trigger=pgtrigger.compiler.Trigger(name='eventrelation_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_eventrelationhistory" ("event_id", "content_type_id", "object_id", "distinction", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."event_id", NEW."content_type_id", NEW."object_id", NEW."distinction", NEW."id", NOW(), \'eventrelation.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='39fe05bcad8b06031f5ab25ca26e02b108e5821b', operation='INSERT', pgid='pgtrigger_eventrelation_snapshot_insert_8130f', table='schedule_eventrelation', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='eventrelationproxy',
+            trigger=pgtrigger.compiler.Trigger(name='eventrelation_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."event_id" IS DISTINCT FROM NEW."event_id" OR OLD."content_type_id" IS DISTINCT FROM NEW."content_type_id" OR OLD."object_id" IS DISTINCT FROM NEW."object_id" OR OLD."distinction" IS DISTINCT FROM NEW."distinction" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "occasions_eventrelationhistory" ("event_id", "content_type_id", "object_id", "distinction", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."event_id", NEW."content_type_id", NEW."object_id", NEW."distinction", NEW."id", NOW(), \'eventrelation.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='94b476b33e8f470869205e0d662d3e20b2d8cc8b', operation='UPDATE', pgid='pgtrigger_eventrelation_snapshot_update_0f014', table='schedule_eventrelation', when='AFTER')),
+        ),
+        migrations.AlterField(
+            model_name='eventrelationhistory',
+            name='pgh_obj',
+            field=models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='occasions.eventrelationproxy'),
+        ),
     ]

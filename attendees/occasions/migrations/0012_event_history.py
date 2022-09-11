@@ -3,7 +3,8 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models import Utility
 
 
@@ -17,6 +18,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='EventProxy',
+            fields=[
+            ],
+            options={
+                'proxy': True,
+                'indexes': [],
+                'constraints': [],
+            },
+            bases=('schedule.event',),
+        ),
         migrations.CreateModel(
             name='EventHistory',
             fields=[
@@ -43,4 +55,17 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_eventhistory', index_on_id=True, original_model_table='schedule_event')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='eventproxy',
+            trigger=pgtrigger.compiler.Trigger(name='event_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_eventhistory" ("start", "end", "title", "description", "creator_id", "created_on", "updated_on", "rule_id", "end_recurring_period", "calendar_id", "color_event", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."start", NEW."end", NEW."title", NEW."description", NEW."creator_id", NEW."created_on", NEW."updated_on", NEW."rule_id", NEW."end_recurring_period", NEW."calendar_id", NEW."color_event", NEW."id", NOW(), \'event.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='edfc6623913c351964a77a95ca2461e7c654c423', operation='INSERT', pgid='pgtrigger_event_snapshot_insert_95439', table='schedule_event', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='eventproxy',
+            trigger=pgtrigger.compiler.Trigger(name='event_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."start" IS DISTINCT FROM NEW."start" OR OLD."end" IS DISTINCT FROM NEW."end" OR OLD."title" IS DISTINCT FROM NEW."title" OR OLD."description" IS DISTINCT FROM NEW."description" OR OLD."creator_id" IS DISTINCT FROM NEW."creator_id" OR OLD."created_on" IS DISTINCT FROM NEW."created_on" OR OLD."updated_on" IS DISTINCT FROM NEW."updated_on" OR OLD."rule_id" IS DISTINCT FROM NEW."rule_id" OR OLD."end_recurring_period" IS DISTINCT FROM NEW."end_recurring_period" OR OLD."calendar_id" IS DISTINCT FROM NEW."calendar_id" OR OLD."color_event" IS DISTINCT FROM NEW."color_event" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "occasions_eventhistory" ("start", "end", "title", "description", "creator_id", "created_on", "updated_on", "rule_id", "end_recurring_period", "calendar_id", "color_event", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."start", NEW."end", NEW."title", NEW."description", NEW."creator_id", NEW."created_on", NEW."updated_on", NEW."rule_id", NEW."end_recurring_period", NEW."calendar_id", NEW."color_event", NEW."id", NOW(), \'event.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='ffefb9117971b6c3a5e2239889dfe429e421769d', operation='UPDATE', pgid='pgtrigger_event_snapshot_update_1fea0', table='schedule_event', when='AFTER')),
+        ),
+        migrations.AlterField(
+            model_name='eventhistory',
+            name='pgh_obj',
+            field=models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='occasions.eventproxy'),
+        ),
     ]

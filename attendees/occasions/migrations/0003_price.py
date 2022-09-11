@@ -5,6 +5,8 @@ from django.core.validators import MinValueValidator
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -58,4 +60,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('occasions_priceshistory', original_model_table='occasions_prices')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='price',
+            trigger=pgtrigger.compiler.Trigger(name='price_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_priceshistory" ("id", "created", "modified", "is_removed", "assembly_id", "start", "finish", "price_type", "price_value", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."assembly_id", NEW."start", NEW."finish", NEW."price_type", NEW."price_value", NEW."display_name", NOW(), \'price.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='b159c54b691fc29c5fbe685532d756c750c6fe3a', operation='INSERT', pgid='pgtrigger_price_snapshot_insert_6fd23', table='occasions_prices', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='price',
+            trigger=pgtrigger.compiler.Trigger(name='price_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."assembly_id" IS DISTINCT FROM NEW."assembly_id" OR OLD."start" IS DISTINCT FROM NEW."start" OR OLD."finish" IS DISTINCT FROM NEW."finish" OR OLD."price_type" IS DISTINCT FROM NEW."price_type" OR OLD."price_value" IS DISTINCT FROM NEW."price_value" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "occasions_priceshistory" ("id", "created", "modified", "is_removed", "assembly_id", "start", "finish", "price_type", "price_value", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."assembly_id", NEW."start", NEW."finish", NEW."price_type", NEW."price_value", NEW."display_name", NOW(), \'price.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='f6d39cbfb45541280a845d371cfc07e877627559', operation='UPDATE', pgid='pgtrigger_price_snapshot_update_79b88', table='occasions_prices', when='AFTER')),
+        ),
     ]
