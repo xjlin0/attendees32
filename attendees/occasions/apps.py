@@ -12,30 +12,42 @@ class OccasionsConfig(AppConfig):
         schedule_event_model = django_apps.get_model("schedule.Event", require_ready=False)
         schedule_eventrelation_model = django_apps.get_model("schedule.EventRelation", require_ready=False)
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('calendar.snapshot'),
             related_name='history',
             model_name='CalendarHistory',
             app_label='occasions'
-        )(schedule_calendar_model)
+        )
+        class CalendarProxy(schedule_calendar_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('calendarrelation.snapshot'),
             related_name='history',
             model_name='CalendarRelationHistory',
             app_label='occasions',
-        )(schedule_calendarrelation_model)
+        )
+        class CalendarRelationProxy(schedule_calendarrelation_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('event.snapshot'),
             related_name='history',
             model_name='EventHistory',
             app_label='occasions'
-        )(schedule_event_model)
+        )
+        class EventProxy(schedule_event_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('eventrelation.snapshot'),
             related_name='history',
             model_name='EventRelationHistory',
             app_label='occasions',
-        )(schedule_eventrelation_model)
+        )
+        class EventRelationProxy(schedule_eventrelation_model):
+            class Meta:
+                proxy = True

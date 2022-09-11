@@ -12,30 +12,42 @@ class WhereaboutsConfig(AppConfig):
         address_locality_model = django_apps.get_model("address.Locality", require_ready=False)
         address_address_model = django_apps.get_model("address.Address", require_ready=False)
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('country.snapshot'),
             related_name='history',
             model_name='CountryHistory',
             app_label='whereabouts'
-        )(address_country_model)
+        )
+        class CountryProxy(address_country_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('state.snapshot'),
             related_name='history',
             model_name='StateHistory',
             app_label='whereabouts'
-        )(address_state_model)
+        )
+        class StateProxy(address_state_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('locality.snapshot'),
             related_name='history',
             model_name='LocalityHistory',
             app_label='whereabouts'
-        )(address_locality_model)
+        )
+        class LocalityProxy(address_locality_model):
+            class Meta:
+                proxy = True
 
-        pghistory.track(
+        @pghistory.track(
             pghistory.Snapshot('address.snapshot'),
             related_name='history',
             model_name='AddressHistory',
             app_label='whereabouts'
-        )(address_address_model)
+        )
+        class AddressProxy(address_address_model):
+            class Meta:
+                proxy = True
