@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('pghistory', '0003_auto_20201023_1636'),
+        ('pghistory', '0004_auto_20220906_1625'),
         ('account', '0002_email_max_length'),
         ('users', '0009_emailaddress_history'),
     ]

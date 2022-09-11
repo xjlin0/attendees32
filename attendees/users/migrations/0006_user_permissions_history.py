@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '0012_alter_user_first_name_max_length'),
-        ('pghistory', '0003_auto_20201023_1636'),
+        ('pghistory', '0004_auto_20220906_1625'),
         ('users', '0005_user_groups_history'),
     ]
 

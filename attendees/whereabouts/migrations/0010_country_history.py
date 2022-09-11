@@ -9,7 +9,7 @@ from attendees.persons.models import Utility
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pghistory', '0003_auto_20201023_1636'),
+        ('pghistory', '0004_auto_20220906_1625'),
         ('address', '0005_address_extra'),
         ('whereabouts', '0009_add_fields_to_place'),
     ]
