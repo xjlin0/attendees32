@@ -5,6 +5,8 @@ from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
 import mptt.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -77,4 +79,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('users_menushistory', original_model_table='users_menus')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='menu',
+            trigger=pgtrigger.compiler.Trigger(name='menu_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "users_menushistory" ("id", "created", "modified", "organization_id", "is_removed", "tree_id", "level", "lft", "rght", "display_order", "category", "url_name", "display_name", "infos", "parent_id", "urn", "html_type", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."organization_id", NEW."is_removed", NEW."tree_id", NEW."level", NEW."lft", NEW."rght", NEW."display_order", NEW."category", NEW."url_name", NEW."display_name", NEW."infos", NEW."parent_id", NEW."urn", NEW."html_type", NOW(), \'menu.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='54c7ce8565cef18c1e0b49411ea66fca35d52764', operation='INSERT', pgid='pgtrigger_menu_snapshot_insert_b8c5e', table='users_menus', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='menu',
+            trigger=pgtrigger.compiler.Trigger(name='menu_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."organization_id" IS DISTINCT FROM NEW."organization_id" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."tree_id" IS DISTINCT FROM NEW."tree_id" OR OLD."level" IS DISTINCT FROM NEW."level" OR OLD."lft" IS DISTINCT FROM NEW."lft" OR OLD."rght" IS DISTINCT FROM NEW."rght" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."category" IS DISTINCT FROM NEW."category" OR OLD."url_name" IS DISTINCT FROM NEW."url_name" OR OLD."display_name" IS DISTINCT FROM NEW."display_name" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."parent_id" IS DISTINCT FROM NEW."parent_id" OR OLD."urn" IS DISTINCT FROM NEW."urn" OR OLD."html_type" IS DISTINCT FROM NEW."html_type")', func='INSERT INTO "users_menushistory" ("id", "created", "modified", "organization_id", "is_removed", "tree_id", "level", "lft", "rght", "display_order", "category", "url_name", "display_name", "infos", "parent_id", "urn", "html_type", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."organization_id", NEW."is_removed", NEW."tree_id", NEW."level", NEW."lft", NEW."rght", NEW."display_order", NEW."category", NEW."url_name", NEW."display_name", NEW."infos", NEW."parent_id", NEW."urn", NEW."html_type", NOW(), \'menu.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='9fe282e3c7ae64164ad00584033a3212b9423c60', operation='UPDATE', pgid='pgtrigger_menu_snapshot_update_182ff', table='users_menus', when='AFTER')),
+        ),
     ]
