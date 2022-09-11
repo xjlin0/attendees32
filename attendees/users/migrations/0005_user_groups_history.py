@@ -3,7 +3,8 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models import Utility
 
 
@@ -17,6 +18,17 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='UserGroupProxy',
+            fields=[
+            ],
+            options={
+                'proxy': True,
+                'indexes': [],
+                'constraints': [],
+            },
+            bases=('users.user_groups',),
+        ),
+        migrations.CreateModel(
             name='UserGroupsHistory',
             fields=[
                 ('pgh_id', models.AutoField(primary_key=True, serialize=False)),
@@ -29,4 +41,12 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.RunSQL(Utility.pgh_default_sql('users_usergroupshistory', original_model_table='users_user_groups')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='usergroupproxy',
+            trigger=pgtrigger.compiler.Trigger(name='group_add', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "users_usergroupshistory" ("user_id", "group_id", "id", "pgh_created_at", "pgh_label", "pgh_context_id") VALUES (NEW."user_id", NEW."group_id", NEW."id", NOW(), \'group.add\', _pgh_attach_context()); RETURN NULL;', hash='90d4d58a36d643f72785ba5a78620efded1b390e', operation='INSERT', pgid='pgtrigger_group_add_7431d', table='users_user_groups', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='usergroupproxy',
+            trigger=pgtrigger.compiler.Trigger(name='group_remove', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "users_usergroupshistory" ("user_id", "group_id", "id", "pgh_created_at", "pgh_label", "pgh_context_id") VALUES (OLD."user_id", OLD."group_id", OLD."id", NOW(), \'group.remove\', _pgh_attach_context()); RETURN NULL;', hash='44c14856fd875d194b6a06f8cf43c81c9600e374', operation='DELETE', pgid='pgtrigger_group_remove_49cba', table='users_user_groups', when='AFTER')),
+        ),
     ]
