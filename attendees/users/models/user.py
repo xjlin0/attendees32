@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.indexes import GinIndex
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import CharField
 from django.urls import reverse
@@ -40,6 +41,12 @@ class User(AbstractUser):
                 name="user_infos_gin",
             ),
         ]
+
+    def save(self, *args, **kwargs):
+        self.email = self.email.strip()
+        if self.email and User.objects.filter(email__iexact=self.email).exclude(username=self.username).exists():
+            raise ValidationError("Identical email exists!")
+        super(User, self).save(*args, **kwargs)
 
     def organization_pk(self):
         return self.organization.pk if self.organization else None
