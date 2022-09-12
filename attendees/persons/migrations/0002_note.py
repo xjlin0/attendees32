@@ -4,7 +4,8 @@ from django.db import migrations, models
 from uuid import uuid4
 import django.utils.timezone
 import model_utils.fields
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models import Utility
 
 
@@ -69,4 +70,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('persons_noteshistory', original_model_table='persons_notes')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='note',
+            trigger=pgtrigger.compiler.Trigger(name='note_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "persons_noteshistory" ("created", "modified", "is_removed", "id", "object_id", "display_order", "body", "infos", "category_id", "content_type_id", "organization_id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."id", NEW."object_id", NEW."display_order", NEW."body", NEW."infos", NEW."category_id", NEW."content_type_id", NEW."organization_id", NOW(), \'note.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='8fa82c65e4e71bdbc0fdb7efceae2f12a3afe8ea', operation='INSERT', pgid='pgtrigger_note_snapshot_insert_fcd72', table='persons_notes', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='note',
+            trigger=pgtrigger.compiler.Trigger(name='note_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."id" IS DISTINCT FROM NEW."id" OR OLD."object_id" IS DISTINCT FROM NEW."object_id" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."body" IS DISTINCT FROM NEW."body" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."category_id" IS DISTINCT FROM NEW."category_id" OR OLD."content_type_id" IS DISTINCT FROM NEW."content_type_id" OR OLD."organization_id" IS DISTINCT FROM NEW."organization_id")', func='INSERT INTO "persons_noteshistory" ("created", "modified", "is_removed", "id", "object_id", "display_order", "body", "infos", "category_id", "content_type_id", "organization_id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."id", NEW."object_id", NEW."display_order", NEW."body", NEW."infos", NEW."category_id", NEW."content_type_id", NEW."organization_id", NOW(), \'note.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='d9f1b6494d1201616d39f475e8aeb270ab8b1200', operation='UPDATE', pgid='pgtrigger_note_snapshot_update_b2f19', table='persons_notes', when='AFTER')),
+        ),
     ]

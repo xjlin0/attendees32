@@ -5,6 +5,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -60,4 +62,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('persons_folkshistory', original_model_table='persons_folks')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='folk',
+            trigger=pgtrigger.compiler.Trigger(name='folk_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "persons_folkshistory" ("id", "created", "modified", "division_id", "is_removed", "display_order", "infos", "category_id", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."division_id", NEW."is_removed", NEW."display_order", NEW."infos", NEW."category_id", NEW."display_name", NOW(), \'folk.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='42d7eda763a45bfc56fec30b854dacdd064fb2d0', operation='INSERT', pgid='pgtrigger_folk_snapshot_insert_36418', table='persons_folks', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='folk',
+            trigger=pgtrigger.compiler.Trigger(name='folk_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."division_id" IS DISTINCT FROM NEW."division_id" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."category_id" IS DISTINCT FROM NEW."category_id" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "persons_folkshistory" ("id", "created", "modified", "division_id", "is_removed", "display_order", "infos", "category_id", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."division_id", NEW."is_removed", NEW."display_order", NEW."infos", NEW."category_id", NEW."display_name", NOW(), \'folk.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='719ab181b0446c365fbca9c140d122297174de8f', operation='UPDATE', pgid='pgtrigger_folk_snapshot_update_5fd2b', table='persons_folks', when='AFTER')),
+        ),
     ]
