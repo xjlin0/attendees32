@@ -2,7 +2,8 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models import Utility
 
 
@@ -15,6 +16,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='CountryProxy',
+            fields=[
+            ],
+            options={
+                'proxy': True,
+                'indexes': [],
+                'constraints': [],
+            },
+            bases=('address.country',),
+        ),
         migrations.CreateModel(
             name='CountryHistory',
             fields=[
@@ -32,4 +44,17 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_countryhistory', index_on_id=True, original_model_table='address_country')),
+        migrations.AlterField(
+            model_name='countryhistory',
+            name='pgh_obj',
+            field=models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='whereabouts.countryproxy'),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='countryproxy',
+            trigger=pgtrigger.compiler.Trigger(name='country_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_countryhistory" ("name", "code", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."code", NEW."id", NOW(), \'country.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='46351ad2cc7653f399590ef23695267de0731fb2', operation='INSERT', pgid='pgtrigger_country_snapshot_insert_c24db', table='address_country', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='countryproxy',
+            trigger=pgtrigger.compiler.Trigger(name='country_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."name" IS DISTINCT FROM NEW."name" OR OLD."code" IS DISTINCT FROM NEW."code" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "whereabouts_countryhistory" ("name", "code", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."code", NEW."id", NOW(), \'country.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='8829433fff7df48083fbcf5f872db1520b6109a3', operation='UPDATE', pgid='pgtrigger_country_snapshot_update_549a4', table='address_country', when='AFTER')),
+        ),
     ]

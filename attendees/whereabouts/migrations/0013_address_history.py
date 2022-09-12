@@ -2,7 +2,8 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models import Utility
 
 
@@ -15,6 +16,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='AddressProxy',
+            fields=[
+            ],
+            options={
+                'proxy': True,
+                'indexes': [],
+                'constraints': [],
+            },
+            bases=('address.address',),
+        ),
         migrations.CreateModel(
             name='AddressHistory',
             fields=[
@@ -41,4 +53,17 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_addresshistory', index_on_id=True, original_model_table='address_address')),
+        migrations.AlterField(
+            model_name='addresshistory',
+            name='pgh_obj',
+            field=models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.DO_NOTHING, related_name='history', to='whereabouts.addressproxy'),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='addressproxy',
+            trigger=pgtrigger.compiler.Trigger(name='address_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_addresshistory" ("street_number", "route", "extra", "name", "type", "hash", "locality_id", "raw", "formatted", "latitude", "longitude", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."street_number", NEW."route", NEW."extra", NEW."name", NEW."type", NEW."hash", NEW."locality_id", NEW."raw", NEW."formatted", NEW."latitude", NEW."longitude", NEW."id", NOW(), \'address.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='fc2428a0e89bbe7151590ccb1e2a91e8149a2949', operation='INSERT', pgid='pgtrigger_address_snapshot_insert_48739', table='address_address', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='addressproxy',
+            trigger=pgtrigger.compiler.Trigger(name='address_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."street_number" IS DISTINCT FROM NEW."street_number" OR OLD."route" IS DISTINCT FROM NEW."route" OR OLD."extra" IS DISTINCT FROM NEW."extra" OR OLD."name" IS DISTINCT FROM NEW."name" OR OLD."type" IS DISTINCT FROM NEW."type" OR OLD."hash" IS DISTINCT FROM NEW."hash" OR OLD."locality_id" IS DISTINCT FROM NEW."locality_id" OR OLD."raw" IS DISTINCT FROM NEW."raw" OR OLD."formatted" IS DISTINCT FROM NEW."formatted" OR OLD."latitude" IS DISTINCT FROM NEW."latitude" OR OLD."longitude" IS DISTINCT FROM NEW."longitude" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "whereabouts_addresshistory" ("street_number", "route", "extra", "name", "type", "hash", "locality_id", "raw", "formatted", "latitude", "longitude", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."street_number", NEW."route", NEW."extra", NEW."name", NEW."type", NEW."hash", NEW."locality_id", NEW."raw", NEW."formatted", NEW."latitude", NEW."longitude", NEW."id", NOW(), \'address.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='b04e6b875069187f2fbb94ff1c2a94c60306a041', operation='UPDATE', pgid='pgtrigger_address_snapshot_update_0c833', table='address_address', when='AFTER')),
+        ),
     ]

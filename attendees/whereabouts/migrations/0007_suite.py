@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -53,4 +55,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_suiteshistory', original_model_table='whereabouts_suites')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='suite',
+            trigger=pgtrigger.compiler.Trigger(name='suite_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_suiteshistory" ("created", "modified", "is_removed", "site", "id", "property_id", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."site", NEW."id", NEW."property_id", NEW."slug", NEW."display_name", NOW(), \'suite.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='6cca6d2bcd26192ddf71197989d7361066877cec', operation='INSERT', pgid='pgtrigger_suite_snapshot_insert_77d30', table='whereabouts_suites', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='suite',
+            trigger=pgtrigger.compiler.Trigger(name='suite_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."site" IS DISTINCT FROM NEW."site" OR OLD."id" IS DISTINCT FROM NEW."id" OR OLD."property_id" IS DISTINCT FROM NEW."property_id" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "whereabouts_suiteshistory" ("created", "modified", "is_removed", "site", "id", "property_id", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."site", NEW."id", NEW."property_id", NEW."slug", NEW."display_name", NOW(), \'suite.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='5f6d5b8cfec34a1fe093e358fd8c255d05d4fb55', operation='UPDATE', pgid='pgtrigger_suite_snapshot_update_4094a', table='whereabouts_suites', when='AFTER')),
+        ),
     ]

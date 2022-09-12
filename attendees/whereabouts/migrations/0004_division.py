@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -59,4 +61,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_divisionshistory', original_model_table='whereabouts_divisions')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='division',
+            trigger=pgtrigger.compiler.Trigger(name='division_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_divisionshistory" ("id", "created", "modified", "organization_id", "is_removed", "audience_auth_group_id", "infos", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."organization_id", NEW."is_removed", NEW."audience_auth_group_id", NEW."infos", NEW."slug", NEW."display_name", NOW(), \'division.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='1290ce62c57a609b1fa094affa02efe4e8b0d714', operation='INSERT', pgid='pgtrigger_division_snapshot_insert_8d6d6', table='whereabouts_divisions', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='division',
+            trigger=pgtrigger.compiler.Trigger(name='division_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."organization_id" IS DISTINCT FROM NEW."organization_id" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."audience_auth_group_id" IS DISTINCT FROM NEW."audience_auth_group_id" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "whereabouts_divisionshistory" ("id", "created", "modified", "organization_id", "is_removed", "audience_auth_group_id", "infos", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."organization_id", NEW."is_removed", NEW."audience_auth_group_id", NEW."infos", NEW."slug", NEW."display_name", NOW(), \'division.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='6ac466c0e5b291633ef071067557f8d36bea1d93', operation='UPDATE', pgid='pgtrigger_division_snapshot_update_655b3', table='whereabouts_divisions', when='AFTER')),
+        ),
     ]

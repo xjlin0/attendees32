@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -59,5 +61,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_campuseshistory', original_model_table='whereabouts_campuses')),
-
+        pgtrigger.migrations.AddTrigger(
+            model_name='campus',
+            trigger=pgtrigger.compiler.Trigger(name='campus_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_campuseshistory" ("id", "created", "modified", "is_removed", "organization_id", "infos", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."organization_id", NEW."infos", NEW."slug", NEW."display_name", NOW(), \'campus.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='f7ee894d4bea4ff6dd9a656041a28db93983072f', operation='INSERT', pgid='pgtrigger_campus_snapshot_insert_03a50', table='whereabouts_campuses', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='campus',
+            trigger=pgtrigger.compiler.Trigger(name='campus_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."organization_id" IS DISTINCT FROM NEW."organization_id" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "whereabouts_campuseshistory" ("id", "created", "modified", "is_removed", "organization_id", "infos", "slug", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."organization_id", NEW."infos", NEW."slug", NEW."display_name", NOW(), \'campus.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='af63123096c68c63e78644b7d48b3b8814da3a14', operation='UPDATE', pgid='pgtrigger_campus_snapshot_update_a55d9', table='whereabouts_campuses', when='AFTER')),
+        ),
     ]

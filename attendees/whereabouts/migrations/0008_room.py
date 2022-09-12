@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -59,4 +61,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_roomshistory', original_model_table='whereabouts_rooms')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='room',
+            trigger=pgtrigger.compiler.Trigger(name='room_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_roomshistory" ("created", "modified", "is_removed", "slug", "id", "infos", "suite_id", "display_name", "label", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."slug", NEW."id", NEW."infos", NEW."suite_id", NEW."display_name", NEW."label", NOW(), \'room.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='9e2f8a6e510731d45ca0d6219b4a611ad8d645d4', operation='INSERT', pgid='pgtrigger_room_snapshot_insert_6e9e9', table='whereabouts_rooms', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='room',
+            trigger=pgtrigger.compiler.Trigger(name='room_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."id" IS DISTINCT FROM NEW."id" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."suite_id" IS DISTINCT FROM NEW."suite_id" OR OLD."display_name" IS DISTINCT FROM NEW."display_name" OR OLD."label" IS DISTINCT FROM NEW."label")', func='INSERT INTO "whereabouts_roomshistory" ("created", "modified", "is_removed", "slug", "id", "infos", "suite_id", "display_name", "label", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."slug", NEW."id", NEW."infos", NEW."suite_id", NEW."display_name", NEW."label", NOW(), \'room.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='23b0042b5f3960fc530d2b93f766856e013d79b5', operation='UPDATE', pgid='pgtrigger_room_snapshot_update_76efb', table='whereabouts_rooms', when='AFTER')),
+        ),
     ]
