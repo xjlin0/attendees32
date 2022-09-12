@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -61,4 +63,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('persons_registrationshistory', original_model_table='persons_registrations')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='registration',
+            trigger=pgtrigger.compiler.Trigger(name='registration_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "persons_registrationshistory" ("id", "created", "modified", "is_removed", "assembly_id", "infos", "registrant_id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."assembly_id", NEW."infos", NEW."registrant_id", NOW(), \'registration.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='e84bb653cd7078647ac7818ff71a4408713fcfa4', operation='INSERT', pgid='pgtrigger_registration_snapshot_insert_749b9', table='persons_registrations', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='registration',
+            trigger=pgtrigger.compiler.Trigger(name='registration_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."assembly_id" IS DISTINCT FROM NEW."assembly_id" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."registrant_id" IS DISTINCT FROM NEW."registrant_id")', func='INSERT INTO "persons_registrationshistory" ("id", "created", "modified", "is_removed", "assembly_id", "infos", "registrant_id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."assembly_id", NEW."infos", NEW."registrant_id", NOW(), \'registration.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='ea0dc65af5a252be6191d12bab52abad2472a4e0', operation='UPDATE', pgid='pgtrigger_registration_snapshot_update_ce443', table='persons_registrations', when='AFTER')),
+        ),
     ]

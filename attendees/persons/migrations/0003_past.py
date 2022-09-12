@@ -3,7 +3,8 @@
 from attendees.persons.models import Utility
 import django.contrib.postgres.indexes
 from django.db import migrations, models
-
+import pgtrigger.compiler
+import pgtrigger.migrations
 import django.utils.timezone
 import model_utils.fields
 from uuid import uuid4
@@ -74,5 +75,13 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('persons_pastshistory', original_model_table='persons_pasts')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='past',
+            trigger=pgtrigger.compiler.Trigger(name='past_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "persons_pastshistory" ("created", "modified", "is_removed", "id", "object_id", "display_order", "infos", "category_id", "content_type_id", "organization_id", "when", "finish", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."id", NEW."object_id", NEW."display_order", NEW."infos", NEW."category_id", NEW."content_type_id", NEW."organization_id", NEW."when", NEW."finish", NEW."display_name", NOW(), \'past.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='11dfec053e713f8ffa2d41cd4243f9b50b0984e7', operation='INSERT', pgid='pgtrigger_past_snapshot_insert_e6306', table='persons_pasts', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='past',
+            trigger=pgtrigger.compiler.Trigger(name='past_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."id" IS DISTINCT FROM NEW."id" OR OLD."object_id" IS DISTINCT FROM NEW."object_id" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."category_id" IS DISTINCT FROM NEW."category_id" OR OLD."content_type_id" IS DISTINCT FROM NEW."content_type_id" OR OLD."organization_id" IS DISTINCT FROM NEW."organization_id" OR OLD."when" IS DISTINCT FROM NEW."when" OR OLD."finish" IS DISTINCT FROM NEW."finish" OR OLD."display_name" IS DISTINCT FROM NEW."display_name")', func='INSERT INTO "persons_pastshistory" ("created", "modified", "is_removed", "id", "object_id", "display_order", "infos", "category_id", "content_type_id", "organization_id", "when", "finish", "display_name", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."modified", NEW."is_removed", NEW."id", NEW."object_id", NEW."display_order", NEW."infos", NEW."category_id", NEW."content_type_id", NEW."organization_id", NEW."when", NEW."finish", NEW."display_name", NOW(), \'past.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='7ee0682088c7d71433708663f1ccc92572cd7fc6', operation='UPDATE', pgid='pgtrigger_past_snapshot_update_9fb1c', table='persons_pasts', when='AFTER')),
+        ),
     ]
 

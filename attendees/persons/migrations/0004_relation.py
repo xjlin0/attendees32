@@ -4,6 +4,8 @@ from django.db import migrations, models
 from django.contrib.postgres.fields import ArrayField
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 from attendees.persons.models.enum import GenderEnum
 from attendees.persons.models import Utility
 
@@ -63,4 +65,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('persons_relationshistory', original_model_table='persons_relations')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='relation',
+            trigger=pgtrigger.compiler.Trigger(name='relation_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "persons_relationshistory" ("id", "created", "modified", "is_removed", "display_order", "emergency_contact", "scheduler", "relative", "consanguinity", "reciprocal_ids", "gender", "title", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."display_order", NEW."emergency_contact", NEW."scheduler", NEW."relative", NEW."consanguinity", NEW."reciprocal_ids", NEW."gender", NEW."title", NOW(), \'relation.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='25072ce7ccc7e38a1ac5beb450abe721e91294c6', operation='INSERT', pgid='pgtrigger_relation_snapshot_insert_8fe53', table='persons_relations', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='relation',
+            trigger=pgtrigger.compiler.Trigger(name='relation_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."emergency_contact" IS DISTINCT FROM NEW."emergency_contact" OR OLD."scheduler" IS DISTINCT FROM NEW."scheduler" OR OLD."relative" IS DISTINCT FROM NEW."relative" OR OLD."consanguinity" IS DISTINCT FROM NEW."consanguinity" OR OLD."reciprocal_ids" IS DISTINCT FROM NEW."reciprocal_ids" OR OLD."gender" IS DISTINCT FROM NEW."gender" OR OLD."title" IS DISTINCT FROM NEW."title")', func='INSERT INTO "persons_relationshistory" ("id", "created", "modified", "is_removed", "display_order", "emergency_contact", "scheduler", "relative", "consanguinity", "reciprocal_ids", "gender", "title", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."display_order", NEW."emergency_contact", NEW."scheduler", NEW."relative", NEW."consanguinity", NEW."reciprocal_ids", NEW."gender", NEW."title", NOW(), \'relation.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='2d1e2a44c736aa2495fefe4c27666c852801d306', operation='UPDATE', pgid='pgtrigger_relation_snapshot_update_b9a34', table='persons_relations', when='AFTER')),
+        ),
     ]

@@ -3,6 +3,8 @@ from attendees.persons.models.utility import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 from private_storage.fields import PrivateFileField
 from private_storage.storage.files import PrivateFileSystemStorage
 
@@ -80,6 +82,14 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('persons_folk_attendeeshistory', original_model_table='persons_folk_attendees')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='folkattendee',
+            trigger=pgtrigger.compiler.Trigger(name='folkattendee_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "persons_folk_attendeeshistory" ("id", "created", "modified", "is_removed", "display_order", "folk_id", "attendee_id", "role_id", "file", "start", "finish", "infos", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."display_order", NEW."folk_id", NEW."attendee_id", NEW."role_id", NEW."file", NEW."start", NEW."finish", NEW."infos", NOW(), \'folkattendee.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='37420d152ac14827d33eed3ca43edb386ae8cbfa', operation='INSERT', pgid='pgtrigger_folkattendee_snapshot_insert_c56b5', table='persons_folk_attendees', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='folkattendee',
+            trigger=pgtrigger.compiler.Trigger(name='folkattendee_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."folk_id" IS DISTINCT FROM NEW."folk_id" OR OLD."attendee_id" IS DISTINCT FROM NEW."attendee_id" OR OLD."role_id" IS DISTINCT FROM NEW."role_id" OR OLD."file" IS DISTINCT FROM NEW."file" OR OLD."start" IS DISTINCT FROM NEW."start" OR OLD."finish" IS DISTINCT FROM NEW."finish" OR OLD."infos" IS DISTINCT FROM NEW."infos")', func='INSERT INTO "persons_folk_attendeeshistory" ("id", "created", "modified", "is_removed", "display_order", "folk_id", "attendee_id", "role_id", "file", "start", "finish", "infos", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."display_order", NEW."folk_id", NEW."attendee_id", NEW."role_id", NEW."file", NEW."start", NEW."finish", NEW."infos", NOW(), \'folkattendee.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='706b7d1c1f7bfb52f14c5876322874a990c19e6d', operation='UPDATE', pgid='pgtrigger_folkattendee_snapshot_update_38722', table='persons_folk_attendees', when='AFTER')),
+        ),
     ]
 
 
