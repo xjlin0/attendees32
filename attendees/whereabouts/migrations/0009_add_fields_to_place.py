@@ -7,6 +7,8 @@ from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -96,4 +98,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_placeshistory', original_model_table='whereabouts_places')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='place',
+            trigger=pgtrigger.compiler.Trigger(name='place_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_placeshistory" ("created", "id", "modified", "is_removed", "organization_id", "content_type_id", "object_id", "infos", "display_order", "display_name", "address_id", "start", "finish", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."id", NEW."modified", NEW."is_removed", NEW."organization_id", NEW."content_type_id", NEW."object_id", NEW."infos", NEW."display_order", NEW."display_name", NEW."address_id", NEW."start", NEW."finish", NOW(), \'place.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='db587f3a9612d6e2d3f1833df1e5f89236e5f62a', operation='INSERT', pgid='pgtrigger_place_snapshot_insert_9ab9a', table='whereabouts_places', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='place',
+            trigger=pgtrigger.compiler.Trigger(name='place_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."created" IS DISTINCT FROM NEW."created" OR OLD."id" IS DISTINCT FROM NEW."id" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."organization_id" IS DISTINCT FROM NEW."organization_id" OR OLD."content_type_id" IS DISTINCT FROM NEW."content_type_id" OR OLD."object_id" IS DISTINCT FROM NEW."object_id" OR OLD."infos" IS DISTINCT FROM NEW."infos" OR OLD."display_order" IS DISTINCT FROM NEW."display_order" OR OLD."display_name" IS DISTINCT FROM NEW."display_name" OR OLD."address_id" IS DISTINCT FROM NEW."address_id" OR OLD."start" IS DISTINCT FROM NEW."start" OR OLD."finish" IS DISTINCT FROM NEW."finish")', func='INSERT INTO "whereabouts_placeshistory" ("created", "id", "modified", "is_removed", "organization_id", "content_type_id", "object_id", "infos", "display_order", "display_name", "address_id", "start", "finish", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."created", NEW."id", NEW."modified", NEW."is_removed", NEW."organization_id", NEW."content_type_id", NEW."object_id", NEW."infos", NEW."display_order", NEW."display_name", NEW."address_id", NEW."start", NEW."finish", NOW(), \'place.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='40ccc0260a8621ae050115ed5a8325fa262d2c88', operation='UPDATE', pgid='pgtrigger_place_snapshot_update_d5a98', table='whereabouts_places', when='AFTER')),
+        ),
     ]

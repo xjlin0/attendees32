@@ -4,6 +4,8 @@ from attendees.persons.models import Utility
 from django.db import migrations, models
 import django.utils.timezone
 import model_utils.fields
+import pgtrigger.compiler
+import pgtrigger.migrations
 
 
 class Migration(migrations.Migration):
@@ -55,4 +57,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.RunSQL(Utility.pgh_default_sql('whereabouts_organizationshistory', original_model_table='whereabouts_organizations')),
+        pgtrigger.migrations.AddTrigger(
+            model_name='organization',
+            trigger=pgtrigger.compiler.Trigger(name='organization_snapshot_insert', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_organizationshistory" ("id", "created", "modified", "is_removed", "slug", "display_name", "infos", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."slug", NEW."display_name", NEW."infos", NOW(), \'organization.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='85b313e9948bbc66345ab5b9945c77329d13d0fb', operation='INSERT', pgid='pgtrigger_organization_snapshot_insert_9704e', table='whereabouts_organizations', when='AFTER')),
+        ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='organization',
+            trigger=pgtrigger.compiler.Trigger(name='organization_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."id" IS DISTINCT FROM NEW."id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."modified" IS DISTINCT FROM NEW."modified" OR OLD."is_removed" IS DISTINCT FROM NEW."is_removed" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."display_name" IS DISTINCT FROM NEW."display_name" OR OLD."infos" IS DISTINCT FROM NEW."infos")', func='INSERT INTO "whereabouts_organizationshistory" ("id", "created", "modified", "is_removed", "slug", "display_name", "infos", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."id", NEW."created", NEW."modified", NEW."is_removed", NEW."slug", NEW."display_name", NEW."infos", NOW(), \'organization.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='7f64495543311d4e99288b474a880cf25f47bdac', operation='UPDATE', pgid='pgtrigger_organization_snapshot_update_f9b6d', table='whereabouts_organizations', when='AFTER')),
+        ),
     ]
