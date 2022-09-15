@@ -1,4 +1,3 @@
-import pghistory
 from django.contrib import admin, messages
 from django.contrib.auth import admin as auth_admin
 from django.contrib.auth import get_user_model
@@ -23,6 +22,13 @@ admin.site.unregister(Group)
 @admin.register(Group)
 class GroupAdmin(PgHistoryPage, GroupAdmin):
     pass  # to make original model admin shows PgHistoryPage
+
+# from allauth.account.admin import EmailAddressAdmin
+# from allauth.account.models import EmailAddress
+# admin.site.unregister(EmailAddress)
+# @admin.register(EmailAddress)   # Somehow Admin UI shows no history
+# class EmailAddressAdmin(PgHistoryPage, EmailAddressAdmin):
+#     pass  # to make original model admin shows PgHistoryPage
 
 
 @admin.register(User)
