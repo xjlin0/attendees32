@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('pghistory', '0004_auto_20220906_1625'),
         ('schedule', '0014_use_autofields_for_pk'),
-        ('occasions', '0009_meet_attending'),
+        ('occasions', '0012_periodic_task_history'),
     ]
 
     operations = [

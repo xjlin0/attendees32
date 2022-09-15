@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('schedule', '0014_use_autofields_for_pk'),
         ('pghistory', '0004_auto_20220906_1625'),
-        ('occasions', '0011_calendarrelation_history'),
+        ('occasions', '0014_calendarrelation_history'),
     ]
 
     operations = [
