@@ -1,6 +1,9 @@
+
 from django.contrib import messages
 from django.contrib import admin
 from django.db import models
+from django_celery_beat.admin import PeriodicTaskAdmin
+from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 from django_json_widget.widgets import JSONEditorWidget
 from schedule.admin import CalendarAdmin, CalendarRelationAdmin, EventAdmin, EventRelationAdmin, RuleAdmin
 from schedule.models import Calendar, CalendarRelation, Event, EventRelation, Rule
@@ -9,6 +12,24 @@ from attendees.occasions.models import Attendance, MessageTemplate, Assembly, Pr
 from django.conf import settings
 from attendees.persons.models import PgHistoryPage, Category
 from attendees.whereabouts.models import Organization, Division
+
+
+admin.site.unregister(CrontabSchedule)
+@admin.register(CrontabSchedule)
+class CrontabScheduleAdmin(PgHistoryPage, admin.ModelAdmin):
+    pass  # to make original model admin shows PgHistoryPage
+
+
+# admin.site.unregister(IntervalSchedule)
+# @admin.register(IntervalSchedule)   # Somehow Admin UI shows no history
+# class IntervalScheduleAdmin(PgHistoryPage, admin.ModelAdmin):
+#     pass  # to make original model admin shows PgHistoryPage
+
+
+# admin.site.unregister(PeriodicTask)
+# @admin.register(PeriodicTask)       # Somehow Admin UI shows no history
+# class PeriodicTaskAdmin(PgHistoryPage, PeriodicTaskAdmin):
+#     pass  # to make original model admin shows PgHistoryPage
 
 
 admin.site.unregister(Calendar)

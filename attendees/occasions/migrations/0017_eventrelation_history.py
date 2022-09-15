@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         ('schedule', '0014_use_autofields_for_pk'),
         ('contenttypes', '0002_remove_content_type_name'),
         ('pghistory', '0004_auto_20220906_1625'),
-        ('occasions', '0013_event_history'),
+        ('occasions', '0016_event_history'),
     ]
 
     operations = [
