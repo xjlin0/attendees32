@@ -8,13 +8,21 @@ from django.forms import TextInput
 from django.utils.translation import gettext_lazy as _
 from django_json_widget.widgets import JSONEditorWidget
 from mptt.admin import MPTTModelAdmin
-
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import GroupAdmin
 from attendees.persons.models import PgHistoryPage
 from attendees.users.forms import UserChangeForm, UserCreationForm
 
 from .models import Menu, MenuAuthGroup
 
 User = get_user_model()
+
+admin.site.unregister(Group)
+
+
+@admin.register(Group)
+class GroupAdmin(PgHistoryPage, GroupAdmin):
+    pass  # to make original model admin shows PgHistoryPage
 
 
 @admin.register(User)
