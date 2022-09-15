@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         ('pghistory', '0004_auto_20220906_1625'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('schedule', '0014_use_autofields_for_pk'),
-        ('occasions', '0011_calendarrelation_history'),
+        ('occasions', '0012_rule_history'),
     ]
 
     operations = [

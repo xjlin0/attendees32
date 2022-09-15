@@ -2,14 +2,43 @@ from django.contrib import messages
 from django.contrib import admin
 from django.db import models
 from django_json_widget.widgets import JSONEditorWidget
+from schedule.admin import CalendarAdmin, CalendarRelationAdmin, EventAdmin, EventRelationAdmin, RuleAdmin
+from schedule.models import Calendar, CalendarRelation, Event, EventRelation, Rule
+
 from attendees.occasions.models import Attendance, MessageTemplate, Assembly, Price, Character, Meet, Gathering, Team
 from django.conf import settings
 from attendees.persons.models import PgHistoryPage, Category
 from attendees.whereabouts.models import Organization, Division
 
 
-# Register your models here.
+admin.site.unregister(Calendar)
+@admin.register(Calendar)
+class CalendarAdmin(PgHistoryPage, CalendarAdmin):
+    pass  # to make original model admin shows PgHistoryPage
 
+
+admin.site.unregister(CalendarRelation)
+@admin.register(CalendarRelation)
+class CalendarAdmin(PgHistoryPage, CalendarRelationAdmin):
+    pass  # to make original model admin shows PgHistoryPage
+
+
+admin.site.unregister(Rule)
+@admin.register(Rule)
+class CalendarAdmin(PgHistoryPage, RuleAdmin):
+    pass  # to make original model admin shows PgHistoryPage
+
+
+admin.site.unregister(Event)
+@admin.register(Event)
+class CalendarAdmin(PgHistoryPage, EventAdmin):
+    pass  # to make original model admin shows PgHistoryPage
+
+
+admin.site.unregister(EventRelation)
+@admin.register(EventRelation)
+class CalendarAdmin(PgHistoryPage, EventRelationAdmin):
+    pass  # to make original model admin shows PgHistoryPage
 
 # class AssemblyContactAdmin(admin.ModelAdmin):
 #     readonly_fields = ['id', 'created', 'modified']

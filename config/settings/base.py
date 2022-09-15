@@ -365,3 +365,4 @@ CORS_URLS_REGEX = r"^/api/.*$"
 # ------------------------------------------------------------------------------
 CLIENT_DEFAULT_TIME_ZONE = "America/Los_Angeles"
 GOOGLE_API_KEY = "AIzaSyD--your-google-maps-key-SjQBE"  # For django-address: environment variable will override it
+CALENDAR_VIEW_PERM = True
