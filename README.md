@@ -459,7 +459,7 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
   - [x] find library and install: maybe django-pghistory with AggregateEvent
   - [x] each model level version
   - [ ] document aggregation level version
-  - [ ] upgrade to django-pghistory v2.4+ for various bug fixes.
+  - [x]  [2PR#25](https://github.com/xjlin0/attendees32/pull/25) upgrade to django-pghistory v2.4+ for various bug fixes.
 - [x] [New repo] upgrade to Django 3.2LTS for support of DEFAULT_AUTO_FIELD
    -[x] accept partial date on all attending/past, etc django-date-extensions or django_partial_date. Also use Javascript solution to make yearless date back to 1800, so birthday of "1999 August" will be 08-01-1999 and "May 24th" will be 05-24-1800
    -[x] 3.1: use Django JSONField instead of Postgres JSONField
