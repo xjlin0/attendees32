@@ -848,7 +848,7 @@ Attendees.gatherings = {
         dataField: 'infos.generate_attendance',
         visible: false,
         allowGrouping: false,
-        caption: 'Auto generating attendance?',
+        caption: 'Auto generate attendance?',
         dataType: 'boolean',
         editorType: 'dxCheckBox',
       },

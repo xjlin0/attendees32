@@ -19,9 +19,9 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
         auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
     )
     meet = models.ForeignKey("Meet", on_delete=models.SET(0), null=False, blank=False)
-    start = models.DateTimeField(null=False, blank=False)
+    start = models.DateTimeField(null=False, blank=False, db_index=True)
     finish = models.DateTimeField(
-        null=False, blank=False, help_text="Required for user to filter by time"
+        null=False, blank=False, help_text="Required for user to filter by time", db_index=True
     )
     attendings = models.ManyToManyField("persons.Attending", through="Attendance")
     display_name = models.CharField(
@@ -40,7 +40,9 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
     )
     site_id = models.CharField(max_length=36, null=False, blank=False, default="0")
     site = GenericForeignKey("site_type", "site_id")
-
+    occurrence = models.ForeignKey(
+        "schedule.Occurrence", null=True, blank=True, on_delete=models.SET_NULL
+    )
     # from itertools import groupby
     # from operator import attrgetter
     #
@@ -114,6 +116,7 @@ class GatheringsHistory(pghistory.get_event_model(
     site_type = models.ForeignKey(db_constraint=False, help_text='site: django_content_type id for table name', on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='contenttypes.contenttype')
     infos = models.JSONField(blank=True, default=dict, help_text='Example: {"LG_location": "F207", "link": "https://..."}. Please keep {} here even no data', null=True)
     site_id = models.CharField(default='0', max_length=36)
+    occurrence = models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='schedule.Occurrence')
     display_name = models.CharField(blank=True, help_text='02/09/2020, etc', max_length=255, null=True)
     pgh_context = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')
 

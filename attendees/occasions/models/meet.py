@@ -50,10 +50,10 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
         help_text="[some meets are editable only by coworkers] participant can edit AttendingMeet?",
     )
     start = models.DateTimeField(
-        null=False, blank=False, default=Utility.now_with_timezone
+        null=False, blank=False, default=Utility.now_with_timezone, db_index=True
     )
     finish = models.DateTimeField(
-        null=False, blank=False, help_text="Required for user to filter by time"
+        null=False, blank=False, help_text="Required for user to filter by time", db_index=True
     )
     display_name = models.CharField(
         max_length=50,

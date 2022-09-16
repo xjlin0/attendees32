@@ -20,8 +20,8 @@ class Attendance(TimeStampedModel, SoftDeletableModel, Utility):
     id = models.BigAutoField(
         auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
     )
-    start = models.DateTimeField(null=True, blank=True, help_text="optional")
-    finish = models.DateTimeField(null=True, blank=True, help_text="optional")
+    start = models.DateTimeField(null=True, blank=True, help_text="optional", db_index=True)
+    finish = models.DateTimeField(null=True, blank=True, help_text="optional", db_index=True)
     gathering = models.ForeignKey(
         "Gathering", null=False, blank=False, on_delete=models.SET(0)
     )
