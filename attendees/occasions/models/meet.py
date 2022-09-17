@@ -16,7 +16,10 @@ from attendees.persons.models import Note, Utility
 
 class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     """
-    Note: Schedules and Locations(uuid models NOT supported) are stored in EventRelation.distinction
+    The meet pk/id is also stored in the corresponding 3rd party model
+    schedule.Event.title such as Meet#42, so the meet can be fetched
+    with the corresponding Event for the calendar.  The location of the
+    Event is also related by EventRelation with distinction 'site'.
 
     """
 

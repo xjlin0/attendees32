@@ -14,6 +14,12 @@ from attendees.persons.models import Note, Utility
 
 
 class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
+    """
+    The gathering pk/id is also stored in the corresponding 3rd party model
+    schedule.Occurrence.title such as Gathering#45612, so when calendar shows
+    Occurrences of Events, the corresponding gathering can be fetched.
+    """
+
     notes = GenericRelation(Note)
     id = models.BigAutoField(
         auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
