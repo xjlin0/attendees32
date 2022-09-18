@@ -1877,16 +1877,38 @@
     "model": "schedule.calendar",
     "pk": 1,
     "fields": {
-      "name": "CFCCH Main Calendar",
-      "slug": "cfcch_calendar"
+      "name": "CFCCH Organizational Calendar",
+      "slug": "cfcch_organizational_calendar"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 2,
     "fields": {
-      "name": "CFCCH summer retreat 2020 Calendar",
-      "slug": "cfcch_summer_retreat_2020_calendar"
+      "name": "CFCCH fellowship room F205 calendar",
+      "slug": "cfcch_fellowship_f205"
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 1,
+    "fields": {
+      "calendar": 1,
+      "content_type": 54,
+      "object_id": 1,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 2,
+    "fields": {
+      "calendar": 2,
+      "content_type": 64,
+      "object_id": 1,
+      "distinction": "source",
+      "inheritable": true
     }
   },
   {
@@ -1995,8 +2017,8 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "The Rock's time",
-      "description": "Every Sunday 9:15AM ~ 12:40 PM",
+      "title": "Meet#1",
+      "description": "The Rock: Every Sunday 9:15AM ~ 12:40 PM",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2012,8 +2034,8 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "Little foot's time",
-      "description": "Every Sunday 9:15AM ~ 12:40 PM",
+      "title": "Meet#2",
+      "description": "Little foot: Every Sunday 9:15AM ~ 12:40 PM",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2028,7 +2050,7 @@
     "pk": 1,
     "fields": {
       "event": 1,
-      "content_type": 101,
+      "content_type": 103,
       "object_id": 1,
       "distinction": "source"
     }
@@ -2038,7 +2060,7 @@
     "pk": 2,
     "fields": {
       "event": 2,
-      "content_type": 101,
+      "content_type": 103,
       "object_id": 2,
       "distinction": "source"
     }
@@ -5909,8 +5931,8 @@
       "created": "2020-04-11T18:35:55.012Z",
       "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
-      "display_name": "CFCC fellowship 205",
-      "slug": "CFCCH_fellowship_205",
+      "display_name": "CFCC fellowship F205",
+      "slug": "CFCCH_fellowship_f205",
       "suite": 1,
       "label": null,
       "infos": {
@@ -5989,8 +6011,8 @@
       "created": "2020-04-11T18:35:55.012Z",
       "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
-      "display_name": "CFCC fellowship 207",
-      "slug": "CFCCH_fellowship_207",
+      "display_name": "CFCC fellowship F207",
+      "slug": "CFCCH_fellowship_f207",
       "suite": 1,
       "label": null,
       "infos": {
@@ -11596,7 +11618,7 @@
       "infos": {
         "link": null
       },
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "e50d2b9c-0f92-4048-a524-918909d7a0c5"
     }
   },
@@ -11612,7 +11634,7 @@
       "finish": "2020-07-21T06:00:00Z",
       "display_name": "07/20/2020 Basic I",
       "infos": {},
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "edd6463b-3757-423e-83a8-4ff823ee9059"
     }
   },
@@ -11630,7 +11652,7 @@
       "infos": {
         "LG_location": "Burbank Library"
       },
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -11646,7 +11668,7 @@
       "finish": "2020-12-24T18:59:59Z",
       "display_name": "12/24/2020 主日崇拜",
       "infos": {},
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -11662,7 +11684,7 @@
       "finish": "2020-07-19T20:15:00Z",
       "display_name": "CFCC夏令會2020住宿",
       "infos": {},
-      "site_type": 56,
+      "site_type": 64,
       "site_id": "4"
     }
   },
@@ -11678,7 +11700,7 @@
       "finish": "2020-07-18T01:00:00Z",
       "display_name": "CFCC夏令會2020 July 17 晚餐",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "4"
     }
   },
@@ -11694,7 +11716,7 @@
       "finish": "2020-07-19T04:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 宵夜聯誼",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "6"
     }
   },
@@ -11710,7 +11732,7 @@
       "finish": "2020-07-18T15:15:00Z",
       "display_name": "CFCC夏令會2020 July 18 早餐",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "4"
     }
   },
@@ -11726,7 +11748,7 @@
       "finish": "2020-07-18T19:45:00Z",
       "display_name": "CFCC夏令會2020 July 18 中餐",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "4"
     }
   },
@@ -11742,7 +11764,7 @@
       "finish": "2020-07-19T02:00:00Z",
       "display_name": "CFCC夏令會2020 July 18 晚餐",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "4"
     }
   },
@@ -11758,7 +11780,7 @@
       "finish": "2020-07-18T04:30:00Z",
       "display_name": "CFCC夏令會2020 July 17 破冰遊戲",
       "infos": {},
-      "site_type": 50,
+      "site_type": 58,
       "site_id": "3"
     }
   },
@@ -11774,7 +11796,7 @@
       "finish": "2020-07-19T15:15:00Z",
       "display_name": "CFCC夏令會2020 July 19 早餐",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "4"
     }
   },
@@ -11790,7 +11812,7 @@
       "finish": "2020-07-19T19:45:00Z",
       "display_name": "CFCC夏令會2020 July 19 中餐",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "4"
     }
   },
@@ -11806,7 +11828,7 @@
       "finish": "2020-07-18T03:30:00Z",
       "display_name": "CFCC夏令會2020 July 17 講道信息 I",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "3"
     }
   },
@@ -11822,7 +11844,7 @@
       "finish": "2020-07-18T17:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 講道信息 II",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "5"
     }
   },
@@ -11838,7 +11860,7 @@
       "finish": "2020-07-18T22:00:00Z",
       "display_name": "CFCC夏令會2020 July 18 講道信息 III",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "5"
     }
   },
@@ -11854,7 +11876,7 @@
       "finish": "2020-07-19T03:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 講道信息 IV",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "5"
     }
   },
@@ -11870,7 +11892,7 @@
       "finish": "2020-07-19T17:30:00Z",
       "display_name": "CFCC夏令會2020 July 19 講道信息 V",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "5"
     }
   },
@@ -11886,7 +11908,7 @@
       "finish": "2020-07-18T05:30:00Z",
       "display_name": "CFCC夏令會2020 July 17 同工會議",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "2"
     }
   },
@@ -11902,7 +11924,7 @@
       "finish": "2020-07-19T05:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 組長會議",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "4"
     }
   },
@@ -11918,7 +11940,7 @@
       "finish": "2020-07-18T20:15:00Z",
       "display_name": "CFCC夏令會2020 July 18 團體合影",
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "4"
     }
   },
@@ -11934,7 +11956,7 @@
       "finish": "2020-07-18T19:00:00Z",
       "display_name": "CFCC夏令會2020 小組分享1",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "2"
     }
   },
@@ -11950,7 +11972,7 @@
       "finish": "2020-07-20T01:00:00Z",
       "display_name": "CFCC夏令會2020 接送",
       "infos": {},
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "e6e50c89-f4b7-4071-8a58-850800445304"
     }
   },
@@ -11966,7 +11988,7 @@
       "finish": "2020-07-18T19:00:00Z",
       "display_name": "CFCC夏令會2020 小組分享2",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "3"
     }
   },
@@ -11982,7 +12004,7 @@
       "finish": "2020-07-18T19:00:00Z",
       "display_name": "CFCC夏令會2020 小組分享3",
       "infos": {},
-      "site_type": 54,
+      "site_type": 62,
       "site_id": "4"
     }
   },
@@ -11998,7 +12020,7 @@
       "finish": "2022-10-18T19:00:00Z",
       "display_name": "CFCCH會員大會秋季2022 Fall congregation meeting",
       "infos": {},
-      "site_type": 48,
+      "site_type": 56,
       "site_id": "1"
     }
   },
@@ -12014,7 +12036,7 @@
       "finish": "2199-07-18T19:00:00Z",
       "display_name": "CFCCH通訊錄 directory",
       "infos": {},
-      "site_type": 48,
+      "site_type": 54,
       "site_id": "1"
     }
   },
