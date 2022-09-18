@@ -5307,7 +5307,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 97,
       "object_id": "7",
       "organization": 1,
       "address": 2,
@@ -5337,7 +5337,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "a48e4375-1a64-4c4f-beb3-8f088bf77340",
       "organization": 1,
       "address": 5,
@@ -5359,7 +5359,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 52,
+      "content_type": 60,
       "object_id": "1",
       "organization": 1,
       "address": 1,
@@ -5383,7 +5383,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "80f2e82f-0a72-49ea-b3e2-3fc892c49599",
       "organization": 1,
       "address": 3,
@@ -5405,7 +5405,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "80f2e82f-0a72-49ea-b3e2-3fc892c49599",
       "organization": 1,
       "address": 4,
@@ -5427,7 +5427,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "f3b780ad-c736-490e-8731-58b96dfd81f8",
       "organization": 1,
       "address": 6,
@@ -5449,7 +5449,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "ffd3881a-7a77-437a-ba11-c90610839523",
       "organization": 1,
       "address": 6,
@@ -5471,7 +5471,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "organization": 1,
       "address": 6,
@@ -5493,7 +5493,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "d7e6ec14-302e-46a3-9f32-537d1fc0256b",
       "organization": 1,
       "address": 2,
@@ -5523,7 +5523,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 97,
       "object_id": "4",
       "organization": 1,
       "address": 9,
@@ -5553,7 +5553,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 97,
       "object_id": "6",
       "organization": 1,
       "address": 11,
@@ -5583,7 +5583,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 97,
       "object_id": "5",
       "organization": 1,
       "address": 1,
@@ -5613,7 +5613,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 97,
       "object_id": "3",
       "organization": 1,
       "address": 10,
@@ -5643,7 +5643,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 97,
       "object_id": "1",
       "organization": 1,
       "address": 1,
@@ -5672,7 +5672,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 97,
       "object_id": "2",
       "organization": 1,
       "address": 1,
@@ -5694,7 +5694,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 73,
+      "content_type": 85,
       "object_id": "22c29cd5-a5ab-46a3-afe6-d5a600c33fc9",
       "organization": 1,
       "address": 3,
@@ -12078,7 +12078,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -12123,7 +12123,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -12169,7 +12169,7 @@
         },
         "default_attendingmeet_in_weeks": 34
       },
-      "site_type": 54,
+      "site_type": 64,
       "site_id": "1"
     }
   },
@@ -12215,8 +12215,8 @@
         },
         "default_attendingmeet_in_weeks": 30
       },
-      "site_type": 54,
-      "site_id": "1"
+      "site_type": 64,
+      "site_id": "6"
     }
   },
   {
@@ -12256,7 +12256,7 @@
         },
         "default_attendingmeet_in_weeks": 60
       },
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "1"
     }
   },
@@ -12295,7 +12295,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 50,
+      "site_type": 58,
       "site_id": "2"
     }
   },
@@ -12339,7 +12339,7 @@
         },
         "default_attendingmeet_in_weeks": 30
       },
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "1"
     }
   },
@@ -12383,8 +12383,8 @@
         },
         "default_attendingmeet_in_weeks": 160
       },
-      "site_type": 50,
-      "site_id": "2"
+      "site_type": 27,
+      "site_id": "10"
     }
   },
   {
@@ -12425,7 +12425,7 @@
         "default_attendingmeet_in_weeks": 30,
         "extending_attending_days": 90
       },
-      "site_type": 46,
+      "site_type": 54,
       "site_id": "1"
     }
   },
@@ -12465,7 +12465,7 @@
         },
         "default_attendingmeet_in_weeks": 60
       },
-      "site_type": 46,
+      "site_type": 54,
       "site_id": "1"
     }
   },
@@ -12505,7 +12505,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 46,
+      "site_type": 54,
       "site_id": "1"
     }
   },
@@ -12546,8 +12546,8 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 50,
-      "site_id": "2"
+      "site_type": 58,
+      "site_id": "3"
     }
   },
   {
@@ -12587,8 +12587,8 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 50,
-      "site_id": "2"
+      "site_type": 58,
+      "site_id": "3"
     }
   },
   {
@@ -12627,8 +12627,8 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 50,
-      "site_id": "2"
+      "site_type": 58,
+      "site_id": "3"
     }
   },
   {
@@ -12668,8 +12668,8 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 50,
-      "site_id": "2"
+      "site_type": 58,
+      "site_id": "3"
     }
   },
   {
@@ -12709,8 +12709,8 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 50,
-      "site_id": "2"
+      "site_type": 58,
+      "site_id": "3"
     }
   },
   {
@@ -12750,8 +12750,8 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 50,
-      "site_id": "2"
+      "site_type": 58,
+      "site_id": "3"
     }
   },
   {
@@ -12789,7 +12789,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 46,
+      "site_type": 54,
       "site_id": "1"
     }
   },
@@ -12828,7 +12828,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 46,
+      "site_type": 54,
       "site_id": "1"
     }
   },
@@ -12882,7 +12882,7 @@
       "display_name": "CFCC kid Large Group 4G",
       "display_order": 0,
       "infos": {},
-      "site_type": 52,
+      "site_type": 60,
       "site_id": "1"
     }
   },
@@ -12898,7 +12898,7 @@
       "display_name": "CFCC 2020夏令會中文討論小組1",
       "display_order": 0,
       "infos": {},
-      "site_type": 56,
+      "site_type": 64,
       "site_id": "5"
     }
   },
@@ -12914,7 +12914,7 @@
       "display_name": "CFCC 2020夏令會中文討論小組2",
       "display_order": 0,
       "infos": {},
-      "site_type": 56,
+      "site_type": 64,
       "site_id": "4"
     }
   },
@@ -12930,7 +12930,7 @@
       "display_name": "CFCC 2020夏令會 接送 pickup1",
       "display_order": 0,
       "infos": {},
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "a37797e4-32a6-4ecd-b820-c04330b94662"
     }
   },
@@ -12946,7 +12946,7 @@
       "display_name": "CFCC 2020夏令會 接送 pickup2",
       "display_order": 0,
       "infos": {},
-      "site_type": 45,
+      "site_type": 53,
       "site_id": "721be461-4304-49f4-a477-3e45f7ed38bd"
     }
   }
