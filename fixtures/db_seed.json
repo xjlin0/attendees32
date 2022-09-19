@@ -2046,6 +2046,23 @@
     }
   },
   {
+    "model": "schedule.event",
+    "pk": 3,
+    "fields": {
+      "start": "2020-02-09T17:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
+      "title": "Meet#3",
+      "description": "中文詩班: Every Sunday 1:15PM ~ 3:00 PM",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 1,
+      "color_event": "#926AA6"
+    }
+  },
+  {
     "model": "schedule.eventrelation",
     "pk": 1,
     "fields": {
@@ -5764,7 +5781,7 @@
       "modified": "2020-06-19T15:47:44.600Z",
       "is_removed": false,
       "display_name": "CFCC Fellowship Hall",
-      "slug": "fellowship_hall",
+      "slug": "cfcch_fellowship_hall",
       "campus": 1,
       "infos": {
         "contacts": {}
@@ -5778,8 +5795,8 @@
       "created": "2020-04-11T18:34:25.579Z",
       "modified": "2020-06-19T15:47:37.778Z",
       "is_removed": false,
-      "display_name": "CFCC 舊主堂",
-      "slug": "old_main_sanctuary",
+      "display_name": "CFCCH 舊主堂",
+      "slug": "cfcch_old_sanctuary",
       "campus": 1,
       "infos": {
         "contacts": {}
@@ -5817,6 +5834,21 @@
         "contacts": {
           "phone1": "+17076642880"
         }
+      }
+    }
+  },
+  {
+    "model": "whereabouts.property",
+    "pk": 5,
+    "fields": {
+      "created": "2020-04-11T18:34:25.579Z",
+      "modified": "2020-06-19T15:47:37.778Z",
+      "is_removed": false,
+      "display_name": "CFCCH 新堂",
+      "slug": "cfcch_worship_center",
+      "campus": 1,
+      "infos": {
+        "contacts": {}
       }
     }
   },
@@ -5925,14 +5957,27 @@
     }
   },
   {
+    "model": "whereabouts.suite",
+    "pk": 9,
+    "fields": {
+      "created": "2020-04-11T18:35:21.186Z",
+      "modified": "2021-04-08T17:08:17.290Z",
+      "is_removed": false,
+      "display_name": "新堂 2F, worship center, CFCCH",
+      "slug": "cfcch_worship_2f",
+      "property": 5,
+      "site": "2F"
+    }
+  },
+  {
     "model": "whereabouts.room",
     "pk": 1,
     "fields": {
       "created": "2020-04-11T18:35:55.012Z",
       "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
-      "display_name": "CFCC fellowship F205",
-      "slug": "CFCCH_fellowship_f205",
+      "display_name": "副堂 F205, fellowship hall, CFCCH",
+      "slug": "cfcch_fellowship_f205",
       "suite": 1,
       "label": null,
       "infos": {
@@ -6011,12 +6056,28 @@
       "created": "2020-04-11T18:35:55.012Z",
       "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
-      "display_name": "CFCC fellowship F207",
-      "slug": "CFCCH_fellowship_f207",
+      "display_name": "CFCCH fellowship F207",
+      "slug": "cfcch_fellowship_f207",
       "suite": 1,
       "label": null,
       "infos": {
         "accessibility": 2
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 7,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "新堂 204, worship center, CFCCH",
+      "slug": "cfcch_worship_204",
+      "suite": 9,
+      "label": null,
+      "infos": {
+        "accessibility": 0
       }
     }
   },
@@ -11226,9 +11287,9 @@
       "modified": "2021-04-08T16:44:51.244Z",
       "is_removed": false,
       "assembly": 2,
-      "display_name": "A/V controller",
+      "display_name": "詩班成員 choir member",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_adult_sunday_av_controller",
+      "slug": "d7c8Fd_cfcch_chinese_choir_member",
       "infos": {},
       "type": "coworker"
     }
@@ -12232,8 +12293,8 @@
       "audience_editable": true,
       "start": "2020-05-12T14:55:20Z",
       "finish": "2099-05-12T15:55:22Z",
-      "display_name": "影音中控 AV control",
-      "slug": "d7c8Fd_cfcch_adault_sunday_recording_av_control",
+      "display_name": "中文詩班 Chinese choir",
+      "slug": "d7c8Fd_cfcch_chinese_choir",
       "infos": {
         "gathering_infos": {},
         "attendance": {},
@@ -12256,8 +12317,8 @@
         },
         "default_attendingmeet_in_weeks": 60
       },
-      "site_type": 60,
-      "site_id": "1"
+      "site_type": 64,
+      "site_id": "7"
     }
   },
   {
