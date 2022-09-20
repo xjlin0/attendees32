@@ -2017,8 +2017,8 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "Meet#1",
-      "description": "The Rock: Every Sunday 9:15AM ~ 12:40 PM",
+      "title": "The Rock Sunday 9:15A-12:40P",
+      "description": "room#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2034,8 +2034,8 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "Meet#2",
-      "description": "Little foot: Every Sunday 9:15AM ~ 12:40 PM",
+      "title": "Little foot Sunday 9:15A-12:40P",
+      "description": "room#6",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2049,10 +2049,10 @@
     "model": "schedule.event",
     "pk": 3,
     "fields": {
-      "start": "2020-02-09T17:15:00Z",
-      "end": "2020-02-09T20:40:00Z",
-      "title": "Meet#3",
-      "description": "中文詩班: Every Sunday 1:15PM ~ 3:00 PM",
+      "start": "2020-02-09T21:15:00Z",
+      "end": "2020-02-09T23:00:00Z",
+      "title": "中文詩班: Sunday 1:15P-3:00P",
+      "description": "room#7",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2079,6 +2079,16 @@
       "event": 2,
       "content_type": 103,
       "object_id": 2,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 3,
+    "fields": {
+      "event": 3,
+      "content_type": 103,
+      "object_id": 3,
       "distinction": "source"
     }
   },
@@ -5736,7 +5746,7 @@
       "modified": "2020-06-19T15:44:44.716Z",
       "is_removed": false,
       "organization": 1,
-      "display_name": "CFCC Main",
+      "display_name": "CFCCH Main",
       "slug": "d7c8Fd_main",
       "infos": {
         "contacts": {}
@@ -5751,7 +5761,7 @@
       "modified": "2020-04-20T15:51:39.797Z",
       "is_removed": false,
       "organization": 2,
-      "display_name": "天上",
+      "display_name": "天上 sky",
       "slug": "faBd6C_sky",
       "infos": {
         "contacts": {}

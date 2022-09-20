@@ -273,11 +273,11 @@ class Utility:
 
     @staticmethod
     def get_location(eventrelation):
-        model_name, id = eventrelation.distinction.split("#")
+        model_name, object_id = eventrelation.event.description.split("#")
         if model_name:
             model = ContentType.objects.filter(model=model_name).first()
             if model:
-                target = model.model_class().objects.filter(pk=id).first()
+                target = model.model_class().objects.filter(pk=object_id).first()
                 if object:
                     return str(target)
 

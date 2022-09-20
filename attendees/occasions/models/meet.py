@@ -16,10 +16,9 @@ from attendees.persons.models import Note, Utility
 
 class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     """
-    The meet pk/id is also stored in the corresponding 3rd party model
-    schedule.Event.title such as Meet#42, so the meet can be fetched
-    with the corresponding Event for the calendar.  The location of the
-    Event is also related by EventRelation with distinction 'site'.
+    Event is related by EventRelation with distinction 'source'.  The site_id/type here is just
+    default, should copy to Event description as 'room#42', so one meet can have multiple Event
+    happening at different sites.
 
     """
 
@@ -78,10 +77,10 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
         help_text="site: django_content_type id for table name",
     )
     site_id = models.CharField(max_length=36, null=False, blank=False, default="0")
-    site = GenericForeignKey("site_type", "site_id")
+    site = GenericForeignKey("site_type", "site_id")  # This is default, will copy over to Event.description
 
-    # def save(self):
-    #     pass # https://stackoverflow.com/a/27241824
+    # def save(self, *args, **kwargs):  # https://stackoverflow.com/a/27241824
+    #     super(Meet, self).save(*args, **kwargs)  # One meet may have multiple Events
 
     def get_absolute_url(self):
         return reverse("meet_detail", args=[str(self.id)])
