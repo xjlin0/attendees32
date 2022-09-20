@@ -93,6 +93,13 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
             self.site or "",
         )
 
+    def occurrence(self):
+        return None
+
+
+    # def save(self, *args, **kwargs):  # https://stackoverflow.com/a/27241824
+    #     super(Gathering, self).save(*args, **kwargs)
+
     # def time_and_location_dict(self, timezone='UTC', timeformat='%Y/%m/%d,%H:%M %p %Z'):
     #     return {
     #         "time": self.start.astimezone(pytz.timezone(timezone)).strftime(timeformat),

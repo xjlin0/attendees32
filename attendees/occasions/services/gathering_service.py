@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from address.models import Address
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.utils import json
 from django.db.models import Q
 
@@ -129,14 +130,23 @@ class GatheringService:
                         if gathering_time
                         else occurrence.end
                     )
+                    site_type = meet.site_type
+                    site_id = meet.site_id
+                    site_info = er.event.description
+
+                    if site_info:
+                        model_name, site_id = site_info.split("#")
+                        model = ContentType.objects.filter(model=model_name).first()
+                        site_type = ContentType.objects.get_for_model(model.model_class())
+
                     gathering, gathering_created = Gathering.objects.get_or_create(
                         meet=meet,
-                        site_id=meet.site_id,
-                        site_type=meet.site_type,
+                        site_id=site_id,
+                        site_type=site_type,
                         start=occurrence.start,
                         defaults={
-                            "site_type": meet.site_type,
-                            "site_id": meet.site_id,
+                            "site_type": site_type,
+                            "site_id": site_id,
                             "meet": meet,
                             "start": occurrence.start,
                             "finish": occurrence_end,
