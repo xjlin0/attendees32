@@ -79,6 +79,9 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     site_id = models.CharField(max_length=36, null=False, blank=False, default="0")
     site = GenericForeignKey("site_type", "site_id")  # This is default, will copy over to Event.description
 
+    def all_sites(self):
+        return ", ".join([Utility.get_location(er) for er in self.event_relations.all() if er.event.description])
+
     # def save(self, *args, **kwargs):  # https://stackoverflow.com/a/27241824
     #     super(Meet, self).save(*args, **kwargs)  # One meet may have multiple Events
 

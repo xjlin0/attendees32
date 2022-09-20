@@ -279,7 +279,7 @@ class Utility:
             if model:
                 target = model.model_class().objects.filter(pk=object_id).first()
                 if object:
-                    return str(target)
+                    return str(target).strip()
 
         return None
 

@@ -2093,6 +2093,70 @@
     }
   },
   {
+    "model": "schedule.occurrence",
+    "pk": 1,
+    "fields": {
+      "event": 1,
+      "title": "gathering#1",
+      "description": "room#1",
+      "start": "2020-05-09T17:00:00Z",
+      "end": "2020-05-09T18:59:59Z",
+      "cancelled": false,
+      "original_start": "2020-05-10T16:15:00Z",
+      "original_end": "2020-05-10T19:40:00Z",
+      "created_on": "2022-09-20T13:59:21.937Z",
+      "updated_on": "2022-09-20T14:01:16.265Z"
+    }
+  },
+  {
+    "model": "schedule.occurrence",
+    "pk": 2,
+    "fields": {
+      "event": 1,
+      "title": "gathering#2",
+      "description": "room#1",
+      "start": "2020-05-17T17:00:00Z",
+      "end": "2020-05-17T18:59:59Z",
+      "cancelled": false,
+      "original_start": "2020-05-17T16:15:00Z",
+      "original_end": "2020-05-17T19:40:00Z",
+      "created_on": "2022-09-20T14:03:13.981Z",
+      "updated_on": "2022-09-20T14:03:13.981Z"
+    }
+  },
+  {
+    "model": "schedule.occurrence",
+    "pk": 3,
+    "fields": {
+      "event": 3,
+      "title": "gathering#3",
+      "description": "room#7",
+      "start": "2020-05-10T16:45:00Z",
+      "end": "2020-05-10T18:30:00Z",
+      "cancelled": false,
+      "original_start": "2020-05-10T20:15:00Z",
+      "original_end": "2020-05-10T22:00:00Z",
+      "created_on": "2022-09-20T14:05:30.426Z",
+      "updated_on": "2022-09-20T14:12:05.610Z"
+    }
+  },
+  {
+    "model": "schedule.occurrence",
+    "pk": 4,
+    "fields": {
+      "event": 2,
+      "title": "gathering#4",
+      "description": "room#6",
+      "start": "2020-05-09T17:00:00Z",
+      "end": "2020-05-09T19:00:00Z",
+      "cancelled": false,
+      "original_start": "2020-05-10T17:00:00Z",
+      "original_end": "2020-05-10T19:00:00Z",
+      "created_on": "2022-09-20T14:13:05.835Z",
+      "updated_on": "2022-09-20T14:13:05.835Z"
+    }
+  },
+  {
     "model": "address.country",
     "pk": 1,
     "fields": {
@@ -5790,7 +5854,7 @@
       "created": "2020-04-11T18:33:59.401Z",
       "modified": "2020-06-19T15:47:44.600Z",
       "is_removed": false,
-      "display_name": "CFCC Fellowship Hall",
+      "display_name": "CFCCH Fellowship Hall",
       "slug": "cfcch_fellowship_hall",
       "campus": 1,
       "infos": {
@@ -11619,7 +11683,7 @@
         "link": null,
         "週報": "https://sdasdasd.com/asdadsasd.pdf"
       },
-      "site_type": 56,
+      "site_type": 64,
       "site_id": "1"
     }
   },
@@ -11635,7 +11699,7 @@
       "finish": "2020-05-17T18:59:59Z",
       "display_name": "05/17/2020",
       "infos": {},
-      "site_type": 56,
+      "site_type": 64,
       "site_id": "1"
     }
   },
@@ -11653,8 +11717,8 @@
       "infos": {
         "link": null
       },
-      "site_type": 52,
-      "site_id": "1"
+      "site_type": 64,
+      "site_id": "7"
     }
   },
   {
@@ -11671,8 +11735,8 @@
       "infos": {
         "link": null
       },
-      "site_type": 54,
-      "site_id": "1"
+      "site_type": 64,
+      "site_id": "6"
     }
   },
   {
@@ -12238,7 +12302,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_attendingmeet_in_weeks": 34
+        "default_attendingmeet_in_weeks": 53
       },
       "site_type": 64,
       "site_id": "1"
@@ -12284,7 +12348,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_attendingmeet_in_weeks": 30
+        "default_attendingmeet_in_weeks": 53
       },
       "site_type": 64,
       "site_id": "6"
@@ -12306,11 +12370,12 @@
       "display_name": "中文詩班 Chinese choir",
       "slug": "d7c8Fd_cfcch_chinese_choir",
       "infos": {
-        "gathering_infos": {},
+        "gathering_infos": {
+          "generate_attendance": true
+        },
         "attendance": {},
         "allowed_groups": [
           "worship_organizer",
-          "conference_organizer",
           "data_counselor"
         ],
         "allowed_models": [
@@ -12325,7 +12390,7 @@
           "Gathering": true,
           "Attendance": true
         },
-        "default_attendingmeet_in_weeks": 60
+        "default_attendingmeet_in_weeks": 53
       },
       "site_type": 64,
       "site_id": "7"
@@ -12950,7 +13015,7 @@
       "is_removed": false,
       "meet": 1,
       "slug": "cfcch_kid_large_group_4g",
-      "display_name": "CFCC kid Large Group 4G",
+      "display_name": "CFCCH kid Large Group 4G",
       "display_order": 0,
       "infos": {},
       "site_type": 60,
@@ -12966,7 +13031,7 @@
       "is_removed": false,
       "meet": 13,
       "slug": "cfcch_2020_summer_retreat_chinese_panel1",
-      "display_name": "CFCC 2020夏令會中文討論小組1",
+      "display_name": "CFCCH 2020夏令會中文討論小組1",
       "display_order": 0,
       "infos": {},
       "site_type": 64,
@@ -12982,7 +13047,7 @@
       "is_removed": false,
       "meet": 13,
       "slug": "cfcch_2020_summer_retreat_chinese_panel2",
-      "display_name": "CFCC 2020夏令會中文討論小組2",
+      "display_name": "CFCCH 2020夏令會中文討論小組2",
       "display_order": 0,
       "infos": {},
       "site_type": 64,
@@ -12998,7 +13063,7 @@
       "is_removed": false,
       "meet": 13,
       "slug": "cfcch_2020_summer_retreat_pickup1",
-      "display_name": "CFCC 2020夏令會 接送 pickup1",
+      "display_name": "CFCCH 2020夏令會 接送 pickup1",
       "display_order": 0,
       "infos": {},
       "site_type": 53,
@@ -13014,7 +13079,7 @@
       "is_removed": false,
       "meet": 13,
       "slug": "cfcch_2020_summer_retreat_pickup2",
-      "display_name": "CFCC 2020夏令會 接送 pickup2",
+      "display_name": "CFCCH 2020夏令會 接送 pickup2",
       "display_order": 0,
       "infos": {},
       "site_type": 53,
