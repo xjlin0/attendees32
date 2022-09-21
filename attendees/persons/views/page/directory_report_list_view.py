@@ -1,8 +1,9 @@
 import logging
 
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from attendees.persons.services import FolkService
@@ -11,7 +12,8 @@ from attendees.users.authorization import RouteGuard
 logger = logging.getLogger(__name__)
 
 
-class DirectoryReportListView(LoginRequiredMixin, RouteGuard, ListView):
+@method_decorator([login_required], name='dispatch')
+class DirectoryReportListView(RouteGuard, ListView):
     queryset = []
     template_name = "persons/directory_report_list_view.html"
 

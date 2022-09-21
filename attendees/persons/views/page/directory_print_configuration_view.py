@@ -1,7 +1,8 @@
 import logging
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from attendees.users.authorization import RouteGuard
@@ -9,7 +10,8 @@ from attendees.users.authorization import RouteGuard
 logger = logging.getLogger(__name__)
 
 
-class DirectoryPrintConfigurationView(LoginRequiredMixin, RouteGuard, ListView):
+@method_decorator([login_required], name='dispatch')
+class DirectoryPrintConfigurationView(RouteGuard, ListView):
     queryset = []
     template_name = "persons/directory_print_configuration_view.html"
 

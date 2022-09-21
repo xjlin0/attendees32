@@ -2,10 +2,11 @@ from json import dumps
 from time import sleep
 
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
 
 from attendees.persons.models import Attendee, Folk
@@ -15,7 +16,8 @@ from attendees.utils.view_helpers import get_object_or_delayed_403
 from attendees.whereabouts.models import Division
 
 
-class AttendeeUpdateView(LoginRequiredMixin, RouteAndSpyGuard, UpdateView):
+@method_decorator([login_required], name='dispatch')
+class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
     model = Attendee
     fields = "__all__"
     template_name = "persons/attendee_update_view.html"

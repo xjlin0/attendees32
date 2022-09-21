@@ -2,8 +2,10 @@ from urllib import parse
 
 import pytz
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.response import Response
 
@@ -14,7 +16,8 @@ from attendees.occasions.services.gathering_service import GatheringService
 from attendees.users.authorization import RouteGuard
 
 
-class SeriesGatheringsViewSet(LoginRequiredMixin, RouteGuard, viewsets.ViewSet):
+@method_decorator([login_required], name='dispatch')
+class SeriesGatheringsViewSet(RouteGuard, viewsets.ViewSet):
     """
     API endpoint that allows batch creation of gatherings.
     """

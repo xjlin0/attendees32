@@ -1,7 +1,8 @@
 import logging
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
 from attendees.users.authorization import RouteGuard
@@ -10,7 +11,8 @@ from attendees.users.services import MenuService
 logger = logging.getLogger(__name__)
 
 
-class DatagridAttendingMeetListView(LoginRequiredMixin, RouteGuard, ListView):
+@method_decorator([login_required], name='dispatch')
+class DatagridAttendingMeetListView(RouteGuard, ListView):
     queryset = []
     template_name = "persons/datagrid_attendingmeets_list_view.html"
 
