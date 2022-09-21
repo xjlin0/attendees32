@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 
 from attendees.persons.models import Attendee, FolkAttendee
@@ -11,8 +12,8 @@ from attendees.persons.services import AttendingMeetService
 from attendees.users.authorization.route_guard import SpyGuard
 
 
-class ApiDatagridDataFolkAttendeesViewsSet(
-    LoginRequiredMixin, SpyGuard, viewsets.ModelViewSet
+@method_decorator([login_required], name='dispatch')
+class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
 ):
     """
     API endpoint that allows FamiliesAttendees of a single Attendee in headers to be viewed or edited.

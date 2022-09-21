@@ -1,7 +1,8 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 
@@ -11,7 +12,8 @@ from attendees.persons.services import FolkService, AttendingMeetService
 from attendees.users.authorization.route_guard import SpyGuard
 
 
-class ApiAttendeeFolksViewsSet(LoginRequiredMixin, SpyGuard, viewsets.ModelViewSet):
+@method_decorator([login_required], name='dispatch')
+class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
     """
     API endpoint that allows Folks(families) of an Attendee (in header) to be viewed or edited.
     """

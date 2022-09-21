@@ -1,13 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
 from attendees.users.authorization import RouteGuard
 from attendees.users.services import MenuService
 
 
-class RosterListView(LoginRequiredMixin, RouteGuard, ListView):
+@method_decorator([login_required], name='dispatch')
+class RosterListView(RouteGuard, ListView):
     queryset = []
     template_name = "occasions/roster_list_view.html"
 

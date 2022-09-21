@@ -1,7 +1,8 @@
 import ast
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from rest_framework.viewsets import ModelViewSet
 
 from attendees.persons.models import Attendee
@@ -10,9 +11,8 @@ from attendees.persons.services import AttendeeService
 from attendees.users.authorization.route_guard import SpyGuard
 
 
-class ApiRelatedAttendeesViewSet(
-    LoginRequiredMixin, SpyGuard, ModelViewSet
-):  # from GenericAPIView
+@method_decorator([login_required], name='dispatch')
+class ApiRelatedAttendeesViewSet(SpyGuard, ModelViewSet):  # from GenericAPIView
     """
     API endpoint that allows single attendee to be viewed or edited.
     """

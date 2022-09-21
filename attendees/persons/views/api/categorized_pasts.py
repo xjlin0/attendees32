@@ -1,8 +1,9 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 
@@ -12,7 +13,8 @@ from attendees.users.authorization.route_guard import SpyGuard
 from attendees.users.models import MenuAuthGroup
 
 
-class ApiCategorizedPastsViewSet(LoginRequiredMixin, SpyGuard, viewsets.ModelViewSet):
+@method_decorator([login_required], name='dispatch')
+class ApiCategorizedPastsViewSet(SpyGuard, viewsets.ModelViewSet):
     """
     API endpoint that allows Past(history/experience) of an attendee (in header X-TARGET-ATTENDEE-ID) to be viewed or
     edited. All actions including DELETE needs search params of category__type in order to pass permission check

@@ -1,8 +1,9 @@
 from json import dumps
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
 from attendees.occasions.models import Meet
@@ -15,7 +16,8 @@ from attendees.users.models import Menu
 # logger = logging.getLogger(__name__)
 
 
-class AttendeesListView(LoginRequiredMixin, RouteGuard, ListView):
+@method_decorator([login_required], name='dispatch')
+class AttendeesListView(RouteGuard, ListView):
     queryset = []
     template_name = "persons/attendees_list_view.html"
 

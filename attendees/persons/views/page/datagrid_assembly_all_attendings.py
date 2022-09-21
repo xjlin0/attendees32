@@ -2,10 +2,11 @@ import logging
 import time
 from json import dumps
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
 from attendees.occasions.models import Character, Meet
@@ -14,7 +15,8 @@ from attendees.users.authorization import RouteGuard
 logger = logging.getLogger(__name__)
 
 
-class DatagridAssemblyAllAttendingsListView(LoginRequiredMixin, RouteGuard, ListView):
+@method_decorator([login_required], name='dispatch')
+class DatagridAssemblyAllAttendingsListView(RouteGuard, ListView):
     queryset = []
     template_name = "persons/datagrid_assembly_all_attendings.html"
 

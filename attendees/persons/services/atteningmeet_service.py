@@ -87,7 +87,6 @@ class AttendingMeetService:
                                |
                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
         if filter:  # only support single/double level so far
-            print("hi 90 here is filter: ", filter)
             filter_list = json.loads(filter)
             search_term = (filter_list[-1][-1]
                            if filter_list[1] == 'or'
