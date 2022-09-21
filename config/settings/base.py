@@ -373,6 +373,7 @@ SHELL_PLUS_DONT_LOAD = [
     'occasions.EventProxy',
     'occasions.EventRelationProxy',
     'occasions.IntervalScheduleProxy',
+    'occasions.OccurrenceProxy',
     'occasions.PeriodicTaskProxy',
     'occasions.RuleProxy',
     'users.EmailAddressProxy',

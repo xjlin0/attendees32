@@ -2,7 +2,7 @@ from address.models import Address
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
-from schedule.models.events import EventRelation
+from schedule.models.events import Event, Occurrence
 
 from attendees.whereabouts.models import (
     Campus,
@@ -91,8 +91,17 @@ class Command(BaseCommand):
                   WHERE app_label='{Address._meta.app_label}'
                     AND model='{Address._meta.model_name}';
 
-                COMMENT ON COLUMN {EventRelation._meta.db_table}.distinction
-                  IS 'location: <{ContentType._meta.db_table}.model>#<{ContentType._meta.db_table}.id>';
+                COMMENT ON COLUMN {Event._meta.db_table}.description
+                  IS 'location: <model name>#<pk>';
+
+                COMMENT ON COLUMN {Occurrence._meta.db_table}.description
+                  IS 'location: <model name>#<pk>';
+
+                COMMENT ON COLUMN {Occurrence._meta.db_table}.title
+                  IS 'relation: gathering#<id>';
+
+                CREATE INDEX {Occurrence._meta.db_table}_titles
+                  ON {Occurrence._meta.db_table} (title);
                     """
         )
 
