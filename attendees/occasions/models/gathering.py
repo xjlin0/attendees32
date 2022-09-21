@@ -9,6 +9,7 @@ from django.contrib.postgres.indexes import GinIndex
 import django.utils.timezone
 import model_utils.fields
 from model_utils.models import SoftDeletableModel, TimeStampedModel
+from schedule.models import Occurrence
 
 from attendees.persons.models import Note, Utility
 
@@ -97,8 +98,10 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
         )
 
     def occurrences(self):
-        return None
-
+        if self.pk:
+            return Occurrence.objects.filter(title=f'{self.__class__.__name__.lower()}#{self.pk}')
+        else:
+            return []
 
     # def save(self, *args, **kwargs):  # https://stackoverflow.com/a/27241824
     #     super(Gathering, self).save(*args, **kwargs)

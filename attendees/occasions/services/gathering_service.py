@@ -125,38 +125,42 @@ class GatheringService:
             )
             for er in meet.event_relations.all():
                 for occurrence in er.event.get_occurrences(begin_time, end_time):
-                    occurrence_end = (
-                        occurrence.start + gathering_time
-                        if gathering_time
-                        else occurrence.end
-                    )
-                    site_type = meet.site_type
-                    site_id = meet.site_id
-                    site_info = er.event.description
+                    if not occurrence.cancelled:
+                        occurrence_end = (
+                            occurrence.start + gathering_time
+                            if gathering_time
+                            else occurrence.end
+                        )
+                        site_type = meet.site_type
+                        site_id = meet.site_id
+                        site_info = er.event.description
 
-                    if site_info:
-                        model_name, site_id = site_info.split("#")
-                        model = ContentType.objects.filter(model=model_name).first()
-                        site_type = ContentType.objects.get_for_model(model.model_class())
+                        if site_info:
+                            model_name, site_id = site_info.split("#")
+                            model = ContentType.objects.filter(model=model_name).first()
+                            site_type = ContentType.objects.get_for_model(model.model_class())
 
-                    gathering, gathering_created = Gathering.objects.get_or_create(
-                        meet=meet,
-                        site_id=site_id,
-                        site_type=site_type,
-                        start=occurrence.start,
-                        defaults={
-                            "site_type": site_type,
-                            "site_id": site_id,
-                            "meet": meet,
-                            "start": occurrence.start,
-                            "finish": occurrence_end,
-                            "infos": meet.infos.get('gathering_infos', {}),
-                            "display_name": f'{occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}'[0:254],
-                        },
-                    )  # don't update gatherings if exist since it may have customizations
+                        gathering, gathering_created = Gathering.objects.get_or_create(
+                            meet=meet,
+                            site_id=site_id,
+                            site_type=site_type,
+                            start=occurrence.start,
+                            defaults={
+                                "site_type": site_type,
+                                "site_id": site_id,
+                                "meet": meet,
+                                "start": occurrence.start,
+                                "finish": occurrence_end,
+                                "infos": meet.infos.get('gathering_infos', {}),
+                                "display_name": f'{occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}'[0:254],
+                            },
+                        )  # don't update gatherings if exist since it may have customizations
 
-                    if gathering_created:
-                        number_created += 1
+                        if gathering_created:
+                            occurrence.title = f'gathering#{gathering.id}'
+                            occurrence.description = f'{model_name}#{site_id}'
+                            occurrence.save()
+                            number_created += 1
 
             results = {
                 "success": True,

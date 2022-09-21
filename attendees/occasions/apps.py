@@ -15,6 +15,7 @@ class OccasionsConfig(AppConfig):
         schedule_event_model = django_apps.get_model("schedule.Event", require_ready=False)
         schedule_eventrelation_model = django_apps.get_model("schedule.EventRelation", require_ready=False)
         schedule_rule_model = django_apps.get_model("schedule.Rule", require_ready=False)
+        schedule_occurrence_model = django_apps.get_model("schedule.Occurrence", require_ready=False)
 
         @pghistory.track(
             pghistory.Snapshot('intervalschedule.snapshot'),
@@ -93,5 +94,15 @@ class OccasionsConfig(AppConfig):
             app_label='occasions',
         )
         class EventRelationProxy(schedule_eventrelation_model):
+            class Meta:
+                proxy = True
+
+        @pghistory.track(
+            pghistory.Snapshot('occurrence.snapshot'),
+            related_name='history',
+            model_name='OccurrenceHistory',
+            app_label='occasions',
+        )
+        class OccurrenceProxy(schedule_occurrence_model):
             class Meta:
                 proxy = True
