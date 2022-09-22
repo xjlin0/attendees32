@@ -24,9 +24,9 @@ def post_save_handler_for_past_to_create_attendingmeet(sender, **kwargs):
     :param kwargs:
     :return: None
     """
-    if not kwargs.get("raw") and kwargs.get(
-        "created"
-    ):  # to skip extra creation in loaddata seed
+    if not kwargs.get("raw") and kwargs.get(  # to skip extra creation in loaddata seed
+        "created"  # only when creating new, not for update
+    ):
         created_past = kwargs.get("instance")
         organization = created_past.organization
         category_id = str(
@@ -74,9 +74,9 @@ def post_save_handler_for_attendingmeet_to_create_past(sender, **kwargs):
     :param kwargs:
     :return: None
     """
-    if not kwargs.get("raw") and kwargs.get(
-        "created"
-    ):  # to skip extra creation in loaddata seed
+    if not kwargs.get("raw") and kwargs.get(  # to skip extra creation in loaddata seed
+        "created"  # only when creating new, not for update
+    ):
         created_attendingmeet = kwargs.get("instance")
         organization = created_attendingmeet.meet.assembly.division.organization
         category_id = created_attendingmeet.meet.infos.get("automatic_creation", {}).get("Past")

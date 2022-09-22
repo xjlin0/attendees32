@@ -7,6 +7,8 @@ class OccasionsConfig(AppConfig):
     name = "attendees.occasions"
 
     def ready(self):
+        import attendees.occasions.signals  # https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals
+
         celery_task_model = django_apps.get_model("django_celery_beat.PeriodicTask", require_ready=False)
         celery_crontab_model = django_apps.get_model("django_celery_beat.CrontabSchedule", require_ready=False)
         celery_interval_model = django_apps.get_model("django_celery_beat.IntervalSchedule", require_ready=False)
