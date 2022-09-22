@@ -17,8 +17,9 @@ from attendees.persons.models import Note, Utility
 class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
     """
     The gathering pk/id is also stored in the corresponding 3rd party model
-    schedule.Occurrence.title such as Gathering#42, so when calendar shows
-    Occurrences of Events, the corresponding gathering can be fetched.
+    schedule.Occurrence.title such as gathering#42, so when calendar shows
+    Occurrences of Events, the corresponding gathering can be fetched. The
+    location is also stored in schedule.Occurrence.description like room#53
 
     Note: Multiple occurrences from different calendars, such as location calendars
           and users calendars, can point to the very same Gathering instance.

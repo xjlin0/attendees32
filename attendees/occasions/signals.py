@@ -1,0 +1,40 @@
+from typing import Optional
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from schedule.models import Occurrence
+
+from attendees.occasions.models import Gathering
+
+
+@receiver(post_save, sender=Gathering)
+def post_save_handler_for_gathering_to_update_occurrence(sender, **kwargs):
+    if not kwargs.get("raw"):  # to skip extra creation in loaddata seed
+        gathering: Optional[Gathering] = kwargs.get("instance")
+        meet = gathering.meet
+        event_relation = meet.event_relations.filter(distinction='source').first()
+        if event_relation:
+            occurrences = gathering.occurrences()
+            description = f'{gathering.site.__class__.__name__.lower()}#{gathering.site.pk}'
+            title = f'{gathering.__class__.__name__.lower()}#{gathering.pk}'
+            if occurrences:
+                for occurrence in occurrences:
+                    if gathering.is_removed:
+                        occurrence.delete()
+                    else:
+                        occurrence.description = description
+                        occurrence.start = gathering.start
+                        occurrence.end = gathering.finish
+                        occurrence.save()
+            else:
+                if not gathering.is_removed and gathering.infos.get('created_reason') != 'batch created':  # prevent duplicates from GatheringService.batch_create()
+                    occurrence = Occurrence(
+                        event=event_relation.event,
+                        title=title,
+                        description=description,
+                        start=gathering.start,
+                        end=gathering.finish,
+                        original_start=gathering.start,
+                        original_end=gathering.finish,
+                    )
+                    occurrence.save()
