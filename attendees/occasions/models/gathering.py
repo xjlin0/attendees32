@@ -19,7 +19,8 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
     The gathering pk/id is also stored in the corresponding 3rd party model
     schedule.Occurrence.title such as gathering#42, so when calendar shows
     Occurrences of Events, the corresponding gathering can be fetched. The
-    location is also stored in schedule.Occurrence.description like room#53
+    location is also stored in schedule.Occurrence.description like room#53.
+    code usage: ContentType.objects.get(model='room').model_class().objects.get(pk=1)
 
     Note: Multiple occurrences from different calendars, such as location calendars
           and users calendars, can point to the very same Gathering instance.
@@ -28,7 +29,7 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
     notes = GenericRelation(Note)
     id = models.BigAutoField(
         auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
+    )  # will copy over to occurrence title by signal
     meet = models.ForeignKey("Meet", on_delete=models.SET(0), null=False, blank=False)
     start = models.DateTimeField(null=False, blank=False, db_index=True)
     finish = models.DateTimeField(
@@ -50,7 +51,7 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
         help_text="site: django_content_type id for table name",
     )
     site_id = models.CharField(max_length=36, null=False, blank=False, default="0")
-    site = GenericForeignKey("site_type", "site_id")
+    site = GenericForeignKey("site_type", "site_id")  # will copy over to occurrence description by signal
 
     # from itertools import groupby
     # from operator import attrgetter
