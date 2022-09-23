@@ -19,6 +19,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     Event is related by EventRelation with distinction 'source'.  The site_id/type here is just
     default, should copy to Event description as 'room#42', so one meet can have multiple Event
     happening at different sites.
+    code usage: ContentType.objects.get(model='room').model_class().objects.get(pk=1)
 
     """
 
@@ -77,7 +78,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
         help_text="site: django_content_type id for table name",
     )
     site_id = models.CharField(max_length=36, null=False, blank=False, default="0")
-    site = GenericForeignKey("site_type", "site_id")  # This is default, will copy over to Event.description
+    site = GenericForeignKey("site_type", "site_id")  # This is default, will copy over to Event.description by signal
 
     def all_sites(self):
         return ", ".join([Utility.get_location(er) for er in self.event_relations.all() if er.event.description])

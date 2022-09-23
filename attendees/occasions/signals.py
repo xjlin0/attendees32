@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from schedule.models import Occurrence
 
-from attendees.occasions.models import Gathering
+from attendees.occasions.models import Gathering, Meet
 
 
 @receiver(post_save, sender=Gathering)
@@ -38,3 +38,16 @@ def post_save_handler_for_gathering_to_update_occurrence(sender, **kwargs):
                         original_end=gathering.finish,
                     )
                     occurrence.save()
+
+
+@receiver(post_save, sender=Meet)
+def post_save_handler_for_meet_to_update_event_location(sender, **kwargs):
+    # Todo 20220923 remove this once the meet editing UI implemented
+    if not kwargs.get("raw"):  # to skip extra creation in loaddata seed
+        meet = kwargs.get("instance")
+        event_relation = meet.event_relations.filter(distinction='source').first()
+        if event_relation:
+            description = f'{meet.site.__class__.__name__.lower()}#{meet.site.pk}'
+            event = event_relation.event
+            event.description = description
+            event.save()
