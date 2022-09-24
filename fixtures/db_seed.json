@@ -1877,13 +1877,21 @@
     "model": "schedule.calendar",
     "pk": 0,
     "fields": {
+      "name": "Cross Organization Calendar",
+      "slug": "cross_organization_calendar"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 1,
+    "fields": {
       "name": "CFCCH Public Calendar",
       "slug": "cfcch_public_calendar"
     }
   },
   {
     "model": "schedule.calendar",
-    "pk": 1,
+    "pk": 2,
     "fields": {
       "name": "CFCCH fellowship room F205 calendar",
       "slug": "cfcch_fellowship_f205"
@@ -1895,7 +1903,7 @@
     "fields": {
       "calendar": 0,
       "content_type": 54,
-      "object_id": 1,
+      "object_id": 0,
       "distinction": "source",
       "inheritable": true
     }
@@ -1905,6 +1913,17 @@
     "pk": 1,
     "fields": {
       "calendar": 1,
+      "content_type": 54,
+      "object_id": 1,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 2,
+    "fields": {
+      "calendar": 2,
       "content_type": 64,
       "object_id": 1,
       "distinction": "source",
@@ -5280,6 +5299,7 @@
         },
         "counselor": [],
         "data_admins": [],
+        "default_calendar": 0,
         "default_time_zone": "America/Los_Angeles"
       }
     }
@@ -5319,6 +5339,7 @@
           "data_organizer"
         ],
         "default_time_zone": "America/Los_Angeles",
+        "default_calendar": 1,
         "all_access_assemblies": [
           "cfcch_congregation_data"
         ],

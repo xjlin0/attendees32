@@ -36,13 +36,15 @@
         Calendar
       </h3>
     </div>
-    <div class="">
+    <div class="d-flex w-75">
       <div id="calendar-selector">
       </div>
     </div>
   </div>
 
   <div id="scheduler"
+       data-calendars-endpoint="{{calendars_endpoint}}"
+       data-organization-default-calendar="{{organization_default_calendar}}"
        data-content-type-models-endpoint="{{content_type_models_endpoint}}">
   </div>
 </div>

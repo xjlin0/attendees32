@@ -9,6 +9,7 @@ from attendees.users.services import MenuService
 
 @method_decorator([login_required], name='dispatch')
 class CalendarListView(RouteGuard, ListView):
+    # Todo 20220924 make this API public and use domain name/Site as organization indicator
     queryset = []
     template_name = "occasions/calendar_list_view.html"
 
@@ -18,7 +19,8 @@ class CalendarListView(RouteGuard, ListView):
             {
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 "content_type_models_endpoint": "/whereabouts/api/content_type_models/",
-                # "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
+                "calendars_endpoint": "/occasions/api/organization_calendars/",
+                "organization_default_calendar": self.request.user.organization.infos.get("default_calendar", 0),
                 # "series_gatherings_endpoint": "/occasions/api/series_gatherings/",
                 # "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
                 # "meets_endpoint_by_id": "/occasions/api/user_assembly_meets/",

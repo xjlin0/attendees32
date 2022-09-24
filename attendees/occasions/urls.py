@@ -27,6 +27,7 @@ from attendees.occasions.views import (
     series_attendances_viewset,
     roster_list_view,
     calendar_list_view,
+    api_organization_calendars_viewset,
 )
 
 app_name = "occasions"
@@ -122,6 +123,11 @@ router.register(
     api_user_assembly_viewset,
     basename="assembly",
 )
+router.register(
+    "api/organization_calendars",
+    api_organization_calendars_viewset,
+    basename="calendar",
+)  # Todo 20220924 make this API public and use domain name/Site as organization indicator
 
 
 urlpatterns = [
@@ -166,5 +172,5 @@ urlpatterns = [
         "calendar/",
         view=calendar_list_view,
         name='calendar_list_view',
-    ),
+    ),  # Todo 20220924 make this API public and use domain name/Site as organization indicator
 ]
