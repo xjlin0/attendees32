@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  Calendar
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.common.css' %}">
+
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.light.compact.css' %}">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'devextreme/dx.all.min.js' %}"
+          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/occasions/calendar_list_view.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+<div class="calendar-container">
+  {% csrf_token %}
+  <div class="d-flex justify-content-between">
+    <div class="d-flex">
+      <h3>
+        Calendar
+      </h3>
+    </div>
+    <div class="">
+      <div id="calendar-selector">
+      </div>
+    </div>
+  </div>
+
+  <div id="scheduler"
+       data-content-type-models-endpoint="{{content_type_models_endpoint}}">
+  </div>
+</div>
+{% endblock content %}

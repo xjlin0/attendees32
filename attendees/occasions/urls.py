@@ -26,6 +26,7 @@ from attendees.occasions.views import (
     series_gatherings_viewset,
     series_attendances_viewset,
     roster_list_view,
+    calendar_list_view,
 )
 
 app_name = "occasions"
@@ -160,5 +161,10 @@ urlpatterns = [
         "roster/",
         view=roster_list_view,
         name='roster_list_view',
+    ),
+    path(
+        "calendar/",
+        view=calendar_list_view,
+        name='calendar_list_view',
     ),
 ]
