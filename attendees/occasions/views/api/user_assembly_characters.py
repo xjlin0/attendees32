@@ -1,7 +1,8 @@
 import time
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -10,7 +11,8 @@ from attendees.occasions.services import CharacterService
 from attendees.persons.models import Attendee
 
 
-class ApiUserAssemblyCharactersViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
+@method_decorator([login_required], name="dispatch")
+class ApiUserAssemblyCharactersViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Character to be viewed or edited.
     """

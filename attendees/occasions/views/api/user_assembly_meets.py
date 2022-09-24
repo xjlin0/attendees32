@@ -1,8 +1,9 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db.models import Case, F, When
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -11,7 +12,8 @@ from attendees.occasions.serializers.meet import MeetSerializer
 from attendees.persons.models import Attendee, AttendingMeet
 
 
-class ApiUserAssemblyMeetsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
+@method_decorator([login_required], name="dispatch")
+class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Meet to be viewed or edited.
     """
