@@ -1,4 +1,5 @@
 Attendees.calendar = {
+  scheduler: null,
   contentTypeEndpoint: '',
   contentTypeEndpoints: {},
 
@@ -6,6 +7,13 @@ Attendees.calendar = {
     console.log('static/js/occasions/calendar_list_view.js');
     Attendees.calendar.initCalendarSelector();
     Attendees.calendar.initScheduler();
+    Attendees.calendar.initListeners();
+  },
+
+  initListeners: () => {
+    window.addEventListener("resize", Attendees.utilities.debounce(250, ()=>{
+      Attendees.calendar.scheduler && Attendees.calendar.scheduler.option('useDropDownViewSwitcher', window.innerWidth < 425);
+    }))
   },
 
   initCalendarSelector: () => {
@@ -13,16 +21,18 @@ Attendees.calendar = {
   },
 
   initScheduler: () => {
-    $('div#scheduler').dxScheduler(Attendees.calendar.schedulerConfig);
+    Attendees.calendar.scheduler = $('div#scheduler').dxScheduler(Attendees.calendar.schedulerConfig).dxScheduler('instance');
   },
 
   schedulerConfig: {
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    // timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     dataSource: null,
-    views: ['day', 'week', 'workWeek', 'month'],
+    views: ['day', 'week', 'month'],
     currentView: 'day',
     showCurrentTimeIndicator: true,
-    startDayHour: 9,
+    useDropDownViewSwitcher: window.innerWidth < 425,
+    startDayHour: 7,
+    endDayHour: 21,
     height: '80vh',
   },
 };
