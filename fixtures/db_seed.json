@@ -1875,15 +1875,15 @@
   },
   {
     "model": "schedule.calendar",
-    "pk": 1,
+    "pk": 0,
     "fields": {
-      "name": "CFCCH Organizational Calendar",
-      "slug": "cfcch_organizational_calendar"
+      "name": "CFCCH Public Calendar",
+      "slug": "cfcch_public_calendar"
     }
   },
   {
     "model": "schedule.calendar",
-    "pk": 2,
+    "pk": 1,
     "fields": {
       "name": "CFCCH fellowship room F205 calendar",
       "slug": "cfcch_fellowship_f205"
@@ -1891,9 +1891,9 @@
   },
   {
     "model": "schedule.calendarrelation",
-    "pk": 1,
+    "pk": 0,
     "fields": {
-      "calendar": 1,
+      "calendar": 0,
       "content_type": 54,
       "object_id": 1,
       "distinction": "source",
@@ -1902,9 +1902,9 @@
   },
   {
     "model": "schedule.calendarrelation",
-    "pk": 2,
+    "pk": 1,
     "fields": {
-      "calendar": 2,
+      "calendar": 1,
       "content_type": 64,
       "object_id": 1,
       "distinction": "source",

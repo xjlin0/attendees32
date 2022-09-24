@@ -1,8 +1,9 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q, Value
 from django.db.models.functions import Concat
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -10,7 +11,8 @@ from attendees.occasions.models import Assembly
 from attendees.occasions.serializers.assembly_serializer import AssemblySerializer
 
 
-class ApiUserAssemblyViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
+@method_decorator([login_required], name="dispatch")
+class ApiUserAssemblyViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Division to be viewed or edited.
     """
