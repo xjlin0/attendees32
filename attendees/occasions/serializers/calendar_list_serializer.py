@@ -6,3 +6,4 @@ class CalendarListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Calendar
+        fields = '__all__'

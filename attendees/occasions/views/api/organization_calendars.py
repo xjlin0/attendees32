@@ -15,23 +15,28 @@ from attendees.occasions.serializers import CalendarListSerializer
 class OrganizationCalendarsViewSet(viewsets.ModelViewSet):
     """
     API endpoint that may expose all calendars in current users organization filtered by users roles.
+    Todo 20220924 make this API public and use domain name/Site as organization indicator
     """
 
     serializer_class = CalendarListSerializer
 
     def get_queryset(self):
         user_organization = self.request.user.organization
+        pk = self.kwargs.get("pk")
+        distinction = self.request.query_params.get("distinction", "source")
+        search_value = self.request.query_params.get("searchValue")
+        search_expression = self.request.query_params.get("searchExpr")
+        search_operation = self.request.query_params.get("searchOperation")
         if user_organization:
-            distinction = self.request.query_params.get("distinction", "source")
-            search_value = self.request.query_params.get("searchValue")
-            search_expression = self.request.query_params.get("searchExpr")
-            search_operation = self.request.query_params.get("searchOperation")
             organization_acronym = user_organization.infos.get('acronym').strip()
             extra_filter = Q(slug__istartswith=organization_acronym)
             extra_filter.add(Q(calendarrelation__distinction=distinction), Q.AND)
 
-            if search_value and search_expression == 'display_name' and search_operation == 'contains':
-                extra_filter.add(Q(display_name__icontains=search_value), Q.AND)
+            if pk:
+                extra_filter.add(Q(id=pk), Q.AND)
+
+            if search_value and search_expression == 'name' and search_operation == 'contains':
+                extra_filter.add(Q(name__icontains=search_value), Q.AND)
 
             if not self.request.user.can_see_all_organizational_meets_attendees():
                 extra_filter.add(
@@ -57,4 +62,4 @@ class OrganizationCalendarsViewSet(viewsets.ModelViewSet):
             )
 
 
-organization_calendars_viewset = OrganizationCalendarsViewSet
+api_organization_calendars_viewset = OrganizationCalendarsViewSet

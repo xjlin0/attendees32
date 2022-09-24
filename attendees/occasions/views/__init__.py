@@ -23,7 +23,7 @@ from .api.series_attendances import series_attendances_viewset
 from .api.user_assemblies import api_user_assembly_viewset
 from .api.user_assembly_characters import api_user_assembly_characters_viewset
 from .api.user_assembly_meets import api_user_assembly_meets_viewset
-from .api.organization_calendars import organization_calendars_viewset
+from .api.organization_calendars import api_organization_calendars_viewset
 from .page.attendances_list_view import attendances_list_view
 from .page.datagrid_assembly_all_attendances import (
     datagrid_assembly_all_attendances_list_view,
