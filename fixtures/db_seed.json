@@ -3696,12 +3696,12 @@
       "parent": 1,
       "html_type": "a",
       "urn": "/occasions/calendar/",
-      "url_name": "occasions_calendar_view",
+      "url_name": "calendar_list_view",
       "display_name": "calendar 全部行程日曆",
       "display_order": 1500,
       "infos": {
         "class": "dropdown-item",
-        "title": "occasions calendar"
+        "title": "Calendar"
       },
       "lft": 26,
       "rght": 27,
