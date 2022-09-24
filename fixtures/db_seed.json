@@ -9,7 +9,7 @@
   },
   {
     "model": "auth.group",
-    "pk": 1,
+    "pk": 300,
     "fields": {
       "name": "children_organizer",
       "permissions": [
@@ -344,7 +344,7 @@
   },
   {
     "model": "auth.group",
-    "pk": 2,
+    "pk": 200,
     "fields": {
       "name": "children_coworker",
       "permissions": [
@@ -679,7 +679,7 @@
   },
   {
     "model": "auth.group",
-    "pk": 3,
+    "pk": 100,
     "fields": {
       "name": "organization_participant",
       "permissions": [
@@ -775,7 +775,7 @@
   },
   {
     "model": "auth.group",
-    "pk": 4,
+    "pk": 500,
     "fields": {
       "name": "data_organizer",
       "permissions": [
@@ -1110,7 +1110,7 @@
   },
   {
     "model": "auth.group",
-    "pk": 5,
+    "pk": 400,
     "fields": {
       "name": "conference_organizer",
       "permissions": [
@@ -1445,7 +1445,7 @@
   },
   {
     "model": "auth.group",
-    "pk": 6,
+    "pk": 600,
     "fields": {
       "name": "data_counselor",
       "permissions": [
@@ -3716,7 +3716,7 @@
       "created": "2020-04-13T15:11:53.264Z",
       "modified": "2020-04-13T15:11:53.264Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 1
@@ -3729,7 +3729,7 @@
       "created": "2020-04-13T15:11:53.265Z",
       "modified": "2020-04-13T15:11:53.265Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 1
@@ -3742,7 +3742,7 @@
       "created": "2020-04-13T15:11:53.265Z",
       "modified": "2020-04-13T15:11:53.265Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": false,
       "menu": 1
@@ -3755,7 +3755,7 @@
       "created": "2020-04-13T15:12:19.422Z",
       "modified": "2020-04-13T15:12:19.422Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 3
@@ -3768,7 +3768,7 @@
       "created": "2020-04-13T15:12:19.422Z",
       "modified": "2020-04-13T15:12:19.422Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 3
@@ -3781,7 +3781,7 @@
       "created": "2020-04-13T15:12:19.423Z",
       "modified": "2020-04-13T15:12:19.423Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": false,
       "menu": 3
@@ -3794,7 +3794,7 @@
       "created": "2020-04-13T15:12:40.982Z",
       "modified": "2020-04-13T15:12:40.982Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 2
@@ -3807,7 +3807,7 @@
       "created": "2020-04-13T15:12:40.983Z",
       "modified": "2020-04-13T15:12:40.983Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 2
@@ -3820,7 +3820,7 @@
       "created": "2020-04-13T15:13:27.598Z",
       "modified": "2020-04-13T15:13:27.598Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 4
@@ -3833,7 +3833,7 @@
       "created": "2020-04-13T15:13:27.599Z",
       "modified": "2020-04-13T15:13:27.599Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 4
@@ -3846,7 +3846,7 @@
       "created": "2020-04-13T15:13:27.599Z",
       "modified": "2022-07-18T00:05:49.803Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 4
@@ -3859,7 +3859,7 @@
       "created": "2020-04-13T15:13:46.035Z",
       "modified": "2020-04-13T15:13:46.035Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 5
@@ -3872,7 +3872,7 @@
       "created": "2020-04-13T15:13:46.035Z",
       "modified": "2020-04-13T15:13:46.035Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 5
@@ -3885,7 +3885,7 @@
       "created": "2020-04-13T15:13:46.036Z",
       "modified": "2020-04-13T15:13:46.036Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": true,
       "menu": 5
@@ -3898,7 +3898,7 @@
       "created": "2020-04-13T15:15:18.103Z",
       "modified": "2020-04-13T15:15:18.103Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 6
@@ -3911,7 +3911,7 @@
       "created": "2020-04-13T15:15:18.103Z",
       "modified": "2020-04-13T15:15:18.103Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 6
@@ -3924,7 +3924,7 @@
       "created": "2020-04-15T01:34:48.010Z",
       "modified": "2020-04-15T01:34:48.010Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 7
@@ -3937,7 +3937,7 @@
       "created": "2020-04-15T01:34:48.010Z",
       "modified": "2020-04-15T01:34:48.010Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 7
@@ -3950,7 +3950,7 @@
       "created": "2020-04-17T16:56:21.304Z",
       "modified": "2020-04-17T16:56:21.304Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": false,
       "menu": 10
@@ -3963,7 +3963,7 @@
       "created": "2020-04-17T16:56:21.304Z",
       "modified": "2020-04-17T16:56:21.304Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": false,
       "menu": 10
@@ -3976,7 +3976,7 @@
       "created": "2020-04-17T16:58:47.219Z",
       "modified": "2020-04-17T16:58:47.219Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": false,
       "menu": 11
@@ -3989,7 +3989,7 @@
       "created": "2020-04-17T16:58:47.219Z",
       "modified": "2020-04-17T16:58:47.219Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": false,
       "menu": 11
@@ -4002,7 +4002,7 @@
       "created": "2020-05-11T01:14:20.259Z",
       "modified": "2020-05-11T01:14:20.259Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 12
@@ -4015,7 +4015,7 @@
       "created": "2020-05-11T01:14:27.066Z",
       "modified": "2020-05-11T01:14:27.066Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 13
@@ -4028,7 +4028,7 @@
       "created": "2020-11-09T00:11:23.143Z",
       "modified": "2020-11-09T00:11:23.143Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 14
@@ -4041,7 +4041,7 @@
       "created": "2020-11-20T16:12:21.812Z",
       "modified": "2020-11-20T16:12:21.812Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 15
@@ -4054,7 +4054,7 @@
       "created": "2020-12-14T04:43:29.009Z",
       "modified": "2020-12-14T04:43:29.009Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 19
@@ -4067,7 +4067,7 @@
       "created": "2020-12-14T04:43:29.009Z",
       "modified": "2020-12-14T04:43:29.009Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 19
@@ -4080,7 +4080,7 @@
       "created": "2020-12-14T04:43:29.010Z",
       "modified": "2020-12-14T04:43:29.010Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 19
@@ -4093,7 +4093,7 @@
       "created": "2020-12-14T04:43:29.010Z",
       "modified": "2020-12-14T04:43:29.010Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 19
@@ -4106,7 +4106,7 @@
       "created": "2020-12-14T04:43:29.011Z",
       "modified": "2020-12-14T04:43:29.011Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 19
@@ -4119,7 +4119,7 @@
       "created": "2020-12-14T04:43:29.012Z",
       "modified": "2020-12-14T04:43:29.012Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": true,
       "menu": 19
@@ -4132,7 +4132,7 @@
       "created": "2021-05-30T22:58:10.078Z",
       "modified": "2021-05-30T22:58:10.078Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 20
@@ -4145,7 +4145,7 @@
       "created": "2021-05-30T22:58:10.079Z",
       "modified": "2021-05-30T22:58:10.079Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 20
@@ -4158,7 +4158,7 @@
       "created": "2021-05-30T23:04:38.288Z",
       "modified": "2021-05-30T23:04:38.288Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 21
@@ -4171,7 +4171,7 @@
       "created": "2021-05-30T23:04:38.293Z",
       "modified": "2021-05-30T23:04:38.293Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 21
@@ -4184,7 +4184,7 @@
       "created": "2021-05-30T23:05:59.546Z",
       "modified": "2021-05-30T23:05:59.546Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 22
@@ -4197,7 +4197,7 @@
       "created": "2021-05-30T23:05:59.549Z",
       "modified": "2021-05-30T23:05:59.549Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 22
@@ -4210,7 +4210,7 @@
       "created": "2021-06-11T16:32:43.206Z",
       "modified": "2021-06-11T16:32:43.206Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 20
@@ -4223,7 +4223,7 @@
       "created": "2021-06-11T16:33:33.306Z",
       "modified": "2021-06-11T16:33:33.306Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 22
@@ -4236,7 +4236,7 @@
       "created": "2021-06-11T16:34:01.817Z",
       "modified": "2021-06-11T16:34:01.817Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 21
@@ -4249,7 +4249,7 @@
       "created": "2021-06-11T16:45:14.972Z",
       "modified": "2021-06-11T16:45:14.972Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 23
@@ -4262,7 +4262,7 @@
       "created": "2021-06-11T16:45:14.974Z",
       "modified": "2021-06-11T16:45:14.974Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 23
@@ -4275,7 +4275,7 @@
       "created": "2021-06-11T16:45:14.978Z",
       "modified": "2021-06-11T16:45:14.978Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 23
@@ -4288,7 +4288,7 @@
       "created": "2021-07-03T19:11:57.163Z",
       "modified": "2021-07-03T19:11:57.163Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 24
@@ -4301,7 +4301,7 @@
       "created": "2021-07-03T19:11:57.164Z",
       "modified": "2021-07-03T19:11:57.164Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 24
@@ -4314,7 +4314,7 @@
       "created": "2021-07-03T19:11:57.165Z",
       "modified": "2021-07-03T19:11:57.165Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 24
@@ -4327,7 +4327,7 @@
       "created": "2021-07-03T19:11:57.168Z",
       "modified": "2021-07-03T19:11:57.168Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 24
@@ -4340,7 +4340,7 @@
       "created": "2021-07-09T15:35:48.129Z",
       "modified": "2021-07-09T15:35:48.129Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 25
@@ -4353,7 +4353,7 @@
       "created": "2021-07-09T15:35:48.136Z",
       "modified": "2021-07-09T15:35:48.136Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 25
@@ -4366,7 +4366,7 @@
       "created": "2021-07-09T15:35:48.141Z",
       "modified": "2021-07-09T15:35:48.141Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 25
@@ -4379,7 +4379,7 @@
       "created": "2021-07-09T15:35:48.144Z",
       "modified": "2021-07-09T15:35:48.144Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 25
@@ -4392,7 +4392,7 @@
       "created": "2021-07-09T15:35:48.144Z",
       "modified": "2021-07-09T15:35:48.144Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 25
@@ -4405,7 +4405,7 @@
       "created": "2021-07-09T15:35:48.145Z",
       "modified": "2021-07-09T15:35:48.145Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": true,
       "menu": 25
@@ -4418,7 +4418,7 @@
       "created": "2021-07-12T16:16:59.333Z",
       "modified": "2021-07-12T16:16:59.333Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 15
@@ -4431,7 +4431,7 @@
       "created": "2021-07-12T16:16:59.334Z",
       "modified": "2021-07-12T16:16:59.334Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 15
@@ -4444,7 +4444,7 @@
       "created": "2021-07-12T16:16:59.337Z",
       "modified": "2021-07-12T16:16:59.337Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 15
@@ -4457,7 +4457,7 @@
       "created": "2021-07-12T16:16:59.339Z",
       "modified": "2021-07-12T16:16:59.339Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 15
@@ -4470,7 +4470,7 @@
       "created": "2021-07-12T16:16:59.341Z",
       "modified": "2021-07-12T16:16:59.341Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": true,
       "menu": 15
@@ -4483,7 +4483,7 @@
       "created": "2021-07-17T23:36:05.772Z",
       "modified": "2021-07-17T23:36:05.772Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 26
@@ -4496,7 +4496,7 @@
       "created": "2021-07-17T23:36:05.774Z",
       "modified": "2021-07-17T23:36:05.774Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 26
@@ -4509,7 +4509,7 @@
       "created": "2021-07-17T23:36:05.777Z",
       "modified": "2021-07-17T23:36:05.777Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 26
@@ -4522,7 +4522,7 @@
       "created": "2021-07-17T23:36:05.790Z",
       "modified": "2021-07-17T23:36:05.790Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 26
@@ -4535,7 +4535,7 @@
       "created": "2021-07-17T23:36:05.794Z",
       "modified": "2021-07-17T23:36:05.794Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 26
@@ -4548,7 +4548,7 @@
       "created": "2021-08-26T17:01:46.771Z",
       "modified": "2021-08-26T17:01:46.771Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 27
@@ -4561,7 +4561,7 @@
       "created": "2021-08-26T17:01:46.773Z",
       "modified": "2021-08-26T17:01:46.773Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 27
@@ -4574,7 +4574,7 @@
       "created": "2021-08-26T17:01:46.776Z",
       "modified": "2021-08-26T17:01:46.776Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 27
@@ -4587,7 +4587,7 @@
       "created": "2021-08-26T17:01:46.782Z",
       "modified": "2021-08-26T17:01:46.782Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 27
@@ -4600,7 +4600,7 @@
       "created": "2021-08-26T17:01:46.786Z",
       "modified": "2021-08-26T17:01:46.786Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 27
@@ -4613,7 +4613,7 @@
       "created": "2021-10-12T15:47:40.589Z",
       "modified": "2021-10-12T15:47:40.589Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": false,
       "menu": 10
@@ -4626,7 +4626,7 @@
       "created": "2021-10-12T15:47:40.590Z",
       "modified": "2021-10-12T15:47:40.590Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": false,
       "menu": 10
@@ -4639,7 +4639,7 @@
       "created": "2021-10-12T15:47:40.591Z",
       "modified": "2021-10-12T15:47:40.591Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": false,
       "menu": 10
@@ -4652,7 +4652,7 @@
       "created": "2021-10-12T15:49:33.119Z",
       "modified": "2021-10-12T15:49:33.119Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": false,
       "menu": 28
@@ -4665,7 +4665,7 @@
       "created": "2021-10-12T15:49:33.120Z",
       "modified": "2021-10-12T15:49:33.120Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": false,
       "menu": 28
@@ -4678,7 +4678,7 @@
       "created": "2021-10-12T15:49:33.120Z",
       "modified": "2021-10-12T15:49:33.120Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": false,
       "menu": 28
@@ -4691,7 +4691,7 @@
       "created": "2021-10-12T15:49:33.122Z",
       "modified": "2021-10-12T15:49:33.122Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": false,
       "menu": 28
@@ -4704,7 +4704,7 @@
       "created": "2021-10-12T15:49:33.126Z",
       "modified": "2021-10-12T15:49:33.126Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": false,
       "menu": 28
@@ -4717,7 +4717,7 @@
       "created": "2021-10-12T16:07:07.135Z",
       "modified": "2021-10-12T16:07:07.135Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": false,
       "menu": 26
@@ -4730,7 +4730,7 @@
       "created": "2021-10-12T16:07:46.035Z",
       "modified": "2021-10-12T16:07:46.035Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 29
@@ -4743,7 +4743,7 @@
       "created": "2021-10-12T16:07:46.037Z",
       "modified": "2021-10-12T16:07:46.037Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 29
@@ -4756,7 +4756,7 @@
       "created": "2021-10-12T16:07:46.040Z",
       "modified": "2021-10-12T16:07:46.040Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 29
@@ -4769,7 +4769,7 @@
       "created": "2021-10-12T16:07:46.041Z",
       "modified": "2021-10-12T16:07:46.041Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 29
@@ -4782,7 +4782,7 @@
       "created": "2021-10-12T16:07:46.046Z",
       "modified": "2021-10-12T16:07:46.046Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 29
@@ -4795,7 +4795,7 @@
       "created": "2021-10-12T16:07:46.050Z",
       "modified": "2021-10-12T16:07:46.050Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": false,
       "menu": 29
@@ -4808,7 +4808,7 @@
       "created": "2021-10-13T15:36:08.296Z",
       "modified": "2021-10-13T15:36:08.296Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 30
@@ -4821,7 +4821,7 @@
       "created": "2021-10-13T15:36:08.296Z",
       "modified": "2021-10-13T15:36:08.296Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 30
@@ -4834,7 +4834,7 @@
       "created": "2021-10-13T15:36:08.299Z",
       "modified": "2021-10-13T15:36:08.299Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 30
@@ -4847,7 +4847,7 @@
       "created": "2021-10-13T15:36:08.301Z",
       "modified": "2021-10-13T15:36:08.301Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 30
@@ -4860,7 +4860,7 @@
       "created": "2021-10-13T15:36:08.305Z",
       "modified": "2021-10-13T15:36:08.305Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 30
@@ -4873,7 +4873,7 @@
       "created": "2021-10-13T15:36:08.308Z",
       "modified": "2021-10-13T15:36:08.308Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": false,
       "menu": 30
@@ -4886,7 +4886,7 @@
       "created": "2021-11-29T17:49:00.766Z",
       "modified": "2021-11-29T17:49:00.766Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 31
@@ -4899,7 +4899,7 @@
       "created": "2021-11-29T17:49:00.768Z",
       "modified": "2021-11-29T17:49:00.768Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 31
@@ -4912,7 +4912,7 @@
       "created": "2021-11-29T17:49:00.771Z",
       "modified": "2021-11-29T17:49:00.771Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 31
@@ -4925,7 +4925,7 @@
       "created": "2021-11-29T17:49:00.774Z",
       "modified": "2021-11-29T17:49:00.774Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 31
@@ -4938,7 +4938,7 @@
       "created": "2022-06-28T16:10:05.488Z",
       "modified": "2022-06-28T16:10:05.488Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 33
@@ -4951,7 +4951,7 @@
       "created": "2022-07-02T04:30:28.477Z",
       "modified": "2022-07-02T04:30:28.477Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 34
@@ -4964,7 +4964,7 @@
       "created": "2022-07-18T00:05:49.783Z",
       "modified": "2022-07-18T00:05:49.783Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 4
@@ -4977,7 +4977,7 @@
       "created": "2022-07-18T00:05:49.783Z",
       "modified": "2022-07-18T00:05:49.783Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 4
@@ -4990,7 +4990,7 @@
       "created": "2022-07-18T00:09:22.239Z",
       "modified": "2022-07-18T00:09:22.239Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 2
@@ -5003,7 +5003,7 @@
       "created": "2022-07-18T00:09:22.240Z",
       "modified": "2022-07-18T00:09:22.240Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 2
@@ -5016,7 +5016,7 @@
       "created": "2022-07-18T00:09:22.241Z",
       "modified": "2022-07-18T00:09:22.241Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 2
@@ -5029,7 +5029,7 @@
       "created": "2022-07-18T00:23:30.432Z",
       "modified": "2022-07-18T00:23:30.432Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 35
@@ -5042,7 +5042,7 @@
       "created": "2022-07-18T00:23:30.433Z",
       "modified": "2022-07-18T00:23:30.433Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 35
@@ -5055,7 +5055,7 @@
       "created": "2022-07-18T00:23:30.434Z",
       "modified": "2022-07-18T00:23:30.434Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 35
@@ -5068,7 +5068,7 @@
       "created": "2022-07-18T00:23:30.434Z",
       "modified": "2022-07-18T00:23:30.434Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 35
@@ -5081,7 +5081,7 @@
       "created": "2022-07-18T00:23:30.435Z",
       "modified": "2022-07-18T00:23:30.435Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 35
@@ -5094,7 +5094,7 @@
       "created": "2022-08-21T16:15:26.419Z",
       "modified": "2022-08-21T16:15:26.419Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 36
@@ -5107,7 +5107,7 @@
       "created": "2022-08-21T16:15:26.420Z",
       "modified": "2022-08-21T16:15:26.420Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 36
@@ -5120,7 +5120,7 @@
       "created": "2022-08-21T16:15:26.421Z",
       "modified": "2022-08-21T16:15:26.421Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 36
@@ -5133,7 +5133,7 @@
       "created": "2022-08-21T16:15:26.422Z",
       "modified": "2022-08-21T16:15:26.422Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 36
@@ -5146,7 +5146,7 @@
       "created": "2022-08-21T16:15:26.423Z",
       "modified": "2022-08-21T16:15:26.423Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 36
@@ -5159,7 +5159,7 @@
       "created": "2022-09-23T16:06:22.439Z",
       "modified": "2022-09-23T16:06:22.439Z",
       "is_removed": false,
-      "auth_group": 2,
+      "auth_group": 200,
       "read": true,
       "write": true,
       "menu": 37
@@ -5172,7 +5172,7 @@
       "created": "2022-09-23T16:06:22.440Z",
       "modified": "2022-09-23T16:06:22.440Z",
       "is_removed": false,
-      "auth_group": 1,
+      "auth_group": 300,
       "read": true,
       "write": true,
       "menu": 37
@@ -5185,7 +5185,7 @@
       "created": "2022-09-23T16:06:22.440Z",
       "modified": "2022-09-23T16:06:22.440Z",
       "is_removed": false,
-      "auth_group": 5,
+      "auth_group": 400,
       "read": true,
       "write": true,
       "menu": 37
@@ -5198,7 +5198,7 @@
       "created": "2022-09-23T16:06:22.441Z",
       "modified": "2022-09-23T16:06:22.441Z",
       "is_removed": false,
-      "auth_group": 6,
+      "auth_group": 600,
       "read": true,
       "write": true,
       "menu": 37
@@ -5211,7 +5211,7 @@
       "created": "2022-09-23T16:06:22.442Z",
       "modified": "2022-09-23T16:06:22.442Z",
       "is_removed": false,
-      "auth_group": 4,
+      "auth_group": 500,
       "read": true,
       "write": true,
       "menu": 37
@@ -5224,7 +5224,7 @@
       "created": "2022-09-23T16:06:22.443Z",
       "modified": "2022-09-23T16:06:22.443Z",
       "is_removed": false,
-      "auth_group": 3,
+      "auth_group": 100,
       "read": true,
       "write": false,
       "menu": 37
