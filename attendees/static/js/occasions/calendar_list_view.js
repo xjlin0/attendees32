@@ -26,13 +26,13 @@ Attendees.calendar = {
     displayExpr: 'name',
     searchEnabled: true,
     width: '100%',
-    value: document.querySelector('div#scheduler').dataset.organizationDefaultCalendar,
+    value: parseInt(document.querySelector('div#scheduler').dataset.organizationDefaultCalendar),
     // onValueChanged: (e)=> {
     //   Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedGatheringId', e.value);
     //   Attendees.calendar.filtersForm.validate();
     //   const meet = Attendees.calendar.filtersForm.getEditor('meets').option('value');
     //   if (e.value && meet && Attendees.calendar.attendancesDatagrid) {
-    //     Attendees.calendar.attendancesDatagrid.refresh();
+    //     Attendees.calendar.scheduler.refresh();
     //   }
     // },
     dataSource: new DevExpress.data.DataSource({
@@ -79,7 +79,7 @@ Attendees.calendar = {
   schedulerConfig: {
     // timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     dataSource: null,
-    views: ['day', 'week', 'month'],
+    views: ['agenda', 'day', 'week', 'month'],
     currentView: 'day',
     showCurrentTimeIndicator: true,
     useDropDownViewSwitcher: window.innerWidth < 425,

@@ -2,13 +2,13 @@ import time
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import F, Q
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from schedule.models import Calendar
 
-from attendees.occasions.serializers import CalendarListSerializer
+from attendees.occasions.serializers import CalendarSerializer
 
 
 @method_decorator([login_required], name="dispatch")
@@ -18,7 +18,7 @@ class OrganizationCalendarsViewSet(viewsets.ModelViewSet):
     Todo 20220924 make this API public and use domain name/Site as organization indicator
     """
 
-    serializer_class = CalendarListSerializer
+    serializer_class = CalendarSerializer
 
     def get_queryset(self):
         user_organization = self.request.user.organization

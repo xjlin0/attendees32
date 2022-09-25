@@ -3714,8 +3714,8 @@
       "category": "main",
       "parent": 1,
       "html_type": "a",
-      "urn": "/occasions/calendar/",
-      "url_name": "calendar_list_view",
+      "urn": "/occasions/calendars/",
+      "url_name": "calendars_list_view",
       "display_name": "calendar 全部行程日曆",
       "display_order": 1500,
       "infos": {
@@ -5449,7 +5449,7 @@
       "organization": 1,
       "display_name": "Junior Ministry",
       "slug": "cfcch_children_ministry",
-      "audience_auth_group": 3,
+      "audience_auth_group": 100,
       "infos": {
         "show_attendee_infos": {
           "infos-grade": true,
@@ -5487,7 +5487,7 @@
       "organization": 1,
       "display_name": "資料部",
       "slug": "cfcch_data_management",
-      "audience_auth_group": 4,
+      "audience_auth_group": 500,
       "infos": {
         "show_attendee_infos": {
           "infos-grade": false,
@@ -5506,7 +5506,7 @@
       "organization": 1,
       "display_name": "特會",
       "slug": "cfcch_special_conference",
-      "audience_auth_group": 5,
+      "audience_auth_group": 400,
       "infos": {
         "show_attendee_infos": {
           "infos-grade": false,
