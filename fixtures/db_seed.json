@@ -1898,6 +1898,62 @@
     }
   },
   {
+    "model": "schedule.calendar",
+    "pk": 3,
+    "fields": {
+      "name": "CFCCH fellowship room F201 calendar",
+      "slug": "cfcch_fellowship_f201"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 4,
+    "fields": {
+      "name": "CFCCH fellowship room F202 calendar",
+      "slug": "cfcch_fellowship_f202"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 5,
+    "fields": {
+      "name": "CFCCH fellowship room F203 calendar",
+      "slug": "cfcch_fellowship_f203"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 6,
+    "fields": {
+      "name": "CFCCH fellowship room F204 calendar",
+      "slug": "cfcch_fellowship_f204"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 7,
+    "fields": {
+      "name": "CFCCH fellowship room F207 calendar",
+      "slug": "cfcch_fellowship_f207"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 8,
+    "fields": {
+      "name": "CFCCH fellowship room F206 calendar",
+      "slug": "cfcch_fellowship_f206"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 9,
+    "fields": {
+      "name": "CFCCH worship room 202 calendar",
+      "slug": "cfcch_worship_202"
+    }
+  },
+  {
     "model": "schedule.calendarrelation",
     "pk": 0,
     "fields": {
@@ -1926,6 +1982,83 @@
       "calendar": 2,
       "content_type": 64,
       "object_id": 1,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 3,
+    "fields": {
+      "calendar": 3,
+      "content_type": 64,
+      "object_id": 8,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 4,
+    "fields": {
+      "calendar": 4,
+      "content_type": 64,
+      "object_id": 9,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 5,
+    "fields": {
+      "calendar": 5,
+      "content_type": 64,
+      "object_id": 10,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 6,
+    "fields": {
+      "calendar": 6,
+      "content_type": 64,
+      "object_id": 11,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 7,
+    "fields": {
+      "calendar": 7,
+      "content_type": 64,
+      "object_id": 6,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 8,
+    "fields": {
+      "calendar": 8,
+      "content_type": 64,
+      "object_id": 12,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 9,
+    "fields": {
+      "calendar": 9,
+      "content_type": 64,
+      "object_id": 7,
       "distinction": "source",
       "inheritable": true
     }
@@ -6168,6 +6301,19 @@
     }
   },
   {
+    "model": "whereabouts.suite",
+    "pk": 10,
+    "fields": {
+      "created": "2020-04-11T18:35:21.186Z",
+      "modified": "2021-04-08T17:08:17.290Z",
+      "is_removed": false,
+      "display_name": "新堂 1F, worship center, CFCCH",
+      "slug": "cfcch_worship_1f",
+      "property": 5,
+      "site": "1F"
+    }
+  },
+  {
     "model": "whereabouts.room",
     "pk": 1,
     "fields": {
@@ -6203,15 +6349,15 @@
     "model": "whereabouts.room",
     "pk": 3,
     "fields": {
-      "created": "1999-06-19T15:57:03.565Z",
-      "modified": "2020-06-19T16:01:17.889Z",
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
-      "display_name": "SSU 5115-B",
-      "slug": "ssu_5115_b",
-      "suite": 2,
-      "label": "B",
+      "display_name": "新堂 107, worship center, CFCCH",
+      "slug": "cfcch_worship_107",
+      "suite": 10,
+      "label": null,
       "infos": {
-        "accessibility": 1
+        "accessibility": 0
       }
     }
   },
@@ -6270,9 +6416,201 @@
       "created": "2020-04-11T18:35:55.012Z",
       "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
+      "display_name": "新堂 202, worship center, CFCCH",
+      "slug": "cfcch_worship_202",
+      "suite": 9,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 8,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "CFCCH fellowship F201",
+      "slug": "cfcch_fellowship_f201",
+      "suite": 1,
+      "label": null,
+      "infos": {
+        "accessibility": 2
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 9,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "CFCCH fellowship F202",
+      "slug": "cfcch_fellowship_f202",
+      "suite": 1,
+      "label": null,
+      "infos": {
+        "accessibility": 2
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 10,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "CFCCH fellowship F203",
+      "slug": "cfcch_fellowship_f203",
+      "suite": 1,
+      "label": null,
+      "infos": {
+        "accessibility": 2
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 11,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "CFCCH fellowship F204",
+      "slug": "cfcch_fellowship_f204",
+      "suite": 1,
+      "label": null,
+      "infos": {
+        "accessibility": 2
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 12,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "CFCCH fellowship F206",
+      "slug": "cfcch_fellowship_f206",
+      "suite": 1,
+      "label": null,
+      "infos": {
+        "accessibility": 2
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 13,
+    "fields": {
+      "created": "1999-06-19T15:57:03.565Z",
+      "modified": "2020-06-19T16:01:17.889Z",
+      "is_removed": false,
+      "display_name": "SSU 5115-B",
+      "slug": "ssu_5115_b",
+      "suite": 2,
+      "label": "B",
+      "infos": {
+        "accessibility": 1
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 14,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "新堂 201, worship center, CFCCH",
+      "slug": "cfcch_worship_201",
+      "suite": 9,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 15,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "新堂 203, worship center, CFCCH",
+      "slug": "cfcch_worship_203",
+      "suite": 9,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 16,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
       "display_name": "新堂 204, worship center, CFCCH",
       "slug": "cfcch_worship_204",
       "suite": 9,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 17,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "新堂 206, worship center, CFCCH",
+      "slug": "cfcch_worship_206",
+      "suite": 9,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 18,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "新堂 205, worship center, CFCCH",
+      "slug": "cfcch_worship_205",
+      "suite": 9,
+      "label": "observation window",
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 19,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "新堂 hall, worship center, CFCCH",
+      "slug": "cfcch_worship_hall",
+      "suite": 10,
       "label": null,
       "infos": {
         "accessibility": 0

@@ -53,7 +53,7 @@ class OrganizationCalendarsViewSet(viewsets.ModelViewSet):
                        )
                      ), Q.OR)
 
-            return Calendar.objects.filter(extra_filter)
+            return Calendar.objects.filter(extra_filter).order_by('name')
 
         else:
             time.sleep(2)
