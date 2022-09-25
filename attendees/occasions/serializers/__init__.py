@@ -7,4 +7,5 @@ from .team import TeamSerializer
 from .attendance_etc_serializer import AttendanceEtcSerializer
 from .batch_gatherings_serializer import BatchGatheringsSerializer
 from .batch_attendances_serializer import BatchAttendancesSerializer
-from .calendar_list_serializer import CalendarListSerializer
+from .calendar_serializer import CalendarSerializer
+from .occurrence_serializer import OccurrenceSerializer

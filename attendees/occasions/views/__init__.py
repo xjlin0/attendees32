@@ -24,6 +24,7 @@ from .api.user_assemblies import api_user_assembly_viewset
 from .api.user_assembly_characters import api_user_assembly_characters_viewset
 from .api.user_assembly_meets import api_user_assembly_meets_viewset
 from .api.organization_calendars import api_organization_calendars_viewset
+from .api.organization_occurrences import api_organization_occurrences_viewset
 from .page.attendances_list_view import attendances_list_view
 from .page.datagrid_assembly_all_attendances import (
     datagrid_assembly_all_attendances_list_view,
@@ -38,4 +39,4 @@ from .page.datagrid_user_organization_attendances import (
 from .page.gatherings_list_view import gatherings_list_view
 from .api.organization_meet_character_attendances import api_organization_meet_character_attendances_viewset
 from .page.roster_list_view import roster_list_view
-from .page.calendar_list_view import calendar_list_view
+from .page.calendars_list_view import calendars_list_view

@@ -26,8 +26,9 @@ from attendees.occasions.views import (
     series_gatherings_viewset,
     series_attendances_viewset,
     roster_list_view,
-    calendar_list_view,
+    calendars_list_view,
     api_organization_calendars_viewset,
+    api_organization_occurrences_viewset,
 )
 
 app_name = "occasions"
@@ -128,7 +129,11 @@ router.register(
     api_organization_calendars_viewset,
     basename="calendar",
 )  # Todo 20220924 make this API public and use domain name/Site as organization indicator
-
+router.register(
+    "api/organization_occurrences",
+    api_organization_occurrences_viewset,
+    basename="occurrence",
+)
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -169,8 +174,8 @@ urlpatterns = [
         name='roster_list_view',
     ),
     path(
-        "calendar/",
-        view=calendar_list_view,
-        name='calendar_list_view',
+        "calendars/",
+        view=calendars_list_view,
+        name='calendars_list_view',
     ),  # Todo 20220924 make this API public and use domain name/Site as organization indicator
 ]
