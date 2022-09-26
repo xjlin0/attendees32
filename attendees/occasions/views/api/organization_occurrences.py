@@ -1,5 +1,5 @@
 import time
-
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
@@ -20,6 +20,7 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
     serializer_class = OccurrenceSerializer
 
     def get_queryset(self):
+        iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_organization = self.request.user.organization
         calendar_id = self.request.query_params.get("calendar", user_organization.infos.get('default_calendar', 0))
         start = self.request.query_params.get("start")
@@ -28,20 +29,26 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
         search_value = self.request.query_params.get("searchValue")
         search_expression = self.request.query_params.get("searchExpr")
         search_operation = self.request.query_params.get("searchOperation")
-        if user_organization:
+        if user_organization and start and end:
+            start_time = datetime.strptime(start, iso_time_format)
+            end_time = datetime.strptime(end, iso_time_format)
             organization_acronym = user_organization.infos.get('acronym').strip()
             calendar = Calendar.objects.filter(slug__istartswith=organization_acronym, pk=calendar_id).first()
 
             if calendar:
                 events = Event.objects.filter(calendar=calendar.id)
-                period = Period(events, start, end)
-                return period.get_occurrences()
+                period = Period(events, start_time, end_time)
+                return period.get_persisted_occurrences().filter(
+                    end__gte=start_time,
+                    start__lte=end_time
+                )
 
             else:
                 time.sleep(2)
                 raise AuthenticationFailed(
-                    detail="Has your organization assigned a calendar?"
+                    detail="Has your organization assigned a calendar? Please specify start and end time!"
                 )
+        return []
 
 
 api_organization_occurrences_viewset = OccurrencesCalendarsViewSet

@@ -81,7 +81,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     site = GenericForeignKey("site_type", "site_id")  # This is default, will copy over to Event.description by signal
 
     def all_sites(self):
-        return ", ".join([Utility.get_location(er) for er in self.event_relations.all() if er.event.description])
+        return ", ".join([Utility.get_object_name(er.event) for er in self.event_relations.all() if er.event.description])
 
     # def save(self, *args, **kwargs):  # https://stackoverflow.com/a/27241824
     #     super(Meet, self).save(*args, **kwargs)  # One meet may have multiple Events
@@ -102,14 +102,14 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
                 "rule": er.event.rule.name,
                 "start": er.event.start,
                 "end": er.event.end,
-                "location": Utility.get_location(er),
+                "location": Utility.get_object_name(er.event),
             }
             for er in self.event_relations.all()
         ]
 
     def schedule_text(self, timezone_name=settings.TIME_ZONE, format='%H:%M%p %a'):
         schedules = [
-            f"{datetime.strftime(er.event.start.astimezone(pytz.timezone(timezone_name)), format)}~{datetime.strftime(er.event.end.astimezone(pytz.timezone(timezone_name)), format)} {timezone_name},{er.event.rule.name}@{Utility.get_location(er)}"
+            f"{datetime.strftime(er.event.start.astimezone(pytz.timezone(timezone_name)), format)}~{datetime.strftime(er.event.end.astimezone(pytz.timezone(timezone_name)), format)} {timezone_name},{er.event.rule.name}@{Utility.get_object_name(er.event)}"
             for er in self.event_relations.all()
         ]
         return ", ".join(schedules)

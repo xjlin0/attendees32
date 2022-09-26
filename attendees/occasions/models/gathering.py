@@ -69,6 +69,10 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
     def gathering_label(self):
         return (self.display_name or "") + (f" in {self.meet.display_name}" if self.meet.display_name else "")
 
+    @property
+    def meet_display_name(self):
+        return self.meet.display_name
+
     class Meta:
         db_table = "occasions_gatherings"
         ordering = ["meet", "start"]

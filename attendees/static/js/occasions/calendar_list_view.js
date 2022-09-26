@@ -68,7 +68,7 @@ Attendees.calendar = {
           return d.promise();
         },
       }),
-      key: 'slug',
+      // key: 'slug',
     }),
   },
 
@@ -77,8 +77,44 @@ Attendees.calendar = {
   },
 
   schedulerConfig: {
-    // timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    dataSource: null,
+    startDateExpr: 'start',
+    endDateExpr: 'end',
+    // textExpr: 'source',
+    // descriptionExpr: 'source',
+    dataSource: new DevExpress.data.DataSource({
+      store: new DevExpress.data.CustomStore({
+        key: 'id',
+        load: (searchOpts) => {
+          const d = new $.Deferred();
+          const params = {
+            start: searchOpts.dxScheduler.startDate.toISOString(),
+            end: searchOpts.dxScheduler.endDate.toISOString(),
+          };
+          params['calendar'] = Attendees.calendar.calendarSelector ? Attendees.calendar.calendarSelector.option('value') : parseInt(document.querySelector('div#scheduler').dataset.organizationDefaultCalendar);
+
+          if (searchOpts['searchValue']) {
+            params['searchValue'] = searchOpts['searchValue'];
+            params['searchOperation'] = searchOpts['searchOperation'];
+            params['searchExpr'] = searchOpts['searchExpr'];
+          }
+
+          $.get(document.querySelector('div#scheduler').dataset.occurrencesEndpoint, params)
+            .done((result) => {
+              d.resolve(result.data);
+            });
+
+          return d.promise();
+        },
+        byKey: (key) => {
+          const d = new $.Deferred();
+          $.get(document.querySelector('div#scheduler').dataset.occurrencesEndpoint + key + '/')
+            .done((result) => {
+              d.resolve(result);
+            });
+          return d.promise();
+        },
+      }),
+    }),
     views: ['agenda', 'day', 'week', 'month'],
     currentView: 'day',
     showCurrentTimeIndicator: true,

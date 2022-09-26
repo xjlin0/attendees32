@@ -272,15 +272,19 @@ class Utility:
         return word.lower()
 
     @staticmethod
-    def get_location(eventrelation):
-        model_name, object_id = eventrelation.event.description.split("#")
-        if model_name:
-            model = ContentType.objects.filter(model=model_name).first()
-            if model:
-                target = model.model_class().objects.filter(pk=object_id).first()
-                if object:
-                    return str(target).strip()
-
+    def get_object_name(instance, method_name='description', object_field=None):
+        instance_field = getattr(instance, method_name, None)
+        if instance_field and '#' in instance_field:
+            model_name, object_id = instance_field.split("#")
+            if model_name:
+                model = ContentType.objects.filter(model=model_name).first()
+                if model:
+                    target = model.model_class().objects.filter(pk=object_id).first()
+                    if target:
+                        if object_field:
+                            return getattr(target, object_field)
+                        else:
+                            return str(target).strip()
         return None
 
     def update_or_create_last(
