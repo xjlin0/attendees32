@@ -22,7 +22,8 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_organization = self.request.user.organization
-        calendar_id = self.request.query_params.get("calendar", user_organization.infos.get('default_calendar', 0))
+        user_organization_calendar = user_organization.calendar_relations.filter(distinction='source').first()
+        calendar_id = self.request.query_params.get("calendar", user_organization_calendar and user_organization_calendar.id or 0)
         start = self.request.query_params.get("start")
         end = self.request.query_params.get("end")
         pk = self.kwargs.get("pk")

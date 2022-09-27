@@ -5,12 +5,15 @@ from django.urls import reverse
 import django.utils.timezone
 from model_utils.models import SoftDeletableModel, TimeStampedModel
 import model_utils.fields
+from schedule.models import CalendarRelation
+
 from attendees.occasions.models import Gathering
 from attendees.persons.models import Note, Utility
 
 
 class Suite(TimeStampedModel, SoftDeletableModel, Utility):
     notes = GenericRelation(Note)
+    calendar_relations = GenericRelation(CalendarRelation)
     gathering = GenericRelation(
         Gathering,
         object_id_field="site_id",

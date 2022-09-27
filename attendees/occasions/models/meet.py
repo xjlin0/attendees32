@@ -104,7 +104,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
                 "end": er.event.end,
                 "location": Utility.get_object_name(er.event),
             }
-            for er in self.event_relations.all()
+            for er in self.event_relations.filter(distinction='source')
         ]
 
     def schedule_text(self, timezone_name=settings.TIME_ZONE, format='%H:%M%p %a'):

@@ -27,14 +27,11 @@ Attendees.calendar = {
     searchEnabled: true,
     width: '100%',
     value: parseInt(document.querySelector('div#scheduler').dataset.organizationDefaultCalendar),
-    // onValueChanged: (e)=> {
-    //   Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedGatheringId', e.value);
-    //   Attendees.calendar.filtersForm.validate();
-    //   const meet = Attendees.calendar.filtersForm.getEditor('meets').option('value');
-    //   if (e.value && meet && Attendees.calendar.attendancesDatagrid) {
-    //     Attendees.calendar.scheduler.refresh();
-    //   }
-    // },
+    onValueChanged: (e)=> {
+      if (e.value && Attendees.calendar.scheduler) {
+        Attendees.calendar.scheduler.getDataSource().reload()
+      }
+    },
     dataSource: new DevExpress.data.DataSource({
       store: new DevExpress.data.CustomStore({
         key: 'id',
@@ -81,6 +78,9 @@ Attendees.calendar = {
     endDateExpr: 'end',
     // textExpr: 'source',
     // descriptionExpr: 'source',
+
+    // appointmentTemplate: https://js.devexpress.com/Demos/WidgetsGallery/Demo/Scheduler/CustomTemplates/jQuery/Light/
+
     dataSource: new DevExpress.data.DataSource({
       store: new DevExpress.data.CustomStore({
         key: 'id',
@@ -112,6 +112,10 @@ Attendees.calendar = {
               d.resolve(result);
             });
           return d.promise();
+        },
+        update: (key) => {
+          console.log("hi 120 here is key: ", key);
+          // please implement Custom Templates accordingly
         },
       }),
     }),

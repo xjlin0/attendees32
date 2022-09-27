@@ -397,7 +397,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [ ] Calendar view
     - [ ] show the Event/Occurrence calendar of Meet/Gathering
     - [ ] Rejecting gathering with conflicts on location/time, upon user selected the location dropdown.
-    - [ ] Editing UI for Meet config with scheduling rules & location.
+    - [ ] Editing UI for single Meet (with multiple Events) config with scheduling rules & locations.
   - [ ] Rich format of note for Past on UI? [Using DevExtreme's html editor instead of summernote?](https://blog.devgenius.io/best-free-wysiwyg-editor-python-django-admin-panel-integration-d9cb30da1dba) Django summer note cannot make migration on prod:
 ```
 adam@panel:~/attendees32$ docker-compose -f production.yml run django python manage.py makemigrations

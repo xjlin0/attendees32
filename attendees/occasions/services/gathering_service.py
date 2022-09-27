@@ -123,7 +123,7 @@ class GatheringService:
             gathering_time = (
                 timedelta(minutes=duration) if duration and duration > 0 else None
             )
-            for er in meet.event_relations.all():
+            for er in meet.event_relations.all():  # changing source/location/user's events all together
                 for occurrence in er.event.get_occurrences(begin_time, end_time):
                     if not occurrence.cancelled:
                         occurrence_end = (
@@ -157,10 +157,12 @@ class GatheringService:
                         )  # don't update gatherings if exist since it may have customizations
 
                         if gathering_created:
+                            number_created += 1
+
+                        if not occurrence.id:
                             occurrence.title = f'gathering#{gathering.id}'
                             occurrence.description = f'{model_name}#{site_id}'
                             occurrence.save()
-                            number_created += 1
 
             results = {
                 "success": True,

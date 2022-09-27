@@ -102,6 +102,15 @@ class Command(BaseCommand):
 
                 CREATE INDEX {Occurrence._meta.db_table}_titles
                   ON {Occurrence._meta.db_table} (title);
+
+                CREATE INDEX {Occurrence._meta.db_table}_description
+                  ON {Occurrence._meta.db_table} (description);
+
+                CREATE INDEX {Event._meta.db_table}__titles
+                  ON {Event._meta.db_table} (title);
+
+                CREATE INDEX {Event._meta.db_table}_description
+                  ON {Event._meta.db_table} (description);
                     """
         )
 

@@ -6,6 +6,7 @@ from django.db import models
 from model_utils.models import SoftDeletableModel, TimeStampedModel
 import model_utils.fields
 import django.utils.timezone
+from schedule.models import CalendarRelation
 
 from attendees.occasions.models import Gathering
 from attendees.persons.models import Note, Utility
@@ -13,6 +14,7 @@ from attendees.persons.models import Note, Utility
 
 class Organization(TimeStampedModel, SoftDeletableModel, Utility):
     notes = GenericRelation(Note)
+    calendar_relations = GenericRelation(CalendarRelation)
     places = GenericRelation("whereabouts.Place")
     gathering = GenericRelation(
         Gathering,
