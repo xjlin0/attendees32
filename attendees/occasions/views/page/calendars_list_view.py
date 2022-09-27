@@ -15,12 +15,13 @@ class CalendarsListView(RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user_organization_calendar = self.request.user.organization.calendar_relations.filter(distinction='source').first()
         context.update(
             {
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 "content_type_models_endpoint": "/whereabouts/api/content_type_models/",
                 "calendars_endpoint": "/occasions/api/organization_calendars/",
-                "organization_default_calendar": self.request.user.organization.infos.get("default_calendar", 0),
+                "organization_default_calendar": user_organization_calendar and user_organization_calendar.id or 0,
                 "occurrences_endpoint": "/occasions/api/organization_occurrences/",
                 # "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
                 # "meets_endpoint_by_id": "/occasions/api/user_assembly_meets/",

@@ -1877,8 +1877,8 @@
     "model": "schedule.calendar",
     "pk": 0,
     "fields": {
-      "name": "Cross Organization Calendar",
-      "slug": "cross_organization_calendar"
+      "name": "Multi organizations Calendar",
+      "slug": "multi_organizations_calendar"
     }
   },
   {
@@ -1951,6 +1951,14 @@
     "fields": {
       "name": "CFCCH worship room 202 calendar",
       "slug": "cfcch_worship_202"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 10,
+    "fields": {
+      "name": "CFCCH worship hall calendar",
+      "slug": "cfcch_worship_hall"
     }
   },
   {
@@ -2169,7 +2177,7 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "The Rock Sunday 9:15A-12:40P",
+      "title": "source: The Rock Sunday 9:15A-12:40P",
       "description": "room#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2186,7 +2194,7 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "Little foot Sunday 9:15A-12:40P",
+      "title": "source: Little foot Sunday 9:15A-12:40P",
       "description": "room#6",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2203,7 +2211,7 @@
     "fields": {
       "start": "2020-02-09T21:15:00Z",
       "end": "2020-02-09T23:00:00Z",
-      "title": "中文詩班: Sunday 1:15P-3:00P",
+      "title": "source: 中文詩班: Sunday 1:15P-3:00P",
       "description": "room#7",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2212,6 +2220,125 @@
       "end_recurring_period": "2930-02-09T19:54:32Z",
       "calendar": 1,
       "color_event": "#926AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 4,
+    "fields": {
+      "start": "2020-02-09T17:30:00Z",
+      "end": "2020-02-09T18:40:00Z",
+      "title": "source: Sunday service 9:30A-10:40P",
+      "description": "room#19",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 1,
+      "color_event": "#A484CA"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 5,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
+      "title": "source: 主日崇拜 11:15P-12:40P",
+      "description": "room#19",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 6,
+    "fields": {
+      "start": "2020-02-09T17:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
+      "title": "event#1",
+      "description": "room#1",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 7,
+      "color_event": "#3D8361"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 7,
+    "fields": {
+      "start": "2020-02-09T17:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
+      "title": "event#2",
+      "description": "room#6",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 2,
+      "color_event": "#A084CA"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 8,
+    "fields": {
+      "start": "2020-02-09T21:15:00Z",
+      "end": "2020-02-09T23:00:00Z",
+      "title": "event#3",
+      "description": "room#7",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 9,
+      "color_event": "#926AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 9,
+    "fields": {
+      "start": "2020-02-09T17:30:00Z",
+      "end": "2020-02-09T18:40:00Z",
+      "title": "event#4",
+      "description": "room#19",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 10,
+      "color_event": "#A484CA"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 10,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
+      "title": "event#5",
+      "description": "room#19",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "calendar": 10,
+      "color_event": "#956AA6"
     }
   },
   {
@@ -2242,6 +2369,76 @@
       "content_type": 103,
       "object_id": 3,
       "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 4,
+    "fields": {
+      "event": 4,
+      "content_type": 103,
+      "object_id": 7,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 5,
+    "fields": {
+      "event": 5,
+      "content_type": 103,
+      "object_id": 7,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 6,
+    "fields": {
+      "event": 6,
+      "content_type": 103,
+      "object_id": 1,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 7,
+    "fields": {
+      "event": 7,
+      "content_type": 103,
+      "object_id": 2,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 8,
+    "fields": {
+      "event": 8,
+      "content_type": 103,
+      "object_id": 3,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 9,
+    "fields": {
+      "event": 9,
+      "content_type": 103,
+      "object_id": 7,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 10,
+    "fields": {
+      "event": 10,
+      "content_type": 103,
+      "object_id": 7,
+      "distinction": "location"
     }
   },
   {
@@ -5432,7 +5629,6 @@
         },
         "counselor": [],
         "data_admins": [],
-        "default_calendar": 0,
         "default_time_zone": "America/Los_Angeles"
       }
     }
@@ -5472,7 +5668,6 @@
           "data_organizer"
         ],
         "default_time_zone": "America/Los_Angeles",
-        "default_calendar": 1,
         "all_access_assemblies": [
           "cfcch_congregation_data"
         ],

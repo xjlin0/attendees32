@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -9,12 +10,14 @@ from django.utils import timezone
 from django.contrib.auth import validators
 from django.utils.translation import ugettext_lazy as _
 import pghistory
+from schedule.models import CalendarRelation
+
 from attendees.persons.models import Utility
 from attendees.whereabouts.models import Organization
 
 
 class User(AbstractUser):
-
+    calendar_relations = GenericRelation(CalendarRelation)
     # First Name and Last Name do not cover name patterns around the globe.
     name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = None  # type: ignore

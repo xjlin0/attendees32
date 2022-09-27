@@ -6,6 +6,7 @@ import django.utils.timezone
 from django.urls import reverse
 import model_utils.fields
 from model_utils.models import SoftDeletableModel, TimeStampedModel
+from schedule.models import CalendarRelation
 
 from attendees.occasions.models import Gathering
 from attendees.persons.models import Note, Utility
@@ -13,6 +14,7 @@ from attendees.persons.models import Note, Utility
 
 class Room(TimeStampedModel, SoftDeletableModel, Utility):
     notes = GenericRelation(Note)
+    calendar_relations = GenericRelation(CalendarRelation)
     gathering = GenericRelation(
         Gathering,
         object_id_field="site_id",
