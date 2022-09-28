@@ -8,7 +8,7 @@ class OccurrenceSerializer(serializers.ModelSerializer):
     text = serializers.SerializerMethodField(read_only=True)
 
     def get_text(self, obj):
-        return f"{Utility.get_object_name(obj, method_name='title', object_field='meet_display_name')} {Utility.get_object_name(obj)}"
+        return f"{Utility.get_object_name(obj, 'title', 'meet_display_name')} {Utility.get_object_name(obj, 'description', 'display_name')}"
 
     class Meta:
         model = Occurrence
