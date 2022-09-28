@@ -37,14 +37,17 @@ class SeriesAttendancesViewSet(RouteGuard, viewsets.ViewSet):
             or settings.CLIENT_DEFAULT_TIME_ZONE
         )
         gathering_results = GatheringService.batch_create(
-            **request.data,
+            begin=request.data.get('begin'),
+            end=request.data.get('end'),
+            meet_slug=request.data.get('meet_slug'),
+            duration=request.data.get('duration'),
             meet=meet,
             user_time_zone=pytz.timezone(parse.unquote(tzname)),
         )
         attendance_results = AttendanceService.batch_create(
-            begin=request.data['begin'],
-            end=request.data['end'],
-            meet_slug=request.data['meet_slug'],
+            begin=request.data.get('begin'),
+            end=request.data.get('end'),
+            meet_slug=request.data.get('meet_slug'),
             meet=meet,
             user_time_zone=pytz.timezone(parse.unquote(tzname)),
         )

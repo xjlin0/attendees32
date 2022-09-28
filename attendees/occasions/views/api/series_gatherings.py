@@ -37,8 +37,12 @@ class SeriesGatheringsViewSet(RouteGuard, viewsets.ViewSet):
             or organization.infos["default_time_zone"]
             or settings.CLIENT_DEFAULT_TIME_ZONE
         )
+        print("hi 40 here is request.data: ", request.data)
         results = GatheringService.batch_create(
-            **request.data,
+            begin=request.data.get('begin'),
+            end=request.data.get('end'),
+            meet_slug=request.data.get('meet_slug'),
+            duration=request.data.get('duration'),
             meet=meet,
             user_time_zone=pytz.timezone(parse.unquote(tzname)),
         )
