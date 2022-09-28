@@ -61,7 +61,9 @@ Attendees.gatherings = {
             const filterTill = $('div.filter-till input')[1].value;
             params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : null;
             params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
-            params['duration'] = Attendees.gatherings.filtersForm.getEditor('duration').option('value');
+            if (Attendees.gatherings.selectedMeetHasRule && Attendees.gatherings.selectedMeetHasRule < 2) {
+              params['duration'] = Attendees.gatherings.filtersForm.getEditor('duration').option('value');
+            }
             const meetSlugs = $('div.selected-meets select').val();
             if (params['begin'] && params['end'] && Attendees.gatherings.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
               params['meet_slug'] = meetSlugs[0];
@@ -272,10 +274,9 @@ Attendees.gatherings = {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.gatherings.filtersForm.validate();
             const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
-            const $meetHelpText = Attendees.gatherings.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            Attendees.gatherings.selectedMeetHasRule = false;
+            Attendees.gatherings.selectedMeetHasRule = 0;
             Attendees.gatherings.generateGatheringsButton && Attendees.gatherings.generateGatheringsButton.option('disabled', true);
-            $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+            Attendees.gatherings.filtersForm.itemOption('meets', { helpText: defaultHelpText});
             if (e.value && e.value.length > 0) {
               Attendees.gatherings.gatheringsDatagrid.refresh();
               if (e.value.length < 2) {
@@ -290,7 +291,7 @@ Attendees.gatherings = {
                 if (timeRules && timeRules.length > 0) {
                   timeRules.forEach(timeRule => {
                     if (timeRule.rule) {
-                      Attendees.gatherings.selectedMeetHasRule = true;
+                      Attendees.gatherings.selectedMeetHasRule = timeRules.length;
                       const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
                       const startTime = new Date(timeRule.start);
                       const endTime = new Date(timeRule.end);
@@ -309,8 +310,8 @@ Attendees.gatherings = {
                 } else {
                   finalHelpText = noRuleText;
                 }
-                $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
-                Attendees.gatherings.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
+                Attendees.gatherings.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration, visible: Attendees.gatherings.selectedMeetHasRule < 2}, helpText: Attendees.gatherings.selectedMeetHasRule > 1 ? "Disabled for multiple events" : "minutes"});
+                Attendees.gatherings.filtersForm.itemOption('meets', {helpText: finalHelpText});
               }
             }
           },
