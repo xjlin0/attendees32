@@ -101,8 +101,12 @@ Attendees.attendingmeets = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString') === undefined ? new Date(new Date().setHours(new Date().getHours() - 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString')) : null,
           type: 'datetime',
+          value: new Date(
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString') ?
+              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString') :
+              new Date().setHours(new Date().getHours() - 1)
+          ),
           onValueChanged: (e) => {
             const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterFromString', filterFromString);
@@ -139,8 +143,12 @@ Attendees.attendingmeets = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString') === undefined ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString')) : null,
           type: 'datetime',
+          value: new Date(
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString') ?
+              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'filterTillString') :
+              new Date().setMonth(new Date().getMonth() + 1)
+          ),
           onValueChanged: (e) => {
             // Attendees.attendingmeets.generateGatheringsButton.option('disabled', !Attendees.gatherings.readyToGenerate());
             const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
@@ -197,8 +205,7 @@ Attendees.attendingmeets = {
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules";
             const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
             Attendees.attendingmeets.selectedMeetHasRule = false;
-            // Attendees.attendingmeets.generateGatheringsButton.option('disabled', true);
-            $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+            $meetHelpText.text(defaultHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               const characters = $('div.selected-characters select').val();
               Attendees.attendingmeets.filtersForm.getEditor('characters').getDataSource().reload();
@@ -230,14 +237,10 @@ Attendees.attendingmeets = {
                     }
                   });
                   finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-                  // if (Attendees.attendingmeets.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
-                  //   Attendees.attendingmeets.generateGatheringsButton.option('disabled', false);
-                  // }
                 } else {
                   finalHelpText = noRuleText;
                 }
                 $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
-                // Attendees.attendingmeets.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
               }
             }
           },
