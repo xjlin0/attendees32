@@ -62,7 +62,9 @@ Attendees.attendances = {
             const filterFrom = $('div.filter-from input')[1].value;
             params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : new Date().toISOString();
             params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
-            params['duration'] = Attendees.attendances.filtersForm.getEditor('duration').option('value');
+            if (Attendees.attendances.selectedMeetHasRule && Attendees.attendances.selectedMeetHasRule < 2) {
+              params['duration'] = Attendees.attendances.filtersForm.getEditor('duration').option('value');
+            }
             const meetSlugs = $('div.selected-meets select').val();
             if (params['end'] && Attendees.attendances.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
               params['meet_slug'] = meetSlugs[0];
@@ -269,13 +271,13 @@ Attendees.attendances = {
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
+            e.component.beginUpdate();
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.attendances.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely";
-            const $meetHelpText = Attendees.attendances.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            Attendees.attendances.selectedMeetHasRule = false;
-            // Attendees.attendances.generateGatheringsButton.option('disabled', true);
-            $meetHelpText.text(defaultHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
+            Attendees.attendances.selectedMeetHasRule = 0;
+            Attendees.attendances.generateGatheringsButton.option('disabled', true);
+            Attendees.attendances.filtersForm.itemOption('meets', { helpText: defaultHelpText});
             if (e.value && e.value.length > 0) {
               // if (Attendees.attendances.attendancesDatagrid.totalCount() > 0) {
                 Attendees.attendances.filtersForm.getEditor('characters').option('value', []);
@@ -297,7 +299,7 @@ Attendees.attendances = {
                 if (timeRules && timeRules.length > 0) {
                   timeRules.forEach(timeRule => {
                     if (timeRule.rule) {
-                      Attendees.attendances.selectedMeetHasRule = true;
+                      Attendees.attendances.selectedMeetHasRule = timeRules.length;
                       const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
                       const startTime = new Date(timeRule.start);
                       const endTime = new Date(timeRule.end);
@@ -310,16 +312,17 @@ Attendees.attendances = {
                     }
                   });
                   finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-                  // if (Attendees.attendances.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
-                  //   Attendees.attendances.generateGatheringsButton.option('disabled', false);
-                  // }
+                  if (Attendees.attendances.selectedMeetHasRule && $('div#custom-control-edit-switch').dxSwitch('instance').option('value') && lastDuration > 0) {
+                    Attendees.attendances.generateGatheringsButton.option('disabled', false);
+                  }
                 } else {
                   finalHelpText = noRuleText;
                 }
-                $meetHelpText.text(finalHelpText);  // https://supportcenter.devexpress.com/ticket/details/t531683
-                Attendees.attendances.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration}});
+                Attendees.attendances.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration, visible: Attendees.attendances.selectedMeetHasRule < 2}, helpText: Attendees.attendances.selectedMeetHasRule > 1 ? "Disabled for multiple events" : "minutes"});
+                Attendees.attendances.filtersForm.itemOption('meets', {helpText: finalHelpText});
               }
             }
+            e.component.endUpdate();
           },
           dataSource: new DevExpress.data.DataSource({
             store: new DevExpress.data.CustomStore({

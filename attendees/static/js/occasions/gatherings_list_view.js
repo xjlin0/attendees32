@@ -271,6 +271,7 @@ Attendees.gatherings = {
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
+            e.component.beginUpdate();
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.gatherings.filtersForm.validate();
             const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
@@ -314,6 +315,7 @@ Attendees.gatherings = {
                 Attendees.gatherings.filtersForm.itemOption('meets', {helpText: finalHelpText});
               }
             }
+            e.component.endUpdate();
           },
           dataSource: new DevExpress.data.DataSource({
             store: new DevExpress.data.CustomStore({
