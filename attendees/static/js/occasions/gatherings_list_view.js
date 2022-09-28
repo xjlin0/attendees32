@@ -182,8 +182,12 @@ Attendees.gatherings = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString') === undefined ? new Date(new Date().setHours(new Date().getHours() - 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString')) : null,
           type: 'datetime',
+          value: new Date(
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString') ?
+              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString') :
+              new Date().setHours(new Date().getHours() - 1)
+          ),
           onValueChanged: (e) => {
             const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterFromString', filterFromString);
@@ -219,8 +223,12 @@ Attendees.gatherings = {
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-          value: Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString') === undefined ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString') ? Date.parse(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString')) : null,
           type: 'datetime',
+          value: new Date(
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString') ?
+              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString') :
+              new Date().setMonth(new Date().getMonth() + 1)
+          ),
           onValueChanged: (e) => {
             const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'filterTillString', filterTillString);
@@ -271,13 +279,14 @@ Attendees.gatherings = {
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
-            e.component.beginUpdate();
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['gatheringsListViewOpts'], 'selectedMeetSlugs', e.value);
             Attendees.gatherings.filtersForm.validate();
             const defaultHelpText = 'Select single one to view/generate gatherings, or multiple one to view';
+            const $meetHelpText = Attendees.gatherings.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
+            const $durationField = Attendees.gatherings.filtersForm.getEditor('duration').element().parent().parent();
             Attendees.gatherings.selectedMeetHasRule = 0;
             Attendees.gatherings.generateGatheringsButton && Attendees.gatherings.generateGatheringsButton.option('disabled', true);
-            Attendees.gatherings.filtersForm.itemOption('meets', { helpText: defaultHelpText});
+            $meetHelpText.text(defaultHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               Attendees.gatherings.gatheringsDatagrid.refresh();
               if (e.value.length < 2) {
@@ -311,11 +320,12 @@ Attendees.gatherings = {
                 } else {
                   finalHelpText = noRuleText;
                 }
-                Attendees.gatherings.filtersForm.itemOption('duration', {editorOptions: {value: lastDuration, visible: Attendees.gatherings.selectedMeetHasRule < 2}, helpText: Attendees.gatherings.selectedMeetHasRule > 1 ? "Disabled for multiple events" : "minutes"});
-                Attendees.gatherings.filtersForm.itemOption('meets', {helpText: finalHelpText});
+                Attendees.gatherings.filtersForm.updateData("duration", lastDuration);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
+                $durationField.find("div.dx-field-item-content").toggle(Attendees.gatherings.selectedMeetHasRule < 2);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
+                $durationField.find('div.dx-field-item-help-text').text(Attendees.gatherings.selectedMeetHasRule > 1 ? "Disabled for multiple events" : "minutes");  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
+                $meetHelpText.text(finalHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
               }
             }
-            e.component.endUpdate();
           },
           dataSource: new DevExpress.data.DataSource({
             store: new DevExpress.data.CustomStore({
