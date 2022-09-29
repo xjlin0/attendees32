@@ -208,6 +208,7 @@ Attendees.attendingmeets = {
             $meetHelpText.text(defaultHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
               const characters = $('div.selected-characters select').val();
+              Attendees.attendingmeets.filtersForm.getEditor('characters').option('value', []);
               Attendees.attendingmeets.filtersForm.getEditor('characters').getDataSource().reload();
               if (characters.length) {
                 Attendees.attendingmeets.attendingmeetsDatagrid.refresh();
