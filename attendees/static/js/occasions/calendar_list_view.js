@@ -22,6 +22,11 @@ Attendees.calendar = {
   },
 
   calendarSelectorConfig: {
+    editing: {
+      allowUpdating: false,
+      allowAdding: false,
+      allowDeleting: false,
+    },
     valueExpr: 'id',
     displayExpr: 'name',
     searchEnabled: true,
