@@ -395,7 +395,7 @@ All libraries are included to facilitate offline development, it will take port 
   - [x] [PR#32](https://github.com/xjlin0/attendees30/pull/32) Folk model support secret but attendee UI folkattendee doesn't support it
   - [x] Passed away attendees also need to be removed from emergency contact/scheduler of others.
   - [ ] Calendar view
-    - [ ] show the Event/Occurrence calendar of Meet/Gathering
+    - [x] [2PR#26](https://github.com/xjlin0/attendees32/pull/26) show the Event/Occurrence calendar of Meet/Gathering
     - [ ] Rejecting gathering with conflicts on location/time, upon user selected the location dropdown.
     - [ ] Editing UI for single Meet (with multiple Events) config with scheduling rules & locations.
   - [ ] Rich format of note for Past on UI? [Using DevExtreme's html editor instead of summernote?](https://blog.devgenius.io/best-free-wysiwyg-editor-python-django-admin-panel-integration-d9cb30da1dba) Django summer note cannot make migration on prod:
