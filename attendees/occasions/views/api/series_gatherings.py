@@ -37,7 +37,6 @@ class SeriesGatheringsViewSet(RouteGuard, viewsets.ViewSet):
             or organization.infos["default_time_zone"]
             or settings.CLIENT_DEFAULT_TIME_ZONE
         )
-        print("hi 40 here is request.data: ", request.data)
         results = GatheringService.batch_create(
             begin=request.data.get('begin'),
             end=request.data.get('end'),

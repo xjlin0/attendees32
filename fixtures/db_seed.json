@@ -13175,7 +13175,9 @@
           "attendance",
           "eventrelation"
         ],
-        "gathering_infos": {},
+        "gathering_infos": {
+          "generate_attendance": true
+        },
         "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
@@ -13245,7 +13247,7 @@
       "audience_editable": false,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
-      "display_name": "主日禮拜 Worship roster",
+      "display_name": "中文崇拜 Worship roster",
       "slug": "d7c8Fd_cfcch_congregation_roster",
       "infos": {
         "attendance": {},
