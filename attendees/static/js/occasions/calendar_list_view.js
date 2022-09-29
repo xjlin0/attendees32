@@ -22,11 +22,6 @@ Attendees.calendar = {
   },
 
   calendarSelectorConfig: {
-    editing: {
-      allowUpdating: false,
-      allowAdding: false,
-      allowDeleting: false,
-    },
     valueExpr: 'id',
     displayExpr: 'name',
     searchEnabled: true,
@@ -85,7 +80,11 @@ Attendees.calendar = {
     // descriptionExpr: 'source',
 
     // appointmentTemplate: https://js.devexpress.com/Demos/WidgetsGallery/Demo/Scheduler/CustomTemplates/jQuery/Light/
-
+    editing: {
+      allowUpdating: false,
+      allowAdding: false,
+      allowDeleting: false,
+    },
     dataSource: new DevExpress.data.DataSource({
       store: new DevExpress.data.CustomStore({
         key: 'id',
@@ -119,8 +118,13 @@ Attendees.calendar = {
           return d.promise();
         },
         update: (key) => {
-          console.log("hi 120 here is key: ", key);
-          // please implement Custom Templates accordingly
+          console.log("hi 121 here is key: ", key);
+        },  // Custom Template: https://js.devexpress.com/Demos/WidgetsGallery/Demo/Scheduler/CustomTemplates/jQuery/Light/
+        insert: (e) => {
+          console.log("hi 124 insert here is e: ", e);
+        },
+        remove: (key) => {
+          console.log("hi 127 remove here is key: ", key);
         },
       }),
     }),
