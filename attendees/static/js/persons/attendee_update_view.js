@@ -769,7 +769,7 @@ Attendees.datagridUpdate = {
           hint: "delete attendee's all data in the page",
           type: 'danger',
           onClick: (e) => {
-            if (confirm("Sure to delete ALL data of the attendee? Everything of the attendee will be removed.  Instead, setting finish/deathday is usually enough!")) {
+            if (confirm("Sure to delete ALL data of the attendee? Everything of the attendee will be removed.  Instead, setting finish/death date is usually enough!")) {
               window.scrollTo(0, 0);
               $('div.spinner-border').show();
               $.ajax({
@@ -1115,7 +1115,7 @@ Attendees.datagridUpdate = {
         dataField: 'estimated_birthday',
         helpText: 'YYYY-MM-DD',
         label: {
-          text: 'Guess birthday',
+          text: 'estimated birthday',
         },
 //        editorType: 'dxDateBox',
         editorOptions: {
@@ -1128,6 +1128,7 @@ Attendees.datagridUpdate = {
       },
       {
         colSpan: 7,
+        caption: "death date",
         dataField: 'deathday',
         editorType: 'dxDateBox',
         editorOptions: {
