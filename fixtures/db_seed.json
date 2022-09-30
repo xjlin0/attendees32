@@ -1962,6 +1962,14 @@
     }
   },
   {
+    "model": "schedule.calendar",
+    "pk": 11,
+    "fields": {
+      "name": "CFCCH sanctuary hall calendar",
+      "slug": "cfcch_sanctuary_hall"
+    }
+  },
+  {
     "model": "schedule.calendarrelation",
     "pk": 0,
     "fields": {
@@ -2067,6 +2075,28 @@
       "calendar": 9,
       "content_type": 64,
       "object_id": 7,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 10,
+    "fields": {
+      "calendar": 10,
+      "content_type": 64,
+      "object_id": 19,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 11,
+    "fields": {
+      "calendar": 11,
+      "content_type": 64,
+      "object_id": 20,
       "distinction": "source",
       "inheritable": true
     }
@@ -6509,6 +6539,19 @@
     }
   },
   {
+    "model": "whereabouts.suite",
+    "pk": 11,
+    "fields": {
+      "created": "2020-04-11T18:35:21.186Z",
+      "modified": "2021-04-08T17:08:17.290Z",
+      "is_removed": false,
+      "display_name": "CFCCH 舊堂1樓",
+      "slug": "cfcch_sanctuary_1f",
+      "property": 2,
+      "site": "1F"
+    }
+  },
+  {
     "model": "whereabouts.room",
     "pk": 1,
     "fields": {
@@ -6803,9 +6846,25 @@
       "created": "2020-04-11T18:35:55.012Z",
       "modified": "2020-06-19T16:03:03.166Z",
       "is_removed": false,
-      "display_name": "新堂 hall, worship center, CFCCH",
+      "display_name": "新大堂 hall, worship center, CFCCH",
       "slug": "cfcch_worship_hall",
       "suite": 10,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 20,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "舊大堂, old sanctuary, CFCCH",
+      "slug": "cfcch_old_sanctuary",
+      "suite": 11,
       "label": null,
       "infos": {
         "accessibility": 0
@@ -10598,7 +10657,7 @@
       "modified": "2020-04-12T02:32:11.754Z",
       "is_removed": false,
       "attending": 6,
-      "meet": 4,
+      "meet": 18,
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "team": null,
@@ -12455,7 +12514,7 @@
       "created": "1999-04-11T19:08:23.960Z",
       "modified": "2021-04-08T16:55:13.922Z",
       "is_removed": false,
-      "meet": 4,
+      "meet": 18,
       "start": "2020-02-17T20:07:20Z",
       "finish": "9999-04-11T20:07:22Z",
       "display_name": "forever",
@@ -13109,21 +13168,23 @@
     "model": "occasions.meet",
     "pk": 4,
     "fields": {
-      "created": "1999-04-11T18:50:57.777Z",
-      "modified": "2021-04-08T16:40:16.599Z",
+      "created": "2020-05-09T22:34:04.419Z",
+      "modified": "2021-10-23T18:06:43.299Z",
       "is_removed": false,
-      "assembly": 4,
-      "major_character": 7,
+      "assembly": 5,
+      "major_character": 15,
       "shown_audience": true,
-      "audience_editable": true,
-      "start": "2020-05-12T14:53:19Z",
-      "finish": "2099-05-12T15:53:21Z",
-      "display_name": "天堂 玻璃海天使詩班",
-      "slug": "faBd6C_heaven_sea_of_glass_angel_choir",
+      "audience_editable": false,
+      "start": "2020-05-12T14:54:44Z",
+      "finish": "2200-05-12T15:54:46Z",
+      "display_name": "英文崇拜 English Worship roster",
+      "slug": "d7c8Fd_cfcch_congregation_english_worship_roster",
       "infos": {
         "attendance": {},
         "allowed_groups": [
-          "worship_organizer"
+          "data_counselor",
+          "children_organizer",
+          "conference_organizer"
         ],
         "allowed_models": [
           "gathering",
@@ -13132,16 +13193,17 @@
           "eventrelation"
         ],
         "gathering_infos": {},
-        "default_time_zone": "UTC",
+        "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
           "Past": null,
-          "Gathering": false,
-          "Attendance": false
+          "Gathering": true,
+          "Attendance": true
         },
-        "default_attendingmeet_in_weeks": 99999
+        "extending_attending_days": 90,
+        "default_attendingmeet_in_weeks": 30
       },
-      "site_type": 58,
-      "site_id": "2"
+      "site_type": 64,
+      "site_id": "19"
     }
   },
   {
@@ -13247,8 +13309,8 @@
       "audience_editable": false,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
-      "display_name": "中文崇拜 Worship roster",
-      "slug": "d7c8Fd_cfcch_congregation_roster",
+      "display_name": "中文崇拜 Chinese Worship roster",
+      "slug": "d7c8Fd_cfcch_congregation_chinese_worship_roster",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -13272,8 +13334,8 @@
         "extending_attending_days": 90,
         "default_attendingmeet_in_weeks": 30
       },
-      "site_type": 54,
-      "site_id": "1"
+      "site_type": 64,
+      "site_id": "19"
     }
   },
   {
@@ -13677,6 +13739,45 @@
       },
       "site_type": 54,
       "site_id": "1"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 18,
+    "fields": {
+      "created": "1999-04-11T18:50:57.777Z",
+      "modified": "2021-04-08T16:40:16.599Z",
+      "is_removed": false,
+      "assembly": 4,
+      "major_character": 7,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2020-05-12T14:53:19Z",
+      "finish": "2099-05-12T15:53:21Z",
+      "display_name": "天堂 玻璃海天使詩班",
+      "slug": "faBd6C_heaven_sea_of_glass_angel_choir",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "worship_organizer"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {},
+        "default_time_zone": "UTC",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": false,
+          "Attendance": false
+        },
+        "default_attendingmeet_in_weeks": 99999
+      },
+      "site_type": 58,
+      "site_id": "2"
     }
   },
   {
