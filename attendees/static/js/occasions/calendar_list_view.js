@@ -91,6 +91,7 @@ Attendees.calendar = {
         load: (searchOpts) => {
           const d = new $.Deferred();
           const params = {
+            take: 9999,
             start: searchOpts.dxScheduler.startDate.toISOString(),
             end: searchOpts.dxScheduler.endDate.toISOString(),
           };
@@ -104,6 +105,11 @@ Attendees.calendar = {
 
           $.get(document.querySelector('div#scheduler').dataset.occurrencesEndpoint, params)
             .done((result) => {
+              result.data.forEach(o => {
+                if (o.description && o.description.startsWith('allDay:')){  // magic word to label full day event
+                  o['allDay'] = true;
+                }
+              })
               d.resolve(result.data);
             });
 

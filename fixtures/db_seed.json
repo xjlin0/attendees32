@@ -2208,7 +2208,7 @@
       "name": "MLK Jr. day",
       "description": "The 3rd Monday of the January",
       "frequency": "YEARLY",
-      "params": "bymonth:1;byweekday:MO;bymonthday:15,16,17,18,19,20,21"
+      "params": "bymonth:1;byweekday:MO;bysetpos:3"
     }
   },
   {
@@ -2218,7 +2218,7 @@
       "name": "President Day",
       "description": "The 3rd Monday of the February",
       "frequency": "YEARLY",
-      "params": "bymonth:2;byweekday:MO;bymonthday:15,16,17,18,19,20,21"
+      "params": "bymonth:2;byweekday:MO;bysetpos:3"
     }
   },
   {
@@ -2248,7 +2248,7 @@
       "name": "Mother's day",
       "description": "The 2nd Sunday in May",
       "frequency": "YEARLY",
-      "params": "bymonth:5;byweekday:SU;bymonthday:8,9,10,11,12,13,14"
+      "params": "bymonth:5;byweekday:SU;bysetpos:2"
     }
   },
   {
@@ -2258,7 +2258,7 @@
       "name": "Memorial day",
       "description": "The Last Monday of May",
       "frequency": "YEARLY",
-      "params": "bymonth:5;byweekday:MO;bymonthday:-1,-2,-3,-4,-5,-6,-7"
+      "params": "bymonth:5;byweekday:MO;bysetpos:-1"
     }
   },
   {
@@ -2268,7 +2268,7 @@
       "name": "Father's day",
       "description": "The 3rd Sunday in June",
       "frequency": "YEARLY",
-      "params": "bymonth:6;byweekday:SU;bymonthday:15,16,17,18,19,20,21"
+      "params": "bymonth:6;byweekday:SU;bysetpos:3"
     }
   },
   {
@@ -2298,7 +2298,7 @@
       "name": "Thanksgiving",
       "description": "July 4th",
       "frequency": "YEARLY",
-      "params": "bymonth:11;byweekday:TH;bymonthday:22,23,24,25,26,27,28"
+      "params": "bymonth:11;byweekday:TH;bysetpos:4"
     }
   },
   {
@@ -2328,7 +2328,17 @@
       "name": "Columbus day",
       "description": "the second Monday of October",
       "frequency": "YEARLY",
-      "params": "bymonth:10;byweekday:MO;bymonthday:8,9,10,11,12,13,14"
+      "params": "bymonth:10;byweekday:MO;bysetpos:2"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 24,
+    "fields": {
+      "name": "Labor day",
+      "description": "the 1st Monday of September",
+      "frequency": "YEARLY",
+      "params": "bymonth:9;byweekday:MO;bysetpos:1"
     }
   },
   {
@@ -2505,10 +2515,10 @@
     "model": "schedule.event",
     "pk": 11,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "MLK Jr. day",
-      "description": "The 3rd Monday of the January",
+      "description": "allDay: The 3rd Monday of the January",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2522,10 +2532,10 @@
     "model": "schedule.event",
     "pk": 12,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "President Day",
-      "description": "The 3rd Monday of the February",
+      "description": "allDay: The 3rd Monday of the February",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2539,10 +2549,10 @@
     "model": "schedule.event",
     "pk": 13,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Good Friday",
-      "description": "The Friday before Easter",
+      "description": "allDay: The Friday before Easter",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2556,10 +2566,10 @@
     "model": "schedule.event",
     "pk": 14,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Easter",
-      "description": "The 1st Sunday after the full Moon that occurs on or after the spring equinox",
+      "description": "allDay: The 1st Sunday after the full Moon that occurs on or after the spring equinox",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2573,10 +2583,10 @@
     "model": "schedule.event",
     "pk": 15,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Mother's day",
-      "description": "The 2nd Sunday in May",
+      "description": "allDay: The 2nd Sunday in May",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2590,10 +2600,10 @@
     "model": "schedule.event",
     "pk": 16,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Memorial day",
-      "description": "The Last Monday of May",
+      "description": "allDay: The Last Monday of May",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2607,10 +2617,10 @@
     "model": "schedule.event",
     "pk": 17,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Father's day",
-      "description": "The 3rd Sunday in June",
+      "description": "allDay: The 3rd Sunday in June",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2624,10 +2634,10 @@
     "model": "schedule.event",
     "pk": 18,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Juneteenth",
-      "description": "June 19th",
+      "description": "allDay: June 19th",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2641,10 +2651,10 @@
     "model": "schedule.event",
     "pk": 19,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Independence day",
-      "description": "July 4th",
+      "description": "allDay: July 4th",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2658,10 +2668,10 @@
     "model": "schedule.event",
     "pk": 20,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Thanksgiving",
-      "description": "July 4th",
+      "description": "allDay: The 4th Thursday of November",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2675,10 +2685,10 @@
     "model": "schedule.event",
     "pk": 21,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Christmas",
-      "description": "Dec 25th",
+      "description": "allDay: Dec 25th",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2692,10 +2702,10 @@
     "model": "schedule.event",
     "pk": 22,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "New Year’s Day",
-      "description": "January 1st",
+      "description": "allDay: January 1st",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -2709,14 +2719,31 @@
     "model": "schedule.event",
     "pk": 23,
     "fields": {
-      "start": "2020-02-09T19:15:00Z",
-      "end": "2020-02-09T19:15:00Z",
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
       "title": "Columbus day",
-      "description": "the second Monday of October",
+      "description": "allDay: the second Monday of October",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 23,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 24,
+    "fields": {
+      "start": "2020-02-09T00:00:00Z",
+      "end": "2020-02-09T00:00:01Z",
+      "title": "Labor day",
+      "description": "allDay: the 1st Monday of September",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 24,
       "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#956AA6"
