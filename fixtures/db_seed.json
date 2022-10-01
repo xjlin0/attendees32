@@ -2323,12 +2323,12 @@
   },
   {
     "model": "schedule.rule",
-    "pk": 22,
+    "pk": 23,
     "fields": {
       "name": "Columbus day",
-      "description": "Dec 25th",
+      "description": "the second Monday of October",
       "frequency": "YEARLY",
-      "params": "bymonth:12;bymonthday:25"
+      "params": "bymonth:10;byweekday:MO;bymonthday:8,9,10,11,12,13,14"
     }
   },
   {
@@ -2388,7 +2388,7 @@
     "fields": {
       "start": "2020-02-09T17:30:00Z",
       "end": "2020-02-09T18:40:00Z",
-      "title": "source: Sunday service 9:30A-10:40P",
+      "title": "source: Sunday service 9:30A-10:40A",
       "description": "room#19",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
@@ -2694,12 +2694,29 @@
     "fields": {
       "start": "2020-02-09T19:15:00Z",
       "end": "2020-02-09T19:15:00Z",
-      "title": "\"New Year’s Day",
+      "title": "New Year’s Day",
       "description": "January 1st",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 22,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 23,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Columbus day",
+      "description": "the second Monday of October",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 23,
       "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#956AA6"
@@ -13511,7 +13528,7 @@
       "audience_editable": false,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
-      "display_name": "英文崇拜 English Worship roster",
+      "display_name": "英文崇拜 Sunday Service (English)",
       "slug": "d7c8Fd_cfcch_congregation_english_worship_roster",
       "infos": {
         "attendance": {},
@@ -13643,7 +13660,7 @@
       "audience_editable": false,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
-      "display_name": "中文崇拜 Chinese Worship roster",
+      "display_name": "中文崇拜 Sunday Service (Chinese)",
       "slug": "d7c8Fd_cfcch_congregation_chinese_worship_roster",
       "infos": {
         "attendance": {},
