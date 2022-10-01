@@ -1,11 +1,13 @@
-import time
+import time, pytz
 from datetime import datetime
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from schedule.models import Calendar, Event
 from schedule.periods import Period
+from urllib import parse
 
 from attendees.occasions.serializers import OccurrenceSerializer
 
@@ -31,18 +33,24 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
         search_expression = self.request.query_params.get("searchExpr")
         search_operation = self.request.query_params.get("searchOperation")
         if user_organization and start and end:
-            start_time = datetime.strptime(start, iso_time_format)
-            end_time = datetime.strptime(end, iso_time_format)
+            tzname = (
+                self.request.COOKIES.get("timezone")
+                or user_organization.infos["default_time_zone"]
+                or settings.CLIENT_DEFAULT_TIME_ZONE
+            )
+            user_time_zone = pytz.timezone(parse.unquote(tzname))
             organization_acronym = user_organization.infos.get('acronym').strip()
             calendar = Calendar.objects.filter(slug__istartswith=organization_acronym, pk=calendar_id).first()
 
             if calendar:
                 events = Event.objects.filter(calendar=calendar.id)
-                period = Period(events, start_time, end_time)
-                return period.get_persisted_occurrences().filter(
-                    end__gte=start_time,
-                    start__lte=end_time
+                period = Period(
+                    events,
+                    datetime.strptime(start, iso_time_format),
+                    datetime.strptime(end, iso_time_format),
+                    tzinfo=user_time_zone,
                 )
+                return period.get_occurrences()
 
             else:
                 time.sleep(2)
