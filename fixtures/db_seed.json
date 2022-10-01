@@ -2202,6 +2202,136 @@
     }
   },
   {
+    "model": "schedule.rule",
+    "pk": 11,
+    "fields": {
+      "name": "MLK Jr. day",
+      "description": "The 3rd Monday of the January",
+      "frequency": "YEARLY",
+      "params": "bymonth:1;byweekday:MO;bymonthday:15,16,17,18,19,20,21"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 12,
+    "fields": {
+      "name": "President Day",
+      "description": "The 3rd Monday of the February",
+      "frequency": "YEARLY",
+      "params": "bymonth:2;byweekday:MO;bymonthday:15,16,17,18,19,20,21"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 13,
+    "fields": {
+      "name": "Good Friday",
+      "description": "The Friday before Easter",
+      "frequency": "YEARLY",
+      "params": "byeaster:-2"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 14,
+    "fields": {
+      "name": "Easter",
+      "description": "The 1st Sunday after the full Moon that occurs on or after the spring equinox",
+      "frequency": "YEARLY",
+      "params": "byeaster:0"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 15,
+    "fields": {
+      "name": "Mother's day",
+      "description": "The 2nd Sunday in May",
+      "frequency": "YEARLY",
+      "params": "bymonth:5;byweekday:SU;bymonthday:8,9,10,11,12,13,14"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 16,
+    "fields": {
+      "name": "Memorial day",
+      "description": "The Last Monday of May",
+      "frequency": "YEARLY",
+      "params": "bymonth:5;byweekday:MO;bymonthday:-1,-2,-3,-4,-5,-6,-7"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 17,
+    "fields": {
+      "name": "Father's day",
+      "description": "The 3rd Sunday in June",
+      "frequency": "YEARLY",
+      "params": "bymonth:6;byweekday:SU;bymonthday:15,16,17,18,19,20,21"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 18,
+    "fields": {
+      "name": "Juneteenth",
+      "description": "June 19th",
+      "frequency": "YEARLY",
+      "params": "bymonth:6;bymonthday:19"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 19,
+    "fields": {
+      "name": "Independence day",
+      "description": "July 4th",
+      "frequency": "YEARLY",
+      "params": "bymonth:7;bymonthday:4"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 20,
+    "fields": {
+      "name": "Thanksgiving",
+      "description": "July 4th",
+      "frequency": "YEARLY",
+      "params": "bymonth:11;byweekday:TH;bymonthday:22,23,24,25,26,27,28"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 21,
+    "fields": {
+      "name": "Christmas",
+      "description": "Dec 25th",
+      "frequency": "YEARLY",
+      "params": "bymonth:12;bymonthday:25"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 22,
+    "fields": {
+      "name": "New Year’s Day",
+      "description": "January 1st",
+      "frequency": "YEARLY",
+      "params": "bymonth:1;bymonthday:1"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 22,
+    "fields": {
+      "name": "Columbus day",
+      "description": "Dec 25th",
+      "frequency": "YEARLY",
+      "params": "bymonth:12;bymonthday:25"
+    }
+  },
+  {
     "model": "schedule.event",
     "pk": 1,
     "fields": {
@@ -2213,7 +2343,7 @@
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#3D8361"
     }
@@ -2230,7 +2360,7 @@
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#A084CA"
     }
@@ -2247,7 +2377,7 @@
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#926AA6"
     }
@@ -2264,7 +2394,7 @@
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#A484CA"
     }
@@ -2281,7 +2411,7 @@
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#956AA6"
     }
@@ -2298,7 +2428,7 @@
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 7,
       "color_event": "#3D8361"
     }
@@ -2315,7 +2445,7 @@
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 2,
       "color_event": "#A084CA"
     }
@@ -2332,7 +2462,7 @@
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 9,
       "color_event": "#926AA6"
     }
@@ -2349,7 +2479,7 @@
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 10,
       "color_event": "#A484CA"
     }
@@ -2366,8 +2496,212 @@
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 9,
-      "end_recurring_period": "2930-02-09T19:54:32Z",
+      "end_recurring_period": null,
       "calendar": 10,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 11,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "MLK Jr. day",
+      "description": "The 3rd Monday of the January",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 11,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 12,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "President Day",
+      "description": "The 3rd Monday of the February",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 12,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 13,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Good Friday",
+      "description": "The Friday before Easter",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 13,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 14,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Easter",
+      "description": "The 1st Sunday after the full Moon that occurs on or after the spring equinox",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 14,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 15,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Mother's day",
+      "description": "The 2nd Sunday in May",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 15,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 16,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Memorial day",
+      "description": "The Last Monday of May",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 16,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 17,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Father's day",
+      "description": "The 3rd Sunday in June",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 17,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 18,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Juneteenth",
+      "description": "June 19th",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 18,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 19,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Independence day",
+      "description": "July 4th",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 19,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 20,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Thanksgiving",
+      "description": "July 4th",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 20,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 21,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "Christmas",
+      "description": "Dec 25th",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 21,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#956AA6"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 22,
+    "fields": {
+      "start": "2020-02-09T19:15:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "\"New Year’s Day",
+      "description": "January 1st",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 22,
+      "end_recurring_period": null,
+      "calendar": 1,
       "color_event": "#956AA6"
     }
   },

@@ -17,8 +17,9 @@ from attendees.persons.models import Note, Utility
 class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     """
     Event is related by EventRelation with distinction 'source'.  The site_id/type here is just
-    default, should copy to Event description as 'room#42', so one meet can have multiple Event
-    happening at different sites.
+    default, should copy to Event description as 'room#42', so one meet can have multiple Events
+    happening at different sites.  WARNING: if multiple source events associated with a single
+    meet, attendances will be generated for all source events!
     code usage: ContentType.objects.get(model='room').model_class().objects.get(pk=1)
 
     """
