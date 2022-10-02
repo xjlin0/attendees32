@@ -134,6 +134,11 @@ Attendees.calendar = {
         },
       }),
     }),
+    onAppointmentRendered: (e) => {
+      if (e.appointmentData && e.appointmentData.color) {
+        e.appointmentElement[0].style.backgroundColor = e.appointmentData.color;
+      }
+    },
     views: ['agenda', 'day', 'week', 'month'],
     currentView: 'day',
     showCurrentTimeIndicator: true,
