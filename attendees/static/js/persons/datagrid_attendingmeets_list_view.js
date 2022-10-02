@@ -495,7 +495,12 @@ Attendees.attendingmeets = {
       }),
     },
     export: {
-        enabled: true
+      enabled: true,
+      allowExportSelectedData: true,  // needs selection mode
+    },
+    selection: {
+      mode: 'multiple',
+      showCheckBoxesMode: 'onLongTap',
     },
     searchPanel: {
       visible: true,
