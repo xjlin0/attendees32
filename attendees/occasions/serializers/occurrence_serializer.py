@@ -9,6 +9,7 @@ class OccurrenceSerializer(serializers.ModelSerializer):
     Note: the "allDay:" string in the beginning of the description will be rendered as all day event
     """
     text = serializers.SerializerMethodField(read_only=True)
+    color = serializers.SerializerMethodField(read_only=True)
 
     def get_text(self, obj):
         if obj.id:
@@ -21,6 +22,10 @@ class OccurrenceSerializer(serializers.ModelSerializer):
                 event_name = obj.event.title
         location_name = Utility.get_object_name(obj, 'description', 'display_name') or ''
         return f"{event_name.strip()} {location_name}".strip() or obj.title or obj.description
+
+    def get_color(self, obj):
+        color_code = obj.event and obj.event.color_event
+        return color_code if color_code and color_code.startswith('#') else None
 
     class Meta:
         model = Occurrence
