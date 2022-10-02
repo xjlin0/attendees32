@@ -494,6 +494,9 @@ Attendees.attendingmeets = {
         },
       }),
     },
+    export: {
+        enabled: true
+    },
     searchPanel: {
       visible: true,
       width: 300,
