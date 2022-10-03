@@ -32,8 +32,11 @@ class Command(BaseCommand):
             member_meet_slug,
             directory_meet_slug,
             baptized_meet_slug,
-            roaster_meet_slug,
+            roaster_meet1_slug,
+            roaster_meet2_slug,
             believer_meet_slug,
+            rock_meet_slug,
+            foot_meet_slug,
         ):
         """
         Entry function of entire importer, it execute importers in sequence and print out results.
@@ -47,8 +50,11 @@ class Command(BaseCommand):
         :param member_meet_slug: key of member_gathering
         :param directory_meet_slug: key of directory_gathering
         :param baptized_meet_slug: key of baptized_meet_slug
-        :param roaster_meet_slug: key of roaster_meet_slug
+        :param roaster_meet1_slug: key of roaster_meet1_slug
+        :param roaster_meet2_slug: key of roaster_meet2_slug
         :param believer_meet_slug: key of believer_meet_slug
+        :param rock_meet_slug: key of rock_meet_slug
+        :param foot_meet_slug: key of foot_meet_slug
         :return: None, but print out importing status and write to Attendees db (create or update)
         """
         if User.objects.count() < 1:
@@ -61,6 +67,22 @@ class Command(BaseCommand):
         households = csv.DictReader(household_csv)
         peoples = csv.DictReader(people_csv)
         addresses = csv.DictReader(address_csv)
+        division1 = Division.objects.get(slug=division1_slug)
+        division2 = Division.objects.get(slug=division2_slug)
+        roaster_meet1 = Meet.objects.select_related('major_character').get(slug=roaster_meet1_slug)
+        roaster_meet2 = Meet.objects.select_related('major_character').get(slug=roaster_meet2_slug)
+        rock_meet = Meet.objects.select_related('major_character').get(slug=rock_meet_slug)
+        foot_meet = Meet.objects.select_related('major_character').get(slug=foot_meet_slug)
+        division_converter = {
+            division1.id: {
+                "meet": roaster_meet2,
+                "gathering": Gathering.objects.filter(meet=roaster_meet2).last(),
+            },
+            division2.id: {  # e
+                "meet": roaster_meet1,  # e
+                "gathering": Gathering.objects.filter(meet=roaster_meet1).last(),
+            },
+        }
 
         try:
             initial_time = datetime.utcnow()
@@ -69,8 +91,8 @@ class Command(BaseCommand):
             initial_attendee_count = Attendee.objects.count()
             initial_families_count = FolkAttendee.objects.count()
             upserted_address_count = self.import_addresses(addresses, california, division1_slug)
-            upserted_household_id_count = self.import_households(households, division1_slug, division2_slug)
-            upserted_attendee_count, photo_import_results = self.import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, roaster_meet_slug, believer_meet_slug)
+            upserted_household_id_count = self.import_households(households, division1, division2)
+            upserted_attendee_count, photo_import_results = self.import_attendees(peoples, rock_meet, foot_meet, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug)
 
             if upserted_address_count and upserted_household_id_count and upserted_attendee_count:
                 upserted_relationship_count = self.reprocess_directory_emails_and_family_roles(data_assembly_slug, directory_meet_slug)
@@ -199,7 +221,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def import_households(self, households, division1_slug, division2_slug):
+    def import_households(self, households, division1, division2):
         """
         Importer of households from MS Access, also update display name and telephone number of Place.
         :param households: file content of households accessible by headers, from MS Access
@@ -208,8 +230,6 @@ class Command(BaseCommand):
         :return: successfully processed family count, also print out importing status and write FamilyAddress to Attendees db (create or update)
         """
         default_division = Division.objects.first()
-        division1 = Division.objects.get(slug=division1_slug)
-        division2 = Division.objects.get(slug=division2_slug)
         division_converter = {
             'CH': division1,
             'EN': division2,
@@ -302,7 +322,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def import_attendees(self, peoples, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, roaster_meet_slug, believer_meet_slug):
+    def import_attendees(self, peoples, rock_meet, foot_meet, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug):
         """
         Importer of each people from MS Access.
         :param peoples: file content of people accessible by headers, from MS Access
@@ -310,8 +330,11 @@ class Command(BaseCommand):
         :param data_assembly_slug: key of data_assembly
         :param member_meet_slug: key of member_meet
         :param baptized_meet_slug: key of baptized_meet_slug
-        :param roaster_meet_slug: key of roaster_meet_slug
+        :param roaster_meet1_slug: key of roaster_meet1_slug e
+        :param roaster_meet2_slug: key of roaster_meet2_slug
         :param believer_meet_slug: key of believer_meet_slug
+        :param rock_meet: key of rock_meet
+        :param foot_meet: key of foot_meet
         :return: successfully processed attendee count, also print out importing status and write Photo&FolkAttendee to Attendees db (create or update)
         """
         gender_converter = {
@@ -347,8 +370,6 @@ class Command(BaseCommand):
         visitor_meet = Meet.objects.select_related('major_character').get(pk=0)
         member_meet = Meet.objects.select_related('major_character').get(slug=member_meet_slug)
         member_gathering = Gathering.objects.filter(meet=member_meet).last()
-        roaster_meet = Meet.objects.select_related('major_character').get(slug=roaster_meet_slug)
-        roaster_gathering = Gathering.objects.filter(meet=roaster_meet).last()
         attendee_content_type = ContentType.objects.get_for_model(Attendee)
         baptized_meet = Meet.objects.select_related('major_character').get(slug=baptized_meet_slug)
         baptized_category = Category.objects.filter(type='status', display_name='baptized').first()
@@ -365,7 +386,10 @@ class Command(BaseCommand):
                 name2 = Utility.presence(people.get('ChineseName'))
                 household_id = Utility.presence(people.get('HouseholdID'))
                 household_role = Utility.presence(people.get('HouseholdRole'))
-
+                nick_name = Utility.presence(people.get('NickName'))
+                food_pref = Utility.presence(people.get('FoodPref'))
+                photo_release_grant_date = Utility.presence(people.get('PhotoReleaseGrantDate'))
+                grade = Utility.presence(people.get('Grade'))
                 if household_id and (first_name or last_name):
                     phones = [Utility.presence(people.get('WorkPhone')), Utility.presence(people.get('CellPhone'))]
                     email = Utility.presence(people.get('E-mail'))
@@ -409,6 +433,19 @@ class Command(BaseCommand):
                             estimated_birthday = True
                             self.stdout.write(f"\nImport_attendees error on BirthDate of people: {people}. Reason: {ve}. This birthday will be skipped. Other columns of this people will still be saved. Continuing. \n")
 
+                    if nick_name:
+                        attendee_values['infos']['names']['nick'] = nick_name
+
+                    if food_pref:
+                        attendee_values['infos']['fixed']['food_pref'] = food_pref
+
+                    if photo_release_grant_date:
+                        attendee_values['infos']['fixed']['photo_release_grant_date'] = '2022-09-01'  # CM current data date
+
+                    if grade:
+                        attendee_values['infos']['fixed']['grade'] = grade
+                        attendee_values['infos']['fixed']['grade_assess_date'] = '2022-08-31'  # CM current data date
+
                     if name2:  # assume longest last name is 2 characters
                         break_position = -2 if len(name2) > 2 else -1
                         attendee_values['first_name2'] = name2[break_position:]
@@ -434,9 +471,9 @@ class Command(BaseCommand):
                         try:
                             attendee.estimated_birthday = estimated_birthday_text
                             attendee.save()
-                            self.stdout.write(f"430 estimated_birthday of attendee {attendee.display_label} is being saved as {attendee.estimated_birthday}")
+                            self.stdout.write(f"466 estimated_birthday of attendee {attendee.display_label} is being saved as {attendee.estimated_birthday}")
                         except ValidationError:
-                            self.stdout.write(f"432 estimated_birthday of attendee {attendee.display_label} saved FAIL as {attendee.estimated_birthday}")
+                            self.stdout.write(f"468 estimated_birthday of attendee {attendee.display_label} saved FAIL as {attendee.estimated_birthday}")
                             attendee.estimated_birthday = ''
                     # potential_non_family_folk = attendee.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
                     # non_family_folk, folk_created = Folk.objects.update_or_create(
@@ -458,7 +495,7 @@ class Command(BaseCommand):
                     # )
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
-                    self.update_attendee_membership_and_other(baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
+                    self.update_attendee_membership_and_other(division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
 
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
@@ -539,7 +576,7 @@ class Command(BaseCommand):
                         else:
                             self.stdout.write(f"\nBad data, cannot find the household id: {household_id} for people: {people}, Other columns of this people will still be saved. Continuing. \n")
 
-                    self.update_attendee_worship_roster(attendee, data_assembly, visitor_meet, roaster_meet, roaster_gathering)
+                    self.update_attendee_worship_roster(attendee, data_assembly, visitor_meet, division_converter)
                 else:
                     self.stdout.write(f'There is no household_id or first/lastname of the people: {people}')
                 successfully_processed_count += 1
@@ -785,7 +822,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def update_attendee_worship_roster(self, attendee, data_assembly, visitor_meet, roster_meet, roster_gathering):
+    def update_attendee_worship_roster(self, attendee, data_assembly, visitor_meet, division_converter):
         pdt = pytz.timezone('America/Los_Angeles')
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         data_registration = Registration.objects.filter(
@@ -810,40 +847,43 @@ class Command(BaseCommand):
             },
         )
 
-        if attendee.infos.get('fixed', {}).get('attendance_count') in ['1', 'TRUE', 1]:
+        if attendee.infos.get('fixed', {}).get('attendance_count') in ['1', 'TRUE', 1] and attendee.division.id in division_converter:
+            meet = division_converter.get(attendee.division.id, {}).get('meet')
+            gathering = division_converter.get(attendee.division.id, {}).get('gathering')
             AttendingMeet.objects.update_or_create(
                 attending=data_attending,
-                meet=roster_meet,
-                character=roster_meet.major_character,
+                meet=meet,
+                character=meet.major_character,
                 defaults={
-                    'character': roster_meet.major_character,
+                    'character': meet.major_character,
                     'category_id': -1,  # This stop auto create Past via post-save signal
-                    'start': roster_meet.start,
+                    'start': meet.start,
                     'finish': datetime.now(pdt) + timedelta(365),  # whoever don't attend for a year won't be counted anymore
                 },
             )
 
-            Attendance.objects.update_or_create(
-                gathering=roster_gathering,
-                attending=data_attending,
-                character=roster_meet.major_character,
-                team=None,
-                defaults={
-                    'gathering': roster_gathering,
-                    'attending': data_attending,
-                    'character': roster_meet.major_character,
-                    # 'category_id': 6,   # Active
-                    'team': None,
-                    'start': roster_gathering.start,
-                    'finish': roster_gathering.finish,
-                    'infos': {
-                        'access_household_id': access_household_id,
-                        'created_reason': 'CFCCH member/directory registration from importer',
-                    },
-                }
-            )
+            if meet.infos.get("gathering_infos", {}).get("generate_attendance"):
+                Attendance.objects.update_or_create(
+                    gathering=gathering,
+                    attending=data_attending,
+                    character=meet.major_character,
+                    team=None,
+                    defaults={
+                        'gathering': gathering,
+                        'attending': data_attending,
+                        'character': meet.major_character,
+                        # 'category_id': 6,   # Active
+                        'team': None,
+                        'start': gathering.start,
+                        'finish': gathering.finish,
+                        'infos': {
+                            'access_household_id': access_household_id,
+                            'created_reason': 'CFCCH member/directory registration from importer',
+                        },
+                    }
+                )
 
-    def update_attendee_membership_and_other(self, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
+    def update_attendee_membership_and_other(self, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         # data_registration, data_registration_created = Registration.objects.update_or_create(
         #     assembly=data_assembly,
@@ -870,8 +910,8 @@ class Command(BaseCommand):
                 }
             }
         )
-
-        is_member = Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('cfcc_member'))
+        member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since', '').replace('*', '1'))
+        is_member = (True if member_date_text else False) or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('cfcc_member'))
         bap_date_text = None
         if attendee.infos.get('progressions', {}).get('baptized_since') or attendee.infos.get('progressions', {}).get('baptism_location'):
             bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since', '').replace('*', '1'), error_context=f' when parsing baptized_since of {attendee.display_label} at line 861')
@@ -911,7 +951,6 @@ class Command(BaseCommand):
             )
 
         if bap_date_text or is_member:
-            member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since', '').replace('*', '1'))
             member_date_or_now = Utility.parsedate_or_now(member_date_text, error_context=f' when parsing member_since of {attendee.display_label} at line 899')
             bap_date_or_now = Utility.parsedate_or_now(bap_date_text, error_context=f' when parsing baptized_since of {attendee.display_label} at line 899')
             baptized_date_or_now = min(member_date_or_now, bap_date_or_now)
@@ -984,6 +1023,27 @@ class Command(BaseCommand):
                         'created_reason': 'CFCCH member/directory registration from importer',
                     },
                 }
+            )
+
+        people_note = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
+        if '2022CMLR' == people_note:  # magic word for adding CM attendingmeet
+            attendee.division = division3
+            attendee.save()
+
+            grade = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('Grade')
+            meet = foot_meet if 'Nursery' == grade else rock_meet
+
+            AttendingMeet.objects.update_or_create(
+                attending=data_attending,
+                meet=meet,
+                character=meet.major_character,
+                defaults={
+                    'attending': data_attending,
+                    'meet': meet,
+                    'character': meet.major_character,
+                    'start': datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    'finish': datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                },
             )
 
     def update_directory_data(self, folk, directory_meet, directory_gathering):
@@ -1119,8 +1179,11 @@ class Command(BaseCommand):
         parser.add_argument('member_meet_slug')
         parser.add_argument('directory_meet_slug')
         parser.add_argument('baptized_meet_slug')
-        parser.add_argument('roaster_meet_slug')
+        parser.add_argument('roaster_meet1_slug')
+        parser.add_argument('roaster_meet2_slug')
         parser.add_argument('believer_meet_slug')
+        parser.add_argument('rock_meet_slug')
+        parser.add_argument('foot_meet_slug')
 
     def handle(self, *args, **options):
         self.stdout.write("Running load_access_csv.py... with arguments: ")
@@ -1133,9 +1196,12 @@ class Command(BaseCommand):
         self.stdout.write(f"Reading data_assembly_slug: {options.get('data_assembly_slug')}")
         self.stdout.write(f"Reading member_meet_slug: {options.get('member_meet_slug')}")
         self.stdout.write(f"Reading directory_meet_slug: {options.get('directory_meet_slug')}")
-        self.stdout.write(f"Reading roaster_meet_slug: {options.get('roaster_meet_slug')}")
+        self.stdout.write(f"Reading roaster_meet1_slug: {options.get('roaster_meet1_slug')}")
+        self.stdout.write(f"Reading roaster_meet2_slug: {options.get('roaster_meet2_slug')}")
         self.stdout.write(f"Reading believer_meet_slug: {options.get('believer_meet_slug')}")
-        self.stdout.write("running commands: docker-compose -f local.yml run django python manage.py load_access_csv household_csv_file people_csv_file address_csv_file division1_slug division2_slug division3_slug data_assembly_slug member_meet_slug directory_meet_slug roaster_meet_slug believer_meet_slug")
+        self.stdout.write(f"Reading rock_meet_slug: {options.get('rock_meet_slug')}")
+        self.stdout.write(f"Reading foot_meet_slug: {options.get('foot_meet_slug')}")
+        self.stdout.write("running commands: docker-compose -f local.yml run django python manage.py load_access_csv household_csv_file people_csv_file address_csv_file division1_slug division2_slug division3_slug data_assembly_slug member_meet_slug directory_meet_slug roaster_meet1_slug believer_meet_slug")
 
         if options.get('household_csv_file') and options.get('people_csv_file') and options.get('address_csv_file') and options.get('division1_slug') and options.get('division2_slug'):
             with open(options.get('household_csv_file'), mode='r', encoding='utf-8-sig') as household_csv, open(options.get('people_csv_file'), mode='r', encoding='utf-8-sig') as people_csv, open(options.get('address_csv_file'), mode='r', encoding='utf-8-sig') as address_csv:
@@ -1150,8 +1216,11 @@ class Command(BaseCommand):
                     options.get('member_meet_slug'),
                     options.get('directory_meet_slug'),
                     options.get('baptized_meet_slug'),
-                    options.get('roaster_meet_slug'),
+                    options.get('roaster_meet1_slug'),
+                    options.get('roaster_meet2_slug'),
                     options.get('believer_meet_slug'),
+                    options.get('rock_meet_slug'),
+                    options.get('foot_meet_slug'),
                 )
         else:
             raise CommandError("household_csv_file, people_csv_file and address_csv_file are required.")

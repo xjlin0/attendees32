@@ -1978,6 +1978,22 @@
     }
   },
   {
+    "model": "schedule.calendar",
+    "pk": 13,
+    "fields": {
+      "name": "Non specific calendar",
+      "slug": "non_specific_calendar"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 14,
+    "fields": {
+      "name": "CFCCH fellowship hall",
+      "slug": "cfcch_fellowship_hall"
+    }
+  },
+  {
     "model": "schedule.calendarrelation",
     "pk": 0,
     "fields": {
@@ -2358,6 +2374,16 @@
       "description": "the 1st Monday of September",
       "frequency": "YEARLY",
       "params": "bymonth:9;byweekday:MO;bysetpos:1"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 25,
+    "fields": {
+      "name": "Tue/Wed/Thu",
+      "description": "Every Tuesday, Wednesday & Thursday",
+      "frequency": "WEEKLY",
+      "params": "byweekday:TU,WE,TH"
     }
   },
   {
@@ -2800,6 +2826,23 @@
       "end_recurring_period": null,
       "calendar": 12,
       "color_event": "#A484CA"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 27,
+    "fields": {
+      "start": "2020-02-09T17:15:00Z",
+      "end": "2020-02-09T20:40:00Z",
+      "title": "source: After School Tuesday 9:15A-12:40P",
+      "description": "room#6",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#3D8361"
     }
   },
   {
@@ -7003,6 +7046,19 @@
     }
   },
   {
+    "model": "whereabouts.suite",
+    "pk": 12,
+    "fields": {
+      "created": "2020-04-11T18:35:21.186Z",
+      "modified": "2021-04-08T17:08:17.290Z",
+      "is_removed": false,
+      "display_name": "CFCC 副堂1樓",
+      "slug": "cfcch_fellowship_1f",
+      "property": 1,
+      "site": "1F"
+    }
+  },
+  {
     "model": "whereabouts.room",
     "pk": 1,
     "fields": {
@@ -7316,6 +7372,22 @@
       "display_name": "舊大堂, old sanctuary, CFCCH",
       "slug": "cfcch_old_sanctuary",
       "suite": 11,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 21,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "副堂 大廳 hall, fellowship 1F, CFCCH",
+      "slug": "cfcch_fellowship_hall",
+      "suite": 12,
       "label": null,
       "infos": {
         "accessibility": 0
@@ -12105,9 +12177,9 @@
       "start": null,
       "finish": null,
       "category": 33,
-      "display_name": "成人主日學 Chinese Sunday School",
+      "display_name": "團契查經 Chinese Fellowships",
       "display_order": 0,
-      "slug": "cfcch_chinese_sunday_school",
+      "slug": "cfcch_chinese_fellowships",
       "division": 1,
       "infos": {
         "fixed": {},
@@ -14258,13 +14330,13 @@
       "created": "2020-04-11T18:47:42.792Z",
       "modified": "2021-04-08T16:37:22.469Z",
       "is_removed": false,
-      "assembly": 1,
+      "assembly": 8,
       "major_character": 1,
       "shown_audience": true,
       "audience_editable": true,
       "start": "2022-09-01T14:53:44Z",
       "finish": "2022-12-31T15:53:45Z",
-      "display_name": "秋季主日學 2022 Autumn Chinese Sunday School",
+      "display_name": "2022 秋季主日學 Autumn Chinese Sunday School",
       "slug": "d7c8Fd_cfcch_2022_autumn_chinese_sunday_school",
       "infos": {
         "attendance": {},
@@ -14293,6 +14365,52 @@
       },
       "site_type": 64,
       "site_id": "3"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 20,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 1,
+      "major_character": 1,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2020-05-12T14:53:44Z",
+      "finish": "2099-05-12T15:53:45Z",
+      "display_name": "After School Club",
+      "slug": "d7c8Fd_cfcch_junior_regular_after_school_club",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "children_organizer",
+          "children_coworker",
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 53
+      },
+      "site_type": 64,
+      "site_id": "21"
     }
   },
   {
