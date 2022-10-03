@@ -16,8 +16,11 @@ class OccurrenceSerializer(serializers.ModelSerializer):
             event_name = Utility.get_object_name(obj, 'title', 'meet_display_name') or ''
         else:
             meet = obj.event.eventrelation_set.filter(distinction='source').first()
+            location = obj.event.eventrelation_set.filter(distinction='location').first()
             if meet:
                 event_name = str(meet.content_object)
+            elif location:
+                event_name = str(location.content_object)
             else:
                 event_name = obj.event.title
         location_name = Utility.get_object_name(obj, 'description', 'display_name') or ''
