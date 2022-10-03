@@ -1970,6 +1970,14 @@
     }
   },
   {
+    "model": "schedule.calendar",
+    "pk": 12,
+    "fields": {
+      "name": "CFCCH worship room 107 calendar",
+      "slug": "cfcch_worship_107"
+    }
+  },
+  {
     "model": "schedule.calendarrelation",
     "pk": 0,
     "fields": {
@@ -2097,6 +2105,17 @@
       "calendar": 11,
       "content_type": 64,
       "object_id": 20,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 12,
+    "fields": {
+      "calendar": 12,
+      "content_type": 64,
+      "object_id": 3,
       "distinction": "source",
       "inheritable": true
     }
@@ -2348,7 +2367,7 @@
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
       "title": "source: The Rock Sunday 9:15A-12:40P",
-      "description": "room#1",
+      "description": "room#6",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2365,7 +2384,7 @@
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
       "title": "source: Little foot Sunday 9:15A-12:40P",
-      "description": "room#6",
+      "description": "room#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2432,7 +2451,7 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "event#1",
+      "title": "event#6",
       "description": "room#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2450,7 +2469,7 @@
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
       "title": "event#2",
-      "description": "room#6",
+      "description": "room#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2753,7 +2772,7 @@
     "model": "schedule.event",
     "pk": 25,
     "fields": {
-      "start": "2020-02-09T17:00:00Z",
+      "start": "2020-02-09T18:00:00Z",
       "end": "2020-02-09T19:15:00Z",
       "title": "source: Chinese Sunday School 10:00A-11:15A",
       "description": "room#3",
@@ -2763,6 +2782,23 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
+      "color_event": "#A484CA"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 26,
+    "fields": {
+      "start": "2020-02-09T18:00:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "event#25",
+      "description": "room#3",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 9,
+      "end_recurring_period": null,
+      "calendar": 12,
       "color_event": "#A484CA"
     }
   },
@@ -2802,7 +2838,7 @@
     "fields": {
       "event": 4,
       "content_type": 103,
-      "object_id": 7,
+      "object_id": 4,
       "distinction": "source"
     }
   },
@@ -2874,6 +2910,16 @@
       "content_type": 103,
       "object_id": 19,
       "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 12,
+    "fields": {
+      "event": 26,
+      "content_type": 103,
+      "object_id": 19,
+      "distinction": "location"
     }
   },
   {
@@ -12973,7 +13019,7 @@
       "created": "1999-05-11T00:15:00.152Z",
       "modified": "2021-04-08T16:55:42.071Z",
       "is_removed": false,
-      "meet": 7,
+      "meet": 4,
       "start": "2020-05-17T17:00:00Z",
       "finish": "2020-05-17T18:59:59Z",
       "display_name": "05/17/2020 主日崇拜",
