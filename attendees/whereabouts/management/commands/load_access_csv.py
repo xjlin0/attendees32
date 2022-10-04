@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from address.models import Locality, State, Address
 
-from attendees.occasions.models import Assembly, Meet, Gathering, Attendance
+from attendees.occasions.models import Assembly, Meet, Gathering, Attendance, Team
 from attendees.persons.models import Utility, GenderEnum, Folk, Relation, Attendee, FolkAttendee, \
     Registration, Attending, AttendingMeet, Past, Category
 from attendees.users.admin import User
@@ -363,6 +363,15 @@ class Command(BaseCommand):
             '海沃之友': 'hayward_friend',
         }
 
+        cr_meet = Meet.objects.get(pk=3)
+        cr_converter = {
+            'CRP': Team.objects.get(pk=7),
+            'CRS': Team.objects.get(pk=8),
+            'CRA': Team.objects.get(pk=9),
+            'CRT': Team.objects.get(pk=10),
+            'CRB': Team.objects.get(pk=11),
+        }
+
         self.stdout.write("\n\nRunning import_attendees: \n")
         default_division = Division.objects.first()
         division3 = Division.objects.get(slug=division3_slug)  # kid
@@ -495,7 +504,7 @@ class Command(BaseCommand):
                     # )
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
-                    self.update_attendee_membership_and_other(division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
+                    self.update_attendee_membership_and_other(cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
 
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
@@ -836,8 +845,8 @@ class Command(BaseCommand):
         ).first()
 
         AttendingMeet.objects.update_or_create(
-            attending=data_attending,
             meet=visitor_meet,
+            attending=data_attending,
             character=visitor_meet.major_character,
             defaults={
                 'character': visitor_meet.major_character,
@@ -851,8 +860,8 @@ class Command(BaseCommand):
             meet = division_converter.get(attendee.division.id, {}).get('meet')
             gathering = division_converter.get(attendee.division.id, {}).get('gathering')
             AttendingMeet.objects.update_or_create(
-                attending=data_attending,
                 meet=meet,
+                attending=data_attending,
                 character=meet.major_character,
                 defaults={
                     'character': meet.major_character,
@@ -883,7 +892,7 @@ class Command(BaseCommand):
                     }
                 )
 
-    def update_attendee_membership_and_other(self, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
+    def update_attendee_membership_and_other(self, cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         # data_registration, data_registration_created = Registration.objects.update_or_create(
         #     assembly=data_assembly,
@@ -921,8 +930,8 @@ class Command(BaseCommand):
         if is_believer or bap_date_text or is_member:
 
             AttendingMeet.objects.update_or_create(
-                attending=data_attending,
                 meet=believer_meet,
+                attending=data_attending,
                 character=believer_meet.major_character,
                 defaults={
                     'attending': data_attending,
@@ -957,8 +966,8 @@ class Command(BaseCommand):
             bap_date_or_unknown = Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('baptized_since', 'unknown'))
 
             AttendingMeet.objects.update_or_create(
-                attending=data_attending,
                 meet=baptized_meet,
+                attending=data_attending,
                 character=baptized_meet.major_character,
                 defaults={
                     'attending': data_attending,
@@ -999,8 +1008,8 @@ class Command(BaseCommand):
             }
 
             AttendingMeet.objects.update_or_create(
-                attending=data_attending,
                 meet=member_meet,
+                attending=data_attending,
                 character=member_meet.major_character,
                 defaults=member_attending_meet_default,
             )
@@ -1034,13 +1043,29 @@ class Command(BaseCommand):
             meet = foot_meet if 'Nursery' == grade else rock_meet
 
             AttendingMeet.objects.update_or_create(
-                attending=data_attending,
                 meet=meet,
+                attending=data_attending,
                 character=meet.major_character,
                 defaults={
                     'attending': data_attending,
                     'meet': meet,
                     'character': meet.major_character,
+                    'start': datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    'finish': datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                },
+            )
+
+        if people_note in cr_converter:
+            AttendingMeet.objects.update_or_create(
+                meet=cr_meet,
+                attending=data_attending,
+                character=cr_meet.major_character,
+                team=cr_converter.get(people_note),
+                defaults={
+                    'meet': cr_meet,
+                    'attending': data_attending,
+                    'character': cr_meet.major_character,
+                    'team': cr_converter.get(people_note),
                     'start': datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
                     'finish': datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
                 },
@@ -1071,12 +1096,12 @@ class Command(BaseCommand):
                 )
 
                 AttendingMeet.objects.update_or_create(
-                    attending=directory_attending,
                     meet=directory_meet,
+                    attending=directory_attending,
                     character=directory_meet.major_character,
                     defaults={
-                        'attending': directory_attending,
                         'meet': directory_meet,
+                        'attending': directory_attending,
                         'character': directory_meet.major_character,
                         'category_id': -1,
                         'start': directory_gathering.start,
