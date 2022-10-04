@@ -2842,8 +2842,8 @@
     "model": "schedule.event",
     "pk": 27,
     "fields": {
-      "start": "2020-02-09T22:00:00Z",
-      "end": "2020-02-10T00:30:00Z",
+      "start": "2020-02-09T23:00:00Z",
+      "end": "2020-02-10T01:30:00Z",
       "title": "source: After School Tu~Th 3-5:30P",
       "description": "room#21",
       "creator": 1,
@@ -2859,8 +2859,8 @@
     "model": "schedule.event",
     "pk": 28,
     "fields": {
-      "start": "2020-02-09T22:00:00Z",
-      "end": "2020-02-10T00:30:00Z",
+      "start": "2020-02-09T23:00:00Z",
+      "end": "2020-02-10T01:30:00Z",
       "title": "event#27",
       "description": "room#21",
       "creator": 1,

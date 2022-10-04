@@ -2,7 +2,7 @@ import csv, os, pytz, re, sys
 from datetime import datetime, timedelta
 from glob import glob
 from pathlib import Path
-
+from urllib import parse
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.exceptions import ValidationError
@@ -1034,6 +1034,10 @@ class Command(BaseCommand):
                 }
             )
 
+        tzname = cr_meet.infos.get('default_time_zone')
+        time_zone = pytz.timezone(parse.unquote(tzname))
+        import_time = datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
+        end_time = datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
         people_note = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
         if '2022CMLR' == people_note:  # magic word for adding CM attendingmeet
             attendee.division = division3
@@ -1050,8 +1054,8 @@ class Command(BaseCommand):
                     'attending': data_attending,
                     'meet': meet,
                     'character': meet.major_character,
-                    'start': datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-                    'finish': datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    'start': import_time,
+                    'finish': end_time,
                 },
             )
 
@@ -1066,8 +1070,8 @@ class Command(BaseCommand):
                     'attending': data_attending,
                     'character': cr_meet.major_character,
                     'team': cr_converter.get(people_note),
-                    'start': datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-                    'finish': datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    'start': import_time,
+                    'finish': end_time,
                 },
             )
 
