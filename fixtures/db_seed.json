@@ -2387,6 +2387,16 @@
     }
   },
   {
+    "model": "schedule.rule",
+    "pk": 26,
+    "fields": {
+      "name": "Friday",
+      "description": "Every Friday",
+      "frequency": "WEEKLY",
+      "params": "byweekday:FR"
+    }
+  },
+  {
     "model": "schedule.event",
     "pk": 1,
     "fields": {
@@ -2832,16 +2842,67 @@
     "model": "schedule.event",
     "pk": 27,
     "fields": {
-      "start": "2020-02-09T17:15:00Z",
-      "end": "2020-02-09T20:40:00Z",
-      "title": "source: After School Tuesday 9:15A-12:40P",
-      "description": "room#6",
+      "start": "2020-02-09T22:00:00Z",
+      "end": "2020-02-10T00:30:00Z",
+      "title": "source: After School Tu~Th 3-5:30P",
+      "description": "room#21",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
-      "rule": 9,
+      "rule": 25,
       "end_recurring_period": null,
       "calendar": 1,
+      "color_event": "#3D8361"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 28,
+    "fields": {
+      "start": "2020-02-09T22:00:00Z",
+      "end": "2020-02-10T00:30:00Z",
+      "title": "event#27",
+      "description": "room#21",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 25,
+      "end_recurring_period": null,
+      "calendar": 14,
+      "color_event": "#3D8361"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 29,
+    "fields": {
+      "start": "2020-02-09T14:30:00Z",
+      "end": "2020-02-09T16:00:00Z",
+      "title": "source: Shining Star 7:30P-9P",
+      "description": "room#21",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 26,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#3D8361"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 30,
+    "fields": {
+      "start": "2020-02-09T14:30:00Z",
+      "end": "2020-02-09T16:00:00Z",
+      "title": "event#29",
+      "description": "room#21",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 26,
+      "end_recurring_period": null,
+      "calendar": 14,
       "color_event": "#3D8361"
     }
   },
@@ -2962,6 +3023,46 @@
       "event": 26,
       "content_type": 103,
       "object_id": 19,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 13,
+    "fields": {
+      "event": 27,
+      "content_type": 103,
+      "object_id": 20,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 14,
+    "fields": {
+      "event": 28,
+      "content_type": 103,
+      "object_id": 20,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 15,
+    "fields": {
+      "event": 29,
+      "content_type": 103,
+      "object_id": 5,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 16,
+    "fields": {
+      "event": 30,
+      "content_type": 103,
+      "object_id": 5,
       "distinction": "location"
     }
   },
@@ -6903,6 +7004,21 @@
     }
   },
   {
+    "model": "whereabouts.property",
+    "pk": 6,
+    "fields": {
+      "created": "2020-04-11T18:33:59.401Z",
+      "modified": "2020-06-19T15:47:44.600Z",
+      "is_removed": false,
+      "display_name": "CFCCH House of Agape",
+      "slug": "cfcch_house_of_agape",
+      "campus": 1,
+      "infos": {
+        "contacts": {}
+      }
+    }
+  },
+  {
     "model": "whereabouts.suite",
     "pk": 1,
     "fields": {
@@ -7055,6 +7171,19 @@
       "display_name": "CFCC 副堂1樓",
       "slug": "cfcch_fellowship_1f",
       "property": 1,
+      "site": "1F"
+    }
+  },
+  {
+    "model": "whereabouts.suite",
+    "pk": 13,
+    "fields": {
+      "created": "2020-04-11T18:35:21.186Z",
+      "modified": "2021-04-08T17:08:17.290Z",
+      "is_removed": false,
+      "display_name": "仁愛屋 1F, House of Agape, CFCCH",
+      "slug": "cfcch_house_of_agape_1F",
+      "property": 6,
       "site": "1F"
     }
   },
@@ -7388,6 +7517,22 @@
       "display_name": "副堂 大廳 hall, fellowship 1F, CFCCH",
       "slug": "cfcch_fellowship_hall",
       "suite": 12,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 22,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "仁愛屋 大廳 hall, house of Agape 1F, CFCCH",
+      "slug": "cfcch_house_of_agape_1f_hall",
+      "suite": 13,
       "label": null,
       "infos": {
         "accessibility": 0
@@ -12980,6 +13125,321 @@
     }
   },
   {
+    "model": "occasions.character",
+    "pk": 27,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "Head counter/Trash bin arranger",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_head_counter_trash_bin_arranger",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 28,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "Student/Food distributor",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_student_food_distributor",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 29,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "Student/Water distributor",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_student_water_distributor",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 30,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "Student/Utencils arranger",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_student_utencils_arranger",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 31,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "Student/Preschooler server",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_student_preschooler_server",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 32,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Large Group Leader 1",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_lg_leader1",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 33,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Large Group Leader 2",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_lg_leader2",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 34,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group Kindergarten Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_kindergarten_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 35,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G1 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g1_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 36,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G2 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g2_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 37,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G3 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g3_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 38,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G4 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g4_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 39,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G5 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g5_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 40,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G1 & G2 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g1_g2_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 41,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G2 & G3 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g2_g3_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 42,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G3 & G4 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g3_g4_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 43,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Small Group G4 & G5 Leader",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_sg_g4_g5_leader",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 44,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Preschool Leader P1",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_preschool_leader_p1",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 45,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "The Rock Preschool Leader P2",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_the_rock_preschool_leader_p2",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 46,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "Little foot Nursery Leader P1",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_little_foot_nursery_leader_p1",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 47,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "Little foot Nursery Leader P2",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_little_foot_nursery_leader_p2",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
     "model": "occasions.gathering",
     "pk": 1,
     "fields": {
@@ -13662,7 +14122,7 @@
         "default_attendingmeet_in_weeks": 53
       },
       "site_type": 64,
-      "site_id": "6"
+      "site_id": "22"
     }
   },
   {
@@ -14529,6 +14989,310 @@
       "infos": {},
       "site_type": 53,
       "site_id": "721be461-4304-49f4-a477-3e45f7ed38bd"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 6,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 3,
+      "slug": "cfcch_chinese_choir_conductor",
+      "display_name": "指揮",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 7,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 3,
+      "slug": "cfcch_chinese_choir_pianist",
+      "display_name": "司琴",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 8,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 3,
+      "slug": "cfcch_chinese_choir_soprano",
+      "display_name": "女高音",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 9,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 3,
+      "slug": "cfcch_chinese_choir_alto",
+      "display_name": "女低音",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 10,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 3,
+      "slug": "cfcch_chinese_choir_tenor",
+      "display_name": "男高音",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 11,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 3,
+      "slug": "cfcch_chinese_choir_bass",
+      "display_name": "男低音",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 12,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 3,
+      "slug": "cfcch_chinese_choir_solo",
+      "display_name": "獨唱",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 13,
+    "fields": {
+      "created": "2020-06-19T17:50:42.866Z",
+      "modified": "2021-04-08T17:43:47.956Z",
+      "is_removed": false,
+      "meet": 13,
+      "slug": "cfcch_2020_summer_retreat_pickup3",
+      "display_name": "CFCCH 2020夏令會 接送 pickup3",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 53,
+      "site_id": "721be461-4304-49f4-a477-3e45f7ed38bd"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 14,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 2,
+      "slug": "cfcch_kid_foot_under_three",
+      "display_name": "CFCCH CM Under 3",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "22"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 15,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_prek_and_k",
+      "display_name": "CFCCH CM The Rock Kindergarten & Pre-K",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "22"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 16,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g1",
+      "display_name": "CFCCH CM The Rock 1st Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "11"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 17,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g2",
+      "display_name": "CFCCH CM The Rock 2nd Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "11"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 18,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g3",
+      "display_name": "CFCCH CM The Rock 3rd Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "9"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 19,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g4",
+      "display_name": "CFCCH CM The Rock 4th Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "9"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 20,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g5",
+      "display_name": "CFCCH CM The Rock 5th Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "6"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 21,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g1_g2",
+      "display_name": "CFCCH CM The Rock 1st & 2nd Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "11"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 22,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g2_g3",
+      "display_name": "CFCCH CM The Rock 2nd & 3rd Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "9"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 23,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g3_g4",
+      "display_name": "CFCCH CM The Rock 3rd & 4th Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "9"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 24,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_g4_g5",
+      "display_name": "CFCCH CM The Rock 4th & 5th Grade",
+      "display_order": 0,
+      "infos": {},
+      "site_type": 64,
+      "site_id": "6"
     }
   }
 ]
