@@ -80,7 +80,7 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
         db_table = "persons_attending_meets"
         constraints = [
             models.UniqueConstraint(
-                fields=["attending", "meet", "character"],
+                fields=["meet", "attending", "character", "team"],
                 condition=models.Q(is_removed=False),
                 name="attending_meet_uniq",
             )
