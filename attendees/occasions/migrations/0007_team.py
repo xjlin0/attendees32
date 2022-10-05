@@ -33,6 +33,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'occasions_teams',
+                # 'ordering': ('meet', 'display_order', 'display_name'),
             },
             bases=(models.Model, Utility),
         ),
