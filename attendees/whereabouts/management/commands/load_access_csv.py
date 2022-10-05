@@ -71,8 +71,6 @@ class Command(BaseCommand):
         division2 = Division.objects.get(slug=division2_slug)
         roaster_meet1 = Meet.objects.select_related('major_character').get(slug=roaster_meet1_slug)
         roaster_meet2 = Meet.objects.select_related('major_character').get(slug=roaster_meet2_slug)
-        rock_meet = Meet.objects.select_related('major_character').get(slug=rock_meet_slug)
-        foot_meet = Meet.objects.select_related('major_character').get(slug=foot_meet_slug)
         division_converter = {
             division1.id: {
                 "meet": roaster_meet2,
@@ -92,10 +90,10 @@ class Command(BaseCommand):
             initial_families_count = FolkAttendee.objects.count()
             upserted_address_count = self.import_addresses(addresses, california, division1_slug)
             upserted_household_id_count = self.import_households(households, division1, division2)
-            upserted_attendee_count, photo_import_results = self.import_attendees(peoples, rock_meet, foot_meet, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug)
-
+            upserted_attendee_count, photo_import_results = self.import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug)
+            # upserted_address_count, upserted_household_id_count, upserted_attendee_count, photo_import_results = 1, 1, 1, []
             if upserted_address_count and upserted_household_id_count and upserted_attendee_count:
-                upserted_relationship_count = self.reprocess_directory_emails_and_family_roles(data_assembly_slug, directory_meet_slug)
+                upserted_relationship_count = self.reprocess_directory_emails_and_family_roles( division3_slug, rock_meet_slug, foot_meet_slug, directory_meet_slug)
                 self.stdout.write("\n\nProcessing results of importing/updating Access export csv files:\n")
                 self.stdout.write(f'Number of address successfully imported/updated: {upserted_address_count}')
                 self.stdout.write(f"Initial contact count: {initial_contact_count}. final contact count: {Place.objects.count()}.\n")
@@ -322,7 +320,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def import_attendees(self, peoples, rock_meet, foot_meet, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug):
+    def import_attendees(self, peoples, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug):
         """
         Importer of each people from MS Access.
         :param peoples: file content of people accessible by headers, from MS Access
@@ -370,15 +368,6 @@ class Command(BaseCommand):
             'CRA': Team.objects.get(pk=9),
             'CRT': Team.objects.get(pk=10),
             'CRB': Team.objects.get(pk=11),
-        }
-
-        cm_converter = {
-            '2022CMLRpk': Team.objects.get(pk=15),
-            '2022CMLRg1': Team.objects.get(pk=16),
-            '2022CMLR23': Team.objects.get(pk=22),
-            '2022CMLR45': Team.objects.get(pk=24),
-            '2022CMLRps': Team.objects.get(pk=1),
-            '2022CMLRu3': Team.objects.get(pk=14),
         }
 
         self.stdout.write("\n\nRunning import_attendees: \n")
@@ -513,7 +502,7 @@ class Command(BaseCommand):
                     # )
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
-                    self.update_attendee_membership_and_other(cm_converter, cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
+                    self.update_attendee_membership_and_other(cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
 
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
@@ -607,7 +596,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count, photo_import_results  # list(filter(None.__ne__, photo_import_results))
 
-    def reprocess_directory_emails_and_family_roles(self, data_assembly_slug, directory_meet_slug):
+    def reprocess_directory_emails_and_family_roles(self, division3_slug, rock_meet_slug, foot_meet_slug, directory_meet_slug):
         """
         Reprocess extra data (email/relationship) from FolkAttendee, also do data correction of Role
         :param data_assembly_slug: key of data_assembly
@@ -624,15 +613,31 @@ class Command(BaseCommand):
             title='wife',
             gender=GenderEnum.FEMALE.name,
         )
-        # data_assembly = Assembly.objects.get(slug=data_assembly_slug)
+        cm_assembly = Assembly.objects.get(pk=1)
         directory_meet = Meet.objects.get(slug=directory_meet_slug)
         directory_gathering = Gathering.objects.filter(meet=directory_meet).last()
         # directory_character = directory_meet.major_character
         imported_family_folks = Folk.objects.filter(category=Attendee.FAMILY_CATEGORY, infos__access_household_id__isnull=False).order_by('created')  # excludes seed data
+        cm_converter = {
+            '2022CMLRpk': Team.objects.get(pk=15),
+            '2022CMLRg1': Team.objects.get(pk=16),
+            '2022CMLR23': Team.objects.get(pk=22),
+            '2022CMLR45': Team.objects.get(pk=24),
+            '2022CMLRps': Team.objects.get(pk=1),
+            '2022CMLRu3': Team.objects.get(pk=14),
+        }
+        division3 = Division.objects.get(slug=division3_slug)  # kid
+        rock_meet = Meet.objects.select_related('major_character').get(slug=rock_meet_slug)
+        foot_meet = Meet.objects.select_related('major_character').get(slug=foot_meet_slug)
+        tzname = rock_meet.infos.get('default_time_zone')
+        time_zone = pytz.timezone(parse.unquote(tzname))
+        import_time = datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
+        end_time = datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
         successfully_processed_count = 0
         for folk in imported_family_folks:
             try:
                 self.stdout.write('.', ending='')
+                registrant = None
                 children = folk.attendees.filter(folkattendee__role__title__in=['child', 'son', 'daughter']).all()
                 parents = folk.attendees.filter(folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife']).order_by().all()  # order_by() is critical for values_list('gender').distinct() later
                 families_address = folk.places.first()  # families_address = Address.objects.filter(pk=family.addresses.first().id).first()
@@ -695,7 +700,7 @@ class Command(BaseCommand):
                     folk.infos['contacts']['email1'] = Utility.presence(hushand_email)
                     folk.infos['contacts']['email2'] = Utility.presence(wife_email)
                     folk.save()
-
+                    registrant = wife
                     # Relationship.objects.update_or_create(
                     #     from_attendee=wife,
                     #     to_attendee=husband,
@@ -744,7 +749,7 @@ class Command(BaseCommand):
                         folk.infos['contacts']['email1'] = Utility.presence(self_email)
                         folk.save()
                         self.save_two_phones(househead_single, potential_primary_phone)
-
+                        registrant = househead_single
                     else:
                         if Attendee.objects.filter(infos__fixed__access_people_household_id=folk.infos['access_household_id']):
                             self.stdout.write(f"\nSomehow there's no one in families parents or househead_single (orphan?), for folk {folk}. families_address: {families_address}. parents: {parents}. household_id: {folk.infos['access_household_id']}. folk.id: {folk.id}. Continuing to next record.")
@@ -779,9 +784,46 @@ class Command(BaseCommand):
                         if child.age() and child.age() < 18:
                             child.infos['schedulers'][str(parent.id)] = True
 
+                    people_note = child.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
+                    if people_note and people_note in cm_converter:  # magic word for adding CM attendingmeet
+                        # self.stdout.write(f"\nfor child: {child} people_note: {people_note}")
+                        cm_registration, cm_registration_created = Registration.objects.update_or_create(
+                            assembly=cm_assembly,
+                            registrant=registrant,
+                            defaults={
+                                'registrant': registrant,  # admin/secretary may change for future members.
+                                'assembly': cm_assembly,
+                                'infos': {
+                                    'access_household_id': child.infos.get('fixed', {}).get('access_people_values', {}).get('HouseholdID'),
+                                    'created_reason': 'CFCCH member/directory registration from importer',
+                                }
+                            }
+                        )
+                        # self.stdout.write(f"for cm_registration: {cm_registration} registrant: {registrant}")
+                        data_attending = child.attendings.first()
+                        data_attending.registration = cm_registration
+                        data_attending.save()
+                        # self.stdout.write(f"806 data_attending.registration: {data_attending.registration}")
+                        child.division = division3
+                        meet = foot_meet if people_note == '2022CMLRu3' else rock_meet
+                        AttendingMeet.objects.update_or_create(
+                            meet=meet,
+                            attending=data_attending,
+                            character=meet.major_character,
+                            team=cm_converter.get(people_note),
+                            defaults={
+                                'attending': data_attending,
+                                'meet': meet,
+                                'character': meet.major_character,
+                                'team': cm_converter.get(people_note),
+                                'start': import_time,
+                                'finish': end_time,
+                            },
+                        )
+
                     child.save()
                     successfully_processed_count += 1
-
+                    # self.stdout.write(f"child.division: {child.division}")
                 for parent in folk.attendees.filter(folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife']).order_by().all():  # reload to get updated parent gender
                     parent_role = Relation.objects.get(
                         title__in=['father', 'mother', 'parent'],
@@ -901,20 +943,8 @@ class Command(BaseCommand):
                     }
                 )
 
-    def update_attendee_membership_and_other(self, cm_converter, cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
+    def update_attendee_membership_and_other(self, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
-        # data_registration, data_registration_created = Registration.objects.update_or_create(
-        #     assembly=data_assembly,
-        #     registrant=attendee,
-        #     defaults={
-        #         'registrant': attendee,  # admin/secretary may change for future members.
-        #         'assembly': data_assembly,
-        #         'infos': {
-        #             'access_household_id': access_household_id,
-        #             'created_reason': 'CFCCH member/directory registration from importer',
-        #         }
-        #     }
-        # )
 
         data_attending, data_attending_created = Attending.objects.update_or_create(
             attendee=attendee,
@@ -924,7 +954,7 @@ class Command(BaseCommand):
                 'attendee': attendee,
                 'infos': {
                     'access_household_id': access_household_id,
-                    'created_reason': 'CFCCH member/directory attending from importer',
+                    'created_reason': 'CFCCH member/directory attending from importer',  # magic word to stop attendee to attending
                 }
             }
         )
@@ -1048,25 +1078,6 @@ class Command(BaseCommand):
         import_time = datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
         end_time = datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
         people_note = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
-        if people_note and people_note in cm_converter:  # magic word for adding CM attendingmeet
-            attendee.division = division3
-            attendee.save()
-            meet = foot_meet if people_note == '2022CMLRu3' else rock_meet
-            AttendingMeet.objects.update_or_create(
-                meet=meet,
-                attending=data_attending,
-                character=meet.major_character,
-                team=cm_converter.get(people_note),
-                defaults={
-                    'attending': data_attending,
-                    'meet': meet,
-                    'character': meet.major_character,
-                    'team': cm_converter.get(people_note),
-                    'start': import_time,
-                    'finish': end_time,
-                },
-            )
-
         if people_note in cr_converter:
             AttendingMeet.objects.update_or_create(
                 meet=cr_meet,
