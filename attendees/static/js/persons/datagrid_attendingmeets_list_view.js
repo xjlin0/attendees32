@@ -381,7 +381,7 @@ Attendees.attendingmeets = {
           const meets = $('div.selected-meets select').val();
           const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
-
+          console.log("hi 384 here is loadOptions: ", loadOptions);
           if (meets && meets.length > 0) {
             const args = {
               meets: meets,
@@ -389,6 +389,10 @@ Attendees.attendingmeets = {
               start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
               finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
             };
+
+            if (Attendees.attendingmeets.attendingmeetsDatagrid) {
+              args['take'] = Attendees.attendingmeets.attendingmeetsDatagrid.pageSize();
+            }
 
             [
               'skip',
@@ -668,7 +672,7 @@ Attendees.attendingmeets = {
       {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
-        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `${rowData.attending__attendee} by ${rowData.attending__registration__attendee}` : rowData.attending__attendee,
+//        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `${rowData.attending__attendee} by ${rowData.attending__registration__attendee}` : rowData.attending__attendee,  // can't sort server side for this
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
         },
