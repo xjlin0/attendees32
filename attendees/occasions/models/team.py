@@ -35,6 +35,7 @@ class Team(TimeStampedModel, SoftDeletableModel, Utility):
 
     class Meta:
         db_table = "occasions_teams"
+        # ordering = ('meet', 'display_order', 'display_name')
         indexes = [
             models.Index(
                 fields=["site_type", "site_id"],
