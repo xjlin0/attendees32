@@ -1989,8 +1989,8 @@
     "model": "schedule.calendar",
     "pk": 14,
     "fields": {
-      "name": "CFCCH fellowship hall",
-      "slug": "cfcch_fellowship_hall"
+      "name": "CFCCH fellowship hall calendar",
+      "slug": "cfcch_fellowship_hall_calendar"
     }
   },
   {
@@ -2132,6 +2132,28 @@
       "calendar": 12,
       "content_type": 64,
       "object_id": 3,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 13,
+    "fields": {
+      "calendar": 13,
+      "content_type": 54,
+      "object_id": -1,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 14,
+    "fields": {
+      "calendar": 14,
+      "content_type": 64,
+      "object_id": 21,
       "distinction": "source",
       "inheritable": true
     }
@@ -2876,8 +2898,8 @@
     "model": "schedule.event",
     "pk": 29,
     "fields": {
-      "start": "2020-02-09T14:30:00Z",
-      "end": "2020-02-09T16:00:00Z",
+      "start": "2020-02-09T03:30:00Z",
+      "end": "2020-02-09T05:00:00Z",
       "title": "source: Shining Star 7:30P-9P",
       "description": "room#21",
       "creator": 1,
@@ -2893,8 +2915,8 @@
     "model": "schedule.event",
     "pk": 30,
     "fields": {
-      "start": "2020-02-09T14:30:00Z",
-      "end": "2020-02-09T16:00:00Z",
+      "start": "2020-02-09T03:30:00Z",
+      "end": "2020-02-09T05:00:00Z",
       "title": "event#29",
       "description": "room#21",
       "creator": 1,
@@ -12342,7 +12364,7 @@
       "start": null,
       "finish": null,
       "gathering": 1,
-      "team": 1,
+      "team": null,
       "attending": 1,
       "character": 1,
       "category": 1,
@@ -12383,7 +12405,7 @@
       "start": null,
       "finish": null,
       "gathering": 1,
-      "team": 1,
+      "team": null,
       "attending": 3,
       "character": 4,
       "category": 7,
@@ -14919,8 +14941,8 @@
       "modified": "2021-04-08T17:42:46.852Z",
       "is_removed": false,
       "meet": 1,
-      "slug": "cfcch_kid_large_group_4g",
-      "display_name": "CFCCH kid Large Group 4G",
+      "slug": "cfcch_kid_rock_preschool",
+      "display_name": "CFCCH CM The Rock PreSchool",
       "display_order": 0,
       "infos": {},
       "site_type": 60,

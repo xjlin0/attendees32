@@ -372,6 +372,15 @@ class Command(BaseCommand):
             'CRB': Team.objects.get(pk=11),
         }
 
+        cm_converter = {
+            '2022CMLRpk': Team.objects.get(pk=15),
+            '2022CMLRg1': Team.objects.get(pk=16),
+            '2022CMLR23': Team.objects.get(pk=22),
+            '2022CMLR45': Team.objects.get(pk=24),
+            '2022CMLRps': Team.objects.get(pk=1),
+            '2022CMLRu3': Team.objects.get(pk=14),
+        }
+
         self.stdout.write("\n\nRunning import_attendees: \n")
         default_division = Division.objects.first()
         division3 = Division.objects.get(slug=division3_slug)  # kid
@@ -504,7 +513,7 @@ class Command(BaseCommand):
                     # )
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
-                    self.update_attendee_membership_and_other(cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
+                    self.update_attendee_membership_and_other(cm_converter, cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
 
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
@@ -892,7 +901,7 @@ class Command(BaseCommand):
                     }
                 )
 
-    def update_attendee_membership_and_other(self, cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
+    def update_attendee_membership_and_other(self, cm_converter, cr_meet, cr_converter, division3, rock_meet, foot_meet, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         # data_registration, data_registration_created = Registration.objects.update_or_create(
         #     assembly=data_assembly,
@@ -1039,21 +1048,20 @@ class Command(BaseCommand):
         import_time = datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
         end_time = datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
         people_note = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
-        if '2022CMLR' == people_note:  # magic word for adding CM attendingmeet
+        if people_note and people_note in cm_converter:  # magic word for adding CM attendingmeet
             attendee.division = division3
             attendee.save()
-
-            grade = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('Grade')
-            meet = foot_meet if 'Nursery' == grade else rock_meet
-
+            meet = foot_meet if people_note == '2022CMLRu3' else rock_meet
             AttendingMeet.objects.update_or_create(
                 meet=meet,
                 attending=data_attending,
                 character=meet.major_character,
+                team=cm_converter.get(people_note),
                 defaults={
                     'attending': data_attending,
                     'meet': meet,
                     'character': meet.major_character,
+                    'team': cm_converter.get(people_note),
                     'start': import_time,
                     'finish': end_time,
                 },
