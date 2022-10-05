@@ -14943,7 +14943,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_preschool",
       "display_name": "CFCCH CM The Rock PreSchool",
-      "display_order": 0,
+      "display_order": 500,
       "infos": {},
       "site_type": 60,
       "site_id": "1"
@@ -15055,7 +15055,7 @@
       "meet": 3,
       "slug": "cfcch_chinese_choir_soprano",
       "display_name": "女高音",
-      "display_order": 0,
+      "display_order": 100,
       "infos": {},
       "site_type": 64,
       "site_id": "7"
@@ -15071,7 +15071,7 @@
       "meet": 3,
       "slug": "cfcch_chinese_choir_alto",
       "display_name": "女低音",
-      "display_order": 0,
+      "display_order": 200,
       "infos": {},
       "site_type": 64,
       "site_id": "7"
@@ -15087,7 +15087,7 @@
       "meet": 3,
       "slug": "cfcch_chinese_choir_tenor",
       "display_name": "男高音",
-      "display_order": 0,
+      "display_order": 300,
       "infos": {},
       "site_type": 64,
       "site_id": "7"
@@ -15103,7 +15103,7 @@
       "meet": 3,
       "slug": "cfcch_chinese_choir_bass",
       "display_name": "男低音",
-      "display_order": 0,
+      "display_order": 400,
       "infos": {},
       "site_type": 64,
       "site_id": "7"
@@ -15151,7 +15151,7 @@
       "meet": 2,
       "slug": "cfcch_kid_foot_under_three",
       "display_name": "CFCCH CM Under 3",
-      "display_order": 0,
+      "display_order": 600,
       "infos": {},
       "site_type": 64,
       "site_id": "22"
@@ -15167,7 +15167,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_prek_and_k",
       "display_name": "CFCCH CM The Rock Kindergarten & Pre-K",
-      "display_order": 0,
+      "display_order": 100,
       "infos": {},
       "site_type": 64,
       "site_id": "22"
@@ -15183,7 +15183,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g1",
       "display_name": "CFCCH CM The Rock 1st Grade",
-      "display_order": 0,
+      "display_order": 200,
       "infos": {},
       "site_type": 64,
       "site_id": "11"
@@ -15199,7 +15199,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g2",
       "display_name": "CFCCH CM The Rock 2nd Grade",
-      "display_order": 0,
+      "display_order": 300,
       "infos": {},
       "site_type": 64,
       "site_id": "11"
@@ -15215,7 +15215,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g3",
       "display_name": "CFCCH CM The Rock 3rd Grade",
-      "display_order": 0,
+      "display_order": 400,
       "infos": {},
       "site_type": 64,
       "site_id": "9"
@@ -15231,7 +15231,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g4",
       "display_name": "CFCCH CM The Rock 4th Grade",
-      "display_order": 0,
+      "display_order": 500,
       "infos": {},
       "site_type": 64,
       "site_id": "9"
@@ -15247,7 +15247,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g5",
       "display_name": "CFCCH CM The Rock 5th Grade",
-      "display_order": 0,
+      "display_order": 600,
       "infos": {},
       "site_type": 64,
       "site_id": "6"
@@ -15263,7 +15263,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g1_g2",
       "display_name": "CFCCH CM The Rock 1st & 2nd Grade",
-      "display_order": 0,
+      "display_order": 250,
       "infos": {},
       "site_type": 64,
       "site_id": "11"
@@ -15279,7 +15279,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g2_g3",
       "display_name": "CFCCH CM The Rock 2nd & 3rd Grade",
-      "display_order": 0,
+      "display_order": 350,
       "infos": {},
       "site_type": 64,
       "site_id": "9"
@@ -15295,7 +15295,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g3_g4",
       "display_name": "CFCCH CM The Rock 3rd & 4th Grade",
-      "display_order": 0,
+      "display_order": 450,
       "infos": {},
       "site_type": 64,
       "site_id": "9"
@@ -15311,7 +15311,7 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g4_g5",
       "display_name": "CFCCH CM The Rock 4th & 5th Grade",
-      "display_order": 0,
+      "display_order": 550,
       "infos": {},
       "site_type": 64,
       "site_id": "6"

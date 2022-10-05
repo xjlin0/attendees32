@@ -82,7 +82,7 @@ class AttendingMeetService:
                                Q(attending__registration__registrant=current_user.attendee)), Q.AND)
 
         if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # for searching in drop down of popup editor
-            print("hi 85 here is search_value: ", search_value)
+            # print("hi 85 here is search_value: ", search_value)
             extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
                                |
                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
@@ -112,12 +112,15 @@ class AttendingMeetService:
                     output_field=CharField()
                 )
             ),
-            attendee_name=Concat(
-                Trim(Concat("attending__attendee__first_name", V(' '), "attending__attendee__last_name", output_field=CharField())),
-                V(' '),
-                Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2", output_field=CharField())),
-                output_field=CharField()
-            ),
+            attendee_name=F("attending__attendee__infos__names__original"),
+            # attendee_name=Trim(
+            #     Concat(
+            #         Trim(Concat("attending__attendee__first_name", V(' '), "attending__attendee__last_name", output_field=CharField())),
+            #         V(' '),
+            #         Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2", output_field=CharField())),
+            #         output_field=CharField()
+            #     )
+            # ),
             assembly=F("meet__assembly"),
         ).filter(extra_filters).order_by(*orderby_list)
 
@@ -128,12 +131,17 @@ class AttendingMeetService:
         :param orderbys: list of search params
         :return: a List of sorter for order_by()
         """
-        orderby_list = (
-            []
-        )  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
+        orderby_list = ([])  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
+        field_converter = {
+            # 'team': 'team__display_name',  # cannot convert column for sort, or items will be out of order on grouping, since grouping use id and order using name!!
+            'category': 'category__display_name',
+            'character': 'character__display_name',
+            'attending__attendee': 'attending__attendee__infos__names__original',
+        }
 
         for orderby_dict in orderbys:
-            field = orderby_dict.get("selector", "id").replace(".", "__")
+            raw_sort = orderby_dict.get("selector", "attending")
+            field = (field_converter.get(raw_sort) if raw_sort in field_converter else raw_sort).replace(".", "__")
             direction = "-" if orderby_dict.get("desc", False) else ""
             orderby_list.append(direction + field)
 
