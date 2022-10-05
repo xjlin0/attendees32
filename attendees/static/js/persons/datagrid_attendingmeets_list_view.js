@@ -672,7 +672,7 @@ Attendees.attendingmeets = {
       {
         dataField: 'attending',
         validationRules: [{type: 'required'}],
-//        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `${rowData.attending__attendee} by ${rowData.attending__registration__attendee}` : rowData.attending__attendee,  // can't sort server side for this
+//        calculateDisplayValue: (rowData) => rowData.attending__registration__attendee ? `${rowData.attending__attendee} by ${rowData.attending__registration__attendee}` : rowData.attending__attendee,  // can't sort remotely for function https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
         },
