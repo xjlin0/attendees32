@@ -1132,7 +1132,7 @@ class Command(BaseCommand):
                     organization=data_assembly.division.organization,
                     content_type=attendee_content_type,
                     object_id=attendee.id,
-                    category_id=36,  # "Check"
+                    category_id=36,  # "Check" (won't show up in Attendee details)
                     display_name=history_name.title().replace('_', ' '),
                     when=datetime.strptime(time_string, time_format).astimezone(time_zone) if time_string else None,
                     infos={
