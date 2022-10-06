@@ -20,6 +20,10 @@ Attendees.utilities = {
     Attendees.utilities.userAttendeeId = $('body').data('user-attendee-id');
   },
 
+  deleteAllDevextremeSettings: () => {
+    Object.values(Attendees.utilities.datagridStorageKeys).forEach(key => window.sessionStorage.removeItem(key));
+  },
+
   toggleEditingAndReturnStatus: (event) => {
     if (confirm('Are you sure to toggle editing mode?')){
       Attendees.utilities.editingEnabled = event.currentTarget.checked;
