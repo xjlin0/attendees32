@@ -875,6 +875,8 @@ Attendees.gatherings = {
       },
       {
         dataField: 'infos.note',
+        width: '10%',
+        allowSorting: false,
         allowGrouping: false,
         editorType: 'dxTextArea',
         caption: 'Note',

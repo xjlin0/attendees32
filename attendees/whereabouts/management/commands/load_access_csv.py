@@ -796,7 +796,8 @@ class Command(BaseCommand):
                             child.infos['schedulers'][str(parent.id)] = True
 
                     people_note = child.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
-                    if people_note and people_note in cm_converter:  # magic word for adding CM attendingmeet
+                    character_id = child.infos.get('fixed', {}).get('access_people_values', {}).get('CharacterId')
+                    if people_note and people_note in cm_converter and not character_id:  # magic word for adding CM attendingmeet
                         # self.stdout.write(f"\nfor child: {child} people_note: {people_note}")
                         cm_registration, cm_registration_created = Registration.objects.update_or_create(
                             assembly=cm_assembly,

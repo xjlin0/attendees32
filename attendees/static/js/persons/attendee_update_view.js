@@ -1128,8 +1128,10 @@ Attendees.datagridUpdate = {
       },
       {
         colSpan: 7,
-        caption: "death date",
         dataField: 'deathday',
+        label: {
+          text: 'death date',
+        },
         editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
@@ -2547,7 +2549,7 @@ Attendees.datagridUpdate = {
           valueExpr: 'id',
           displayExpr: (item) => {
             const division_name = Attendees.datagridUpdate.divisionIdNames[item.division] ? ` [${Attendees.datagridUpdate.divisionIdNames[item.division]}]` : '';
-            return item ? `(${item.gender[0]}) ${item.infos.names.original}${division_name}${item.deathday ? ', deathday: ' + item.deathday : ''}` : null;
+            return item ? `(${item.gender[0]}) ${item.infos.names.original}${division_name}${item.deathday ? ', death date: ' + item.deathday : ''}` : null;
           },
           dataSource: {
             store: new DevExpress.data.CustomStore({
