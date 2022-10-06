@@ -978,6 +978,14 @@ Attendees.attendingmeets = {
         },
       },
       {
+        dataField: 'attending__registration__attendee',
+        caption: 'Registrant',
+        visible: false,
+        allowEditing: false,
+        allowGrouping: false,
+        allowSorting: false,
+      },
+      {
         dataField: 'finish',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',

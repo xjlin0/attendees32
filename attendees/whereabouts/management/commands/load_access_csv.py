@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from address.models import Locality, State, Address
 
-from attendees.occasions.models import Assembly, Meet, Gathering, Attendance, Team
+from attendees.occasions.models import Assembly, Meet, Gathering, Attendance, Team, Character
 from attendees.persons.models import Utility, GenderEnum, Folk, Relation, Attendee, FolkAttendee, \
     Registration, Attending, AttendingMeet, Past, Category
 from attendees.users.admin import User
@@ -90,7 +90,7 @@ class Command(BaseCommand):
             initial_families_count = FolkAttendee.objects.count()
             upserted_address_count = self.import_addresses(addresses, california, division1_slug)
             upserted_household_id_count = self.import_households(households, division1, division2)
-            upserted_attendee_count, photo_import_results = self.import_attendees(peoples, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug)
+            upserted_attendee_count, photo_import_results = self.import_attendees(peoples, rock_meet_slug, foot_meet_slug, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug)
             # upserted_address_count, upserted_household_id_count, upserted_attendee_count, photo_import_results = 1, 1, 1, []
             if upserted_address_count and upserted_household_id_count and upserted_attendee_count:
                 upserted_relationship_count = self.reprocess_directory_emails_and_family_roles( division3_slug, rock_meet_slug, foot_meet_slug, directory_meet_slug)
@@ -320,7 +320,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def import_attendees(self, peoples, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug):
+    def import_attendees(self, peoples, rock_meet_slug, foot_meet_slug, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug):
         """
         Importer of each people from MS Access.
         :param peoples: file content of people accessible by headers, from MS Access
@@ -363,17 +363,28 @@ class Command(BaseCommand):
 
         cr_meet = Meet.objects.get(pk=3)
         cr_converter = {
-            'CRP': Team.objects.get(pk=7),
             'CRS': Team.objects.get(pk=8),
             'CRA': Team.objects.get(pk=9),
             'CRT': Team.objects.get(pk=10),
             'CRB': Team.objects.get(pk=11),
         }
 
+        cml_converter = {
+            '2022CMLRlg': Team.objects.get(pk=6),
+            '2022CMLRpk': Team.objects.get(pk=15),
+            '2022CMLRg1': Team.objects.get(pk=16),
+            '2022CMLR23': Team.objects.get(pk=22),
+            '2022CMLR45': Team.objects.get(pk=24),
+            '2022CMLRps': Team.objects.get(pk=1),
+            '2022CMLRu3': Team.objects.get(pk=14),
+        }
+
         self.stdout.write("\n\nRunning import_attendees: \n")
         default_division = Division.objects.first()
         division3 = Division.objects.get(slug=division3_slug)  # kid
         data_assembly = Assembly.objects.get(slug=data_assembly_slug)
+        rock_meet = Meet.objects.select_related('major_character').get(slug=rock_meet_slug)
+        foot_meet = Meet.objects.select_related('major_character').get(slug=foot_meet_slug)
         visitor_meet = Meet.objects.select_related('major_character').get(pk=0)
         member_meet = Meet.objects.select_related('major_character').get(slug=member_meet_slug)
         member_gathering = Gathering.objects.filter(meet=member_meet).last()
@@ -502,7 +513,7 @@ class Command(BaseCommand):
                     # )
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
-                    self.update_attendee_membership_and_other(cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
+                    self.update_attendee_membership_and_other(rock_meet, foot_meet, cml_converter, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
 
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
@@ -943,7 +954,7 @@ class Command(BaseCommand):
                     }
                 )
 
-    def update_attendee_membership_and_other(self, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
+    def update_attendee_membership_and_other(self, rock_meet, foot_meet, cml_converter, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
 
         data_attending, data_attending_created = Attending.objects.update_or_create(
@@ -1089,6 +1100,24 @@ class Command(BaseCommand):
                     'attending': data_attending,
                     'character': cr_meet.major_character,
                     'team': cr_converter.get(people_note),
+                    'start': import_time,
+                    'finish': end_time,
+                },
+            )
+
+        character_id = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('CharacterId')
+        if character_id and people_note in cml_converter:
+            meet = foot_meet if people_note == '2022CMLRu3' else rock_meet
+            AttendingMeet.objects.update_or_create(
+                meet=meet,
+                attending=data_attending,
+                character=Character.objects.get(pk=character_id),
+                team=cml_converter.get(people_note),
+                defaults={
+                    'attending': data_attending,
+                    'meet': meet,
+                    'character': Character.objects.get(pk=character_id),
+                    'team': cml_converter.get(people_note),
                     'start': import_time,
                     'finish': end_time,
                 },
