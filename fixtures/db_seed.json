@@ -11283,7 +11283,7 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "team": null,
-      "character": 2,
+      "character": 32,
       "category": 1,
       "infos": {}
     }
@@ -11300,7 +11300,7 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "team": null,
-      "character": 3,
+      "character": 33,
       "category": 1,
       "infos": {}
     }
@@ -11334,7 +11334,7 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "team": null,
-      "character": 3,
+      "character": 33,
       "category": 1,
       "infos": {}
     }
@@ -11368,7 +11368,7 @@
       "start": "2020-01-01T18:00:00Z",
       "finish": "2030-02-17T19:59:59Z",
       "team": null,
-      "character": 2,
+      "character": 32,
       "category": 6,
       "infos": {}
     }
@@ -12293,9 +12293,9 @@
       "start": null,
       "finish": null,
       "category": 33,
-      "display_name": "CFCCH夏令會2020",
+      "display_name": "CFCCH夏令會2023 Summer retreat",
       "display_order": 0,
-      "slug": "cfcch_summer_retreat_2020",
+      "slug": "cfcch_summer_retreat_2023",
       "division": 6,
       "infos": {
         "fixed": {},
@@ -12388,7 +12388,7 @@
       "gathering": 1,
       "team": null,
       "attending": 2,
-      "character": 2,
+      "character": 32,
       "category": 1,
       "display_order": 0,
       "infos": {},
@@ -12407,7 +12407,7 @@
       "gathering": 1,
       "team": null,
       "attending": 3,
-      "character": 4,
+      "character": 43,
       "category": 7,
       "display_order": 0,
       "infos": {},
@@ -12426,7 +12426,7 @@
       "gathering": 2,
       "team": null,
       "attending": 3,
-      "character": 5,
+      "character": 42,
       "category": 1,
       "display_order": 0,
       "infos": {},
@@ -12464,7 +12464,7 @@
       "gathering": 4,
       "team": null,
       "attending": 5,
-      "character": 4,
+      "character": 43,
       "category": 1,
       "display_order": 0,
       "infos": {},
@@ -12773,66 +12773,6 @@
   },
   {
     "model": "occasions.character",
-    "pk": 2,
-    "fields": {
-      "created": "2020-04-11T18:43:19.732Z",
-      "modified": "2021-04-08T16:44:38.505Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "LG Leader 1",
-      "display_order": 1,
-      "slug": "d7c8Fd_cfcch_kid_LGleader1",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
-    "pk": 3,
-    "fields": {
-      "created": "2020-04-11T18:43:39.188Z",
-      "modified": "2021-04-08T16:44:30.069Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "LG Leader 2",
-      "display_order": 2,
-      "slug": "d7c8Fd_cfcch_kid_LGleader2",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
-    "pk": 4,
-    "fields": {
-      "created": "2020-04-11T18:44:00.020Z",
-      "modified": "2021-04-08T16:44:18.409Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "Worship Leader 1",
-      "display_order": 3,
-      "slug": "d7c8Fd_cfcch_kid_worship_leader1",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
-    "pk": 5,
-    "fields": {
-      "created": "2020-04-11T18:44:28.242Z",
-      "modified": "2021-04-08T16:44:07.035Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "Worship Leader 2",
-      "display_order": 4,
-      "slug": "d7c8Fd_cfcch_kid_worship_leader2",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
     "pk": 6,
     "fields": {
       "created": "2020-04-11T18:44:58.405Z",
@@ -12878,75 +12818,15 @@
   },
   {
     "model": "occasions.character",
-    "pk": 9,
-    "fields": {
-      "created": "2020-04-26T18:00:16.433Z",
-      "modified": "2021-04-08T16:43:50.232Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "Food Helper",
-      "display_order": 5,
-      "slug": "d7c8Fd_cfcch_kid_food_helper",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
-    "pk": 10,
-    "fields": {
-      "created": "2020-04-26T18:01:26.135Z",
-      "modified": "2021-04-08T16:43:34.538Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "SG Leader Kindergarten",
-      "display_order": 6,
-      "slug": "d7c8Fd_cfcch_kid_leader_SG_kindergarten",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
-    "pk": 11,
-    "fields": {
-      "created": "2020-04-26T18:05:30.923Z",
-      "modified": "2021-04-08T16:43:26.626Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "SG Leader 1st Grade",
-      "display_order": 7,
-      "slug": "d7c8Fd_cfcch_kid_leader_SG_1G",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
-    "pk": 12,
-    "fields": {
-      "created": "2020-04-26T18:06:57.727Z",
-      "modified": "2021-04-08T16:43:15.933Z",
-      "is_removed": false,
-      "assembly": 1,
-      "display_name": "SG Leader 2nd Grade",
-      "display_order": 8,
-      "slug": "d7c8Fd_cfcch_kid_leader_SG_2G",
-      "infos": {},
-      "type": "coworker"
-    }
-  },
-  {
-    "model": "occasions.character",
     "pk": 13,
     "fields": {
       "created": "2020-04-26T18:07:53.146Z",
       "modified": "2021-04-08T16:43:05.186Z",
       "is_removed": false,
       "assembly": 1,
-      "display_name": "SG Leader 3rd & 4th Grades",
+      "display_name": "SG Leader G2 & G3",
       "display_order": 9,
-      "slug": "d7c8Fd_cfcch_kid_leader_SG_34G",
+      "slug": "d7c8Fd_cfcch_kid_leader_SG_G2_G3",
       "infos": {},
       "type": "coworker"
     }
@@ -12959,9 +12839,9 @@
       "modified": "2021-04-08T16:42:56.737Z",
       "is_removed": false,
       "assembly": 1,
-      "display_name": "SG Leader 5th& 6th Grades",
+      "display_name": "SG Leader G4 & G5",
       "display_order": 10,
-      "slug": "d7c8Fd_cfcch_kid_leader_SG_56G",
+      "slug": "d7c8Fd_cfcch_kid_leader_SG_G4_G5",
       "infos": {},
       "type": "coworker"
     }
@@ -14454,10 +14334,10 @@
       "major_character": 16,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2020-07-17T15:28:40Z",
-      "finish": "2020-07-21T15:29:58Z",
-      "display_name": "2020夏令會食宿",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2020_accommodation",
+      "start": "2023-07-14T15:28:40Z",
+      "finish": "2023-07-16T15:29:58Z",
+      "display_name": "夏令會食宿 2023 retreat accommodation",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2023_accommodation",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -14495,10 +14375,10 @@
       "major_character": 21,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2020-07-17T15:30:54Z",
-      "finish": "2020-07-19T15:31:42Z",
+      "start": "2023-07-14T15:30:54Z",
+      "finish": "2023-07-16T15:31:42Z",
       "display_name": "2020夏令會接送",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2020_transportation",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2023_transportation",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -14536,10 +14416,10 @@
       "major_character": 19,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2020-07-17T15:34:41Z",
-      "finish": "2020-07-19T15:37:06Z",
-      "display_name": "2020夏令會討論小組",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2020_panel",
+      "start": "2023-07-14T15:34:41Z",
+      "finish": "2023-07-16T15:37:06Z",
+      "display_name": "2023夏令會討論小組",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2023_panel",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -14576,10 +14456,10 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2020-07-17T16:28:13Z",
-      "finish": "2020-07-19T16:28:42Z",
-      "display_name": "2020夏令會中文議程",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2020_chinese_program",
+      "start": "2023-07-14T16:28:13Z",
+      "finish": "2023-07-16T16:28:42Z",
+      "display_name": "2023夏令會中文議程",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2023_chinese_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -14617,10 +14497,10 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2020-07-17T16:32:20Z",
-      "finish": "2020-07-19T16:32:24Z",
-      "display_name": "2020夏令會兒童活動",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2020_junior_program",
+      "start": "2023-07-14T16:32:20Z",
+      "finish": "2023-07-16T16:32:24Z",
+      "display_name": "2023夏令會兒童活動",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2023_junior_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -14658,10 +14538,10 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2020-07-17T16:38:38Z",
-      "finish": "2020-07-19T16:39:12Z",
-      "display_name": "2020夏令會英文議程",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2020_english_program",
+      "start": "2023-07-14T16:38:38Z",
+      "finish": "2023-07-16T16:39:12Z",
+      "display_name": "2023夏令會英文議程",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2023_english_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -15020,13 +14900,13 @@
       "created": "2020-04-11T19:09:48.250Z",
       "modified": "2021-04-08T17:42:46.852Z",
       "is_removed": false,
-      "meet": 3,
-      "slug": "cfcch_chinese_choir_conductor",
-      "display_name": "指揮",
-      "display_order": 0,
+      "meet": 1,
+      "slug": "cfcch_kid_rock_large_group",
+      "display_name": "CFCCH CM The Rock Large Group",
+      "display_order": 100,
       "infos": {},
       "site_type": 64,
-      "site_id": "7"
+      "site_id": "22"
     }
   },
   {

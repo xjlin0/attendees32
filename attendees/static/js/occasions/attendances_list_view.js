@@ -493,7 +493,11 @@ Attendees.attendances = {
               start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
               finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
             };
-            // Todo 20221004 do we need the 'take' for pagination?
+
+            if (Attendees.attendances.attendancesDatagrid) {
+              args['take'] = Attendees.attendances.attendancesDatagrid.pageSize();
+            }
+
             [
               'skip',
               'take',
