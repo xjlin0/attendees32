@@ -8045,6 +8045,19 @@
     }
   },
   {
+    "model": "persons.category",
+    "pk": 36,
+    "fields": {
+      "created": "2021-05-22T22:20:43.067Z",
+      "modified": "2021-05-22T22:25:39.965Z",
+      "is_removed": false,
+      "type": "check",
+      "display_order": 0,
+      "display_name": "Check",
+      "infos": {}
+    }
+  },
+  {
     "model": "persons.past",
     "pk": "070ade81-dbf4-47c4-a1e0-046f553021b8",
     "fields": {
