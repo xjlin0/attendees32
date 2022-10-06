@@ -1,4 +1,4 @@
-import csv, os, pytz, re, sys
+import csv, os, pytz, re, sys, json
 from datetime import datetime, timedelta
 from glob import glob
 from pathlib import Path
@@ -1087,8 +1087,9 @@ class Command(BaseCommand):
 
         tzname = cr_meet.infos.get('default_time_zone')
         time_zone = pytz.timezone(parse.unquote(tzname))
-        import_time = datetime.strptime("2022-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
-        end_time = datetime.strptime("2033-09-01T02:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(time_zone)
+        time_format = "%Y-%m-%dT%H:%M:%SZ"
+        import_time = datetime.strptime("2022-09-01T02:00:00Z", time_format).astimezone(time_zone)
+        end_time = datetime.strptime("2033-09-01T02:00:00Z", time_format).astimezone(time_zone)
         people_note = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
         if people_note in cr_converter:
             AttendingMeet.objects.update_or_create(
@@ -1123,6 +1124,22 @@ class Command(BaseCommand):
                     'finish': end_time,
                 },
             )
+
+        pasts = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('Past')
+        if pasts:
+            for history_name, time_string in json.loads(pasts).items():
+                Past.objects.update_or_create(
+                    organization=data_assembly.division.organization,
+                    content_type=attendee_content_type,
+                    object_id=attendee.id,
+                    category_id=36,  # "Check"
+                    display_name=history_name.title().replace('_', ' '),
+                    when=datetime.strptime(time_string, time_format).astimezone(time_zone) if time_string else None,
+                    infos={
+                        **Utility.relationship_infos(),
+                        'comment': f'importer',  # importer stops auto creation of AttenddingMeet
+                    },
+                )
 
     def update_directory_data(self, folk, directory_meet, directory_gathering):
         """
