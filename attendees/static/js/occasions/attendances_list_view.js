@@ -1101,7 +1101,9 @@ Attendees.attendances = {
       },
       {
         dataField: 'infos.note',
+        width: '10%',
         allowGrouping: false,
+        allowSorting: false,
         caption: 'Note',
         dataType: 'string',
       },
