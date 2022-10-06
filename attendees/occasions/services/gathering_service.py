@@ -140,9 +140,9 @@ class GatheringService:
                             model = ContentType.objects.filter(model=model_name).first()
                             site_type = ContentType.objects.get_for_model(model.model_class())
 
-                        infos = {**meet.infos.get('gathering_infos', {}), 'created_reason': 'batch created'},  # prevent occurrence created again by signal
-                        if er.distinction == 'source':
-                            del infos['generate_attendance']  # no attendance will be generated for public calendar
+                        infos = {**meet.infos.get('gathering_infos', {}), 'created_reason': 'batch created'}  # prevent occurrence created again by signal
+                        if er.distinction != 'source':
+                            del infos['generate_attendance']  # no attendance will be generated for every location calendar
 
                         gathering, gathering_created = Gathering.objects.get_or_create(
                             meet=meet,
@@ -156,7 +156,7 @@ class GatheringService:
                                 "start": occurrence.start,
                                 "finish": occurrence_end,
                                 "infos": infos,
-                                "display_name": f'{occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}'[0:254],
+                                "display_name": f'{meet.display_name} {occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}'[0:254],
                             },
                         )  # don't update gatherings if exist since it may have customizations
 

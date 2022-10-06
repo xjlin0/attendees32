@@ -43,9 +43,9 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
                 filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
                     Q(gathering__meet__assembly__division__organization=request.user.organization), Q.AND)
                 if start:
-                    filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
+                    filters.add((Q(gathering__finish__gte=start)), Q.AND)
                 if finish:
-                    filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
+                    filters.add((Q(gathering__start__lte=finish)), Q.AND)
 
                 if gatherings:
                     filters.add(Q(gathering__in=gatherings), Q.AND)
@@ -117,7 +117,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
                     orderbys=orderby_list,
                     photo_instead_of_gathering_assembly=self.request.query_params.get("photoInsteadOfGatheringAssembly"),
                     filter=self.request.query_params.get("filter"),
-                )
+                )  # The start/finish will filter on Gathering instead of Attendance!!
 
         else:
             time.sleep(2)
