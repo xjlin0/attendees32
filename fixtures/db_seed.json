@@ -2509,8 +2509,8 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "event#6",
-      "description": "room#1",
+      "title": "event#1",
+      "description": "room#6",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
