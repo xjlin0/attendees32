@@ -461,7 +461,7 @@ class Command(BaseCommand):
                         attendee_values['infos']['fixed']['photo_release_grant_date'] = '2022-09-01'  # CM current data date
 
                     if grade:
-                        attendee_values['infos']['fixed']['grade'] = grade
+                        attendee_values['infos']['fixed']['grade'] = int(grade)
                         attendee_values['infos']['fixed']['grade_assess_date'] = '2022-08-31'  # CM current data date
 
                     if name2:  # assume longest last name is 2 characters

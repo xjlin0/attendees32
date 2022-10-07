@@ -38,7 +38,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
 
-        if page is not None:  # Todo 20220818 this is always there unless pagination removed on UI.
+        if page is not None:  # Todo 20220818 page is always there unless pagination removed on UI.
             if group_column:  # generating counter without the defined queryset
                 filters = Q(gathering__meet__slug__in=request.query_params.getlist("meets[]", [])).add(
                     Q(gathering__meet__assembly__division__organization=request.user.organization), Q.AND)

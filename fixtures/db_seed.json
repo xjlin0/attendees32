@@ -6326,6 +6326,35 @@
           "children_coworker",
           "conference_organizer",
           "conference_coworker"
+        ],
+        "grade_converter": [
+          "Under 3",
+          "Under 3",
+          "Under 3",
+          "Preschool",
+          "Preschool",
+          "Kindergarten",
+          "Kindergarten",
+          "G1",
+          "G2",
+          "G3",
+          "G4",
+          "G5",
+          "G6",
+          "G7",
+          "G8",
+          "G9",
+          "G10",
+          "G11",
+          "G12",
+          "postsecondary",
+          "postsecondary",
+          "postsecondary",
+          "postsecondary",
+          "postsecondary",
+          "postsecondary",
+          "postsecondary",
+          "postsecondary"
         ]
       }
     }
