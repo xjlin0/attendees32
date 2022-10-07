@@ -22,6 +22,10 @@ Attendees.utilities = {
 
   deleteAllDevextremeSettings: () => {
     Object.values(Attendees.utilities.datagridStorageKeys).forEach(key => window.sessionStorage.removeItem(key));
+    const alert = document.getElementById('alertId');
+    if (alert) {
+      alert.classList.remove('d-none');
+    }
   },
 
   toggleEditingAndReturnStatus: (event) => {
