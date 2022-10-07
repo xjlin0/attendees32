@@ -149,10 +149,10 @@ class AttendanceService:
             extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
                                |
                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
-        elif start:   # warning: attendance start&finish is optional, so limiting on gathering is needed in datagrid
+        if start:   # warning: attendance start&finish is optional, so limiting on gathering is needed in datagrid
             # extra_filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
             extra_filters.add(Q(gathering__finish__gte=start), Q.AND)
-        elif finish:  # but if user search in popup editor, relax time limits to allow adding future new ones.
+        if finish:  # but if user search in popup editor, relax time limits to allow adding future new ones.
             # extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
             extra_filters.add(Q(gathering__start__lte=finish), Q.AND)
 
@@ -233,7 +233,7 @@ class AttendanceService:
                         output_field=CharField()))
             annotations['assembly'] = F("gathering__meet__assembly")
             annotations['meet'] = F("gathering__meet")
-
+        print("hi 236 here is extra_filters: ", extra_filters)
         return Attendance.objects.annotate(**annotations).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
