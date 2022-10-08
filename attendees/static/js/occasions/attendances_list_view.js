@@ -2,7 +2,7 @@ Attendees.attendances = {
   filtersForm: null,
   meetScheduleRules: {},
   selectedMeetHasRule: false,
-  initialized: false,
+  allowEditingAttending: false,
   filterMeetCheckbox: null,
   loadOptions: null,
   selectedCharacterSlugs: [],
@@ -692,6 +692,11 @@ Attendees.attendances = {
       },
       form: {
         colCount: 2,
+        customizeItem: function(item) {
+          if (item.dataField === "attending") {
+            item.disabled = !Attendees.attendances.allowEditingAttending;
+          }  // prevent users from changing attending to avoid data chaos
+        },
         items: [
           {
             dataField: 'gathering',
@@ -721,11 +726,6 @@ Attendees.attendances = {
             dataField: 'finish',
             helpText: '(Optional)participation end time in browser timezone',
           },
-//          {
-//            dataField: 'create_attendances_till',
-//            disabled: true,
-//            helpText: '(Optional)Auto create future attendances (not supported yet)',
-//          },
           {
             dataField: 'infos.note',
             helpText: '(Optional)special memo',
@@ -746,16 +746,19 @@ Attendees.attendances = {
     onInitNewRow: (e) => {
       e.data.category = 1;
       Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
+      Attendees.attendances.allowEditingAttending = true;
     },
     onEditingStart: (e) => {
       const grid = e.component;
       grid.beginUpdate();
-
       if (e.data && typeof e.data === 'object') {
-        const title = Attendees.utilities.editingEnabled ? 'Editing Attendance of ' + e.data.attending__attendee__infos__names__original : 'Read only Info, please enable editing for modifications';
+        const editingTitle = 'Editing attendance: ' + e.data.attending__attendee__infos__names__original || '';
+        const readingTitle = 'Read only Info: ' + (e.data.attending__attendee__infos__names__original || '') + ' (enable editing for modifications)';
+        const title = Attendees.utilities.editingEnabled ? editingTitle : readingTitle;
         grid.option('editing.popup.title', title);
       }
-      grid.option("columns").forEach((column) => {
+      Attendees.attendances.allowEditingAttending = false;
+      grid.option("columns").forEach(column => {
         grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
       });
       grid.endUpdate();

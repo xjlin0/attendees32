@@ -2,7 +2,7 @@ Attendees.attendingmeets = {
   filtersForm: null,
   meetScheduleRules: {},
   selectedMeetHasRule: false,
-  initialized: false,
+  allowEditingAttending: false,
   filterMeetCheckbox: null,
   attendingIds: null,
   gradeConverter: [],
@@ -592,6 +592,11 @@ Attendees.attendingmeets = {
       },
       form: {
         colCount: 2,
+        customizeItem: function(item) {
+          if (item.dataField === "attending") {
+            item.disabled = !Attendees.attendingmeets.allowEditingAttending;
+          }  // prevent users from changing attending to avoid data chaos
+        },
         items: [
           {
             dataField: 'meet__assembly',
@@ -660,16 +665,19 @@ Attendees.attendingmeets = {
           e.data.finish = new Date(new Date().setDate(new Date().getDate()*7 + selectedMeet['defaultTillInWeeks']));
         }
       }
+      Attendees.attendingmeets.allowEditingAttending = true;
     },
     onEditingStart: (e) => {
       const grid = e.component;
       grid.beginUpdate();
-
       if (e.data && typeof e.data === 'object') {
-        const title = Attendees.utilities.editingEnabled ? 'Editing Attending meet' : 'Read only Info, please enable editing for modifications';
+        const editingTitle = 'Editing enrollment: ' + e.data.attending__attendee || '';
+        const readingTitle = 'Read only Info: ' + (e.data.attending__attendee || '') + ' (enable editing for modifications)';
+        const title = Attendees.utilities.editingEnabled ? editingTitle : readingTitle;
         grid.option('editing.popup.title', title);
       }
-      grid.option("columns").forEach((column) => {
+      Attendees.attendingmeets.allowEditingAttending = false;
+      grid.option("columns").forEach(column => {
         grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
       });
       grid.endUpdate();
