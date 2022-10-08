@@ -154,7 +154,7 @@ LOGGING = {
         },
     },
     "root": {"level": "INFO", "handlers": ["console"]},
-    "loggers": {
+    "loggers": {  # somehow this doesn't work https://stackoverflow.com/a/19257221/4257237
         "django.request": {
             "handlers": ["mail_admins"],
             "level": "ERROR",
