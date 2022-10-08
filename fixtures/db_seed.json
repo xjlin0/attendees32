@@ -1828,7 +1828,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -1856,7 +1856,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -2432,7 +2432,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#3D8361"
+      "color_event": "#9768D1"
     }
   },
   {
@@ -2449,7 +2449,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#A084CA"
+      "color_event": "#7B52AB"
     }
   },
   {
@@ -2466,7 +2466,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#926AA6"
+      "color_event": "#3D8361"
     }
   },
   {
@@ -2483,7 +2483,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#A484CA"
+      "color_event": "#E53C40"
     }
   },
   {
@@ -2500,7 +2500,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#A10B0B"
     }
   },
   {
@@ -2517,7 +2517,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 7,
-      "color_event": "#3D8361"
+      "color_event": "#9768D1"
     }
   },
   {
@@ -2534,7 +2534,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 2,
-      "color_event": "#A084CA"
+      "color_event": "#7B52AB"
     }
   },
   {
@@ -2551,7 +2551,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 9,
-      "color_event": "#926AA6"
+      "color_event": "#3D8361"
     }
   },
   {
@@ -2568,7 +2568,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 10,
-      "color_event": "#A484CA"
+      "color_event": "#E53C40"
     }
   },
   {
@@ -2585,7 +2585,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 10,
-      "color_event": "#956AA6"
+      "color_event": "#A10B0B"
     }
   },
   {
@@ -2840,7 +2840,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#A484CA"
+      "color_event": "#F28705"
     }
   },
   {
@@ -2857,7 +2857,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 12,
-      "color_event": "#A484CA"
+      "color_event": "#F28705"
     }
   },
   {
@@ -2874,7 +2874,7 @@
       "rule": 25,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#3D8361"
+      "color_event": "#553285"
     }
   },
   {
@@ -2891,7 +2891,7 @@
       "rule": 25,
       "end_recurring_period": null,
       "calendar": 14,
-      "color_event": "#3D8361"
+      "color_event": "#553285"
     }
   },
   {
@@ -2908,7 +2908,7 @@
       "rule": 26,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#3D8361"
+      "color_event": "#691B7F"
     }
   },
   {
@@ -2925,7 +2925,7 @@
       "rule": 26,
       "end_recurring_period": null,
       "calendar": 14,
-      "color_event": "#3D8361"
+      "color_event": "#691B7F"
     }
   },
   {

@@ -637,6 +637,9 @@ Attendees.attendances = {
       type: 'sessionStorage',
       storageKey: Attendees.utilities.datagridStorageKeys['attendancesListView'],
     },
+    sorting: {
+      mode: "multiple",
+    },
     loadPanel: {
       message: 'Fetching...',
       enabled: true,
