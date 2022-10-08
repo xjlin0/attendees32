@@ -760,9 +760,11 @@ Attendees.attendances = {
       });
       grid.endUpdate();
     },
+    onCellPrepared: e => e.rowType === "header" && e.column.dataHtmlTitle && e.cellElement.attr("title", e.column.dataHtmlTitle),
     columns: [
       {
         dataField: 'attending',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
@@ -842,6 +844,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'character',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         cellTemplate: (cellElement, cellInfo) => {
           cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
@@ -887,6 +890,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'gathering',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         caption: 'Gathering in Meet',
         placeholder: "Select or search...",
@@ -940,6 +944,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'gathering__meet__assembly',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         groupIndex: 0,
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
@@ -971,6 +976,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'gathering__meet',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         visible: false,
         validationRules: [{type: 'required'}],
         caption: 'Meet',
@@ -996,6 +1002,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'category',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         visible: false,
         editorOptions: {
@@ -1028,6 +1035,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'team',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         visible: false,
         editorOptions: {
           showClearButton: true,
@@ -1068,6 +1076,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'start',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'Time in',
         visible: false,
         dataType: 'datetime',
@@ -1079,6 +1088,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'finish',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'Time out',
         visible: false,
         dataType: 'datetime',
@@ -1106,27 +1116,30 @@ Attendees.attendances = {
         dataField: 'infos.note',
         width: '10%',
         allowGrouping: false,
-        allowSorting: false,
         caption: 'Note',
         dataType: 'string',
       },
       {
         dataField: 'attending__attendee__first_name',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'first name',
         visible: false,
       },
       {
         dataField: 'attending__attendee__last_name',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'last name',
         visible: false,
       },
       {
         dataField: 'attending__attendee__first_name2',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'first name 2',
         visible: false,
       },
       {
         dataField: 'attending__attendee__last_name2',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'last name 2',
         visible: false,
       },
