@@ -102,9 +102,9 @@ class Attendance(TimeStampedModel, SoftDeletableModel, Utility):
         db_table = "occasions_attendances"
         constraints = [
             models.UniqueConstraint(
-                fields=["gathering", "attending", "character", "team"],
+                fields=["gathering", "attending", "character", "team", "start"],
                 condition=models.Q(is_removed=False),
-                name="gathering_attending_character_team",
+                name="gathering_attending_character_team_start",
             )
         ]
         indexes = [

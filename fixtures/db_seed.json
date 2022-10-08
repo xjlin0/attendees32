@@ -12397,6 +12397,26 @@
     }
   },
   {
+    "model": "occasions.assembly",
+    "pk": 9,
+    "fields": {
+      "created": "2020-05-09T22:31:18.488Z",
+      "modified": "2021-04-08T13:53:29.547Z",
+      "is_removed": false,
+      "start": null,
+      "finish": null,
+      "category": 33,
+      "display_name": "CFCCH圖書館 Library",
+      "display_order": 0,
+      "slug": "cfcch_data_library",
+      "division": 5,
+      "infos": {
+        "fixed": {},
+        "contacts": {}
+      }
+    }
+  },
+  {
     "model": "occasions.attendance",
     "pk": 1,
     "fields": {
@@ -13411,6 +13431,21 @@
       "slug": "d7c8Fd_cfcch_kid_little_foot_nursery_leader_p2",
       "infos": {},
       "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 48,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 9,
+      "display_name": "借閱讀者 borrower",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_data_library_borrower",
+      "infos": {},
+      "type": "audience"
     }
   },
   {
@@ -14845,6 +14880,49 @@
       },
       "site_type": 64,
       "site_id": "21"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 21,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 9,
+      "major_character": 1,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2020-05-12T14:53:44Z",
+      "finish": "2099-05-12T15:53:45Z",
+      "display_name": "借閱 circulation",
+      "slug": "d7c8Fd_cfcch_library_circulation",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "children_organizer",
+          "children_coworker",
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": false
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+        },
+        "default_attendingmeet_in_weeks": 530
+      },
+      "site_type": 64,
+      "site_id": "1"
     }
   },
   {
