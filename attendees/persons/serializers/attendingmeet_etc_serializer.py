@@ -7,6 +7,7 @@ class AttendingMeetEtcSerializer(serializers.ModelSerializer):
     meet__assembly = serializers.IntegerField(read_only=True, source='assembly')  # field name conversion for UI to group directly later
     attending__registration__attendee = serializers.CharField(read_only=True, source='register_name')
     attending__attendee = serializers.CharField(read_only=True, source='attendee_name')
+    attending__attendee__infos__fixed__grade = serializers.CharField(read_only=True, source='attendee_grade')
 
     class Meta:
         model = AttendingMeet

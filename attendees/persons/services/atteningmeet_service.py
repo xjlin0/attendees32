@@ -82,7 +82,6 @@ class AttendingMeetService:
                                Q(attending__registration__registrant=current_user.attendee)), Q.AND)
 
         if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # for searching in drop down of popup editor
-            # print("hi 85 here is search_value: ", search_value)
             extra_filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
                                |
                                Q(attending__attendee__infos__icontains=search_value)), Q.AND)
@@ -113,6 +112,7 @@ class AttendingMeetService:
                 )
             ),
             attendee_name=F("attending__attendee__infos__names__original"),
+            attendee_grade=F("attending__attendee__infos__fixed__grade"),
             # attendee_name=Trim(
             #     Concat(
             #         Trim(Concat("attending__attendee__first_name", V(' '), "attending__attendee__last_name", output_field=CharField())),

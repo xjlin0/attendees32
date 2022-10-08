@@ -1981,8 +1981,8 @@
     "model": "schedule.calendar",
     "pk": 13,
     "fields": {
-      "name": "Non specific calendar",
-      "slug": "non_specific_calendar"
+      "name": "Zoom calendar",
+      "slug": "zoom_calendar"
     }
   },
   {
@@ -12811,6 +12811,36 @@
       "slug": "d7c8Fd_cfcch_kid_student",
       "infos": {},
       "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 4,
+    "fields": {
+      "created": "2020-04-11T18:44:58.405Z",
+      "modified": "2021-04-08T16:44:51.244Z",
+      "is_removed": false,
+      "assembly": 2,
+      "display_name": "詩班司琴 choir accompanist",
+      "display_order": 0,
+      "slug": "d7c8Fd_cfcch_chinese_choir_accompanist",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 5,
+    "fields": {
+      "created": "2020-04-11T18:44:58.405Z",
+      "modified": "2021-04-08T16:44:51.244Z",
+      "is_removed": false,
+      "assembly": 2,
+      "display_name": "詩班指揮 choir conductor",
+      "display_order": 0,
+      "slug": "d7c8Fd_cfcch_chinese_choir_conductor",
+      "infos": {},
+      "type": "coworker"
     }
   },
   {
