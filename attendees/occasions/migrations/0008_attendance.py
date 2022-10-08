@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
         migrations.RunSQL(Utility.default_sql('occasions_attendances')),
         migrations.AddConstraint(
             model_name='attendance',
-            constraint=models.UniqueConstraint(fields=('gathering', 'attending', 'character', 'team'), condition=models.Q(is_removed=False), name='gathering_attending_character_team'),
+            constraint=models.UniqueConstraint(fields=('gathering', 'attending', 'character', 'team', 'start'), condition=models.Q(is_removed=False), name='gathering_attending_character_team_start'),
         ),
         migrations.AddIndex(
             model_name='attendance',
