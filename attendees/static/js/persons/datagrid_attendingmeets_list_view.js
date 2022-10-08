@@ -643,7 +643,7 @@ Attendees.attendingmeets = {
       },
     },
     onCellClick: (e) => {
-        if (e.rowType === 'data' && e.column.dataField === 'attending') {
+        if (e.rowType === 'data' && e.column.dataField === 'attending' && e.event.target.nodeName === 'U') {
             e.component.editRow(e.row.rowIndex);
         }
     },
@@ -689,7 +689,7 @@ Attendees.attendingmeets = {
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee',  // can't sort remotely for function https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
+          cellElement.append(`<a title="Click to open a new page of the attendee info" target="_blank" href="/persons/attendee/${cellInfo.data.attendee_id}">(Info)</a> <u title="click to see the enrollment details" role="button">${cellInfo['displayValue']}</u>`);
         },
         lookup: {
           valueExpr: 'id',
@@ -704,9 +704,6 @@ Attendees.attendingmeets = {
                   const deferred = $.Deferred();
 
                   if (meets && meets.length > 0) {
-                    loadOptions['group'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.getDataSource().loadOptions().group;
-//                    loadOptions['take'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.pageSize();
-//                    loadOptions['skip'] = Attendees.attendingmeets.attendingmeetsDatagrid && (Attendees.attendingmeets.attendingmeetsDatagrid.pageIndex()*loadOptions['take']);
                     const args = {
                       meets: meets,
                       characters: characters,
@@ -999,13 +996,16 @@ Attendees.attendingmeets = {
         },
       },
       {
-        dataField: 'attending__registration__attendee',
+        dataField: 'attending__registration__registrant__infos__names__original',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'Registrant',
         visible: false,
         allowEditing: false,
-        allowGrouping: false,
-        allowSorting: false,
+        cellTemplate: (cellElement, cellInfo) => {
+          if (cellInfo && cellInfo['displayValue']) {
+            cellElement.append(`<span>${cellInfo['displayValue']}</span> <a title="Click to open a new page of the registrant info" target="_blank" href="/persons/attendee/${cellInfo.data.registrant_attendee_id}">(Info)</a>`);
+          }
+        },
       },
       {
         dataField: 'attending__attendee__infos__fixed__grade',

@@ -111,6 +111,8 @@ class AttendingMeetService:
                     output_field=CharField()
                 )
             ),
+            registrant_attendee_id=F("attending__registration__registrant_id"),
+            attendee_id=F("attending__attendee_id"),
             attendee_name=F("attending__attendee__infos__names__original"),
             attendee_grade=F("attending__attendee__infos__fixed__grade"),
             # attendee_name=Trim(
