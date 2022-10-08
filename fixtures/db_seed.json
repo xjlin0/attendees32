@@ -1981,8 +1981,8 @@
     "model": "schedule.calendar",
     "pk": 13,
     "fields": {
-      "name": "Zoom calendar",
-      "slug": "zoom_calendar"
+      "name": "CFCCH Zoom calendar",
+      "slug": "cfcch_zoom_calendar"
     }
   },
   {
@@ -2142,7 +2142,7 @@
     "fields": {
       "calendar": 13,
       "content_type": 54,
-      "object_id": -1,
+      "object_id": 1,
       "distinction": "source",
       "inheritable": true
     }
@@ -2432,7 +2432,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#9768D1"
+      "color_event": "#553384"
     }
   },
   {
@@ -2449,7 +2449,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#7B52AB"
+      "color_event": "#956AA5"
     }
   },
   {
@@ -2517,7 +2517,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 7,
-      "color_event": "#9768D1"
+      "color_event": "#553384"
     }
   },
   {
@@ -2534,7 +2534,7 @@
       "rule": 9,
       "end_recurring_period": null,
       "calendar": 2,
-      "color_event": "#7B52AB"
+      "color_event": "#956AA5"
     }
   },
   {
@@ -2602,7 +2602,7 @@
       "rule": 11,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2619,7 +2619,7 @@
       "rule": 12,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2636,7 +2636,7 @@
       "rule": 13,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2653,7 +2653,7 @@
       "rule": 14,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2670,7 +2670,7 @@
       "rule": 15,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2687,7 +2687,7 @@
       "rule": 16,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2704,7 +2704,7 @@
       "rule": 17,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2721,7 +2721,7 @@
       "rule": 18,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2738,7 +2738,7 @@
       "rule": 19,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2755,7 +2755,7 @@
       "rule": 20,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2772,7 +2772,7 @@
       "rule": 21,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2789,7 +2789,7 @@
       "rule": 22,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2806,7 +2806,7 @@
       "rule": 23,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
@@ -2823,7 +2823,7 @@
       "rule": 24,
       "end_recurring_period": null,
       "calendar": 1,
-      "color_event": "#956AA6"
+      "color_event": "#FED420"
     }
   },
   {
