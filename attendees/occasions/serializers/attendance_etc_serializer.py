@@ -9,6 +9,7 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
     gathering__meet = serializers.IntegerField(read_only=True, source='meet')
     gathering__display_name = serializers.CharField(read_only=True, source='gathering_name')
     attendee_id = serializers.CharField(read_only=True)
+    registrant_attendee_id = serializers.CharField(read_only=True)
     attending__attendee__infos__names__original = serializers.CharField(read_only=True, source='attending_name')
     photo = serializers.CharField(read_only=True)
     file = serializers.FileField(use_url=True, allow_empty_file=True, allow_null=True)  # cause 400

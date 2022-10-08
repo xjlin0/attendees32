@@ -12835,13 +12835,28 @@
   },
   {
     "model": "occasions.character",
+    "pk": 3,
+    "fields": {
+      "created": "2020-04-11T18:44:58.405Z",
+      "modified": "2021-04-08T16:44:51.244Z",
+      "is_removed": false,
+      "assembly": 2,
+      "display_name": "詩班獨唱 choir solo",
+      "display_order": 0,
+      "slug": "d7c8Fd_cfcch_chinese_choir_solo",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
     "pk": 4,
     "fields": {
       "created": "2020-04-11T18:44:58.405Z",
       "modified": "2021-04-08T16:44:51.244Z",
       "is_removed": false,
       "assembly": 2,
-      "display_name": "詩班司琴 choir accompanist",
+      "display_name": "詩班伴奏 choir accompanist",
       "display_order": 0,
       "slug": "d7c8Fd_cfcch_chinese_choir_accompanist",
       "infos": {},
@@ -15061,22 +15076,6 @@
   },
   {
     "model": "occasions.team",
-    "pk": 7,
-    "fields": {
-      "created": "2020-04-11T19:09:48.250Z",
-      "modified": "2021-04-08T17:42:46.852Z",
-      "is_removed": false,
-      "meet": 3,
-      "slug": "cfcch_chinese_choir_pianist",
-      "display_name": "司琴",
-      "display_order": 0,
-      "infos": {},
-      "site_type": 64,
-      "site_id": "7"
-    }
-  },
-  {
-    "model": "occasions.team",
     "pk": 8,
     "fields": {
       "created": "2020-04-11T19:09:48.250Z",
@@ -15141,22 +15140,6 @@
   },
   {
     "model": "occasions.team",
-    "pk": 12,
-    "fields": {
-      "created": "2020-04-11T19:09:48.250Z",
-      "modified": "2021-04-08T17:42:46.852Z",
-      "is_removed": false,
-      "meet": 3,
-      "slug": "cfcch_chinese_choir_solo",
-      "display_name": "獨唱",
-      "display_order": 0,
-      "infos": {},
-      "site_type": 64,
-      "site_id": "7"
-    }
-  },
-  {
-    "model": "occasions.team",
     "pk": 13,
     "fields": {
       "created": "2020-06-19T17:50:42.866Z",
@@ -15179,7 +15162,7 @@
       "modified": "2021-04-08T17:42:46.852Z",
       "is_removed": false,
       "meet": 2,
-      "slug": "cfcch_kid_foot_under_three",
+      "slug": "cfcch_kid_foot_baby_toddler_infant_nursery",
       "display_name": "CFCCH CM Under 3",
       "display_order": 600,
       "infos": {},

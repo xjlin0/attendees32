@@ -739,7 +739,7 @@ Attendees.attendances = {
       },
     },
     onCellClick: (e) => {
-      if (e.rowType === 'data' && e.column.dataField === 'character') {
+      if (e.rowType === 'data' && e.column.dataField === 'attending' && e.event.target.nodeName === 'U') {
         e.component.editRow(e.row.rowIndex);
       }
     },
@@ -771,7 +771,11 @@ Attendees.attendances = {
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append (`<a target="_blank" href="/persons/attendee/${cellInfo.data.attendee_id}">${cellInfo['displayValue']}</a>`);
+          let template = `<a title="Click to open a new page of the attendee info" target="_blank" href="/persons/attendee/${cellInfo.data.attendee_id}">(Info)</a> <u title="click to open the popup editor" role="button">${cellInfo['displayValue']}</u>`;
+          if (cellInfo.data.attending__attendee__infos__names__original.includes(' by ')) {  // has registrant
+            template += ` <a title="Click to open a new page of the registrant info" target="_blank" href="/persons/attendee/${cellInfo.data.registrant_attendee_id}">(Info)</a>`
+          }
+          cellElement.append(template);
         },
         placeholder: "Select or search...",
         editorOptions: {
@@ -849,9 +853,6 @@ Attendees.attendances = {
         dataField: 'character',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
-        cellTemplate: (cellElement, cellInfo) => {
-          cellElement.append ('<u role="button"><strong>' + cellInfo.displayValue + '</strong></u>');
-        },
         setCellValue: (newData, value, currentData) => {
           if (value) {
             newData.character = value;
