@@ -649,7 +649,7 @@ Attendees.gatherings = {
 
       if (e.data && typeof e.data === 'object') {
         Attendees.gatherings.contentTypeEndpoint = Attendees.gatherings.contentTypeEndpoints[e.data['site_type']];
-        const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Info: ';
+        const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Viewing: ';
         grid.option('editing.popup.title', prefix + e.data['gathering_label'] + '@' + e.data['site']);
       }
       grid.option("columns").forEach((column) => {
