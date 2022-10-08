@@ -551,6 +551,9 @@ Attendees.attendingmeets = {
       enabled: true,
       mode: 'select',
     },
+    sorting: {
+      mode: "multiple",
+    },
     onToolbarPreparing: (e) => {
       const toolbarItems = e.toolbarOptions.items;
       toolbarItems.unshift({
@@ -989,6 +992,7 @@ Attendees.attendingmeets = {
       {
         dataField: 'attending__attendee__infos__fixed__grade',
         caption: 'Grade',
+        visible: false,
         allowEditing: false,
         cellTemplate: (cellElement, cellInfo) => {
           if (cellInfo.displayValue) {
