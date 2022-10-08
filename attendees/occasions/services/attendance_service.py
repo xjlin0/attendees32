@@ -233,7 +233,6 @@ class AttendanceService:
                         output_field=CharField()))
             annotations['assembly'] = F("gathering__meet__assembly")
             annotations['meet'] = F("gathering__meet")
-        print("hi 236 here is extra_filters: ", extra_filters)
         return Attendance.objects.annotate(**annotations).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod

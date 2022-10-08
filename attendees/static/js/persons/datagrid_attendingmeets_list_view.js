@@ -554,6 +554,8 @@ Attendees.attendingmeets = {
     sorting: {
       mode: "multiple",
     },
+    onCellPrepared: e => e.rowType === "header" && e.column.dataHtmlTitle && e.cellElement.attr("title", e.column.dataHtmlTitle),
+
     onToolbarPreparing: (e) => {
       const toolbarItems = e.toolbarOptions.items;
       toolbarItems.unshift({
@@ -675,6 +677,7 @@ Attendees.attendingmeets = {
     columns: [
       {
         dataField: 'attending',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee',  // can't sort remotely for function https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
@@ -759,6 +762,7 @@ Attendees.attendingmeets = {
       {
         dataField: 'meet__assembly',
         groupIndex: 0,
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
         setCellValue: (newData, value, currentData) => {
@@ -818,6 +822,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'meet',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         width: '10%',
         validationRules: [{type: 'required'}],
         setCellValue: (newData, value, currentData) => {
@@ -863,6 +868,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'character',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         lookup: {
           valueExpr: 'id',
@@ -900,6 +906,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'category',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         visible: false,
         editorOptions: {
@@ -932,6 +939,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'team',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         visible: false,
         editorOptions: {
           showClearButton: true,
@@ -973,6 +981,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'start',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
         format: 'MM/dd/yyyy',
@@ -983,6 +992,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'attending__registration__attendee',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'Registrant',
         visible: false,
         allowEditing: false,
@@ -991,6 +1001,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'attending__attendee__infos__fixed__grade',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         caption: 'Grade',
         visible: false,
         allowEditing: false,
@@ -1002,6 +1013,7 @@ Attendees.attendingmeets = {
       },
       {
         dataField: 'finish',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         dataType: 'datetime',
         format: 'MM/dd/yyyy',
