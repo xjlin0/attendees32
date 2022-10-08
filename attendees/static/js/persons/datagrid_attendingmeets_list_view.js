@@ -5,7 +5,7 @@ Attendees.attendingmeets = {
   initialized: false,
   filterMeetCheckbox: null,
   attendingIds: null,
-  // selectedCharacterSlugs: [],
+  gradeConverter: [],
   selectedMeetSlugs: [],
   meetData: null,
   init: () => {
@@ -14,6 +14,7 @@ Attendees.attendingmeets = {
     Attendees.attendingmeets.initFilterMeetCheckbox();
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
+    Attendees.attendingmeets.gradeConverter = JSON.parse(document.querySelector('form.filters-dxform').dataset.gradeConverter);
   },
 
   initEditingSwitch: () => {
@@ -381,7 +382,7 @@ Attendees.attendingmeets = {
           const meets = $('div.selected-meets select').val();
           const characters = $('div.selected-characters select').val();
           const deferred = $.Deferred();
-          console.log("hi 384 here is loadOptions: ", loadOptions);
+
           if (meets && meets.length > 0) {
             const args = {
               meets: meets,
@@ -984,6 +985,16 @@ Attendees.attendingmeets = {
         allowEditing: false,
         allowGrouping: false,
         allowSorting: false,
+      },
+      {
+        dataField: 'attending__attendee__infos__fixed__grade',
+        caption: 'Grade',
+        allowEditing: false,
+        cellTemplate: (cellElement, cellInfo) => {
+          if (cellInfo.displayValue) {
+            cellElement.append ('<span>' + Attendees.attendingmeets.gradeConverter[parseInt(cellInfo.displayValue)] + '<span>');
+          }
+        }
       },
       {
         dataField: 'finish',

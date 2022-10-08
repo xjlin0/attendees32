@@ -1091,11 +1091,12 @@ class Command(BaseCommand):
         import_time = datetime.strptime("2022-09-01T02:00:00Z", time_format).astimezone(time_zone)
         end_time = datetime.strptime("2033-09-01T02:00:00Z", time_format).astimezone(time_zone)
         people_note = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('PeopleNote')
+        character_id = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('CharacterId')
         if people_note in cr_converter:
             AttendingMeet.objects.update_or_create(
                 meet=cr_meet,
                 attending=data_attending,
-                character=cr_meet.major_character,
+                character_id=character_id if character_id else cr_meet.major_character,
                 team=cr_converter.get(people_note),
                 defaults={
                     'meet': cr_meet,
@@ -1107,7 +1108,6 @@ class Command(BaseCommand):
                 },
             )
 
-        character_id = attendee.infos.get('fixed', {}).get('access_people_values', {}).get('CharacterId')
         if character_id and people_note in cml_converter:
             meet = foot_meet if people_note == '2022CMLRu3' else rock_meet
             AttendingMeet.objects.update_or_create(
