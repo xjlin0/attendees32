@@ -1096,12 +1096,12 @@ class Command(BaseCommand):
             AttendingMeet.objects.update_or_create(
                 meet=cr_meet,
                 attending=data_attending,
-                character_id=character_id if character_id else cr_meet.major_character,
+                character_id=int(character_id) if character_id else cr_meet.major_character.id,
                 team=cr_converter.get(people_note),
                 defaults={
                     'meet': cr_meet,
                     'attending': data_attending,
-                    'character': cr_meet.major_character,
+                    'character_id': int(character_id) if character_id else cr_meet.major_character.id,
                     'team': cr_converter.get(people_note),
                     'start': import_time,
                     'finish': end_time,
