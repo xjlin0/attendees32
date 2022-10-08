@@ -59,22 +59,14 @@ class ApiOrganizationMeetCharacterAttendingsViewSetForAttendance(LoginRequiredMi
 
                 return Attending.objects.filter(filters).distinct()
 
-            else:
-                return Attending.objects.filter(
-                    pk__in=AttendanceService.by_organization_meet_characters(
-                                current_user=self.request.user,
-                                meet_slugs=self.request.query_params.getlist("meets[]", []),
-                                character_slugs=self.request.query_params.getlist("characters[]", []),
-                                start=self.request.query_params.get("start"),
-                                finish=self.request.query_params.get("finish"),
-                                gatherings=self.request.query_params.getlist("gatherings[]", []),
-                                orderbys=orderby_list,
-                                search_value=search_value,
-                                search_expression=search_expression,
-                                search_operation=search_operation,
-                                filter=self.request.query_params.get("filter"),
-                            ).values_list('attending').order_by()
-                )
+            else:  # Originally only provide what's from attendingmeet, however in the field managers just want to add anyone
+                filters = Q(attendee__division__organization=current_user_organization)
+                if search_value and search_operation == 'contains' and search_expression == 'attending_label':  # for searching in drop down of popup editor
+                    filters.add((Q(registration__registrant__infos__icontains=search_value)
+                                 |
+                                 Q(attendee__infos__icontains=search_value)), Q.AND)
+
+                return Attending.objects.filter(filters).order_by('attendee__last_name')
 
         else:
             time.sleep(2)

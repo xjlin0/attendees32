@@ -692,11 +692,11 @@ Attendees.attendances = {
       },
       form: {
         colCount: 2,
-        customizeItem: function(item) {
-          if (item.dataField === "attending") {
-            item.disabled = !Attendees.attendances.allowEditingAttending;
-          }  // prevent users from changing attending to avoid data chaos
-        },
+//        customizeItem: function(item) {
+//          if (item.dataField === "attending") {
+//            item.disabled = !Attendees.attendances.allowEditingAttending;
+//          }  // prevent users from changing attending to avoid data chaos
+//        },
         items: [
           {
             dataField: 'gathering',
@@ -746,7 +746,7 @@ Attendees.attendances = {
     onInitNewRow: (e) => {
       e.data.category = 1;
       Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
-      Attendees.attendances.allowEditingAttending = true;
+//      Attendees.attendances.allowEditingAttending = true;
     },
     onEditingStart: (e) => {
       const grid = e.component;
@@ -757,7 +757,7 @@ Attendees.attendances = {
         const title = Attendees.utilities.editingEnabled ? editingTitle : readingTitle;
         grid.option('editing.popup.title', title);
       }
-      Attendees.attendances.allowEditingAttending = false;
+//      Attendees.attendances.allowEditingAttending = false;
       grid.option("columns").forEach(column => {
         grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
       });

@@ -592,11 +592,11 @@ Attendees.attendingmeets = {
       },
       form: {
         colCount: 2,
-        customizeItem: function(item) {
-          if (item.dataField === "attending") {
-            item.disabled = !Attendees.attendingmeets.allowEditingAttending;
-          }  // prevent users from changing attending to avoid data chaos
-        },
+//        customizeItem: function(item) {
+//          if (item.dataField === "attending") {
+//            item.disabled = !Attendees.attendingmeets.allowEditingAttending;
+//          }  // prevent users from changing attending to avoid data chaos
+//        },
         items: [
           {
             dataField: 'meet__assembly',
@@ -665,7 +665,7 @@ Attendees.attendingmeets = {
           e.data.finish = new Date(new Date().setDate(new Date().getDate()*7 + selectedMeet['defaultTillInWeeks']));
         }
       }
-      Attendees.attendingmeets.allowEditingAttending = true;
+//      Attendees.attendingmeets.allowEditingAttending = true;
     },
     onEditingStart: (e) => {
       const grid = e.component;
@@ -676,7 +676,7 @@ Attendees.attendingmeets = {
         const title = Attendees.utilities.editingEnabled ? editingTitle : readingTitle;
         grid.option('editing.popup.title', title);
       }
-      Attendees.attendingmeets.allowEditingAttending = false;
+//      Attendees.attendingmeets.allowEditingAttending = false;
       grid.option("columns").forEach(column => {
         grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
       });
@@ -705,8 +705,8 @@ Attendees.attendingmeets = {
 
                   if (meets && meets.length > 0) {
                     loadOptions['group'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.getDataSource().loadOptions().group;
-                    loadOptions['take'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.pageSize();
-                    loadOptions['skip'] = Attendees.attendingmeets.attendingmeetsDatagrid && (Attendees.attendingmeets.attendingmeetsDatagrid.pageIndex()*loadOptions['take']);
+//                    loadOptions['take'] = Attendees.attendingmeets.attendingmeetsDatagrid && Attendees.attendingmeets.attendingmeetsDatagrid.pageSize();
+//                    loadOptions['skip'] = Attendees.attendingmeets.attendingmeetsDatagrid && (Attendees.attendingmeets.attendingmeetsDatagrid.pageIndex()*loadOptions['take']);
                     const args = {
                       meets: meets,
                       characters: characters,
