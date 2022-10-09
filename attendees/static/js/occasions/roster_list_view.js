@@ -768,7 +768,7 @@ Attendees.roster = {
                                  value="checkOut"
                                  id="out-${cellInfo.data.id}"
                                  autocomplete="off"
-                                 data-file="${cellInfo.data.file ? cellInfo.data.file : ''}"
+                                 data-file="${cellInfo.data.file_path}"
                                  ${cellInfo.data.finish ? 'checked' : ''}>
                           <label class="btn btn-outline-primary ${cellInfo.data.start ? '' : 'd-none'}"
                                  for="out-${cellInfo.data.id}">
