@@ -1102,7 +1102,7 @@ Attendees.attendances = {
         },
       },
       {
-        dataField: 'file',
+        dataField: 'file_path',
         visible: false,
         caption: 'check out signature',
         width: 100,
