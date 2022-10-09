@@ -143,8 +143,8 @@ Attendees.calendar = {
     currentView: 'day',
     showCurrentTimeIndicator: true,
     useDropDownViewSwitcher: window.innerWidth < 425,
-    startDayHour: 7,
-    endDayHour: 21,
+    startDayHour: 8,
+    endDayHour: 23,
     height: '80vh',
   },
 };

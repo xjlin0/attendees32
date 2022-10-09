@@ -1828,7 +1828,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 2,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -1856,7 +1856,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 11,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 9,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -1991,6 +1991,30 @@
     "fields": {
       "name": "CFCCH fellowship hall calendar",
       "slug": "cfcch_fellowship_hall_calendar"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 15,
+    "fields": {
+      "name": "CFCCH worship room 201 calendar",
+      "slug": "cfcch_worship_201"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 16,
+    "fields": {
+      "name": "CFCCH worship room 203 calendar",
+      "slug": "cfcch_worship_203"
+    }
+  },
+  {
+    "model": "schedule.calendar",
+    "pk": 17,
+    "fields": {
+      "name": "CFCCH worship room 204 calendar",
+      "slug": "cfcch_worship_204"
     }
   },
   {
@@ -2159,6 +2183,39 @@
     }
   },
   {
+    "model": "schedule.calendarrelation",
+    "pk": 15,
+    "fields": {
+      "calendar": 15,
+      "content_type": 64,
+      "object_id": 14,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 16,
+    "fields": {
+      "calendar": 16,
+      "content_type": 64,
+      "object_id": 15,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 17,
+    "fields": {
+      "calendar": 17,
+      "content_type": 64,
+      "object_id": 16,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
     "model": "schedule.rule",
     "pk": 1,
     "fields": {
@@ -2244,7 +2301,7 @@
     "fields": {
       "name": "Every Sunday",
       "description": "will recur once every Sunday",
-      "frequency": "DAILY",
+      "frequency": "WEEKLY",
       "params": "BYWEEKDAY:SU"
     }
   },
@@ -2254,7 +2311,7 @@
     "fields": {
       "name": "Every Saturday",
       "description": "will recur once every Saturday",
-      "frequency": "DAILY",
+      "frequency": "WEEKLY",
       "params": "BYWEEKDAY:SA"
     }
   },
@@ -2419,12 +2476,32 @@
     }
   },
   {
+    "model": "schedule.rule",
+    "pk": 27,
+    "fields": {
+      "name": "Every Wednesday",
+      "description": "will recur once every Wednesday",
+      "frequency": "WEEKLY",
+      "params": "BYWEEKDAY:WE"
+    }
+  },
+  {
+    "model": "schedule.rule",
+    "pk": 28,
+    "fields": {
+      "name": "Every Tuesday",
+      "description": "will recur once every Tuesday",
+      "frequency": "WEEKLY",
+      "params": "BYWEEKDAY:TU"
+    }
+  },
+  {
     "model": "schedule.event",
     "pk": 1,
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "source: The Rock Sunday 9:15A-12:40P",
+      "title": "source: The Rock Sunday 9:15AM-12:40PM",
       "description": "room#6",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2441,7 +2518,7 @@
     "fields": {
       "start": "2020-02-09T17:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "source: Little foot Sunday 9:15A-12:40P",
+      "title": "source: Little foot Sunday 9:15AM-12:40PM",
       "description": "room#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2458,7 +2535,7 @@
     "fields": {
       "start": "2020-02-09T21:15:00Z",
       "end": "2020-02-09T23:00:00Z",
-      "title": "source: 中文詩班: Sunday 1:15P-3:00P",
+      "title": "source: 中文詩班: Sunday 1:15PM-3:00PM",
       "description": "room#7",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2475,7 +2552,7 @@
     "fields": {
       "start": "2020-02-09T17:30:00Z",
       "end": "2020-02-09T18:40:00Z",
-      "title": "source: Sunday service 9:30A-10:40A",
+      "title": "source: Sunday service 9:30AM-10:40AM",
       "description": "room#19",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
@@ -2492,7 +2569,7 @@
     "fields": {
       "start": "2020-02-09T19:15:00Z",
       "end": "2020-02-09T20:40:00Z",
-      "title": "source: 主日崇拜 11:15P-12:40P",
+      "title": "source: 主日崇拜 11:15AM-12:40PM",
       "description": "room#19",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
@@ -2832,7 +2909,7 @@
     "fields": {
       "start": "2020-02-09T18:00:00Z",
       "end": "2020-02-09T19:15:00Z",
-      "title": "source: Chinese Sunday School 10:00A-11:15A",
+      "title": "source: 秋季主日學 Chinese Sunday School 10:00AM-11:15AM",
       "description": "room#3",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
@@ -2866,7 +2943,7 @@
     "fields": {
       "start": "2020-02-09T23:00:00Z",
       "end": "2020-02-10T01:30:00Z",
-      "title": "source: After School Tu~Th 3-5:30P",
+      "title": "source: After School Tu~Th 3-5:30PM",
       "description": "room#21",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2900,7 +2977,7 @@
     "fields": {
       "start": "2020-02-09T03:30:00Z",
       "end": "2020-02-09T05:00:00Z",
-      "title": "source: Shining Star 7:30P-9P",
+      "title": "source: Shining Star 7:30PM-9PM",
       "description": "room#21",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -2926,6 +3003,227 @@
       "end_recurring_period": null,
       "calendar": 14,
       "color_event": "#691B7F"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 31,
+    "fields": {
+      "start": "2020-02-09T04:00:00Z",
+      "end": "2020-02-09T05:40:00Z",
+      "title": "source: Ezra Fellowship 8PM-9:40PM",
+      "description": "room#7",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 26,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 32,
+    "fields": {
+      "start": "2020-02-09T04:00:00Z",
+      "end": "2020-02-09T05:40:00Z",
+      "title": "event#31",
+      "description": "room#7",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 26,
+      "end_recurring_period": null,
+      "calendar": 9,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 33,
+    "fields": {
+      "start": "2020-02-09T04:00:00Z",
+      "end": "2020-02-09T05:40:00Z",
+      "title": "event#31",
+      "description": "room#14",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 26,
+      "end_recurring_period": null,
+      "calendar": 15,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 34,
+    "fields": {
+      "start": "2020-02-09T04:00:00Z",
+      "end": "2020-02-09T05:40:00Z",
+      "title": "event#31",
+      "description": "room#15",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 26,
+      "end_recurring_period": null,
+      "calendar": 16,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 35,
+    "fields": {
+      "start": "2020-02-09T04:00:00Z",
+      "end": "2020-02-09T05:40:00Z",
+      "title": "event#31",
+      "description": "room#16",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 26,
+      "end_recurring_period": null,
+      "calendar": 17,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 36,
+    "fields": {
+      "start": "2020-02-09T18:00:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "source: 週六團契 Chinese Saturday Bible study 10:00AM-11:15AM",
+      "description": "room#3",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 10,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 37,
+    "fields": {
+      "start": "2020-02-09T18:00:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "event#36",
+      "description": "room#3",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 10,
+      "end_recurring_period": null,
+      "calendar": 12,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 38,
+    "fields": {
+      "start": "2020-02-09T03:00:00Z",
+      "end": "2020-02-09T05:00:00Z",
+      "title": "source: Timothy Fellowship 7PM-9PM",
+      "description": "room#19",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 10,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 39,
+    "fields": {
+      "start": "2020-02-09T03:00:00Z",
+      "end": "2020-02-09T05:00:00Z",
+      "title": "event#38",
+      "description": "room#19",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 10,
+      "end_recurring_period": null,
+      "calendar": 10,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 40,
+    "fields": {
+      "start": "2020-02-09T06:00:00Z",
+      "end": "2020-02-09T07:30:00Z",
+      "title": "source: Shining Star 7:30PM-9PM",
+      "description": "room#3",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 27,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 41,
+    "fields": {
+      "start": "2020-02-09T06:00:00Z",
+      "end": "2020-02-09T07:30:00Z",
+      "title": "event#40",
+      "description": "room#3",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 27,
+      "end_recurring_period": null,
+      "calendar": 12,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 42,
+    "fields": {
+      "start": "2020-02-09T06:00:00Z",
+      "end": "2020-02-09T07:30:00Z",
+      "title": "event#40",
+      "description": "room#23",
+      "creator": 1,
+      "created_on": "2020-04-11T18:55:53.117Z",
+      "updated_on": "2020-04-11T19:41:28.645Z",
+      "rule": 27,
+      "end_recurring_period": null,
+      "calendar": 13,
+      "color_event": "#D85504"
+    }
+  },
+  {
+    "model": "schedule.event",
+    "pk": 43,
+    "fields": {
+      "start": "2020-02-09T18:00:00Z",
+      "end": "2020-02-09T19:30:00Z",
+      "title": "source: 姐妹團契 Chinese Sister Fellowship 10:00AM-11:30AM",
+      "description": "room#3",
+      "creator": 1,
+      "created_on": "2022-04-11T18:55:53.117Z",
+      "updated_on": "2022-09-11T19:41:28.645Z",
+      "rule": 28,
+      "end_recurring_period": null,
+      "calendar": 1,
+      "color_event": "#D85504"
     }
   },
   {
@@ -3086,6 +3384,136 @@
       "content_type": 103,
       "object_id": 5,
       "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 17,
+    "fields": {
+      "event": 31,
+      "content_type": 103,
+      "object_id": 21,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 18,
+    "fields": {
+      "event": 32,
+      "content_type": 103,
+      "object_id": 21,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 19,
+    "fields": {
+      "event": 33,
+      "content_type": 103,
+      "object_id": 21,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 20,
+    "fields": {
+      "event": 34,
+      "content_type": 103,
+      "object_id": 21,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 21,
+    "fields": {
+      "event": 35,
+      "content_type": 103,
+      "object_id": 21,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 22,
+    "fields": {
+      "event": 36,
+      "content_type": 103,
+      "object_id": 22,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 23,
+    "fields": {
+      "event": 37,
+      "content_type": 103,
+      "object_id": 22,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 24,
+    "fields": {
+      "event": 38,
+      "content_type": 103,
+      "object_id": 23,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 25,
+    "fields": {
+      "event": 39,
+      "content_type": 103,
+      "object_id": 23,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 26,
+    "fields": {
+      "event": 40,
+      "content_type": 103,
+      "object_id": 24,
+      "distinction": "source"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 27,
+    "fields": {
+      "event": 41,
+      "content_type": 103,
+      "object_id": 24,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 28,
+    "fields": {
+      "event": 42,
+      "content_type": 103,
+      "object_id": 24,
+      "distinction": "location"
+    }
+  },
+  {
+    "model": "schedule.eventrelation",
+    "pk": 29,
+    "fields": {
+      "event": 43,
+      "content_type": 103,
+      "object_id": 25,
+      "distinction": "source"
     }
   },
   {
@@ -6976,6 +7404,21 @@
     }
   },
   {
+    "model": "whereabouts.campus",
+    "pk": 4,
+    "fields": {
+      "created": "2020-04-11T18:32:56.905Z",
+      "modified": "2020-06-19T15:44:44.716Z",
+      "is_removed": false,
+      "organization": 1,
+      "display_name": "CFCCH Remote",
+      "slug": "d7c8Fd_remote",
+      "infos": {
+        "contacts": {}
+      }
+    }
+  },
+  {
     "model": "whereabouts.property",
     "pk": 1,
     "fields": {
@@ -7070,13 +7513,28 @@
     }
   },
   {
+    "model": "whereabouts.property",
+    "pk": 7,
+    "fields": {
+      "created": "2020-04-11T18:33:59.401Z",
+      "modified": "2020-06-19T15:47:44.600Z",
+      "is_removed": false,
+      "display_name": "CFCCH Remote Online",
+      "slug": "cfcch_remote_online",
+      "campus": 4,
+      "infos": {
+        "contacts": {}
+      }
+    }
+  },
+  {
     "model": "whereabouts.suite",
     "pk": 1,
     "fields": {
       "created": "2020-04-11T18:35:21.186Z",
       "modified": "2021-04-08T17:08:17.290Z",
       "is_removed": false,
-      "display_name": "CFCC 副堂2樓",
+      "display_name": "CFCCH 副堂2樓",
       "slug": "cfcch_fellowship_2f",
       "property": 1,
       "site": "2F"
@@ -7219,7 +7677,7 @@
       "created": "2020-04-11T18:35:21.186Z",
       "modified": "2021-04-08T17:08:17.290Z",
       "is_removed": false,
-      "display_name": "CFCC 副堂1樓",
+      "display_name": "CFCCH 副堂1樓",
       "slug": "cfcch_fellowship_1f",
       "property": 1,
       "site": "1F"
@@ -7236,6 +7694,19 @@
       "slug": "cfcch_house_of_agape_1F",
       "property": 6,
       "site": "1F"
+    }
+  },
+  {
+    "model": "whereabouts.suite",
+    "pk": 14,
+    "fields": {
+      "created": "2020-04-11T18:35:21.186Z",
+      "modified": "2021-04-08T17:08:17.290Z",
+      "is_removed": false,
+      "display_name": "CFCCH Zoom",
+      "slug": "cfcch_remote_online_zoom",
+      "property": 7,
+      "site": "app/web/phone"
     }
   },
   {
@@ -7584,6 +8055,22 @@
       "display_name": "仁愛屋 大廳 hall, house of Agape 1F, CFCCH",
       "slug": "cfcch_house_of_agape_1f_hall",
       "suite": 13,
+      "label": null,
+      "infos": {
+        "accessibility": 0
+      }
+    }
+  },
+  {
+    "model": "whereabouts.room",
+    "pk": 23,
+    "fields": {
+      "created": "2020-04-11T18:35:55.012Z",
+      "modified": "2020-06-19T16:03:03.166Z",
+      "is_removed": false,
+      "display_name": "CFCCH Zoom 3583017026",
+      "slug": "cfcch_remote_online_zoom_3583017026",
+      "suite": 14,
       "label": null,
       "infos": {
         "accessibility": 0
@@ -12386,9 +12873,9 @@
       "start": null,
       "finish": null,
       "category": 33,
-      "display_name": "團契查經 Chinese Fellowships",
+      "display_name": "團契查經 Chinese Fellowship",
       "display_order": 0,
-      "slug": "cfcch_chinese_fellowships",
+      "slug": "cfcch_chinese_fellowship",
       "division": 1,
       "infos": {
         "fixed": {},
@@ -12829,6 +13316,21 @@
       "display_name": "Junior Student",
       "display_order": 32766,
       "slug": "d7c8Fd_cfcch_kid_student",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 2,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 8,
+      "display_name": "團契參加者 Chinese fellowship participant",
+      "display_order": 32766,
+      "slug": "d7c8Fd_cfcch_chinese_fellowship_participant",
       "infos": {},
       "type": "audience"
     }
@@ -14815,7 +15317,7 @@
       "modified": "2021-04-08T16:37:22.469Z",
       "is_removed": false,
       "assembly": 8,
-      "major_character": 1,
+      "major_character": 2,
       "shown_audience": true,
       "audience_editable": true,
       "start": "2022-09-01T14:53:44Z",
@@ -14904,8 +15406,228 @@
       "created": "2020-04-11T18:47:42.792Z",
       "modified": "2021-04-08T16:37:22.469Z",
       "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "以斯拉團契 Ezra fellowship",
+      "slug": "d7c8Fd_cfcch_fellowship_ezra",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 64,
+      "site_id": "7"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 22,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "週六查經 Chinese Saturday Bible study",
+      "slug": "d7c8Fd_cfcch_chinese_saturday_bible_study",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 64,
+      "site_id": "3"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 23,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "提摩太團契 Timothy Fellowship",
+      "slug": "d7c8Fd_cfcch_chinese_timothy_fellowship",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 64,
+      "site_id": "19"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 24,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "餐服團契 Restaurant Ministry Fellowship",
+      "slug": "d7c8Fd_cfcch_chinese_RestaurantMinistry_fellowship",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 64,
+      "site_id": "3"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 25,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "姐妹團契 Chinese Sister Fellowship",
+      "slug": "d7c8Fd_cfcch_chinese_sister_fellowship",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 64,
+      "site_id": "3"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 26,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
       "assembly": 9,
-      "major_character": 1,
+      "major_character": 48,
       "shown_audience": true,
       "audience_editable": true,
       "start": "2020-05-12T14:53:44Z",
@@ -14923,9 +15645,6 @@
           "data_counselor"
         ],
         "allowed_models": [
-          "gathering",
-          "attendingmeet",
-          "attendance",
           "eventrelation"
         ],
         "gathering_infos": {
