@@ -509,7 +509,7 @@ Attendees.attendingmeets = {
     },
     searchPanel: {
       visible: true,
-      width: 300,
+      width: 150,
       placeholder: 'search attending or team/category ...',
     },
     allowColumnReordering: true,
@@ -545,7 +545,7 @@ Attendees.attendingmeets = {
        autoExpandAll: true,
      },
      groupPanel: {
-       visible: 'auto',
+       visible: true,
      },
     columnChooser: {
       enabled: true,

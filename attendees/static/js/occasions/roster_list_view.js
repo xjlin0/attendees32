@@ -600,7 +600,7 @@ Attendees.roster = {
       autoExpandAll: true,
     },
     groupPanel: {
-      visible: 'auto',
+      visible: true,
     },
     columnChooser: {
       enabled: true,
@@ -858,7 +858,7 @@ Attendees.roster = {
       },
       {
         dataField: 'character',
-        groupIndex: 0,
+//        groupIndex: 0,
         validationRules: [{type: 'required'}],
         lookup: {
          valueExpr: 'id',

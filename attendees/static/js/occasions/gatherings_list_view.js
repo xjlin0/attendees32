@@ -532,7 +532,7 @@ Attendees.gatherings = {
     },
     searchPanel: {
       visible: true,
-      width: 240,
+      width: 150,
       placeholder: 'search name or locations ...',
     },
     allowColumnReordering: true,
@@ -570,7 +570,7 @@ Attendees.gatherings = {
        autoExpandAll: true,
      },
      groupPanel: {
-       visible: 'auto',
+       visible: true,
      },  // remoteOperations need server grouping https://js.devexpress.com/Documentation/Guide/Data_Binding/Specify_a_Data_Source/Custom_Data_Sources/#Load_Data/Server-Side_Data_Processing
     columnChooser: {
       enabled: true,
