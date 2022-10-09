@@ -505,7 +505,7 @@ Attendees.gatherings = {
         },
         remove: (key) => {
           return $.ajax({
-            url: $('form.filters-dxform').data('gatherings-endpoint') + key ,
+            url: $('form.filters-dxform').data('gatherings-endpoint') + key + '/' ,
             method: 'DELETE',
             success: (result) => {
               DevExpress.ui.notify(

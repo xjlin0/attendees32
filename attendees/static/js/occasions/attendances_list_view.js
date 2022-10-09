@@ -584,7 +584,7 @@ Attendees.attendances = {
         },
         remove: (key) => {
           return $.ajax({
-            url: $('form.filters-dxform').data('attendances-endpoint') + key ,
+            url: $('form.filters-dxform').data('attendances-endpoint') + key + '/' ,
             method: 'DELETE',
             success: (result) => {
               DevExpress.ui.notify(
