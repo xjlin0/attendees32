@@ -989,7 +989,7 @@ Attendees.roster = {
         },
       },
       {
-        dataField: 'file',
+        dataField: 'file_path',
         caption: 'signature',
         width: 100,
         allowFiltering: false,
