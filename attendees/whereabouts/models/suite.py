@@ -28,7 +28,7 @@ class Suite(TimeStampedModel, SoftDeletableModel, Utility):
     )
     slug = models.SlugField(max_length=50, blank=False, null=False, unique=True)
     property = models.ForeignKey("Property", null=True, on_delete=models.SET_NULL)
-    site = models.CharField(max_length=50, blank=True, help_text="2F floor, etc")
+    site = models.CharField(max_length=50, blank=True, null=True, help_text="2F floor, etc")
 
     class Meta:
         db_table = "whereabouts_suites"
@@ -57,7 +57,7 @@ class SuitesHistory(pghistory.get_event_model(
     created = model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')
     modified = model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')
     is_removed = models.BooleanField(default=False)
-    site = models.CharField(blank=True, help_text='2F floor, etc', max_length=50)
+    site = models.CharField(blank=True, null=True, help_text='2F floor, etc', max_length=50)
     id = models.BigIntegerField(db_index=True)
     property = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.property')
     slug = models.SlugField(db_index=False)

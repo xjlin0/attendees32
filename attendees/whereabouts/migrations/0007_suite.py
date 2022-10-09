@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('property', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='whereabouts.Property')),
                 ('display_name', models.CharField(db_index=True, max_length=50)),
                 ('slug', models.SlugField(max_length=50, unique=True)),
-                ('site', models.CharField(blank=True, help_text='2F floor, etc', max_length=50)),
+                ('site', models.CharField(blank=True, null=True, help_text='2F floor, etc', max_length=50)),
             ],
             options={
                 'db_table': 'whereabouts_suites',
@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, editable=False, verbose_name='created')),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, editable=False, verbose_name='modified')),
                 ('is_removed', models.BooleanField(default=False)),
-                ('site', models.CharField(blank=True, help_text='2F floor, etc', max_length=50)),
+                ('site', models.CharField(blank=True, null=True, help_text='2F floor, etc', max_length=50)),
                 ('id', models.BigIntegerField(db_index=True)),
                 ('property', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.property')),
                 ('slug', models.SlugField(db_index=False)),
