@@ -14,7 +14,7 @@ def update_site_forward(apps, schema_editor):
         id=settings.SITE_ID,
         defaults={
             "domain": "chineseforchristchurch.org",
-            "name": "organization#1",
+            "name": "Attendees",  # This will be on the email title
         },
     )
 

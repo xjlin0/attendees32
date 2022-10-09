@@ -12,12 +12,16 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
     registrant_attendee_id = serializers.CharField(read_only=True)
     attending__attendee__infos__names__original = serializers.CharField(read_only=True, source='attending_name')
     photo = serializers.CharField(read_only=True)
-    file = serializers.FileField(use_url=True, allow_empty_file=True, allow_null=True)  # cause 400
+    # file = serializers.FileField(use_url=True, allow_empty_file=True, allow_null=True)  # cause 400 or with local domain name
+    file_path = serializers.SerializerMethodField(required=False, read_only=True)
     encoded_file = serializers.CharField(required=False)
     attending__attendee__first_name = serializers.CharField(read_only=True)
     attending__attendee__last_name = serializers.CharField(read_only=True)
     attending__attendee__first_name2 = serializers.CharField(read_only=True)
     attending__attendee__last_name2 = serializers.CharField(read_only=True)
+
+    def get_file_path(self, obj):
+        return obj.file.url if obj.file else ""
 
     class Meta:
         model = Attendance
