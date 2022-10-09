@@ -482,7 +482,7 @@ Attendees.attendingmeets = {
         },
         remove: (key) => {
           return $.ajax({
-            url: $('form.filters-dxform').data('attendingmeets-endpoint') + key ,
+            url: $('form.filters-dxform').data('attendingmeets-endpoint') + key + '/' ,
             method: 'DELETE',
             success: (result) => {
               DevExpress.ui.notify(
