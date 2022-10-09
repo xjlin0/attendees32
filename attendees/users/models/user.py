@@ -172,6 +172,7 @@ class User(AbstractUser):
 class UserHistory(pghistory.get_event_model(
     User,
     pghistory.Snapshot('user.snapshot'),
+    pghistory.BeforeDelete('user.before_delete'),
     name='UserHistory',
     related_name='history',
     exclude=['password'],

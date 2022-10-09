@@ -44,6 +44,7 @@ class Price(TimeStampedModel, SoftDeletableModel, Utility):
 class PricesHistory(pghistory.get_event_model(
     Price,
     pghistory.Snapshot('price.snapshot'),
+    pghistory.BeforeDelete('price.before_delete'),
     name='PricesHistory',
     related_name='history',
 )):

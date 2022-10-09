@@ -74,6 +74,7 @@ class Note(TimeStampedModel, SoftDeletableModel):
 class NotesHistory(pghistory.get_event_model(
     Note,
     pghistory.Snapshot('note.snapshot'),
+    pghistory.BeforeDelete('note.before_delete'),
     name='NotesHistory',
     related_name='history',
 )):

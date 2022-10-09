@@ -58,4 +58,8 @@ class Migration(migrations.Migration):
             model_name='localityproxy',
             trigger=pgtrigger.compiler.Trigger(name='locality_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."name" IS DISTINCT FROM NEW."name" OR OLD."postal_code" IS DISTINCT FROM NEW."postal_code" OR OLD."state_id" IS DISTINCT FROM NEW."state_id" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "whereabouts_localityhistory" ("name", "postal_code", "state_id", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."postal_code", NEW."state_id", NEW."id", NOW(), \'locality.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='ca5e7c1bdbe7d8f0eb9d042df897529d93230749', operation='UPDATE', pgid='pgtrigger_locality_snapshot_update_0c9dc', table='address_locality', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='localityproxy',
+            trigger=pgtrigger.compiler.Trigger(name='locality_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_localityhistory" ("name", "postal_code", "state_id", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."name", OLD."postal_code", OLD."state_id", OLD."id", NOW(), \'locality.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='28d25b5113a483f1ef400346f38af90b06245766', operation='DELETE', pgid='pgtrigger_locality_before_delete_e11c7', table='address_locality', when='AFTER')),
+        ),
     ]

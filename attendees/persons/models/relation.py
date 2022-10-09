@@ -76,6 +76,7 @@ class Relation(TimeStampedModel, SoftDeletableModel):
 class RelationsHistory(pghistory.get_event_model(
     Relation,
     pghistory.Snapshot('relation.snapshot'),
+    pghistory.BeforeDelete('relation.before_delete'),
     name='RelationsHistory',
     related_name='history',
 )):

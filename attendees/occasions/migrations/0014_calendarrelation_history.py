@@ -56,6 +56,10 @@ class Migration(migrations.Migration):
             model_name='calendarrelationproxy',
             trigger=pgtrigger.compiler.Trigger(name='calendarrelation_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."calendar_id" IS DISTINCT FROM NEW."calendar_id" OR OLD."content_type_id" IS DISTINCT FROM NEW."content_type_id" OR OLD."object_id" IS DISTINCT FROM NEW."object_id" OR OLD."distinction" IS DISTINCT FROM NEW."distinction" OR OLD."inheritable" IS DISTINCT FROM NEW."inheritable" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "occasions_calendarrelationhistory" ("calendar_id", "content_type_id", "object_id", "distinction", "inheritable", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."calendar_id", NEW."content_type_id", NEW."object_id", NEW."distinction", NEW."inheritable", NEW."id", NOW(), \'calendarrelation.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='21d0256aff7933b558655e41afabbf37ce7150a9', operation='UPDATE', pgid='pgtrigger_calendarrelation_snapshot_update_251b7', table='schedule_calendarrelation', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='calendarrelationproxy',
+            trigger=pgtrigger.compiler.Trigger(name='calendarrelation_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_calendarrelationhistory" ("calendar_id", "content_type_id", "object_id", "distinction", "inheritable", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."calendar_id", OLD."content_type_id", OLD."object_id", OLD."distinction", OLD."inheritable", OLD."id", NOW(), \'calendarrelation.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='b3d832e1978125375ac3297a8d7a2c981a03f99d', operation='DELETE', pgid='pgtrigger_calendarrelation_before_delete_1d3f0', table='schedule_calendarrelation', when='AFTER')),
+        ),
         migrations.AlterField(
             model_name='calendarrelationhistory',
             name='pgh_obj',

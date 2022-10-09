@@ -122,6 +122,7 @@ class Gathering(TimeStampedModel, SoftDeletableModel, Utility):
 class GatheringsHistory(pghistory.get_event_model(
     Gathering,
     pghistory.Snapshot('gathering.snapshot'),
+    pghistory.BeforeDelete('gathering.before_delete'),
     name='GatheringsHistory',
     related_name='history',
 )):

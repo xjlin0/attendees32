@@ -56,6 +56,7 @@ class MenuAuthGroup(TimeStampedModel, SoftDeletableModel):
 class MenuAuthGroupsHistory(pghistory.get_event_model(
     MenuAuthGroup,
     pghistory.Snapshot('menuauthgroup.snapshot'),
+    pghistory.BeforeDelete('menuauthgroup.before_delete'),
     name='MenuAuthGroupsHistory',
     related_name='history',
 )):

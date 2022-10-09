@@ -60,4 +60,8 @@ class Migration(migrations.Migration):
             model_name='emailaddressproxy',
             trigger=pgtrigger.compiler.Trigger(name='emailaddress_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."user_id" IS DISTINCT FROM NEW."user_id" OR OLD."email" IS DISTINCT FROM NEW."email" OR OLD."verified" IS DISTINCT FROM NEW."verified" OR OLD."primary" IS DISTINCT FROM NEW."primary" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "users_emailaddresshistory" ("user_id", "email", "verified", "primary", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."user_id", NEW."email", NEW."verified", NEW."primary", NEW."id", NOW(), \'emailaddress.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='062ea34fcb3973a2a56764d31cd26780dbf77ca2', operation='UPDATE', pgid='pgtrigger_emailaddress_snapshot_update_3a334', table='account_emailaddress', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='emailaddressproxy',
+            trigger=pgtrigger.compiler.Trigger(name='emailaddress_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "users_emailaddresshistory" ("user_id", "email", "verified", "primary", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."user_id", OLD."email", OLD."verified", OLD."primary", OLD."id", NOW(), \'emailaddress.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='a033a69707e3b7d0dfc76d520261d99b45068121', operation='DELETE', pgid='pgtrigger_emailaddress_before_delete_1c1ca', table='account_emailaddress', when='AFTER')),
+        ),
     ]

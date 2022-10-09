@@ -50,6 +50,7 @@ class MessageTemplate(TimeStampedModel, SoftDeletableModel):
 class MessageTemplatesHistory(pghistory.get_event_model(
     MessageTemplate,
     pghistory.Snapshot('messagetemplate.snapshot'),
+    pghistory.BeforeDelete('messagetemplate.before_delete'),
     name='MessageTemplatesHistory',
     related_name='history',
 )):

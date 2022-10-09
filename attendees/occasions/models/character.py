@@ -53,6 +53,7 @@ class Character(TimeStampedModel, SoftDeletableModel, Utility):
 class CharactersHistory(pghistory.get_event_model(
     Character,
     pghistory.Snapshot('character.snapshot'),
+    pghistory.BeforeDelete('character.before_delete'),
     name='Character',
     related_name='history',
 )):

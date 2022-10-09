@@ -125,6 +125,7 @@ class Menu(MPTTModel, TimeStampedModel, SoftDeletableModel):
 class MenusHistory(pghistory.get_event_model(
     Menu,
     pghistory.Snapshot('menu.snapshot'),
+    pghistory.BeforeDelete('menu.before_delete'),
     name='MenusHistory',
     related_name='history',
 )):

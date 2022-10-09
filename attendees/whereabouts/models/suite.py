@@ -47,6 +47,7 @@ class Suite(TimeStampedModel, SoftDeletableModel, Utility):
 class SuitesHistory(pghistory.get_event_model(
     Suite,
     pghistory.Snapshot('suite.snapshot'),
+    pghistory.BeforeDelete('suite.before_delete'),
     name='SuitesHistory',
     related_name='history',
 )):

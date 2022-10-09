@@ -64,4 +64,8 @@ class Migration(migrations.Migration):
             model_name='emailconfirmationproxy',
             trigger=pgtrigger.compiler.Trigger(name='emailconfirmation_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."email_address_id" IS DISTINCT FROM NEW."email_address_id" OR OLD."created" IS DISTINCT FROM NEW."created" OR OLD."sent" IS DISTINCT FROM NEW."sent" OR OLD."key" IS DISTINCT FROM NEW."key" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "users_emailconfirmationhistory" ("email_address_id", "created", "sent", "key", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."email_address_id", NEW."created", NEW."sent", NEW."key", NEW."id", NOW(), \'emailconfirmation.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='df8fef27710b25902aa87a97abe2e27ec0cded9a', operation='UPDATE', pgid='pgtrigger_emailconfirmation_snapshot_update_fb7b9', table='account_emailconfirmation', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='emailconfirmationproxy',
+            trigger=pgtrigger.compiler.Trigger(name='emailconfirmation_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "users_emailconfirmationhistory" ("email_address_id", "created", "sent", "key", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."email_address_id", OLD."created", OLD."sent", OLD."key", OLD."id", NOW(), \'emailconfirmation.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='673ab8e974af34690d8f6ae493963145d7c7f1ec', operation='DELETE', pgid='pgtrigger_emailconfirmation_before_delete_1158b', table='account_emailconfirmation', when='AFTER')),
+        ),
     ]

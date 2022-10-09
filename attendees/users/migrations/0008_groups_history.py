@@ -59,5 +59,8 @@ class Migration(migrations.Migration):
             model_name='groupproxy',
             trigger=pgtrigger.compiler.Trigger(name='group_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."name" IS DISTINCT FROM NEW."name" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "users_groupshistory" ("name", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."id", NOW(), \'group.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='f35d03a2d05ef13cb59b81e4761ecae6445d9134', operation='UPDATE', pgid='pgtrigger_group_snapshot_update_adcdd', table='auth_group', when='AFTER')),
         ),
-
+        pgtrigger.migrations.AddTrigger(
+            model_name='groupproxy',
+            trigger=pgtrigger.compiler.Trigger(name='group_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "users_groupshistory" ("name", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."name", OLD."id", NOW(), \'group.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='706619536b03b8debc5d4a72c12307f3d6291b3d', operation='DELETE', pgid='pgtrigger_group_before_delete_9d26d', table='auth_group', when='AFTER')),
+        ),
     ]

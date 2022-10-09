@@ -66,6 +66,7 @@ class Campus(TimeStampedModel, SoftDeletableModel, Utility):
 class CampusesHistory(pghistory.get_event_model(
     Campus,
     pghistory.Snapshot('campus.snapshot'),
+    pghistory.BeforeDelete('campus.before_delete'),
     name='CampusesHistory',
     related_name='history',
 )):
