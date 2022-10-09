@@ -611,7 +611,7 @@ Attendees.attendances = {
     },
     searchPanel: {
       visible: true,
-      width: 240,
+      width: 150,
       placeholder: 'search name or activities ...',
     },
     allowColumnReordering: true,
@@ -650,7 +650,7 @@ Attendees.attendances = {
       autoExpandAll: true,
     },
     groupPanel: {
-      visible: 'auto',
+      visible: true,
     },
     columnChooser: {
       enabled: true,
