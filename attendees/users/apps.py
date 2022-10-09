@@ -19,6 +19,7 @@ class UsersConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('group.snapshot'),
+            pghistory.BeforeDelete('group.before_delete'),
             model_name='GroupsHistory',
             related_name='history',
             app_label='users',
@@ -53,6 +54,7 @@ class UsersConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('permission.snapshot'),
+            pghistory.BeforeDelete('permission.before_delete'),
             model_name='PermissionsHistory',
             related_name='history',
             app_label='users',
@@ -75,6 +77,7 @@ class UsersConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('emailaddress.snapshot'),
+            pghistory.BeforeDelete('emailaddress.before_delete'),
             model_name='EmailAddressHistory',
             related_name='history',
             app_label='users',
@@ -85,6 +88,7 @@ class UsersConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('emailconfirmation.snapshot'),
+            pghistory.BeforeDelete('emailconfirmation.before_delete'),
             model_name='EmailConfirmationHistory',
             related_name='history',
             app_label='users',

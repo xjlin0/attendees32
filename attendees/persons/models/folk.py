@@ -64,6 +64,7 @@ class Folk(TimeStampedModel, SoftDeletableModel):
 class FolksHistory(pghistory.get_event_model(
     Folk,
     pghistory.Snapshot('folk.snapshot'),
+    pghistory.BeforeDelete('folk.before_delete'),
     name='FolksHistory',
     related_name='history',
 )):

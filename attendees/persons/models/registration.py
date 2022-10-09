@@ -63,6 +63,7 @@ class Registration(TimeStampedModel, SoftDeletableModel, Utility):
 class RegistrationsHistory(pghistory.get_event_model(
     Registration,
     pghistory.Snapshot('registration.snapshot'),
+    pghistory.BeforeDelete('registration.before_delete'),
     name='RegistrationsHistory',
     related_name='history',
 )):

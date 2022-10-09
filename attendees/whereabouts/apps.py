@@ -14,6 +14,7 @@ class WhereaboutsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('country.snapshot'),
+            pghistory.BeforeDelete('country.before_delete'),
             related_name='history',
             model_name='CountryHistory',
             app_label='whereabouts'
@@ -24,6 +25,7 @@ class WhereaboutsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('state.snapshot'),
+            pghistory.BeforeDelete('state.before_delete'),
             related_name='history',
             model_name='StateHistory',
             app_label='whereabouts'
@@ -34,6 +36,7 @@ class WhereaboutsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('locality.snapshot'),
+            pghistory.BeforeDelete('locality.before_delete'),
             related_name='history',
             model_name='LocalityHistory',
             app_label='whereabouts'
@@ -44,6 +47,7 @@ class WhereaboutsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('address.snapshot'),
+            pghistory.BeforeDelete('address.before_delete'),
             related_name='history',
             model_name='AddressHistory',
             app_label='whereabouts'

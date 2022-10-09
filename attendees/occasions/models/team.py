@@ -55,6 +55,7 @@ class Team(TimeStampedModel, SoftDeletableModel, Utility):
 class TeamsHistory(pghistory.get_event_model(
     Team,
     pghistory.Snapshot('team.snapshot'),
+    pghistory.BeforeDelete('team.before_delete'),
     name='TeamsHistory',
     related_name='history',
 )):

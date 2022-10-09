@@ -21,6 +21,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('intervalschedule.snapshot'),
+            pghistory.BeforeDelete('intervalschedule.before_delete'),
             related_name='history',
             model_name='IntervalScheduleHistory',
             app_label='occasions'
@@ -31,6 +32,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('crontabschedule.snapshot'),
+            pghistory.BeforeDelete('crontabschedule.before_delete'),
             related_name='history',
             model_name='CrontabScheduleHistory',
             app_label='occasions'
@@ -41,6 +43,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('periodictask.snapshot'),
+            pghistory.BeforeDelete('periodictask.before_delete'),
             related_name='history',
             model_name='PeriodicTaskHistory',
             app_label='occasions'
@@ -50,7 +53,8 @@ class OccasionsConfig(AppConfig):
                 proxy = True
 
         @pghistory.track(
-            pghistory.Snapshot('calendar.snapshot'),
+            pghistory.Snapshot('rule.snapshot'),
+            pghistory.BeforeDelete('rule.before_delete'),
             related_name='history',
             model_name='RuleHistory',
             app_label='occasions'
@@ -61,6 +65,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('calendar.snapshot'),
+            pghistory.BeforeDelete('calendar.before_delete'),
             related_name='history',
             model_name='CalendarHistory',
             app_label='occasions'
@@ -71,6 +76,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('calendarrelation.snapshot'),
+            pghistory.BeforeDelete('calendarrelation.before_delete'),
             related_name='history',
             model_name='CalendarRelationHistory',
             app_label='occasions',
@@ -81,6 +87,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('event.snapshot'),
+            pghistory.BeforeDelete('event.before_delete'),
             related_name='history',
             model_name='EventHistory',
             app_label='occasions'
@@ -91,6 +98,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('eventrelation.snapshot'),
+            pghistory.BeforeDelete('eventrelation.before_delete'),
             related_name='history',
             model_name='EventRelationHistory',
             app_label='occasions',
@@ -101,6 +109,7 @@ class OccasionsConfig(AppConfig):
 
         @pghistory.track(
             pghistory.Snapshot('occurrence.snapshot'),
+            pghistory.BeforeDelete('occurrence.before_delete'),
             related_name='history',
             model_name='OccurrenceHistory',
             app_label='occasions',

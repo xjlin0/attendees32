@@ -110,6 +110,7 @@ class Place(TimeStampedModel, SoftDeletableModel, Utility):
 class PlacesHistory(pghistory.get_event_model(
     Place,
     pghistory.Snapshot('place.snapshot'),
+    pghistory.BeforeDelete('place.before_delete'),
     name='PlacesHistory',
     related_name='history',
 )):

@@ -61,6 +61,7 @@ class Division(TimeStampedModel, SoftDeletableModel, Utility):
 class DivisionsHistory(pghistory.get_event_model(
     Division,
     pghistory.Snapshot('division.snapshot'),
+    pghistory.BeforeDelete('division.before_delete'),
     name='DivisionsHistory',
     related_name='history',
 )):

@@ -55,6 +55,7 @@ class Room(TimeStampedModel, SoftDeletableModel, Utility):
 class RoomsHistory(pghistory.get_event_model(
     Room,
     pghistory.Snapshot('room.snapshot'),
+    pghistory.BeforeDelete('room.before_delete'),
     name='RoomsHistory',
     related_name='history',
 )):

@@ -126,6 +126,7 @@ class Attendance(TimeStampedModel, SoftDeletableModel, Utility):
 class AttendancesHistory(pghistory.get_event_model(
     Attendance,
     pghistory.Snapshot('attendance.snapshot'),
+    pghistory.BeforeDelete('attendance.before_delete'),
     name='AttendancesHistory',
     related_name='history',
 )):

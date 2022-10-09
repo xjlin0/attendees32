@@ -57,4 +57,8 @@ class Migration(migrations.Migration):
             model_name='intervalscheduleproxy',
             trigger=pgtrigger.compiler.Trigger(name='intervalschedule_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."every" IS DISTINCT FROM NEW."every" OR OLD."period" IS DISTINCT FROM NEW."period" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "occasions_intervalschedulehistory" ("every", "period", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."every", NEW."period", NEW."id", NOW(), \'intervalschedule.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='c83f19576134a26b8b81aa7af23fa8c94f606e16', operation='UPDATE', pgid='pgtrigger_intervalschedule_snapshot_update_e7cc2', table='django_celery_beat_intervalschedule', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='intervalscheduleproxy',
+            trigger=pgtrigger.compiler.Trigger(name='intervalschedule_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_intervalschedulehistory" ("every", "period", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."every", OLD."period", OLD."id", NOW(), \'intervalschedule.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='33121d7ff07572bcc267cfdda49a0fd486a8789d', operation='DELETE', pgid='pgtrigger_intervalschedule_before_delete_ab275', table='django_celery_beat_intervalschedule', when='AFTER')),
+        ),
     ]

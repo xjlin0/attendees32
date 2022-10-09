@@ -80,6 +80,7 @@ class Assembly(TimeStampedModel, SoftDeletableModel, Utility):
 class AssembliesHistory(pghistory.get_event_model(
     Assembly,
     pghistory.Snapshot('assembly.snapshot'),
+    pghistory.BeforeDelete('assembly.before_delete'),
     name='AssembliesHistory',
     related_name='history',
 )):

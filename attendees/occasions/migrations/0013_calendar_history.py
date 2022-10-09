@@ -52,6 +52,10 @@ class Migration(migrations.Migration):
             model_name='calendarproxy',
             trigger=pgtrigger.compiler.Trigger(name='calendar_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."name" IS DISTINCT FROM NEW."name" OR OLD."slug" IS DISTINCT FROM NEW."slug" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "occasions_calendarhistory" ("name", "slug", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."slug", NEW."id", NOW(), \'calendar.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='15c814b2b85dbed014431c3ad49ae4da99141305', operation='UPDATE', pgid='pgtrigger_calendar_snapshot_update_c7ecc', table='schedule_calendar', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='calendarproxy',
+            trigger=pgtrigger.compiler.Trigger(name='calendar_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "occasions_calendarhistory" ("name", "slug", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."name", OLD."slug", OLD."id", NOW(), \'calendar.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='93a563a974356e8be8717b83be7d1d74231a8ea3', operation='DELETE', pgid='pgtrigger_calendar_before_delete_dcf4b', table='schedule_calendar', when='AFTER')),
+        ),
         migrations.AlterField(
             model_name='calendarhistory',
             name='pgh_obj',

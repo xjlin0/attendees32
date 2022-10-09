@@ -58,4 +58,8 @@ class Migration(migrations.Migration):
             model_name='stateproxy',
             trigger=pgtrigger.compiler.Trigger(name='state_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."name" IS DISTINCT FROM NEW."name" OR OLD."code" IS DISTINCT FROM NEW."code" OR OLD."country_id" IS DISTINCT FROM NEW."country_id" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "whereabouts_statehistory" ("name", "code", "country_id", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."code", NEW."country_id", NEW."id", NOW(), \'state.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='ffa9cf840e7522e361f5af536fa2f58451a58aea', operation='UPDATE', pgid='pgtrigger_state_snapshot_update_5b5db', table='address_state', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='stateproxy',
+            trigger=pgtrigger.compiler.Trigger(name='state_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "whereabouts_statehistory" ("name", "code", "country_id", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."name", OLD."code", OLD."country_id", OLD."id", NOW(), \'state.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='67e752693e483a84b3a2c8f71028fa0f950f3f3a', operation='DELETE', pgid='pgtrigger_state_before_delete_8d5c5', table='address_state', when='AFTER')),
+        ),
     ]

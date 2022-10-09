@@ -55,5 +55,9 @@ class Migration(migrations.Migration):
             model_name='permissionproxy',
             trigger=pgtrigger.compiler.Trigger(name='permission_snapshot_update', sql=pgtrigger.compiler.UpsertTriggerSql(condition='WHEN (OLD."name" IS DISTINCT FROM NEW."name" OR OLD."content_type_id" IS DISTINCT FROM NEW."content_type_id" OR OLD."codename" IS DISTINCT FROM NEW."codename" OR OLD."id" IS DISTINCT FROM NEW."id")', func='INSERT INTO "users_permissionshistory" ("name", "content_type_id", "codename", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (NEW."name", NEW."content_type_id", NEW."codename", NEW."id", NOW(), \'permission.snapshot\', NEW."id", _pgh_attach_context()); RETURN NULL;', hash='744e883744cfb94916bdccaea1d5eb88f2fd4b76', operation='UPDATE', pgid='pgtrigger_permission_snapshot_update_aba8a', table='auth_permission', when='AFTER')),
         ),
+        pgtrigger.migrations.AddTrigger(
+            model_name='permissionproxy',
+            trigger=pgtrigger.compiler.Trigger(name='permission_before_delete', sql=pgtrigger.compiler.UpsertTriggerSql(func='INSERT INTO "users_permissionshistory" ("name", "content_type_id", "codename", "id", "pgh_created_at", "pgh_label", "pgh_obj_id", "pgh_context_id") VALUES (OLD."name", OLD."content_type_id", OLD."codename", OLD."id", NOW(), \'permission.before_delete\', OLD."id", _pgh_attach_context()); RETURN NULL;', hash='59a63cf7cb7d2bb9808972a16d86aef1c0b77886', operation='DELETE', pgid='pgtrigger_permission_before_delete_c7163', table='auth_permission', when='AFTER')),
+        ),
     ]
 

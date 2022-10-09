@@ -50,6 +50,7 @@ class Category(TimeStampedModel, SoftDeletableModel):
 class CategoriesHistory(pghistory.get_event_model(
     Category,
     pghistory.Snapshot('category.snapshot'),
+    pghistory.BeforeDelete('category.before_delete'),
     name='CategoriesHistory',
     related_name='history',
 )):

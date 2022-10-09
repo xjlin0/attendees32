@@ -64,6 +64,7 @@ class Property(TimeStampedModel, SoftDeletableModel, Utility):
 class PropertiesHistory(pghistory.get_event_model(
     Property,
     pghistory.Snapshot('property.snapshot'),
+    pghistory.BeforeDelete('property.before_delete'),
     name='PropertiesHistory',
     related_name='history',
 )):

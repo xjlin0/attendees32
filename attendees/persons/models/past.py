@@ -86,6 +86,7 @@ class Past(TimeStampedModel, SoftDeletableModel, Utility):
 class PastsHistory(pghistory.get_event_model(
     Past,
     pghistory.Snapshot('past.snapshot'),
+    pghistory.BeforeDelete('past.before_delete'),
     name='PastsHistory',
     related_name='history',
 )):
