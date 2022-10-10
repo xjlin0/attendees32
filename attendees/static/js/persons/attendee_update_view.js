@@ -152,6 +152,7 @@ Attendees.datagridUpdate = {
 
   initAttendeeForm: () => {
     Attendees.datagridUpdate.attendeeAttrs = document.querySelector('div.datagrid-attendee-update');
+    Attendees.datagridUpdate.gradeConverter = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.gradeConverter);
     Attendees.datagridUpdate.processDivisions();
     Attendees.datagridUpdate.divisionIdNames = Attendees.datagridUpdate.divisions.reduce((obj, item) => ({...obj, [item.id]: item.display_name}) ,{});
     Attendees.datagridUpdate.attendeeUrn = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeUrn;
@@ -1245,6 +1246,13 @@ Attendees.datagridUpdate = {
         dataField: 'infos.fixed.grade',
         label: {
           text: 'School grade',
+        },
+        editorType: 'dxSelectBox',
+        editorOptions: {
+          items: Attendees.datagridUpdate.gradeConverter,
+          searchEnabled: true,
+          showClearButton: true,
+          placeholder: 'N/A',
         },
       },
       {
