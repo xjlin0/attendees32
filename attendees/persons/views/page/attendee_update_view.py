@@ -63,6 +63,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 "family_attendees_endpoint": "/persons/api/datagrid_data_familyattendees/",
                 "family_category_id": Attendee.FAMILY_CATEGORY,
                 "targeting_attendee_id": targeting_attendee_id,
+                "grade_converter": dumps(self.request.user.organization.infos.get('grade_converter', []) if self.request.user.organization else []),
                 "divisions": dumps(
                     list(
                         Division.objects.filter(

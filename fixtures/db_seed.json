@@ -6756,13 +6756,13 @@
           "conference_coworker"
         ],
         "grade_converter": [
-          "Under 3",
-          "Under 3",
-          "Under 3",
-          "Preschool",
-          "Preschool",
-          "Kindergarten",
-          "Kindergarten",
+          "Under three 1",
+          "Under three 2",
+          "Under three 3",
+          "Preschool 1",
+          "Preschool 2",
+          "Kindergarten 1",
+          "Kindergarten 2",
           "G1",
           "G2",
           "G3",
@@ -6775,14 +6775,14 @@
           "G10",
           "G11",
           "G12",
-          "postsecondary",
-          "postsecondary",
-          "postsecondary",
-          "postsecondary",
-          "postsecondary",
-          "postsecondary",
-          "postsecondary",
-          "postsecondary"
+          "Postsecondary 1",
+          "Postsecondary 2",
+          "Postsecondary 3",
+          "Postsecondary 4",
+          "Postsecondary 5",
+          "Postsecondary 6",
+          "Postsecondary 7",
+          "Postsecondary 8"
         ]
       }
     }
