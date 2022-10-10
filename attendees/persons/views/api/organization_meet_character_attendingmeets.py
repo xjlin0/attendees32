@@ -4,10 +4,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models.aggregates import Count
 from django.db.models import Q
 from rest_framework import viewsets
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.utils import json
 
+from attendees.occasions.models import Attendance
 from attendees.persons.models import Utility, AttendingMeet
 from attendees.persons.serializers import AttendingMeetEtcSerializer
 from attendees.persons.services import AttendingMeetService
@@ -101,6 +102,21 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
             time.sleep(2)
             raise AuthenticationFailed(
                 detail="Have you registered any events of the organization?"
+            )
+
+    def perform_destroy(self, instance):
+        allowed_groups = [group for group in instance.meet.infos.get('allowed_groups', []) if group is not "organization_participant"]  # intentionally forbid user to delete him/herself
+        if self.request.user.belongs_to_groups_of(allowed_groups):
+            Attendance.objects.filter(
+                gathering__meet=instance.meet,
+                gathering__start__gte=Utility.now_with_timezone(),
+                attending=instance.attending
+            ).delete()  # delete only future attendance
+            instance.delete()
+        else:
+            time.sleep(2)
+            raise PermissionDenied(
+                detail=f"Not allowed to delete {instance.__class__.__name__}"
             )
 
 
