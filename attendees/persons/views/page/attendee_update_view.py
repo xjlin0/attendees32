@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
 
+from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee, Folk
 from attendees.users.authorization import RouteAndSpyGuard
 from attendees.users.models import Menu
@@ -37,8 +38,11 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
         show_create_attendee = self.kwargs.get(
             "show_create_attendee", Menu.user_can_create_attendee(self.request.user)
         )
+        important_pasts = self.request.user.organization.infos.get('settings', {}).get('past_category_to_attendingmeet_meet', {})
+        important_meets = {v: int(k) for k, v in important_pasts.items()}
         context.update(
             {
+                "pasts_to_add": dumps({meet.display_name: important_meets.get(meet.id) for meet in Meet.objects.filter(pk__in=important_meets.keys()).order_by('created')}),
                 "attendee_contenttype_id": ContentType.objects.get_for_model(Attendee).id,
                 'user_organization_directory_meet': self.request.user.organization.infos.get('settings', {}).get('default_directory_meet'),
                 "teams_endpoint": "/occasions/api/organization_meet_teams/",

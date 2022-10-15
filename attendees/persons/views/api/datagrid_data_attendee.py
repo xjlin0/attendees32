@@ -141,14 +141,10 @@ class ApiDatagridDataAttendeeViewSet(
             instance = serializer.save()
             if self.request.META.get("HTTP_X_END_ALL_ATTENDEE_ACTIVITIES"):  # passed away
                 AttendeeService.end_all_activities(instance, self.request.user.attendee_uuid_str())
-                # Relationship.objects.filter(
-                #     Q(to_attendee=target_attendee)
-                #     |
-                #     Q(from_attendee=target_attendee)
-                # ).update(
-                #     emergency_contact=False,
-                #     scheduler=False
-                # )
+
+            if self.request.META.get("HTTP_X_ADD_PAST"):
+                AttendeeService.add_past(instance, self.request.META.get("HTTP_X_ADD_PAST"))
+
         else:
             time.sleep(2)
             raise PermissionDenied(

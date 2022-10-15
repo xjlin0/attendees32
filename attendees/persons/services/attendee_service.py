@@ -322,6 +322,10 @@ class AttendeeService:
         return field_converter.get(query_field, query_field).replace(".", "__")
 
     @staticmethod
+    def add_past(attendee, past_id):
+        pass
+
+    @staticmethod
     def end_all_activities(attendee, updating_attendee_uuid_str):
         """FamilyAttendee is not deleted since many people still memorise their passed away families"""
         for attending in attendee.attendings.all():

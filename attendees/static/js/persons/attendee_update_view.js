@@ -92,10 +92,10 @@ Attendees.datagridUpdate = {
 
   toggleEditing: (enabled) => {
     const newAttendeeDxDropDownButton = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('add_new_attendee');
-    $('div.attendee-form-submits').dxButton('instance').option('disabled', !enabled);
+    $('div.attendee-form-submits').each((idx, element) => $(element).dxButton('instance').option('disabled', !enabled));
     $('div.attendee-form-dead').dxButton('instance').option('disabled', !enabled);
     $('div.attendee-form-delete').dxButton('instance').option('disabled', !enabled);
-    $('span.attendee-form-submits').dxButton('instance').option('disabled', !enabled);
+    $('span.attendee-form-submits').dxButton('instance').option('disabled', !enabled);  // add-more-contacts
     $('button.attending-button-new, button.family-button-new, button.place-button-new, input.form-check-input').prop('disabled', !enabled);
     Attendees.datagridUpdate.attendeeMainDxForm.option('readOnly', !enabled);
     Attendees.datagridUpdate.phone1.option('readOnly', !enabled);
@@ -727,7 +727,7 @@ Attendees.datagridUpdate = {
             class: 'attendee-form-submits',  // for toggling editing mode
           },
           disabled: !Attendees.utilities.editingEnabled,
-          text: 'Save Attendee details and photo',
+          text: 'Save details & photo',
           icon: 'save',
           hint: 'save attendee data in the page',
           type: 'default',
@@ -808,13 +808,35 @@ Attendees.datagridUpdate = {
       },
     ];
 
+    const pastsToAdd = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsToAdd);
+    const pastsToAddButtons = Object.keys(pastsToAdd).map(meetName => {
+      return {
+        itemType: 'button',
+        name: 'mainAttendeeFormSubmit',
+        horizontalAlignment: 'left',
+        buttonOptions: {
+          elementAttr: {
+            class: 'attendee-form-submits',  // for toggling editing mode
+          },
+          disabled: !Attendees.utilities.editingEnabled,
+          text: meetName,
+          icon: 'plus',
+          hint: `add attendee to ${meetName}`,
+          type: 'success',
+          stylingMode: 'outlined',
+          useSubmitBehavior: false,
+          onClick: (e) => Attendees.datagridUpdate.submitAttendeeForm(e, `Are you sure to add ${meetName}?`, {'X-Add-Past': pastsToAdd[meetName]}),
+        },
+      };
+    });
+
     const buttonItems = [
       {
         colSpan: 24,
         colCount: 24,
         cssClass: 'h6 not-shrinkable',
         itemType: 'group',
-        items: isCreatingNewAttendee ? [...saveButtons] : [...saveButtons, ...deadAndDeleteButtons],
+        items: isCreatingNewAttendee ? [...saveButtons] : [...saveButtons, ...deadAndDeleteButtons, ...pastsToAddButtons],
       },
     ];
 

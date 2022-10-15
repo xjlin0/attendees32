@@ -86,6 +86,7 @@
     {% csrf_token %}
     <div class="datagrid-attendee-update"
          data-teams-endpoint="{{teams_endpoint}}"
+         data-pasts-to-add="{{pasts_to_add}}"
          data-user-organization-directory-meet="{{user_organization_directory_meet|default_if_none:''}}"
          data-attendee-contenttype-id="{{attendee_contenttype_id}}"
          data-family-contenttype-id="{{folk_contenttype_id}}"
