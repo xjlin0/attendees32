@@ -6733,7 +6733,8 @@
           },
           "past_category_to_attendingmeet_meet": {
             "4": 17,
-            "5": 16
+            "5": 16,
+            "37": 9
           }
         },
         "counselor": [
@@ -8570,6 +8571,19 @@
       "type": "check",
       "display_order": 0,
       "display_name": "Check",
+      "infos": {}
+    }
+  },
+  {
+    "model": "persons.category",
+    "pk": 37,
+    "fields": {
+      "created": "2021-05-23T13:01:21.838Z",
+      "modified": "2021-05-23T13:01:21.838Z",
+      "is_removed": false,
+      "type": "status",
+      "display_order": 0,
+      "display_name": "member",
       "infos": {}
     }
   },

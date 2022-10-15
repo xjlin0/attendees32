@@ -67,7 +67,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 "divisions": dumps(
                     list(
                         Division.objects.filter(
-                            organization=self.request.user.attendee.division.organization
+                            organization=self.request.user.attendee.division.organization if hasattr(self.request.user, 'attendee') else self.request.user.organization,
                         ).values("id", "display_name", "infos")
                     )
                 ),  # to avoid simultaneous AJAX calls
@@ -80,11 +80,10 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
     def render_to_response(
         self, context, **kwargs
     ):  # attendee_id "new" only happened in attendee_create_view checked by RouteAndSpyGuard
+        self_attendee = self.request.user.attendee if hasattr(self.request.user, 'attendee') else None
         if context[
             "targeting_attendee_id"
-        ] == "new" or self.request.user.attendee.under_same_org_with(
-            context["targeting_attendee_id"]
-        ):
+        ] == "new" or (self_attendee and self_attendee.under_same_org_with(context["targeting_attendee_id"])):
             if self.request.is_ajax():
                 pass
 
@@ -95,7 +94,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 return render(self.request, self.get_template_names()[0], context)
         else:
             sleep(2)
-            raise Http404("Have you registered any events of the organization?")
+            raise Http404("Did you assigned an attendee? Have you registered any events of the organization?")
 
 
 attendee_update_view = AttendeeUpdateView.as_view()

@@ -40,7 +40,7 @@ class SpyGuard(UserPassesTestMixin):
         targeting_attendee_id = self.request.META.get(
             "HTTP_X_TARGET_ATTENDEE_ID", self.kwargs.get("attendee_id")
         )
-        current_attendee = self.request.user.attendee
+        current_attendee = self.request.user.attendee if hasattr(self.request.user, 'attendee') else None
 
         if targeting_attendee_id == "new":
             return Menu.user_can_create_attendee(
