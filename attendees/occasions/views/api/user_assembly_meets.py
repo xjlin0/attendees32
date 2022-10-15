@@ -31,7 +31,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
         target_attendee = get_object_or_404(
             Attendee,
             pk=self.request.META.get(
-                "HTTP_X_TARGET_ATTENDEE_ID", current_user.attendee_uuid_str()
+                "HTTP_X_TARGET_ATTENDEE_ID", current_user.attendee_uuid_str() or None
             ),
         )
         # Todo 20200530: filter meets by user's group like Meet.objects.filter(infos__allowed_groups__0__in=['children_coworker', 'hi']) if infos = {'allowed_groups': ['children_coworker', 'data_organizer']}

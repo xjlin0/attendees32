@@ -34,7 +34,7 @@ class ApiFamilyOrganizationAttendancesViewSet(viewsets.ModelViewSet):
         current_user_organization = current_user.organization
         attendee_id = self.request.query_params.get("attendee")
         attendee = PeekOther.get_attendee_or_self(current_user, attendee_id)
-        admin_checking = attendee != current_user.attendee
+        admin_checking = attendee != current_user.attendee if hasattr(current_user, 'attendee') else False
         if current_user_organization:
             return AttendanceService.by_family_meets_gathering_intervals(
                 admin_checking=admin_checking,
