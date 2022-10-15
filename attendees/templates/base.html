@@ -215,17 +215,6 @@
         {% endfor %}
       {% endif %}
 
-      {% if not user_attendee_id and request.user.is_authenticated %}
-        <div class="alert alert-dismissible alert-error">
-          No attendee assigned to your account, most of functions won't work!!!
-          <button type="button"
-                  class="btn-close"
-                  data-bs-dismiss="alert"
-                  aria-label="Close">
-          </button>
-        </div>
-      {% endif %}
-
       {% block content %}
         <p>Please log out when finish!</p>
       {% endblock content %}
