@@ -90,7 +90,7 @@ class Command(BaseCommand):
             initial_families_count = FolkAttendee.objects.count()
             upserted_address_count = self.import_addresses(addresses, california, division1_slug)
             upserted_household_id_count = self.import_households(households, division1, division2)
-            upserted_attendee_count, photo_import_results = self.import_attendees(peoples, rock_meet_slug, foot_meet_slug, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug)
+            upserted_attendee_count, photo_import_results = self.import_attendees(division2, peoples, rock_meet_slug, foot_meet_slug, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug)
             # upserted_address_count, upserted_household_id_count, upserted_attendee_count, photo_import_results = 1, 1, 1, []
             if upserted_address_count and upserted_household_id_count and upserted_attendee_count:
                 upserted_relationship_count = self.reprocess_directory_emails_and_family_roles( division3_slug, rock_meet_slug, foot_meet_slug, directory_meet_slug)
@@ -320,9 +320,10 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def import_attendees(self, peoples, rock_meet_slug, foot_meet_slug, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug):
+    def import_attendees(self, division2, peoples, rock_meet_slug, foot_meet_slug, division3_slug, data_assembly_slug, member_meet_slug, baptized_meet_slug, division_converter, believer_meet_slug):
         """
         Importer of each people from MS Access.
+        :param division2  EN
         :param peoples: file content of people accessible by headers, from MS Access
         :param division3_slug: key of division 3  # kid
         :param data_assembly_slug: key of data_assembly
@@ -359,6 +360,14 @@ class Command(BaseCommand):
             'PrintDir': 'print_directory',
             'LastUpdate': 'household_last_update',
             '海沃之友': 'hayward_friend',
+        }
+        family_rank = {
+            'C(Child1)': 10,
+            'D(Child2)': 20,
+            'E(Child3)': 30,
+            'F(Child4)': 40,
+            'G(Child5)': 50,
+            'H(Child6)': 60,
         }
 
         cr_meet = Meet.objects.get(pk=3)
@@ -514,7 +523,7 @@ class Command(BaseCommand):
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
                     self.update_attendee_membership_and_other(rock_meet, foot_meet, cml_converter, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
-
+                    folk_start_date = '1800-01-01'
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
                         if folk:       # there are some missing records in the access data
@@ -534,9 +543,13 @@ class Command(BaseCommand):
                                     title__in=['child', 'son', 'daughter'],
                                     gender=attendee.gender,
                                 )
-                                if attendee.age() and attendee.age() < 11:  # k-5 to kid, should > 10 to EN?
+                                if attendee.age() and attendee.age() < 13:
                                     attendee.division = division3
-                                display_order = 10
+                                elif attendee.age() and attendee.age() > 12:
+                                    attendee.division = division2
+                                display_order = family_rank[household_role]
+                                if attendee.actual_birthday:
+                                    folk_start_date = attendee.actual_birthday
 
                             some_household_values = {attendee_header: Utility.boolean_or_datetext_or_original(folk.infos.get('access_household_values', {}).get(access_header)) for (access_header, attendee_header) in family_to_attendee_infos_converter.items() if Utility.presence(folk.infos.get('access_household_values', {}).get(access_header)) is not None}
                             # some_household_values['print_directory'] = [str(folk.id)]
@@ -566,7 +579,7 @@ class Command(BaseCommand):
                                 defaults={
                                     'display_order': display_order,
                                     'role': relation,
-                                    'start': '1800-01-01',
+                                    'start': folk_start_date,
                                 }
                             )
                             #
