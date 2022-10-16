@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Case, F, Func, Q, When
 from django.db.models.expressions import OrderBy
@@ -15,7 +16,7 @@ from attendees.persons.models import (  # , Relationship
     FolkAttendee,
     Registration,
     Relation,
-    Utility)
+    Utility, Past)
 from attendees.persons.services import AttendingService, FolkService
 
 
@@ -322,8 +323,16 @@ class AttendeeService:
         return field_converter.get(query_field, query_field).replace(".", "__")
 
     @staticmethod
-    def add_past(attendee, past_id):
-        pass
+    def add_past(attendee, past_category_id):
+        category = Category.objects.get(pk=past_category_id)
+        Past.objects.update_or_create(  # past does not have uniq key by natural
+            organization=attendee.division.organization,
+            content_type=ContentType.objects.get_for_model(attendee),
+            object_id=attendee.id,
+            category=category,
+            display_name=f'become {category.display_name}',
+            infos=Utility.relationship_infos(),
+        )
 
     @staticmethod
     def end_all_activities(attendee, updating_attendee_uuid_str):

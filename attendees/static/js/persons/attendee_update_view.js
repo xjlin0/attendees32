@@ -153,6 +153,8 @@ Attendees.datagridUpdate = {
   initAttendeeForm: () => {
     Attendees.datagridUpdate.attendeeAttrs = document.querySelector('div.datagrid-attendee-update');
     Attendees.datagridUpdate.gradeConverter = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.gradeConverter).reduce((all, now, index) =>{all.push({id: index, label: now}); return all}, []);
+    Attendees.datagridUpdate.pastsToAdd = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsToAdd);
+    Attendees.datagridUpdate.pastsCategories = new Set(Object.values(Attendees.datagridUpdate.pastsToAdd));
     Attendees.datagridUpdate.processDivisions();
     Attendees.datagridUpdate.divisionIdNames = Attendees.datagridUpdate.divisions.reduce((obj, item) => ({...obj, [item.id]: item.display_name}) ,{});
     Attendees.datagridUpdate.attendeeUrn = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeUrn;
@@ -808,8 +810,8 @@ Attendees.datagridUpdate = {
       },
     ];
 
-    const pastsToAdd = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsToAdd);
-    const pastsToAddButtons = Object.keys(pastsToAdd).map(meetName => {
+    const pastsToAddButtons = Object.keys(Attendees.datagridUpdate.pastsToAdd).map(meetName => {
+      const categoryId = Attendees.datagridUpdate.pastsToAdd[meetName];
       return {
         itemType: 'button',
         name: 'mainAttendeeFormSubmit',
@@ -817,15 +819,16 @@ Attendees.datagridUpdate = {
         buttonOptions: {
           elementAttr: {
             class: 'attendee-form-submits',  // for toggling editing mode
+            id: `for-past-category-${categoryId}`,
           },
           disabled: !Attendees.utilities.editingEnabled,
           text: meetName,
           icon: 'plus',
-          hint: `add attendee to ${meetName}`,
+          hint: `This attendee is NOT ${meetName}, click to add attendee to ${meetName}`,
           type: 'success',
           stylingMode: 'outlined',
           useSubmitBehavior: false,
-          onClick: (e) => Attendees.datagridUpdate.submitAttendeeForm(e, `Are you sure to add ${meetName}?`, {'X-Add-Past': pastsToAdd[meetName]}),
+          onClick: (e) => Attendees.datagridUpdate.submitAttendeeForm(e, `Are you sure to add ${meetName}?`, {'X-Add-Past': categoryId}),
         },
       };
     });
@@ -3170,7 +3173,7 @@ Attendees.datagridUpdate = {
               key: 'id',
               load: () => {
                 return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.categoriesEndpoint, {
-                  take: 100,
+                  take: 999,
                   type: args.type,
                 });
               },
@@ -3224,7 +3227,18 @@ Attendees.datagridUpdate = {
         store: new DevExpress.data.CustomStore({
           key: 'id',
           load: () => {
-            return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsEndpoint, {category__type: args.type});
+            // return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsEndpoint, {category__type: args.type});
+            const d = new $.Deferred();
+            $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsEndpoint, {category__type: args.type})
+              .done((result) => {
+                result.data.forEach(past => {
+                  if (args.type === 'status' && Attendees.datagridUpdate.pastsCategories.has(past.category)) {
+                    $(`div#for-past-category-${past.category}`).dxButton('instance').option('visible', false);
+                  }
+                });
+                d.resolve(result.data);
+              });
+            return d.promise();
           },
           byKey: (key) => {
             const d = new $.Deferred();
