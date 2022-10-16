@@ -3314,12 +3314,22 @@ Attendees.datagridUpdate = {
           },
         }),
       },
+      onRowRemoved: (event) => {
+        if (args.type === 'status' && Attendees.datagridUpdate.pastsCategories.has(event.data.category)) {
+          $(`div#for-past-category-${event.data.category}`).dxButton('instance').option('visible', true);
+        }
+      },
       onRowInserting: (rowData) => {
         const infos = {show_secret: {}, comment: rowData.data.infos && rowData.data.infos.comment};
         if (rowData.data.infos && rowData.data.infos.show_secret) {
           infos.show_secret[Attendees.utilities.userAttendeeId] = true;
         }
         rowData.data.infos = infos;
+      },
+      onRowInserted: (event) => {
+        if (args.type === 'status' && Attendees.datagridUpdate.pastsCategories.has(event.data.category)) {
+          $(`div#for-past-category-${event.data.category}`).dxButton('instance').option('visible', false);
+        }
       },
       onInitNewRow: (e) => {  // don't assign e.data or show_secret somehow messed up
         DevExpress.ui.notify(
