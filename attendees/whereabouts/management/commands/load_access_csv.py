@@ -1079,7 +1079,7 @@ class Command(BaseCommand):
                 defaults=member_attending_meet_default,
             )
 
-            Past.objects.update_or_create(
+            Past.objects.update_or_create(  # past does not have uniq key by natural
                 organization=data_assembly.division.organization,
                 content_type=attendee_content_type,
                 object_id=attendee.id,
