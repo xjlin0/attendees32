@@ -38,7 +38,7 @@ def post_save_handler_for_past_to_create_attendingmeet(sender, **kwargs):
             .get(category_id)
         )
         past_comment = created_past.infos.get("comment", "")
-        if meet_id and past_comment and "importer" not in past_comment:  # skip for access importer
+        if meet_id and "importer" not in (past_comment or ''):  # skip for access importer
             meet = Meet.objects.filter(pk=meet_id).first()
             if meet:
                 target_attendee = created_past.subject
