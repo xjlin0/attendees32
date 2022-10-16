@@ -396,11 +396,12 @@ class Command(BaseCommand):
         foot_meet = Meet.objects.select_related('major_character').get(slug=foot_meet_slug)
         visitor_meet = Meet.objects.select_related('major_character').get(pk=0)
         member_meet = Meet.objects.select_related('major_character').get(slug=member_meet_slug)
-        member_gathering = Gathering.objects.filter(meet=member_meet).last()
+        # member_gathering = Gathering.objects.filter(meet=member_meet).last()
         attendee_content_type = ContentType.objects.get_for_model(Attendee)
         baptized_meet = Meet.objects.select_related('major_character').get(slug=baptized_meet_slug)
         baptized_category = Category.objects.filter(type='status', display_name='baptized').first()
         believer_category = Category.objects.filter(type='status', display_name='receive').first()
+        member_category = Category.objects.filter(type='status', display_name='member').first()
         believer_meet = Meet.objects.select_related('major_character').get(slug=believer_meet_slug)
         successfully_processed_count = 0  # Somehow peoples.line_num incorrect, maybe csv file come with extra new lines.
         photo_import_results = []
@@ -522,7 +523,7 @@ class Command(BaseCommand):
                     # )
 
                     photo_import_results.append(self.update_attendee_photo(attendee, Utility.presence(people.get('Photo'))))
-                    self.update_attendee_membership_and_other(rock_meet, foot_meet, cml_converter, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category)
+                    self.update_attendee_membership_and_other(rock_meet, foot_meet, cml_converter, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_category, believer_meet, believer_category)
                     folk_start_date = '1800-01-01'
                     if household_role:   # filling temporary family roles
                         folk = Folk.objects.filter(infos__access_household_id=household_id).first()
@@ -968,7 +969,7 @@ class Command(BaseCommand):
                     }
                 )
 
-    def update_attendee_membership_and_other(self, rock_meet, foot_meet, cml_converter, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_gathering, believer_meet, believer_category):
+    def update_attendee_membership_and_other(self, rock_meet, foot_meet, cml_converter, cr_meet, cr_converter, baptized_meet, baptized_category, attendee_content_type, attendee, data_assembly, member_meet, member_category, believer_meet, believer_category):
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
 
         data_attending, data_attending_created = Attending.objects.update_or_create(
@@ -1058,15 +1059,15 @@ class Command(BaseCommand):
 
         if is_member:
 
-            # member_since_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
+            member_since_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
             # member_since_reason = ', member since ' + member_since_text if member_since_text else ''
 
-            member_since_or_now = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('member_since'), error_context=f' when parsing member_since of {attendee.display_label} at line 934')
+            member_since_or_now = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('member_since'), error_context=f' when parsing member_since of {attendee.display_label} at line 1065')
             member_attending_meet_default = {
                 'attending': data_attending,
                 'meet': member_meet,
                 'character': member_meet.major_character,
-                'category_id': -1,  # member category has to be converted to active later
+                'category_id': -1,  # -1 stops auto create past and member category has to be converted to active later
                 'start': member_since_or_now,
                 'finish': member_meet.finish,
             }
@@ -1078,25 +1079,38 @@ class Command(BaseCommand):
                 defaults=member_attending_meet_default,
             )
 
-            Attendance.objects.update_or_create(
-                gathering=member_gathering,
-                attending=data_attending,
-                character=member_meet.major_character,
-                team=None,
-                defaults={
-                    'gathering': member_gathering,
-                    'attending': data_attending,
-                    'character': member_meet.major_character,
-                    'team': None,
-                    # 'category_id': 6,  # Active, membership can be inactive temporarily
-                    'start': member_attending_meet_default['start'],
-                    'finish': member_gathering.finish,
-                    'infos': {
-                        'access_household_id': access_household_id,
-                        'created_reason': 'CFCCH member/directory registration from importer',
-                    },
-                }
+            Past.objects.update_or_create(
+                organization=data_assembly.division.organization,
+                content_type=attendee_content_type,
+                object_id=attendee.id,
+                category=member_category,
+                display_name='成為會員 become member',
+                when=None if member_since_or_now.date() == datetime.today().date() else member_since_or_now,
+                infos={
+                    **Utility.relationship_infos(),
+                    'comment': f'[importer] possible date: {member_since_text}',  # importer stops auto creation of AttenddingMeet
+                },
             )
+
+            # Attendance.objects.update_or_create(
+            #     gathering=member_gathering,
+            #     attending=data_attending,
+            #     character=member_meet.major_character,
+            #     team=None,
+            #     defaults={
+            #         'gathering': member_gathering,
+            #         'attending': data_attending,
+            #         'character': member_meet.major_character,
+            #         'team': None,
+            #         # 'category_id': 6,  # Active, membership can be inactive temporarily
+            #         'start': member_attending_meet_default['start'],
+            #         'finish': member_gathering.finish,
+            #         'infos': {
+            #             'access_household_id': access_household_id,
+            #             'created_reason': 'CFCCH member/directory registration from importer',
+            #         },
+            #     }
+            # )
 
         tzname = cr_meet.infos.get('default_time_zone')
         time_zone = pytz.timezone(parse.unquote(tzname))
