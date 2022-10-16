@@ -31,6 +31,7 @@ class AttendeesListView(RouteGuard, ListView):
             Meet.objects.filter(
                 (Q(finish__isnull=True) | Q(finish__gt=Utility.now_with_timezone())),
                 assembly__division__organization=self.request.user.organization,
+                infos__allowed_models__regex='attendingmeet',
             )
             .annotate(
                 assembly_name=F("assembly__display_name"),
