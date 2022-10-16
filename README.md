@@ -251,6 +251,20 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * For keeping the site surviving reboot, add starting of the Django upon system reboot, such as `sudo su user_name sh -c 'sleep 99 && cd ~user_name/repo_dir && docker-compose -f production.yml up -d' >> /tmp/attendee_startup.log` (need work)
 </details>
 
+## DB SQL Backup & Restore process (with production.yml)
+<details>
+  <summary>Click to expand all</summary>
+
+* backup current db to container `docker-compose -f production.yml exec postgres backup`
+* list backup files in container `docker-compose -f production.yml exec postgres backups`
+* copy all backup files from container to dev local computer `docker cp $(docker-compose -f production.yml ps -q postgres):/backups ./backups`
+* copy all backup files from dev local computer to container `docker cp ./backups/* $(docker-compose -f production.yml ps -q postgres):/backups/`
+* restore a backup from a backup file in container `docker-compose -f production.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
+* print INSERT commands for a table `docker-compose -f production.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.production/.postgres>>`
+* Enter postgres db console by `docker-compose -f production.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.production/.postgres>>`
+</details>
+
+
 ## [How to start dev env on Linux](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
 
 <details>
@@ -308,7 +322,7 @@ DJANGO_SECRET_KEY=your_django_secret_key
 Please add your IP to ALLOWED_HOSTS in config/settings/local.py
 ```
 * use browser to open http://192.168.99.100:8008/ and http://192.168.99.100:8025/
-* Enter postgres db console by `docker-compose -f local.yml exec postgres psql --username=YBIJMKerEaNYKqzfvMxOlBAesdyiahxk attendees_development`
+* Enter postgres db console by `docker-compose -f local.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>`
 * Enter Django console by `docker-compose -f local.yml run django python manage.py shell_plus`
 * remote debug in PyCharm for docker, please check [django cookie doc](https://github.com/pydanny/cookiecutter-django/blob/master/{{cookiecutter.project_slug}}/docs/pycharm/configuration.rst).
 </details>
@@ -343,7 +357,7 @@ DJANGO_SECRET_KEY=your_django_secret_key
   ```
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://192.168.99.100:8008/admin123/users/user/
 * use browser to open http://192.168.99.100:8008/ and http://192.168.99.100:8025/
-* Enter postgres db console by `docker-compose -f local.yml exec postgres psql --username=YBIJMKerEaNYKqzfvMxOlBAesdyiahxk attendees_development`
+* Enter postgres db console by `docker-compose -f local.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>`
 * Enter Django console by `docker-compose -f local.yml run django python manage.py shell_plus`
 * remote debug in PyCharm for docker, please check [django cookie doc](https://github.com/pydanny/cookiecutter-django/blob/master/{{cookiecutter.project_slug}}/docs/pycharm/configuration.rst).
 
@@ -367,6 +381,7 @@ All libraries are included to facilitate offline development, it will take port 
 * copy all backup files from container to dev local computer `docker cp $(docker-compose -f local.yml ps -q postgres):/backups ./backups`
 * copy all backup files from dev local computer to container `docker cp ./backups/* $(docker-compose -f local.yml ps -q postgres):/backups/`
 * restore a backup from a backup file in container `docker-compose -f local.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
+* print INSERT commands for a table `docker-compose -f local.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>` 
 
 ## Todo & progress:
 
