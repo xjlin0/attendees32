@@ -1,0 +1,48 @@
+{% for family in families %}
+  <div class="family-container">
+    <div class="family-title-container">
+      <div class="family-last_name left">
+        {{family.household_last_name}}
+      </div>
+      <div class="family-other_names">
+        {{family.household_title}}
+      </div>
+      <div class="right"></div>
+    </div>
+    <div class="attendees-container">
+      {% for attendee in family.attendees|slice:"0:6" %}
+      <div class="attendee">
+        {{attendee.name2}}      <br>
+        {{attendee.first_name}} <br>
+        {% if attendee.photo_url%}
+        <img class="directory-photo-img"
+             src="{{attendee.photo_url}}">
+        {% else %}
+        <img class="directory-photo-img"
+             src="{{empty_image_link}}">
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="contacts-container">
+      <div class="phone_address left">
+        {{family.phone1}}       <br>
+        {{family.address_line1}}<br>
+        {{family.address_line2}}
+      </div>
+      <div class="phone_email">
+        {{family.phone2}}<br>
+        {{family.email1}}<br>
+        {{family.email2}}
+      </div>
+      <div class="right"></div>
+    </div>
+  </div>
+  {% if forloop.counter|divisibleby:3 %}
+  <div class="page-break"></div>
+  <div class="d-flex justify-content-between">
+    <div></div>
+    <div>{{directory_header}}</div>
+  </div>
+  {% endif %}
+{% endfor %}
