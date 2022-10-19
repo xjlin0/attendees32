@@ -1,6 +1,8 @@
 Attendees.dataAttendees = {
   meetTagBox: null,
   attendeeDatagrid: null,
+  attendeeUrn: null,
+  familyAttendancesUrn: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
@@ -8,15 +10,29 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.setDataAttrs();
     Attendees.dataAttendees.setMeetsColumns([]);
     Attendees.dataAttendees.startDataGrid();
+    Attendees.dataAttendees.initDirectoryPreview();
   },
 
-  attendeeUrn: null,
-  familyAttendancesUrn: null,
+  reloadPreviewLinks: () => {
+    $('div.dataAttendees')
+      .off('click', 'u.directory-preview')  // in case of datagrid data change
+      .on('click','u.directory-preview', Attendees.dataAttendees.loadDirectoryPreview);
+  },
 
   setDataAttrs: () => {
     const $AttendeeAttrs = document.querySelector('div.dataAttendees').dataset;
     Attendees.dataAttendees.familyAttendancesUrn = $AttendeeAttrs.familyAttendancesUrn;
     Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
+  },
+
+  initDirectoryPreview: () => {
+    console.log("start initDirectoryPreview");
+  },
+
+  loadDirectoryPreview: (e) => {
+    console.log("start loadDirectoryPreview here is e: ", e);
+    const fullName = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').first().text();
+    console.log("start loading for: ", fullName);
   },
 
   startMeetSelector: () => {
@@ -76,6 +92,9 @@ Attendees.dataAttendees = {
             summary:    result.summary,
             groupCount: result.groupCount
           });
+          if (result.totalCount > 0) {
+            Attendees.dataAttendees.reloadPreviewLinks();
+          }
         },
         error: (e) => {
           console.log("loading error, here is error: ", e);
@@ -150,7 +169,7 @@ Attendees.dataAttendees = {
   initialAttendeesColumns: [
     {
       caption: "Full name",
-      // allowSorting: false,
+      cssClass: 'full-name',
       dataField: "infos.names",
       name: 'infos.names.original',
       dataType: "string",
@@ -266,21 +285,32 @@ Attendees.dataAttendees = {
 
   setMeetsColumns: (availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets)) => {
     const meetColumns=[];
-    // const availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets); // $('div.attendings').data('available-meets');
-
+    const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});
     availableMeets.forEach(meet => {
       meetColumns.push({
         // visible: meet.id > 0,
         caption: meet.display_name,
         dataField: meet.slug,
         allowHeaderFiltering: false,
-        calculateCellValue: (rowData) => {
-          if (rowData.attendingmeets && rowData.attendingmeets.includes(meet.slug)) {
-            return meet.display_name;
+        cellTemplate: (container, rowData) => {
+          if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
+            const preview_url = previews[meet.slug];
+            const attr = {
+              text: meet.display_name
+            };
+            if (preview_url) {
+              attr['class'] = 'text-info directory-preview';
+              attr['role'] = 'button';
+              attr['data-url'] = preview_url + rowData.data.id;
+              attr['title'] = `click to see ${rowData.data.infos.names.original} in directory preview.`;
+              $($('<u>', attr)).appendTo(container);
+            } else {
+              $($('<span>', attr)).appendTo(container);
+            }
           }else{
-            return '-';
+            $($('<span>', {text: '-'})).appendTo(container);
           }
-        }
+        },
       })
     });
 

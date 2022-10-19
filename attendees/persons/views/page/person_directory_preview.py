@@ -24,8 +24,9 @@ class PersonDirectoryPreview(RouteGuard, ListView):
         return context
 
     def render_to_response(self, context, **kwargs):
+        context['attendee_id'] = self.kwargs.get("attendee_id", "no attendee id provided")
         if self.request.is_ajax():
-            html = render_to_string(self.get_template_names()[0], {'hi': 5})
+            html = render_to_string(self.get_template_names()[0], context)
             return HttpResponse(html)
         else:
             return render(self.request, self.get_template_names()[0], context)

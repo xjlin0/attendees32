@@ -185,7 +185,7 @@ urlpatterns = [
         name="directory_report_list_view",
     ),
     path(
-        "directory_preview/",
+        "directory_preview/<str:attendee_id>",
         view=person_directory_preview,
         name="person_directory_preview",
     ),
