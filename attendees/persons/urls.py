@@ -29,6 +29,7 @@ from attendees.persons.views import (  # api_attendee_relationships_viewset,
     api_family_organization_attendings_viewset,
     directory_report_list_view,
     directory_print_configuration_view,
+    person_directory_preview,
 )
 
 app_name = "persons"
@@ -182,5 +183,10 @@ urlpatterns = [
         "directory_report/",
         view=directory_report_list_view,
         name="directory_report_list_view",
+    ),
+    path(
+        "directory_preview/",
+        view=person_directory_preview,
+        name="person_directory_preview",
     ),
 ]

@@ -41,7 +41,7 @@ class OrganizationMeetsViewSet(viewsets.ModelViewSet):
         model = self.request.query_params.get("model")
         user_groups = self.request.user.groups.values_list('name', flat=True)
 
-        if current_user_organization:
+        if current_user_organization and user_groups:
             start = self.request.query_params.get("start")
             finish = self.request.query_params.get("finish")
             search_value = self.request.query_params.get("searchValue")
@@ -50,8 +50,7 @@ class OrganizationMeetsViewSet(viewsets.ModelViewSet):
             assemblies = self.request.query_params.getlist("assemblies[]")
             extra_filter = Q(assembly__division__organization=current_user_organization)
 
-            if user_groups:
-                extra_filter.add(Q(infos__allowed_groups__regex=fr"({'|'.join([name for name in user_groups])})"), Q.AND)
+            extra_filter.add(Q(infos__allowed_groups__regex=fr"({'|'.join([name for name in user_groups])})"), Q.AND)
 
             if model:
                 extra_filter.add(Q(infos__allowed_models__regex=fr'({model})'), Q.AND)
@@ -80,7 +79,7 @@ class OrganizationMeetsViewSet(viewsets.ModelViewSet):
         else:
             time.sleep(2)
             raise AuthenticationFailed(
-                detail="Have you registered any events of the organization?"
+                detail="Have you registered any events/groups of the organization?"
             )
 
 
