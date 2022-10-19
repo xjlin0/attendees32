@@ -562,6 +562,9 @@ Attendees.roster = {
         },
       }),
     },
+    sorting: {
+      mode: "multiple",
+    },
     searchPanel: {
       visible: true,
       width: 150,
