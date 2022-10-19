@@ -14897,6 +14897,7 @@
       "display_name": "通訊錄 directory",
       "slug": "d7c8Fd_cfcch_congregation_directory",
       "infos": {
+        "preview_url": "/preview/url",
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -15015,7 +15016,7 @@
       "audience_editable": false,
       "start": "2023-07-14T15:30:54Z",
       "finish": "2023-07-16T15:31:42Z",
-      "display_name": "2020夏令會接送",
+      "display_name": "2023夏令會接送",
       "slug": "d7c8Fd_cfcch_summer_retreat_2023_transportation",
       "infos": {
         "attendance": {},

@@ -37,7 +37,7 @@ class AttendeesListView(RouteGuard, ListView):
                 assembly_name=F("assembly__display_name"),
             )
             .order_by("assembly_name")
-            .values("id", "slug", "display_name", "assembly_name")
+            .values("id", "slug", "display_name", "assembly_name", "infos__preview_url")
         )  # Todo 20210711 only coworkers can see all Meet, general users should only see what they attended
         allowed_to_create_attendee = Menu.user_can_create_attendee(self.request.user)
         context.update(
