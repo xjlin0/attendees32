@@ -3,6 +3,7 @@ Attendees.dataAttendees = {
   attendeeDatagrid: null,
   attendeeUrn: null,
   familyAttendancesUrn: null,
+  DirectoryPreview: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
@@ -27,6 +28,30 @@ Attendees.dataAttendees = {
 
   initDirectoryPreview: () => {
     console.log("start initDirectoryPreview");
+    Attendees.dataAttendees.checkOutPopup = $('div#directory-preview-popup').dxPopup(Attendees.dataAttendees.directoryPreviewPopupConfig).dxPopup('instance');
+  },
+
+  directoryPreviewPopupConfig: {
+    // visible: false,
+    // contentTemplate: () => {
+    //   return $('<div width="100%" height="100%">').append(
+    //     $(`<canvas class="signature" width="100%" height="100%"></canvas>`),
+    //   );
+    // },
+    maxWidth: 900,
+    width: '95%',
+    height: 350,
+    container: '.roster-container',
+    showTitle: true,
+    title: 'Directory Preview',
+    dragEnabled: true,
+    // hideOnOutsideClick: false,
+    // showCloseButton: false,
+    position: {
+      at: 'center',
+      my: 'center',
+    },
+    // toolbarItems:[],
   },
 
   loadDirectoryPreview: (e) => {

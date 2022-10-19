@@ -84,7 +84,7 @@ Attendees.roster = {
   },
 
   initCheckOutPopup: () => {
-    Attendees.roster.checkOutPopup = $('#signature-canvas-popup').dxPopup(Attendees.roster.checkOutPopupConfig).dxPopup('instance');
+    Attendees.roster.checkOutPopup = $('div#signature-canvas-popup').dxPopup(Attendees.roster.checkOutPopupConfig).dxPopup('instance');
   },
 
   checkOutPopupConfig: {
