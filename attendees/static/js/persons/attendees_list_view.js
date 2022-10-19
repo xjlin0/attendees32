@@ -3,7 +3,7 @@ Attendees.dataAttendees = {
   attendeeDatagrid: null,
   attendeeUrn: null,
   familyAttendancesUrn: null,
-  DirectoryPreview: null,
+  directoryPreviewPopup: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
@@ -28,7 +28,7 @@ Attendees.dataAttendees = {
 
   initDirectoryPreview: () => {
     console.log("start initDirectoryPreview");
-    Attendees.dataAttendees.checkOutPopup = $('div#directory-preview-popup').dxPopup(Attendees.dataAttendees.directoryPreviewPopupConfig).dxPopup('instance');
+    Attendees.dataAttendees.directoryPreviewPopup = $('div#directory-preview-popup').dxPopup(Attendees.dataAttendees.directoryPreviewPopupConfig).dxPopup('instance');
   },
 
   directoryPreviewPopupConfig: {
@@ -56,8 +56,32 @@ Attendees.dataAttendees = {
 
   loadDirectoryPreview: (e) => {
     console.log("start loadDirectoryPreview here is e: ", e);
+    const deferred = $.Deferred();
     const fullName = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').first().text();
-    console.log("start loading for: ", fullName);
+    const url = e.currentTarget.dataset.url;
+    Attendees.dataAttendees.directoryPreviewPopup.option('title', `Directory preview for ${fullName}`);
+    console.log("hi 61 here is url: ", url);
+
+    $.ajax({
+      url: e.currentTarget.dataset.url,
+      dataType: "html",
+      success: (result) => {
+        console.log("hi 69 success here is result: ", result);
+        const $content = $(result);
+        console.log("hi 71 success here is $content: ", $content);
+        Attendees.dataAttendees.directoryPreviewPopup.content().empty();
+        Attendees.dataAttendees.directoryPreviewPopup.content().append(result);
+        Attendees.dataAttendees.directoryPreviewPopup.show();
+        deferred.resolve();
+      },
+      error: (e) => {
+        console.log("loading error, here is error: ", e);
+        deferred.reject("Data Loading Error, probably time out?");
+      },
+      timeout: 10000,
+    });
+
+
   },
 
   startMeetSelector: () => {
