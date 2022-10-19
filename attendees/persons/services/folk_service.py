@@ -9,16 +9,17 @@ from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
 
 class FolkService:
     @staticmethod
-    def families_in_directory(directory_meet_id, member_meet_id, row_limit=26):
+    def families_in_directory(directory_meet_id, member_meet_id, row_limit=26, targeting_attendee_id=None):
         families = []
         index = defaultdict(lambda: {})
         index_list = []
         directory_meet = Meet.objects.filter(pk=directory_meet_id).first()
         member_meet = Meet.objects.filter(pk=member_meet_id).first()
+        targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks.filter(category=Attendee.FAMILY_CATEGORY) if targeting_attendee_id else Folk.objects
 
         if directory_meet:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
-            families_in_directory = Folk.objects.annotate(
+            families_in_directory = targeting_families.annotate(
                 householder_name=Concat(
                     Subquery(attendee_subquery.values_list('last_name')[:1]),
                     Subquery(attendee_subquery.values_list('first_name')[:1]),
@@ -98,19 +99,20 @@ class FolkService:
 
                 families.append(attrs)
 
-            for town_name, family_rows in sorted(index.items()):
-                index_list.append({'BREAKER': 'LINE'})
-                if len(index_list) % row_limit < 1:
-                    index_list.append({'BREAKER': 'PAGE'})
-
-                index_list.append({'TOWN_NAME': town_name})
-                if len(index_list) % row_limit < 1:
-                    index_list.append({'BREAKER': 'PAGE'})
-
-                for title, number in sorted(index[town_name].items()):
-                    index_list.append({title: number})
+            if targeting_attendee_id is None:
+                for town_name, family_rows in sorted(index.items()):
+                    index_list.append({'BREAKER': 'LINE'})
                     if len(index_list) % row_limit < 1:
                         index_list.append({'BREAKER': 'PAGE'})
+
+                    index_list.append({'TOWN_NAME': town_name})
+                    if len(index_list) % row_limit < 1:
+                        index_list.append({'BREAKER': 'PAGE'})
+
+                    for title, number in sorted(index[town_name].items()):
+                        index_list.append({title: number})
+                        if len(index_list) % row_limit < 1:
+                            index_list.append({'BREAKER': 'PAGE'})
 
         return index_list, families
 

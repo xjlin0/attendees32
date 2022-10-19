@@ -17,8 +17,10 @@ class PersonDirectoryPreview(RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user_org_settings = self.request.user.organization.infos.get("settings", {})
+        indexes, families = FolkService.families_in_directory(user_org_settings.get('default_directory_meet'), user_org_settings.get('default_member_meet'), targeting_attendee_id=self.kwargs.get("attendee_id"))
         context.update({
-            # 'families': families,
+            'families': families,
             'empty_image_link': f'{settings.STATIC_URL}images/empty.png'
         })
         return context
