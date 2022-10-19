@@ -60,6 +60,7 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.directoryPreviewPopup.option('title', `Directory preview for ${fullName}`);
     Attendees.dataAttendees.directoryPreviewPopup.content().empty();
     let content = "Sorry the preview cannot be loaded";
+    const scrollView = $("<div id='scroll-view'></div>");
     $.ajax({
       url: e.currentTarget.dataset.url,
       dataType: "html",
@@ -72,7 +73,12 @@ Attendees.dataAttendees = {
         deferred.reject("Data Loading Error, probably time out?");
       },
       complete: () => {
-        Attendees.dataAttendees.directoryPreviewPopup.content().append(content);
+        scrollView.append(content);
+        scrollView.dxScrollView({
+          height: '100%',
+          width: '100%'
+        });
+        Attendees.dataAttendees.directoryPreviewPopup.content().append(scrollView);
         Attendees.dataAttendees.directoryPreviewPopup.show();
       },
       timeout: 10000,
