@@ -463,7 +463,7 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
 - [x] [2PR#19](https://github.com/xjlin0/attendees32/pull/19) AttendingMeet list (server side processing)
   - [x] [2PR#18](https://github.com/xjlin0/attendees32/pull/18) new AttendingMeet datagrid filtered by meets and date ranges
   -  ~~auto-generation of AttendingMeet by django-schedule with certain Past~~
-- [ ] Attendance list (server side processing with auto-generation)
+- [x] Attendance list (server side processing with auto-generation)
   - [x] [2PR#20](https://github.com/xjlin0/attendees32/pull/20) new attendance datagrid filtered by meets and date ranges, since current datagrid_assembly_all_attendances & datagrid_coworker_organization_attendances cannot show correct attendings with real data (returning attendings only limit to 20 and not matching to filtered attendance's attending -- refresh the datagrid & reloading attending lookup with attendance filters)
   - [x] [2PR#23](https://github.com/xjlin0/attendees32/pull/23) auto-generation attendance by attending meet and recent attendance status
   - [x] Easier UI for batch add attendingmeet
@@ -494,7 +494,8 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
 - [x db currently allow non-uniq email, but duplicated email will cause send mail failure.
 - [ ] retire django summer note
 - [x] restart production docker lost all images, perhaps because docker was not installed correctly with rootless mode, thus the user become first available non-root user 1001. (resolved by add user option in production yaml)
-- [ ] modify django-allauth so that the host in the email activation link won't be http://127.0.0.1:8008/ even in production 
+- [x] modify django-allauth so that the host in the email activation link won't be http://127.0.0.1:8008/ even in production. Perhaps Header, RequestHeader. Solution: use "ProxyPreserveHost On" https://stackoverflow.com/a/25225871/4257237
+- [ ] Setup Django allauth with social login https://learndjango.com/tutorials/django-allauth-tutorial
 </details>
 
 ## Issues:

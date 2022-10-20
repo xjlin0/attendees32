@@ -456,6 +456,11 @@ Attendees.roster = {
               photoInsteadOfGatheringAssembly: true,
             };
 
+            if (Attendees.roster.attendancesDatagrid) {
+              args['take'] = Attendees.roster.attendancesDatagrid.state().pageSize;
+              args['skip'] = Attendees.roster.attendancesDatagrid.state().pageSize * Attendees.roster.attendancesDatagrid.state().pageIndex;
+            }
+
             [
               'skip',
               'take',
