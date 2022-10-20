@@ -27,31 +27,22 @@ Attendees.dataAttendees = {
   },
 
   initDirectoryPreview: () => {
-    console.log("start initDirectoryPreview");
     Attendees.dataAttendees.directoryPreviewPopup = $('div#directory-preview-popup').dxPopup(Attendees.dataAttendees.directoryPreviewPopupConfig).dxPopup('instance');
   },
 
   directoryPreviewPopupConfig: {
-    // visible: false,
-    // contentTemplate: () => {
-    //   return $('<div width="100%" height="100%">').append(
-    //     $(`<canvas class="signature" width="100%" height="100%"></canvas>`),
-    //   );
-    // },
     maxWidth: 900,
     width: '95%',
     height: 350,
-    container: '.roster-container',
+    container: '.dataAttendees',
     showTitle: true,
+    resizeEnabled: true,
     title: 'Directory Preview',
     dragEnabled: true,
-    // hideOnOutsideClick: false,
-    // showCloseButton: false,
     position: {
       at: 'center',
       my: 'center',
     },
-    // toolbarItems:[],
   },
 
   loadDirectoryPreview: (e) => {
@@ -59,18 +50,18 @@ Attendees.dataAttendees = {
     const fullName = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').first().text();
     Attendees.dataAttendees.directoryPreviewPopup.option('title', `Directory preview for ${fullName}`);
     Attendees.dataAttendees.directoryPreviewPopup.content().empty();
-    let content = "Sorry the preview cannot be loaded";
+    let content = 'Sorry the preview cannot be loaded';
     const scrollView = $("<div id='scroll-view'></div>");
     $.ajax({
       url: e.currentTarget.dataset.url,
-      dataType: "html",
+      dataType: 'html',
       success: (result) => {
         content = result;
         deferred.resolve();
       },
       error: (e) => {
-        console.log("loading directory preview error, here is error: ", e);
-        deferred.reject("Data Loading Error, probably time out?");
+        console.log('loading directory preview error, here is error: ', e);
+        deferred.reject('Data Loading Error, probably time out?');
       },
       complete: () => {
         scrollView.append(content);
