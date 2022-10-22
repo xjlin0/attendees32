@@ -365,7 +365,16 @@ SOCIALACCOUNT_PROVIDERS = {
         'LOCALE_FUNC': lambda request: 'en_US',
         'VERIFIED_EMAIL': False,
         'VERSION': 'v13.0',
-    }
+    },
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
 }
 # django-compressor
 # ------------------------------------------------------------------------------
