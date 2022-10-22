@@ -170,3 +170,4 @@ LOGGING = {
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'

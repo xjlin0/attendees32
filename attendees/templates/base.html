@@ -163,7 +163,7 @@
                   {# URL provided by django-allauth/account/urls.py #}
                   <a class="nav-link"
                      href="{% url 'users:detail' request.user.username  %}">
-                    {{ request.user.username|default:"User" }}{% trans "'s Profile" %}
+                    {{ request.user.username|truncatechars:8 }}{% trans "'s Profile" %}
                   </a>
                 </li>
                 <li class="nav-item">
