@@ -9,7 +9,7 @@ Attendees.utilities = {
     attendancesListViewOpts: "attendancesListViewOpts",
     gatheringsListView: "attendeesGatheringsList",
     gatheringsListViewOpts: "attendeesGatheringsListOpts",
-    attendeeListView: "attendeesAttendeesList",
+    attendeeListViewOpts: "attendeesListOpts",
     rollCallListView: "rollCallList",
     rollCallListViewOpts: "rollCallListOpts",
   },

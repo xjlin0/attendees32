@@ -209,6 +209,7 @@ class AttendanceService:
                 output_field=CharField()
             ),
             'attendee_id': F("attending__attendee__id"),
+            'registrant_attendee_id': F("attending__registration__registrant_id"),
         }
 
         if photo_instead_of_gathering_assembly:
@@ -222,7 +223,6 @@ class AttendanceService:
                 output_field=CharField()
             )
         else:
-            annotations['registrant_attendee_id'] = F("attending__registration__registrant_id")
             annotations['attending__attendee__first_name'] = F("attending__attendee__first_name")
             annotations['attending__attendee__last_name'] = F("attending__attendee__last_name")
             annotations['attending__attendee__first_name2'] = F("attending__attendee__first_name2")
