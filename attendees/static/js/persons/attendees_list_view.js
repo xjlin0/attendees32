@@ -201,16 +201,34 @@ Attendees.dataAttendees = {
     },
     stateStoring: {
       enabled: true,
-      storageKey: "attendeesAttendeesList",
+      storageKey: Attendees.utilities.datagridStorageKeys['attendeesAttendeesList'],
       type: "custom",  // "sessionStorage",
-      customLoad: () => JSON.parse(sessionStorage.getItem("attendeesAttendeesList")),
+      customLoad: () => JSON.parse(sessionStorage.getItem(Attendees.utilities.datagridStorageKeys['attendeesAttendeesList'])),
       customSave: (state) => {
         if (state && state.searchText) {state.searchText = "";}  // don't store user search terms
-        sessionStorage.setItem("attendeesAttendeesList", JSON.stringify(state));
+        sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['attendeesAttendeesList'], JSON.stringify(state));
       },
     },
     columns: null,  // will be initialized later.
+    onToolbarPreparing: (e) => {
+      const toolbarItems = e.toolbarOptions.items;
+      toolbarItems.unshift({
+        location: 'after',
+        widget: 'dxButton',
+        options: {
+          hint: 'Reset Sort/Columns/Meets settings',
+          icon: 'clearsquare',
+          onClick() {
+            if(confirm('Are you sure to reset all settings (Sort/Columns/Meets) in this page?')) {
+              Attendees.dataAttendees.attendeeDatagrid.state(null);
+              window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts']);
+              Attendees.dataAttendees.meetTagBox.option('value', []);
+            }
+          },
+        },
+      });
     },
+  },
 
   initialAttendeesColumns: [
     {
