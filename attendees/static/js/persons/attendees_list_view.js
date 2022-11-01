@@ -6,10 +6,12 @@ Attendees.dataAttendees = {
   directoryPreviewPopup: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
+    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
+    const availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets);
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
     Attendees.dataAttendees.startMeetSelector();
     Attendees.dataAttendees.setDataAttrs();
-    Attendees.dataAttendees.setMeetsColumns([]);
+    Attendees.dataAttendees.setMeetsColumns(availableMeets.filter(meet => selectedMeetSlugs.includes(meet.id)));
     Attendees.dataAttendees.startDataGrid();
     Attendees.dataAttendees.initDirectoryPreview();
   },
@@ -77,6 +79,7 @@ Attendees.dataAttendees = {
   },
 
   startMeetSelector: () => {
+    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
     Attendees.dataAttendees.meetTagBox = $('div.meet-tag-box').dxTagBox({
       dataSource: new DevExpress.data.DataSource({
         store: JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets),
@@ -90,7 +93,9 @@ Attendees.dataAttendees = {
       searchEnabled: true,
       grouped: true,
       displayExpr: 'display_name',
+      value: selectedMeetSlugs,
       onValueChanged: (e) => {
+        Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds', e.value);
         Attendees.dataAttendees.setMeetsColumns(Attendees.dataAttendees.meetTagBox._selectedItems);
         Attendees.dataAttendees.startDataGrid();
       },

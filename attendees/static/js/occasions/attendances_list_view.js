@@ -86,7 +86,7 @@ Attendees.attendances = {
                     }, 'success', 3000);
                 },
                 error: (result) => {
-                  console.log("hi gatherings_list_view.js 87 here is error result: ", result);
+                  console.log("hi attendances_list_view.js 89 here is error result: ", result);
                   DevExpress.ui.notify(
                     {
                       message: 'Batch processing error. ' + result && result.responseText,
@@ -358,7 +358,7 @@ Attendees.attendances = {
                           Attendees.attendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
                           Attendees.attendances.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
                         })
-                      }); // schedule rules needed for attendingmeets generation
+                      }); // schedule rules needed for attendances generation
                     }
                     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs') || [];
                     Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('meets'), selectedMeetSlugs);
