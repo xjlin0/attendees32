@@ -127,7 +127,7 @@ class AttendanceService:
         )
 
     @staticmethod
-    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, gatherings, orderbys, photo_instead_of_gathering_assembly=False, search_value=None, search_expression=None, search_operation=None, filter=None):
+    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, gatherings, orderbys, attendee, photo_instead_of_gathering_assembly=False, search_value=None, search_expression=None, search_operation=None, filter=None):
         orderby_list = AttendanceService.orderby_parser(orderbys)
         extra_filters = Q(
             gathering__meet__assembly__division__organization=current_user.organization
@@ -155,6 +155,9 @@ class AttendanceService:
         if finish:  # but if user search in popup editor, relax time limits to allow adding future new ones.
             # extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
             extra_filters.add(Q(gathering__start__lte=finish), Q.AND)
+
+        if attendee:
+            extra_filters.add((Q(attending__attendee_id=attendee)), Q.AND)
 
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)
@@ -223,10 +226,11 @@ class AttendanceService:
                 output_field=CharField()
             )
         else:
-            annotations['attending__attendee__first_name'] = F("attending__attendee__first_name")
-            annotations['attending__attendee__last_name'] = F("attending__attendee__last_name")
-            annotations['attending__attendee__first_name2'] = F("attending__attendee__first_name2")
-            annotations['attending__attendee__last_name2'] = F("attending__attendee__last_name2")
+            if not attendee:
+                annotations['attending__attendee__first_name'] = F("attending__attendee__first_name")
+                annotations['attending__attendee__last_name'] = F("attending__attendee__last_name")
+                annotations['attending__attendee__first_name2'] = F("attending__attendee__first_name2")
+                annotations['attending__attendee__last_name2'] = F("attending__attendee__last_name2")
             annotations['gathering_name'] = Trim(
                 Concat("gathering__display_name",
                        Value(' in '),

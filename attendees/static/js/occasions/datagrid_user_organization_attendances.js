@@ -408,6 +408,7 @@ Attendees.attendances = {
 
           if (meets && meets.length > 0) {
             const args = {
+              attendee: $('form.filters-dxform').data('attendeeId'),
               meets: meets,
               start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
               finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
