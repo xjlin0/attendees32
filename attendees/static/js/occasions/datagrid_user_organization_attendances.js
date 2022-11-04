@@ -1,4 +1,4 @@
-Attendees.attendances = {
+Attendees.personalAttendances = {
   filtersForm: null,
   meetScheduleRules: {},
   selectedMeetHasRule: false,
@@ -11,17 +11,17 @@ Attendees.attendances = {
   gatheringMeet: {},
   init: () => {
     console.log('static/js/occasions/datagrid_user_organization_attendances.js');
-    Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListView']); // remove saved search text without interfering column visibility
-    Attendees.attendances.initFilterMeetCheckbox();
-    Attendees.attendances.initEditingSwitch();
-    Attendees.attendances.initFiltersForm();
-    Attendees.attendances.initGenerateButton();
+    Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListView']); // remove saved search text without interfering column visibility
+    Attendees.personalAttendances.initFilterMeetCheckbox();
+    Attendees.personalAttendances.initEditingSwitch();
+    Attendees.personalAttendances.initFiltersForm();
+    Attendees.personalAttendances.initGenerateButton();
   },
 
   initEditingSwitch: () => {
     const $editSwitcherDiv = $('div#custom-control-edit-switch');
     if ($editSwitcherDiv && $editSwitcherDiv.length){
-      Attendees.attendances.editSwitcher = $editSwitcherDiv.dxSwitch({
+      Attendees.personalAttendances.editSwitcher = $editSwitcherDiv.dxSwitch({
         value: Attendees.utilities.editingEnabled,
         switchedOffText: 'Editing disabled',
         switchedOnText: 'Editing enabled',
@@ -30,19 +30,19 @@ Attendees.attendances = {
         height: '110%',
         onValueChanged: (e) => {  // not reconfirm, it's already after change
           Attendees.utilities.editingEnabled = e.value;
-          Attendees.attendances.toggleEditing(e.value);
+          Attendees.personalAttendances.toggleEditing(e.value);
         },
       }).dxSwitch('instance');
     }
   },
 
   initFilterMeetCheckbox: () => {
-    Attendees.attendances.filterMeetCheckbox = $('div#custom-control-filter-meets-checkbox').dxCheckBox({
+    Attendees.personalAttendances.filterMeetCheckbox = $('div#custom-control-filter-meets-checkbox').dxCheckBox({
       value: true,
       hint: 'When checked, the dropdown list of Meets will be filtered based on the From/Till date&time',
       text: 'Filter meets by date/time',
       onValueChanged: (e) => {
-        Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
+        Attendees.personalAttendances.filtersForm.getEditor('meets').getDataSource().reload();
       }
     }).dxCheckBox('instance');
   },
@@ -50,7 +50,7 @@ Attendees.attendances = {
   initGenerateButton: () => {  // it doesn't need characters but still check so user won't generate repeating attendances
     const generateAttendancesButtonDiv = document.querySelector('div#generate-attendances');
     if (generateAttendancesButtonDiv) {
-      Attendees.attendances.generateGatheringsButton = $('div#generate-attendances').dxButton({
+      Attendees.personalAttendances.generateGatheringsButton = $('div#generate-attendances').dxButton({
         disabled: true,
         text: 'Generate Attendances & Gatherings',
         height: '1.5rem',
@@ -63,7 +63,7 @@ Attendees.attendances = {
             params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : new Date().toISOString();
             params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
             const meetSlugs = $('div.selected-meets select').val();
-            if (params['end'] && Attendees.attendances.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
+            if (params['end'] && Attendees.personalAttendances.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
               params['meet_slug'] = meetSlugs[0];
               return $.ajax({
                 url: $('form.filters-dxform').data('series-attendances-endpoint'),
@@ -95,7 +95,7 @@ Attendees.attendances = {
                     }, 'error', 5000);
                 },
                 complete: () => {
-                  Attendees.attendances.attendancesDatagrid.refresh();
+                  Attendees.personalAttendances.attendancesDatagrid.refresh();
                 }, // partial attendances may have generated even when errors
               });
             } else {
@@ -116,28 +116,28 @@ Attendees.attendances = {
   },
 
   toggleEditing: (enabled) => {
-    if (Attendees.attendances.attendancesDatagrid) {
-      Attendees.attendances.attendancesDatagrid.option('editing.allowUpdating', enabled);
-      Attendees.attendances.attendancesDatagrid.option('editing.allowAdding', enabled);
-      Attendees.attendances.attendancesDatagrid.option('editing.allowDeleting', enabled);
-      Attendees.attendances.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
+    if (Attendees.personalAttendances.attendancesDatagrid) {
+      Attendees.personalAttendances.attendancesDatagrid.option('editing.allowUpdating', enabled);
+      Attendees.personalAttendances.attendancesDatagrid.option('editing.allowAdding', enabled);
+      Attendees.personalAttendances.attendancesDatagrid.option('editing.allowDeleting', enabled);
+      Attendees.personalAttendances.attendancesDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
     if (enabled) {
-      Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
+      Attendees.personalAttendances.generateGatheringsButton.option('disabled', !Attendees.personalAttendances.readyToGenerate());
     } else {
-      Attendees.attendances.generateGatheringsButton.option('disabled', !enabled);
+      Attendees.personalAttendances.generateGatheringsButton.option('disabled', !enabled);
     }
   },
 
   readyToGenerate: () => {
-    const filterFrom = Attendees.attendances.filtersForm.getEditor('filter-from').option('value');
-    const filterTill = Attendees.attendances.filtersForm.getEditor('filter-till').option('value');
-    const selectedMeet = Attendees.attendances.filtersForm.getEditor('meets').option('value');
+    const filterFrom = Attendees.personalAttendances.filtersForm.getEditor('filter-from').option('value');
+    const filterTill = Attendees.personalAttendances.filtersForm.getEditor('filter-till').option('value');
+    const selectedMeet = Attendees.personalAttendances.filtersForm.getEditor('meets').option('value');
     const intervalValid = filterTill && (filterFrom ? filterTill > filterFrom : true);
 
-    return Attendees.attendances.selectedMeetHasRule &&
-      Attendees.attendances.editSwitcher && Attendees.attendances.editSwitcher.option('value') &&
-      Attendees.attendances.filtersForm.validate().isValid &&
+    return Attendees.personalAttendances.selectedMeetHasRule &&
+      Attendees.personalAttendances.editSwitcher && Attendees.personalAttendances.editSwitcher.option('value') &&
+      Attendees.personalAttendances.filtersForm.validate().isValid &&
       intervalValid && selectedMeet && selectedMeet.length === 1;
   },
 
@@ -147,7 +147,7 @@ Attendees.attendances = {
         'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
       }
     });
-    Attendees.attendances.filtersForm = $('form.filters-dxform').dxForm(Attendees.attendances.filterFormConfigs).dxForm('instance');
+    Attendees.personalAttendances.filtersForm = $('form.filters-dxform').dxForm(Attendees.personalAttendances.filterFormConfigs).dxForm('instance');
   },
 
   filterFormConfigs: {
@@ -177,20 +177,20 @@ Attendees.attendances = {
         editorOptions: {
           showClearButton: true,
           value: new Date(
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString') ?
-              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString') :
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'filterFromString') ?
+              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'filterFromString') :
               new Date().setHours(new Date().getHours() - 1)
           ),
           type: 'datetime',
           onValueChanged: (e) => {
             const filterFromString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterFromString', filterFromString);
-            if (Attendees.attendances.filterMeetCheckbox.option('value')) {
-              Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'filterFromString', filterFromString);
+            if (Attendees.personalAttendances.filterMeetCheckbox.option('value')) {
+              Attendees.personalAttendances.filtersForm.getEditor('meets').getDataSource().reload();
             }
             const meets = $('div.selected-meets select').val();
             if (meets.length) {
-              Attendees.attendances.attendancesDatagrid.refresh();
+              Attendees.personalAttendances.attendancesDatagrid.refresh();
             }
           },
         },
@@ -218,20 +218,20 @@ Attendees.attendances = {
           showClearButton: true,
           type: 'datetime',
           value: new Date(
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString') ?
-              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString') :
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'filterTillString') ?
+              Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'filterTillString') :
               new Date().setMonth(new Date().getMonth() + 1)
           ),
           onValueChanged: (e) => {
-            Attendees.attendances.generateGatheringsButton.option('disabled', !Attendees.attendances.readyToGenerate());
+            Attendees.personalAttendances.generateGatheringsButton.option('disabled', !Attendees.personalAttendances.readyToGenerate());
             const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString', filterTillString);
-            if (Attendees.attendances.filterMeetCheckbox.option('value')) {
-              Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'filterTillString', filterTillString);
+            if (Attendees.personalAttendances.filterMeetCheckbox.option('value')) {
+              Attendees.personalAttendances.filtersForm.getEditor('meets').getDataSource().reload();
             }  // allow users to screen only active meets by meet's start&finish
             const meets = $('div.selected-meets select').val();
             if (meets.length) {
-              Attendees.attendances.attendancesDatagrid.refresh();
+              Attendees.personalAttendances.attendancesDatagrid.refresh();
             }
           },
         },
@@ -265,35 +265,35 @@ Attendees.attendances = {
                   title: 'select all meets',
                 },
                 onClick() {
-                  Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('meets'));
+                  Attendees.utilities.selectAllGroupedTags(Attendees.personalAttendances.filtersForm.getEditor('meets'));
                 },
               },
             }
           ],
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
-            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs', e.value);
-            Attendees.attendances.filtersForm.validate();
+            Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'selectedMeetSlugs', e.value);
+            Attendees.personalAttendances.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely";
-            const $meetHelpText = Attendees.attendances.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            Attendees.attendances.selectedMeetHasRule = 0;
-            Attendees.attendances.generateGatheringsButton.option('disabled', true);
+            const $meetHelpText = Attendees.personalAttendances.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
+            Attendees.personalAttendances.selectedMeetHasRule = 0;
+            Attendees.personalAttendances.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
-              Attendees.attendances.attendancesDatagrid.refresh();
+              Attendees.personalAttendances.attendancesDatagrid.refresh();
               if (e.value.length < 2) {
                 const newHelpTexts = [];
                 let finalHelpText = '';
                 let lastDuration = 0;
                 const noRuleText = 'This meet does not have schedules in EventRelation';
-                const ruleData = Attendees.attendances.meetScheduleRules[ e.value[0] ];
+                const ruleData = Attendees.personalAttendances.meetScheduleRules[ e.value[0] ];
                 const timeRules = ruleData.rules;
                 const meetStart = new Date(ruleData.meetStart).toDateString();
                 const meetFinish = new Date(ruleData.meetFinish).toDateString();
                 if (timeRules && timeRules.length > 0) {
                   timeRules.forEach(timeRule => {
                     if (timeRule.rule) {
-                      Attendees.attendances.selectedMeetHasRule = timeRules.length;
+                      Attendees.personalAttendances.selectedMeetHasRule = timeRules.length;
                       const toLocaleStringOpts = Attendees.utilities.timeRules[timeRule.rule];
                       const startTime = new Date(timeRule.start);
                       const endTime = new Date(timeRule.end);
@@ -306,8 +306,8 @@ Attendees.attendances = {
                     }
                   });
                   finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-                  if (Attendees.attendances.selectedMeetHasRule && Attendees.attendances.editSwitcher.option('value') && lastDuration > 0) {
-                    Attendees.attendances.generateGatheringsButton.option('disabled', false);
+                  if (Attendees.personalAttendances.selectedMeetHasRule && Attendees.personalAttendances.editSwitcher.option('value') && lastDuration > 0) {
+                    Attendees.personalAttendances.generateGatheringsButton.option('disabled', false);
                   }
                 } else {
                   finalHelpText = noRuleText;
@@ -323,7 +323,7 @@ Attendees.attendances = {
                 const d = new $.Deferred();
                 const params = {grouping: 'assembly_name', model: 'attendance'};  // for grouped: true,
 
-                if (Attendees.attendances.filterMeetCheckbox.option('value')) {
+                if (Attendees.personalAttendances.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;
                   const filterTill = $('div.filter-till input')[1].value;
                   params['start'] = filterFrom ? new Date(filterFrom).toISOString() : null;
@@ -333,16 +333,16 @@ Attendees.attendances = {
                 $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
                   .done((result) => {
                     d.resolve(result.data);
-                    if (Object.keys(Attendees.attendances.meetScheduleRules).length < 1 && result.data && result.data[0]) {
+                    if (Object.keys(Attendees.personalAttendances.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.attendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
-                          Attendees.attendances.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
+                          Attendees.personalAttendances.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
+                          Attendees.personalAttendances.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
                         })
                       }); // schedule rules needed for attendances generation
                     }
-                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs') || [];
-                    Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('meets'), selectedMeetSlugs);
+                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'selectedMeetSlugs') || [];
+                    Attendees.utilities.selectAllGroupedTags(Attendees.personalAttendances.filtersForm.getEditor('meets'), selectedMeetSlugs);
                   });
                 return d.promise();
               },
@@ -360,14 +360,14 @@ Attendees.attendances = {
           showColon: false,
         },
         template: (data, itemElement) => {
-          Attendees.attendances.attendancesDatagrid = Attendees.attendances.initFilteredattendancesDatagrid(data, itemElement);
+          Attendees.personalAttendances.attendancesDatagrid = Attendees.personalAttendances.initFilteredattendancesDatagrid(data, itemElement);
         },
       },
     ],
   },
 
   initFilteredattendancesDatagrid: (data, itemElement) => {
-    const $attendanceDatagrid = $("<div id='attendances-datagrid-container'>").dxDataGrid(Attendees.attendances.attendanceDatagridConfig);
+    const $attendanceDatagrid = $("<div id='attendances-datagrid-container'>").dxDataGrid(Attendees.personalAttendances.attendanceDatagridConfig);
     itemElement.append($attendanceDatagrid);
     return $attendanceDatagrid.dxDataGrid('instance');
   },
@@ -377,7 +377,7 @@ Attendees.attendances = {
       store: new DevExpress.data.CustomStore({
         key: 'id',
         load: (loadOptions) => {
-          Attendees.attendances.loadOptions = loadOptions;
+          Attendees.personalAttendances.loadOptions = loadOptions;
           const meets = $('div.selected-meets select').val();
           const deferred = $.Deferred();
 
@@ -389,8 +389,8 @@ Attendees.attendances = {
               finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
             };
 
-            if (Attendees.attendances.attendancesDatagrid) {
-              args['take'] = Attendees.attendances.attendancesDatagrid.pageSize();
+            if (Attendees.personalAttendances.attendancesDatagrid) {
+              args['take'] = Attendees.personalAttendances.attendancesDatagrid.pageSize();
             }
 
             [
@@ -530,7 +530,7 @@ Attendees.attendances = {
     stateStoring: {
       enabled: true,
       type: 'sessionStorage',
-      storageKey: Attendees.utilities.datagridStorageKeys['attendancesListView'],
+      storageKey: Attendees.utilities.datagridStorageKeys['personalAttendancesListView'],
     },
     sorting: {
       mode: "multiple",
@@ -561,11 +561,11 @@ Attendees.attendances = {
           icon: 'clearsquare',
           onClick() {
             if(confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Time) in this page?')) {
-              Attendees.attendances.attendancesDatagrid.state(null);
-              window.sessionStorage.removeItem('attendancesListViewOpts');
-              Attendees.utilities.selectAllGroupedTags(Attendees.attendances.filtersForm.getEditor('meets'), []);
-              Attendees.attendances.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
-              Attendees.attendances.filtersForm.getEditor('filter-till').option('value', new Date(new Date().setMonth(new Date().getMonth() + 1)));
+              Attendees.personalAttendances.attendancesDatagrid.state(null);
+              window.sessionStorage.removeItem('personalAttendancesListViewOpts');
+              Attendees.utilities.selectAllGroupedTags(Attendees.personalAttendances.filtersForm.getEditor('meets'), []);
+              Attendees.personalAttendances.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
+              Attendees.personalAttendances.filtersForm.getEditor('filter-till').option('value', new Date(new Date().setMonth(new Date().getMonth() + 1)));
             }
           },
         },
@@ -588,7 +588,7 @@ Attendees.attendances = {
         colCount: 2,
 //        customizeItem: function(item) {
 //          if (item.dataField === "attending") {
-//            item.disabled = !Attendees.attendances.allowEditingAttending;
+//            item.disabled = !Attendees.personalAttendances.allowEditingAttending;
 //          }  // prevent users from changing attending to avoid data chaos
 //        },
         items: [
@@ -639,8 +639,8 @@ Attendees.attendances = {
     },
     onInitNewRow: (e) => {
       e.data.category = 1;
-      Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
-//      Attendees.attendances.allowEditingAttending = true;
+      Attendees.personalAttendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
+//      Attendees.personalAttendances.allowEditingAttending = true;
     },
     onEditingStart: (e) => {
       const grid = e.component;
@@ -651,7 +651,7 @@ Attendees.attendances = {
         const title = Attendees.utilities.editingEnabled ? editingTitle : readingTitle;
         grid.option('editing.popup.title', title);
       }
-//      Attendees.attendances.allowEditingAttending = false;
+//      Attendees.personalAttendances.allowEditingAttending = false;
       grid.option("columns").forEach(column => {
         grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
       });
@@ -684,7 +684,7 @@ Attendees.attendances = {
               load: (loadOptions) => {
                 const meets = $('div.selected-meets select').val();
                 const deferred = $.Deferred();
-                loadOptions['sort'] = Attendees.attendances.attendancesDatagrid && Attendees.attendances.attendancesDatagrid.getDataSource().loadOptions().group;
+                loadOptions['sort'] = Attendees.personalAttendances.attendancesDatagrid && Attendees.personalAttendances.attendancesDatagrid.getDataSource().loadOptions().group;
                 const args = {
                   meets: meets,
                   searchOperation: loadOptions['searchOperation'],
@@ -763,8 +763,8 @@ Attendees.attendances = {
                   if (options.data && options.data.gathering__meet__assembly) {
                     searchOpts['assemblies[]'] = options.data.gathering__meet__assembly;
                   } else {
-                    const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
-                    const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
+                    const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'selectedMeetSlugs');
+                    const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.personalAttendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                     if (assemblies && assemblies.size){
                       searchOpts['assemblies[]'] = Array.from(assemblies);
                     }
@@ -794,9 +794,9 @@ Attendees.attendances = {
         setCellValue: (newData, value, currentData) => {
           if (value) {
             newData.gathering = value;
-            const gatheringsMeet = Attendees.attendances.gatheringMeet[value];
+            const gatheringsMeet = Attendees.personalAttendances.gatheringMeet[value];
             if (gatheringsMeet && !currentData.character) {
-              const [meetEnd, majorCharacter] = Attendees.attendances.meetData[gatheringsMeet];
+              const [meetEnd, majorCharacter] = Attendees.personalAttendances.meetData[gatheringsMeet];
               newData.character = majorCharacter;
             }  // when no character's define, set default character for user.
           }
@@ -819,7 +819,7 @@ Attendees.attendances = {
                   $.get($('form.filters-dxform').data('gatherings-endpoint'), searchOpts)
                     .done((result) => {
                       result && result.data && result.data.forEach( gathering => {
-                        Attendees.attendances.gatheringMeet[gathering.id] = gathering.meet;
+                        Attendees.personalAttendances.gatheringMeet[gathering.id] = gathering.meet;
                       })
                       d.resolve(result);
                     });
@@ -949,7 +949,7 @@ Attendees.attendances = {
                     searchOpts['gathering'] = options.data.gathering;
                   } else {  // for datagrid column lookup limiting by meet
                     const meetSlugs = $('div.selected-meets select').val();
-                    const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
+                    const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['personalAttendancesListViewOpts'], 'selectedMeetSlugs');
                     if (meets && meets.length) {
                       searchOpts['meets[]'] = meets;
                     }
@@ -1019,5 +1019,5 @@ Attendees.attendances = {
 };
 
 $(document).ready(() => {
-  Attendees.attendances.init();
+  Attendees.personalAttendances.init();
 });

@@ -7,6 +7,8 @@ Attendees.utilities = {
     datagridAttendingmeetsListViewOpts: "attendeesAttendingmeetsListOpts",
     attendancesListView: "attendancesListView",
     attendancesListViewOpts: "attendancesListViewOpts",
+    personalAttendancesListView: "personalAttendancesListView",
+    personalAttendancesListViewOpts: "personalAttendancesListViewOpts",
     gatheringsListView: "attendeesGatheringsList",
     gatheringsListViewOpts: "attendeesGatheringsListOpts",
     attendeesAttendeesList: "attendeesAttendeesList",
