@@ -927,7 +927,6 @@ Attendees.attendances = {
         dataField: 'category',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
-        visible: false,
         editorOptions: {
           showClearButton: true,
         },

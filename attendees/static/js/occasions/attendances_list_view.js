@@ -768,6 +768,7 @@ Attendees.attendances = {
       {
         dataField: 'attending',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
+        width: '30%',
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
@@ -894,6 +895,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'gathering',
+        width: '20%',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         caption: 'Gathering in Meet',
@@ -1008,7 +1010,6 @@ Attendees.attendances = {
         dataField: 'category',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
-        visible: false,
         editorOptions: {
           showClearButton: true,
         },
