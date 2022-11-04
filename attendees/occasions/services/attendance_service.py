@@ -241,7 +241,7 @@ class AttendanceService:
         return Attendance.objects.annotate(**annotations).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
-    def batch_create(begin, end, meet_slug, meet, user_time_zone):
+    def batch_create(begin, end, meet_slug, meet, user_time_zone, attendee_id=None):
         """
         Idempotently create attendances based on the following params and attendingmeet.
 
@@ -250,6 +250,7 @@ class AttendanceService:
         :param meet:
         :param meet_slug:
         :param user_time_zone:
+        :param attendee_id:
         :return: number of attendances created
         """
         number_created = 0
@@ -266,7 +267,15 @@ class AttendanceService:
             ).astimezone(user_time_zone)
 
             for gathering in meet.gathering_set.filter(finish__gte=begin_time, start__lte=end_time, infos__generate_attendance=True):
-                for attendingmeet in AttendingMeet.objects.filter(meet=meet, finish__gte=gathering.start, start__lte=gathering.finish):
+                filters = {
+                    'meet': meet,
+                    'finish__gte': gathering.start,
+                    'start__lte': gathering.finish,
+                }
+                if attendee_id:
+                    filters['attending__attendee_id'] = attendee_id
+
+                for attendingmeet in AttendingMeet.objects.filter(**filters):
                     attendance, attendance_created = Attendance.objects.get_or_create(
                         gathering=gathering,
                         attending=attendingmeet.attending,

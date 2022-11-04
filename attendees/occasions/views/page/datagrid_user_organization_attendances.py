@@ -2,14 +2,12 @@ import logging
 import time
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
 from attendees.users.authorization import RouteGuard
-from attendees.occasions.models import Meet
 from attendees.users.authorization import PeekOther
 from attendees.users.services import MenuService
 

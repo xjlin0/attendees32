@@ -58,13 +58,10 @@ Attendees.attendances = {
         onClick: () => {
           const filterTill = $('div.filter-till input')[1].value;
           if (filterTill && confirm('Are you sure to auto generate all attendances of the chosen meet before the filtered date from character defined in the enrollment?')) {
-            const params = {};
+            const params = {attendee: $('form.filters-dxform').data('attendeeId')};
             const filterFrom = $('div.filter-from input')[1].value;
             params['begin'] = filterFrom ? new Date(filterFrom).toISOString() : new Date().toISOString();
             params['end'] = filterTill ? new Date(filterTill).toISOString() : null;
-            if (Attendees.attendances.selectedMeetHasRule && Attendees.attendances.selectedMeetHasRule < 2) {
-              params['duration'] = Attendees.attendances.filtersForm.getEditor('duration').option('value');
-            }
             const meetSlugs = $('div.selected-meets select').val();
             if (params['end'] && Attendees.attendances.filtersForm.validate().isValid && meetSlugs.length && meetSlugs.length === 1) {
               params['meet_slug'] = meetSlugs[0];
@@ -141,10 +138,7 @@ Attendees.attendances = {
     return Attendees.attendances.selectedMeetHasRule &&
       Attendees.attendances.editSwitcher && Attendees.attendances.editSwitcher.option('value') &&
       Attendees.attendances.filtersForm.validate().isValid &&
-      intervalValid && selectedMeet && selectedMeet.length === 1 &&
-      Attendees.attendances.filtersForm.getEditor('duration').option('value') &&
-      Attendees.attendances.filtersForm.getEditor('duration').option('value') > 0 &&
-      Attendees.utilities.isAllGroupedTagsSelected(Attendees.attendances.filtersForm.getEditor('characters'));
+      intervalValid && selectedMeet && selectedMeet.length === 1;
   },
 
   initFiltersForm: () => {
@@ -195,8 +189,7 @@ Attendees.attendances = {
               Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
             }
             const meets = $('div.selected-meets select').val();
-            const characters = $('div.selected-characters select').val();
-            if (meets.length && characters.length) {
+            if (meets.length) {
               Attendees.attendances.attendancesDatagrid.refresh();
             }
           },
@@ -237,8 +230,7 @@ Attendees.attendances = {
               Attendees.attendances.filtersForm.getEditor('meets').getDataSource().reload();
             }  // allow users to screen only active meets by meet's start&finish
             const meets = $('div.selected-meets select').val();
-            const characters = $('div.selected-characters select').val();
-            if (meets.length && characters.length) {
+            if (meets.length) {
               Attendees.attendances.attendancesDatagrid.refresh();
             }
           },
@@ -246,7 +238,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'meets',
-        colSpan: 5,
+        colSpan: 6,
         helpText: "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely",
         cssClass: 'selected-meets',
         validationRules: [{type: 'required'}],
@@ -284,7 +276,6 @@ Attendees.attendances = {
             Attendees.attendances.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely";
             const $meetHelpText = Attendees.attendances.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-            const $durationField = Attendees.attendances.filtersForm.getEditor('duration').element().parent().parent();
             Attendees.attendances.selectedMeetHasRule = 0;
             Attendees.attendances.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
@@ -321,9 +312,6 @@ Attendees.attendances = {
                 } else {
                   finalHelpText = noRuleText;
                 }
-                Attendees.attendances.filtersForm.updateData("duration", lastDuration);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
-                $durationField.find("div.dx-field-item-content").toggle(Attendees.attendances.selectedMeetHasRule < 2);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
-                $durationField.find('div.dx-field-item-help-text').text(Attendees.attendances.selectedMeetHasRule > 1 ? "Disabled for multiple events" : "minutes");  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
                 $meetHelpText.text(finalHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
               }
             }
@@ -361,19 +349,6 @@ Attendees.attendances = {
             }),
             key: 'slug',
           }),
-        },
-      },
-      {
-        colSpan: 1,
-        dataField: 'duration',
-        editorType: 'dxTextBox',
-        helpText: '(minutes)',
-        label: {
-          location: 'top',
-          text: 'duration',
-        },
-        editorOptions: {
-          value: 90,
         },
       },
       {
@@ -708,12 +683,10 @@ Attendees.attendances = {
               key: 'id',
               load: (loadOptions) => {
                 const meets = $('div.selected-meets select').val();
-                const characters = $('div.selected-characters select').val();
                 const deferred = $.Deferred();
                 loadOptions['sort'] = Attendees.attendances.attendancesDatagrid && Attendees.attendances.attendancesDatagrid.getDataSource().loadOptions().group;
                 const args = {
                   meets: meets,
-                  characters: characters,
                   searchOperation: loadOptions['searchOperation'],
                   searchValue: loadOptions['searchValue'],
                   searchExpr: loadOptions['searchExpr'],
