@@ -2,6 +2,7 @@ import time, pytz
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
@@ -25,7 +26,7 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_organization = self.request.user.organization
         user_organization_calendar = user_organization.calendar_relations.filter(distinction='source').first()
-        calendar_id = self.request.query_params.get("calendar", user_organization_calendar and user_organization_calendar.id or 0)
+        calendar_id = self.request.query_params.get("calendar")
         start = self.request.query_params.get("start")
         end = self.request.query_params.get("end")
         pk = self.kwargs.get("pk")
@@ -40,10 +41,15 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
             )
             user_time_zone = pytz.timezone(parse.unquote(tzname))
             organization_acronym = user_organization.infos.get('acronym').strip()
-            calendar = Calendar.objects.filter(slug__istartswith=organization_acronym, pk=calendar_id).first()
+            filters = Q(slug__istartswith=organization_acronym)
+            if calendar_id:
+                filters.add(Q(pk=calendar_id), Q.AND)
+            else:  # UI need all location calendars but not organization calendar which duplicates every events
+                filters.add(~Q(pk=user_organization_calendar.id), Q.AND)
+            calendars = Calendar.objects.filter(filters)
 
-            if calendar:
-                events = Event.objects.filter(calendar=calendar.id)
+            if calendars:
+                events = Event.objects.filter(calendar__in=calendars)
                 period = Period(
                     events,
                     datetime.strptime(start, iso_time_format),

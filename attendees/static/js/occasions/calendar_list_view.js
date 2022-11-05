@@ -109,7 +109,7 @@ Attendees.calendar = {
                 if (o.description && o.description.startsWith('allDay:')){  // magic word to label full day event
                   o['allDay'] = true;
                 }
-              })
+              });
               d.resolve(result.data);
             });
 
