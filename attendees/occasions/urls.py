@@ -17,7 +17,7 @@ from attendees.occasions.views import (
     api_user_assembly_viewset,
     attendances_list_view,
     datagrid_assembly_all_attendances_list_view,
-    datagrid_coworker_organization_attendances_list_view,
+    location_timeline_list_view,
     datagrid_user_organization_attendances_list_view,
     api_organization_meet_character_attendances_viewset,
     gatherings_list_view,
@@ -143,9 +143,9 @@ urlpatterns = [
         name="datagrid_assembly_all_attendances",
     ),
     path(
-        "datagrid_coworker_organization_attendances/",
-        view=datagrid_coworker_organization_attendances_list_view,
-        name="datagrid_coworker_organization_attendances",
+        'location_timeline/',
+        view=location_timeline_list_view,
+        name='location_timeline_list_view',
     ),
     path(
         "datagrid_user_organization_attendances/",

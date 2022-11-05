@@ -7,5 +7,5 @@
   // $('li.active').removeClass('active');
   const $currentMenuItem = $('a[href="' + location.pathname + location.search + '"]');
   $currentMenuItem.addClass('active');
-  $currentMenuItem.closest('li.nav-item').find('a.nav-link').addClass('active');
+  $currentMenuItem.closest('li.nav-item').find('a.nav-link').addClass('active text-decoration-underline');
 })(window.jQuery, window.Attendees); // https://stackoverflow.com/a/18315393

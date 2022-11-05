@@ -1877,144 +1877,144 @@
     "model": "schedule.calendar",
     "pk": 0,
     "fields": {
-      "name": "Multi organizations Calendar",
-      "slug": "multi_organizations_calendar"
+      "name": "Multi Organizations",
+      "slug": "multi_organizations_default"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 1,
     "fields": {
-      "name": "CFCCH Public Calendar",
-      "slug": "cfcch_public_calendar"
+      "name": "All/Public",
+      "slug": "cfcch_all_public"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 2,
     "fields": {
-      "name": "CFCCH fellowship room F205 calendar",
-      "slug": "cfcch_fellowship_f205"
+      "name": "Fellowship Hall F205",
+      "slug": "cfcch_fellowship_hall_f205"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 3,
     "fields": {
-      "name": "CFCCH fellowship room F201 calendar",
-      "slug": "cfcch_fellowship_f201"
+      "name": "Fellowship Hall F201",
+      "slug": "cfcch_fellowship_hall_f201"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 4,
     "fields": {
-      "name": "CFCCH fellowship room F202 calendar",
-      "slug": "cfcch_fellowship_f202"
+      "name": "Fellowship Hall F202",
+      "slug": "cfcch_fellowship_hall_f202"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 5,
     "fields": {
-      "name": "CFCCH fellowship room F203 calendar",
-      "slug": "cfcch_fellowship_f203"
+      "name": "Fellowship Hall F203",
+      "slug": "cfcch_fellowship_hall_f203"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 6,
     "fields": {
-      "name": "CFCCH fellowship room F204 calendar",
-      "slug": "cfcch_fellowship_f204"
+      "name": "Fellowship Hall F204",
+      "slug": "cfcch_fellowship_hall_f204"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 7,
     "fields": {
-      "name": "CFCCH fellowship room F207 calendar",
-      "slug": "cfcch_fellowship_f207"
+      "name": "Fellowship Hall F207",
+      "slug": "cfcch_fellowship_hall_f207"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 8,
     "fields": {
-      "name": "CFCCH fellowship room F206 calendar",
-      "slug": "cfcch_fellowship_f206"
+      "name": "Fellowship Hall F206",
+      "slug": "cfcch_fellowship_hall_f206"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 9,
     "fields": {
-      "name": "CFCCH worship room 202 calendar",
-      "slug": "cfcch_worship_202"
+      "name": "Worship Center 202",
+      "slug": "cfcch_worship_center_202"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 10,
     "fields": {
-      "name": "CFCCH worship hall calendar",
-      "slug": "cfcch_worship_hall"
+      "name": "Worship Center Hall",
+      "slug": "cfcch_worship_center_hall"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 11,
     "fields": {
-      "name": "CFCCH sanctuary hall calendar",
-      "slug": "cfcch_sanctuary_hall"
+      "name": "Old Sanctuary Hall",
+      "slug": "cfcch_old_sanctuary_hall"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 12,
     "fields": {
-      "name": "CFCCH worship room 107 calendar",
-      "slug": "cfcch_worship_107"
+      "name": "Worship Center 107",
+      "slug": "cfcch_worship_center_107"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 13,
     "fields": {
-      "name": "CFCCH Zoom calendar",
-      "slug": "cfcch_zoom_calendar"
+      "name": "CFCCH Zoom room",
+      "slug": "cfcch_zoom_room"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 14,
     "fields": {
-      "name": "CFCCH fellowship hall calendar",
-      "slug": "cfcch_fellowship_hall_calendar"
+      "name": "Fellowship Hall hall",
+      "slug": "cfcch_fellowship_hall_hall"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 15,
     "fields": {
-      "name": "CFCCH worship room 201 calendar",
-      "slug": "cfcch_worship_201"
+      "name": "Worship Center 201",
+      "slug": "cfcch_worship_center_201"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 16,
     "fields": {
-      "name": "CFCCH worship room 203 calendar",
-      "slug": "cfcch_worship_203"
+      "name": "Worship Center 203",
+      "slug": "cfcch_worship_center_203"
     }
   },
   {
     "model": "schedule.calendar",
     "pk": 17,
     "fields": {
-      "name": "CFCCH worship room 204 calendar",
-      "slug": "cfcch_worship_204"
+      "name": "Worship Center 204",
+      "slug": "cfcch_worship_center_204"
     }
   },
   {
@@ -4390,13 +4390,13 @@
       "category": "main",
       "parent": 4,
       "html_type": "a",
-      "urn": "/occasions/datagrid_coworker_organization_attendances/",
-      "url_name": "datagrid_coworker_organization_attendances",
-      "display_name": "Coworkers activities 同工行程",
+      "urn": "/occasions/location_timeline/",
+      "url_name": "location_timeline_list_view",
+      "display_name": "Location Timeline 地點行程",
       "display_order": 2100,
       "infos": {
         "class": "dropdown-item",
-        "title": "Coworkers attendance"
+        "title": "Location Timeline"
       },
       "lft": 2,
       "rght": 3,
