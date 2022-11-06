@@ -70,7 +70,7 @@ Attendees.locationTimeline = {
  // },
 
   initScheduler: () => {
-    Attendees.locationTimeline.scheduler = $('div#scheduler').dxScheduler(Attendees.locationTimeline.schedulerConfig).dxScheduler('instance');
+    Attendees.locationTimeline.scheduler = $('div#timeline').dxScheduler(Attendees.locationTimeline.schedulerConfig).dxScheduler('instance');
   },
 
   schedulerConfig: {
@@ -103,7 +103,7 @@ Attendees.locationTimeline = {
             params['searchExpr'] = searchOpts['searchExpr'];
           }
 
-          $.get(document.querySelector('div#scheduler').dataset.occurrencesEndpoint, params)
+          $.get(document.querySelector('div#timeline').dataset.occurrencesEndpoint, params)
             .done((result) => {
               result.data.forEach(o => {
                 if (o.description && o.description.startsWith('allDay:')){  // magic word to label full day event
@@ -117,7 +117,7 @@ Attendees.locationTimeline = {
         },
         byKey: (key) => {
           const d = new $.Deferred();
-          $.get(document.querySelector('div#scheduler').dataset.occurrencesEndpoint + key + '/')
+          $.get(document.querySelector('div#timeline').dataset.occurrencesEndpoint + key + '/')
             .done((result) => {
               d.resolve(result);
             });
@@ -180,7 +180,7 @@ Attendees.locationTimeline = {
                 distinction: "source",
               };
 
-              $.get(document.querySelector('div#scheduler').dataset.calendarsEndpoint, params)
+              $.get(document.querySelector('div#timeline').dataset.calendarsEndpoint, params)
                 .done((result) => {
                   d.resolve(result.data);
                 });
@@ -189,7 +189,7 @@ Attendees.locationTimeline = {
             },
             byKey: (key) => {
               const d = new $.Deferred();
-              $.get(document.querySelector('div#scheduler').dataset.calendarsEndpoint + key + '/')
+              $.get(document.querySelector('div#timeline').dataset.calendarsEndpoint + key + '/')
                 .done((result) => {
                   d.resolve(result);
                 });
