@@ -41,9 +41,9 @@ div.dx-fileuploader-input-label {
 }
 
 #timeline .dx-scheduler-cell-sizes-horizontal {
-  width: 100px;
+  width: 150px;
 }
 
 #timeline .dx-scheduler-timeline .dx-scheduler-header-panel-cell, .dx-scheduler-timeline .dx-scheduler-date-table-cell {
-  width: 100px;
+  width: 150px;
 }

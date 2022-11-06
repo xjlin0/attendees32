@@ -723,6 +723,7 @@ Attendees.datagridUpdate = {
       {
         itemType: 'button',
         name: 'mainAttendeeFormSubmit',
+        colSpan: 4,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {
@@ -743,6 +744,7 @@ Attendees.datagridUpdate = {
       {
         itemType: 'button',
         name: 'mainAttendeeFormDead',
+        colSpan: 4,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {
@@ -761,6 +763,7 @@ Attendees.datagridUpdate = {
       {
         itemType: 'button',
         name: 'mainAttendeeFormDelete',
+        colSpan: 4,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {
@@ -815,6 +818,7 @@ Attendees.datagridUpdate = {
       return {
         itemType: 'button',
         name: 'mainAttendeeFormSubmit',
+        colSpan: 4,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {

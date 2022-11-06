@@ -5,19 +5,15 @@
 {% endblock title %}
 
 {% block extra_css %}
-
   <link rel="stylesheet"
-        href="{% static 'devextreme/dx.common.css' %}">
-
-  <link rel="stylesheet"
-        href="{% static 'devextreme/dx.light.compact.css' %}">
+        href="{% static 'devextreme/dx.light.compact.min.css' %}">
 {% endblock extra_css %}
 
 {% block extra_head %}
   <script defer
           type="text/javascript"
-          src="{% static 'devextreme/dx.all.min.js' %}"
-          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          src="{% static 'devextreme/dx.web.js' %}"
+          integrity="sha384-209QJH8lCoDrB70trdPkGFr84168dIgFO2IYDKFYUv73DqCa161cBayeTRYdzjSp"
           crossorigin="anonymous">
   </script>
 
