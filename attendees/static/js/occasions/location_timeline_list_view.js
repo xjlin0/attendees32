@@ -17,58 +17,6 @@ Attendees.locationTimeline = {
     }))
   },
 
-//  initCalendarSelector: () => {
-//    Attendees.locationTimeline.calendarSelector = $('div#calendar-selector').dxSelectBox(Attendees.locationTimeline.calendarSelectorConfig).dxSelectBox('instance');
-//  },
-
- // calendarSelectorConfig: {
- //   valueExpr: 'id',
- //   displayExpr: 'name',
- //   searchEnabled: true,
- //   width: '100%',
- //   value: parseInt(document.querySelector('div#scheduler').dataset.organizationDefaultCalendar),
- //   onValueChanged: (e)=> {
- //     if (e.value && Attendees.locationTimeline.scheduler) {
- //       Attendees.locationTimeline.scheduler.getDataSource().reload()
- //     }
- //   },
- //   dataSource: new DevExpress.data.DataSource({
- //     store: new DevExpress.data.CustomStore({
- //       key: 'id',
- //       load: (searchOpts) => {
- //         const d = new $.Deferred();
- //
- //         const params = {
- //           take: 9999,
- //           distinction: "source",
- //         };
- //
- //         if (searchOpts['searchValue']) {
- //           params['searchValue'] = searchOpts['searchValue'];
- //           params['searchOperation'] = searchOpts['searchOperation'];
- //           params['searchExpr'] = searchOpts['searchExpr'];
- //         }
- //
- //         $.get(document.querySelector('div#scheduler').dataset.calendarsEndpoint, params)
- //           .done((result) => {
- //             d.resolve(result.data);
- //           });
- //
- //         return d.promise();
- //       },
- //       byKey: (key) => {
- //         const d = new $.Deferred();
- //         $.get(document.querySelector('div#scheduler').dataset.calendarsEndpoint + key + '/')
- //           .done((result) => {
- //             d.resolve(result);
- //           });
- //         return d.promise();
- //       },
- //     }),
- //     // key: 'slug',
- //   }),
- // },
-
   initScheduler: () => {
     Attendees.locationTimeline.scheduler = $('div#timeline').dxScheduler(Attendees.locationTimeline.schedulerConfig).dxScheduler('instance');
   },
@@ -95,7 +43,6 @@ Attendees.locationTimeline = {
             start: Attendees.locationTimeline.scheduler && Attendees.locationTimeline.scheduler.getStartViewDate().toISOString(),
             end: Attendees.locationTimeline.scheduler && Attendees.locationTimeline.scheduler.getEndViewDate().toISOString(),
           };
-          // params['calendar'] = Attendees.locationTimeline.calendarSelector ? Attendees.locationTimeline.calendarSelector.option('value') : parseInt(document.querySelector('div#scheduler').dataset.organizationDefaultCalendar);
 
           if (searchOpts['searchValue']) {
             params['searchValue'] = searchOpts['searchValue'];
@@ -124,13 +71,13 @@ Attendees.locationTimeline = {
           return d.promise();
         },
         update: (key) => {
-          console.log("hi 121 here is key: ", key);
+          console.log("hi 74 here is key: ", key);
         },  // Custom Template: https://js.devexpress.com/Demos/WidgetsGallery/Demo/Scheduler/CustomTemplates/jQuery/Light/
         insert: (e) => {
-          console.log("hi 124 insert here is e: ", e);
+          console.log("hi 77 insert here is e: ", e);
         },
         remove: (key) => {
-          console.log("hi 127 remove here is key: ", key);
+          console.log("hi 80 remove here is key: ", key);
         },
       }),
     }),
@@ -141,18 +88,20 @@ Attendees.locationTimeline = {
     },
     views: [
       {
+        type: 'timelineDay',
+        name: 'Day',
+        groupOrientation: 'vertical',
+      },
+      {
         type: 'timelineWeek',
         name: 'Week',
         groupOrientation: 'vertical',
       },
-      // {
-      //   type: 'workWeek',
-      //   groupOrientation: 'vertical',
-      // },
-      // {
-      //   type: 'month',
-      //   groupOrientation: 'horizontal',
-      // },
+      {
+        type: 'timelineMonth',
+        name: 'Month',
+        groupOrientation: 'vertical',
+      },
     ],
     currentView: 'timelineWeek',
     showCurrentTimeIndicator: true,
@@ -197,9 +146,6 @@ Attendees.locationTimeline = {
             },
           }),
         }),
-
-
-
       },
     ]
   },

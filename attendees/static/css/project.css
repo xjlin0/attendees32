@@ -38,12 +38,12 @@ div.dx-fileuploader-input-label {
 
 #timeline .dx-scheduler-timeline .dx-scheduler-date-table-cell {
   height: 58px;
-}
+}  /* https://supportcenter.devexpress.com/ticket/details/t1070039 */
 
 #timeline .dx-scheduler-cell-sizes-horizontal {
   width: 150px;
-}
+}  /* https://supportcenter.devexpress.com/ticket/details/t599505 */
 
 #timeline .dx-scheduler-timeline .dx-scheduler-header-panel-cell, .dx-scheduler-timeline .dx-scheduler-date-table-cell {
   width: 150px;
-}
+}  /* https://supportcenter.devexpress.com/ticket/details/t581869 */
