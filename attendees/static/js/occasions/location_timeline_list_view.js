@@ -92,8 +92,8 @@ Attendees.locationTimeline = {
           const d = new $.Deferred();
           const params = {
             take: 9999,
-            start: searchOpts.dxScheduler.startDate.toISOString(),
-            end: searchOpts.dxScheduler.endDate.toISOString(),
+            start: Attendees.locationTimeline.scheduler && Attendees.locationTimeline.scheduler.getStartViewDate().toISOString(),
+            end: Attendees.locationTimeline.scheduler && Attendees.locationTimeline.scheduler.getEndViewDate().toISOString(),
           };
           // params['calendar'] = Attendees.locationTimeline.calendarSelector ? Attendees.locationTimeline.calendarSelector.option('value') : parseInt(document.querySelector('div#scheduler').dataset.organizationDefaultCalendar);
 
@@ -139,20 +139,36 @@ Attendees.locationTimeline = {
         e.appointmentElement[0].style.backgroundColor = e.appointmentData.color;
       }
     },
-    views: ['timelineDay', 'timelineWeek', 'timelineMonth'],
-    currentView: 'timelineDay',
+    views: [
+      {
+        type: 'timelineWeek',
+        name: 'Week',
+        groupOrientation: 'vertical',
+      },
+      // {
+      //   type: 'workWeek',
+      //   groupOrientation: 'vertical',
+      // },
+      // {
+      //   type: 'month',
+      //   groupOrientation: 'horizontal',
+      // },
+    ],
+    currentView: 'timelineWeek',
     showCurrentTimeIndicator: true,
     useDropDownViewSwitcher: window.innerWidth < 425,
     startDayHour: 8,
     endDayHour: 24,
     cellDuration: 120,
+    scrolling: {
+      mode: 'virtual',
+    },
     height: '80vh',
+    groups: ['calendar'],
     resources: [
       {
-        fieldExpr: 'label',
-        // allowMultiple: true,
-        label: 'Location',
-        // useColorAsDefault: true,
+        fieldExpr: 'calendar',
+        displayExpr: "name",
         dataSource: new DevExpress.data.DataSource({
           store: new DevExpress.data.CustomStore({
             key: 'id',

@@ -35,3 +35,15 @@ div.dx-fileuploader-input-label {
   height: 0px;
   visibility: hidden;
 }  /* to remove "or Drop File here" under dxFileUploader */
+
+#scheduler .dx-scheduler-timeline .dx-scheduler-date-table-cell {
+  height: 58px;
+}
+
+#scheduler .dx-scheduler-cell-sizes-horizontal {
+  width: 100px;
+}
+
+#scheduler .dx-scheduler-timeline .dx-scheduler-header-panel-cell, .dx-scheduler-timeline .dx-scheduler-date-table-cell {
+  width: 100px;
+}

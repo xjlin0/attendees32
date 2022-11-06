@@ -2410,7 +2410,7 @@
     "pk": 20,
     "fields": {
       "name": "Thanksgiving",
-      "description": "July 4th",
+      "description": "Forth Thursday of the November",
       "frequency": "YEARLY",
       "params": "bymonth:11;byweekday:TH;bysetpos:4"
     }

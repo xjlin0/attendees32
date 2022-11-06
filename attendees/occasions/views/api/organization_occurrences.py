@@ -25,7 +25,7 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_organization = self.request.user.organization
-        user_organization_calendar = user_organization.calendar_relations.filter(distinction='source').first()
+        user_organization_calendar = user_organization.calendar_relations.filter(distinction='source').first().calendar
         calendar_id = self.request.query_params.get("calendar")
         start = self.request.query_params.get("start")
         end = self.request.query_params.get("end")
@@ -49,14 +49,22 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
             calendars = Calendar.objects.filter(filters)
 
             if calendars:
+                user_organization_calendar_all_day_events = Event.objects.filter(calendar=user_organization_calendar, description__startswith='allDay:')
                 events = Event.objects.filter(calendar__in=calendars)
+
                 period = Period(
                     events,
                     datetime.strptime(start, iso_time_format),
                     datetime.strptime(end, iso_time_format),
                     tzinfo=user_time_zone,
                 )
-                return period.get_occurrences()
+                all_day_period = Period(
+                    user_organization_calendar_all_day_events,
+                    datetime.strptime(start, iso_time_format),
+                    datetime.strptime(end, iso_time_format),
+                    tzinfo=user_time_zone,
+                )
+                return period.get_occurrences() + all_day_period.get_occurrences()
 
             else:
                 time.sleep(2)
