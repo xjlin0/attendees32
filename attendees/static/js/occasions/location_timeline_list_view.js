@@ -1,12 +1,10 @@
 Attendees.locationTimeline = {
   scheduler: null,
-  calendarSelector: null,
   contentTypeEndpoint: '',
   contentTypeEndpoints: {},
 
   init: () => {
     console.log('static/js/occasions/location_timeline_list_view.js');
-//    Attendees.locationTimeline.initCalendarSelector();
     Attendees.locationTimeline.initScheduler();
     Attendees.locationTimeline.initListeners();
   },
@@ -26,7 +24,6 @@ Attendees.locationTimeline = {
     endDateExpr: 'end',
     // textExpr: 'source',
     // descriptionExpr: 'source',
-
     // appointmentTemplate: https://js.devexpress.com/Demos/WidgetsGallery/Demo/Scheduler/CustomTemplates/jQuery/Light/
     editing: {
       allowUpdating: false,
@@ -71,19 +68,43 @@ Attendees.locationTimeline = {
           return d.promise();
         },
         update: (key) => {
-          console.log("hi 74 here is key: ", key);
+          console.log("hi 71 here is key: ", key);
         },  // Custom Template: https://js.devexpress.com/Demos/WidgetsGallery/Demo/Scheduler/CustomTemplates/jQuery/Light/
         insert: (e) => {
-          console.log("hi 77 insert here is e: ", e);
+          console.log("hi 74 insert here is e: ", e);
         },
         remove: (key) => {
-          console.log("hi 80 remove here is key: ", key);
+          console.log("hi 77 remove here is key: ", key);
         },
       }),
     }),
     onAppointmentRendered: (e) => {
       if (e.appointmentData && e.appointmentData.color) {
         e.appointmentElement[0].style.backgroundColor = e.appointmentData.color;
+      }
+    },
+    onOptionChanged: (e) => {
+      if (Attendees.locationTimeline.scheduler) {
+        switch (e.name) {
+          case "currentView":
+            switch (e.value) {
+              case "Day":
+                Attendees.locationTimeline.scheduler.option({
+                  startDayHour: 6,
+                  cellDuration: 60,
+                });
+                break;
+              case "Week":
+                Attendees.locationTimeline.scheduler.option({
+                  startDayHour: 8,
+                  cellDuration: 120,
+                });
+                break;
+              default:
+            }
+            break;
+          default:
+        }
       }
     },
     views: [
@@ -103,10 +124,10 @@ Attendees.locationTimeline = {
         groupOrientation: 'vertical',
       },
     ],
-    currentView: 'timelineWeek',
+    currentView: 'Day',
     showCurrentTimeIndicator: true,
     useDropDownViewSwitcher: window.innerWidth < 425,
-    startDayHour: 8,
+    startDayHour: 6,
     endDayHour: 24,
     cellDuration: 120,
     scrolling: {
