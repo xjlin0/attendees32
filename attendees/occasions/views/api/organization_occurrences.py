@@ -58,13 +58,19 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
                     datetime.strptime(end, iso_time_format),
                     tzinfo=user_time_zone,
                 )
-                all_day_period = Period(
-                    user_organization_calendar_all_day_events,
-                    datetime.strptime(start, iso_time_format),
-                    datetime.strptime(end, iso_time_format),
-                    tzinfo=user_time_zone,
-                )
-                return period.get_occurrences() + all_day_period.get_occurrences()
+
+                if int(calendar_id) == user_organization_calendar.id:
+                    return period.get_occurrences()
+
+                else:   # UI is showing other calendar, needs all day events
+                    all_day_period = Period(
+                        user_organization_calendar_all_day_events,
+                        datetime.strptime(start, iso_time_format),
+                        datetime.strptime(end, iso_time_format),
+                        tzinfo=user_time_zone,
+                    )
+
+                    return period.get_occurrences() + all_day_period.get_occurrences()
 
             else:
                 time.sleep(2)
