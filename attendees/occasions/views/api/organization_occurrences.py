@@ -59,7 +59,7 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
                     tzinfo=user_time_zone,
                 )
 
-                if int(calendar_id) == user_organization_calendar.id:
+                if calendar_id and int(calendar_id) == user_organization_calendar.id:
                     return period.get_occurrences()
 
                 else:   # UI is showing other calendar, needs all day events
