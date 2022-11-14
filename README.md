@@ -5,7 +5,7 @@ Attendees in Django 3.2
 - Tracking who/when/where/what of any activities with attendance records.
 - Monolith architecture on docker [![Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/) and Javascript([DevExtreme](https://js.devexpress.com/Licensing/#NonCommercial)) with Postgres/PostGIS & Redis
 
-<img src="attendees/media/private-media/attendee_portrait/draft_screenshot.png"  alt="participations_screenshot_draft" width="100%"/>
+<img src="attendees/media/private-media/attendee_portrait/draft_screenshot.jpg"  alt="participations_screenshot_draft" width="100%"/>
 
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
