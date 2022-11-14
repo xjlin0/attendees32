@@ -8426,7 +8426,7 @@
       "is_removed": false,
       "type": "status",
       "display_order": 0,
-      "display_name": "guest",
+      "display_name": "visitor",
       "infos": {}
     }
   },
