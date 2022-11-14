@@ -35,7 +35,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
             ),
         )
         # Todo 20200530: filter meets by user's group like Meet.objects.filter(infos__allowed_groups__0__in=['children_coworker', 'hi']) if infos = {'allowed_groups': ['children_coworker', 'data_organizer']}
-        if current_user_organization:
+        if hasattr(current_user, 'attendee') and current_user_organization:
             filters = {"assembly__division__organization": current_user_organization}
             assemblies = self.request.query_params.getlist("assemblies[]")
             search_value = self.request.query_params.get("searchValue")
@@ -70,7 +70,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
         else:
             time.sleep(2)
             raise AuthenticationFailed(
-                detail="Have you registered any events of the organization?"
+                detail="Have you registered any events of the organization? Does your user associate with an attendee?"
             )
 
 

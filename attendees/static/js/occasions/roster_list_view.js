@@ -84,7 +84,7 @@ Attendees.roster = {
   },
 
   initCheckOutPopup: () => {
-    Attendees.roster.checkOutPopup = $('#signature-canvas-popup').dxPopup(Attendees.roster.checkOutPopupConfig).dxPopup('instance');
+    Attendees.roster.checkOutPopup = $('div#signature-canvas-popup').dxPopup(Attendees.roster.checkOutPopupConfig).dxPopup('instance');
   },
 
   checkOutPopupConfig: {
@@ -456,6 +456,11 @@ Attendees.roster = {
               photoInsteadOfGatheringAssembly: true,
             };
 
+            if (Attendees.roster.attendancesDatagrid) {
+              args['take'] = Attendees.roster.attendancesDatagrid.state().pageSize;
+              args['skip'] = Attendees.roster.attendancesDatagrid.state().pageSize * Attendees.roster.attendancesDatagrid.state().pageIndex;
+            }
+
             [
               'skip',
               'take',
@@ -699,11 +704,11 @@ Attendees.roster = {
         ],
       },
     },
-    // onCellClick: (e) => {
-    //   if (e.rowType === 'data' && e.column.dataField === 'photo') {
-    //     e.component.editRow(e.row.rowIndex);
-    //   }
-    // },
+    onCellClick: (e) => {
+      if (e.rowType === 'data' && e.column.dataField === 'attending' && e.event.target.nodeName === 'U') {
+        e.component.editRow(e.row.rowIndex);
+      }
+    },
     onInitNewRow: (e) => {
       e.data.gathering = Attendees.roster.filtersForm.getEditor('gatherings').option('value');
       e.data.category = 1;  // scheduled.
@@ -720,6 +725,7 @@ Attendees.roster = {
       });
       grid.endUpdate();
     },
+    onCellPrepared: e => e.rowType === "header" && e.column.dataHtmlTitle && e.cellElement.attr("title", e.column.dataHtmlTitle),
     columns: [
       {
         dataField: 'photo',
@@ -735,21 +741,33 @@ Attendees.roster = {
       },
       {
         dataField: 'attending',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         sortOrder: 'asc',
         width: 200,
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {  // squeeze to name column for better mobile experience.
-          // cellElement.append ('<strong>' + cellInfo.displayValue + '</strong><br>');
-          const editorButton = `<button type="button"
-                                        class="btn btn-link btn-sm"
-                                        onclick="Attendees.roster.attendancesDatagrid.editRow(${cellInfo.rowIndex})">
-                                  ${cellInfo.displayValue}
-                                </button>`;
-          cellElement.append (editorButton);
+          let template = `<a title="Click to open a new page of the attendee info"
+                             target="_blank"
+                             href="/persons/attendee/${cellInfo.data.attendee_id}">
+                            (Info)
+                          </a>
+                          <u title="click to see the attendance details"
+                             role="button">
+                            ${cellInfo['displayValue']}
+                            </u>`;
+          if (cellInfo.data.attending__attendee__infos__names__original.includes(' by ')) {  // has registrant
+            template += `<a title="Click to open a new page of the registrant info"
+                            target="_blank"
+                            href="/persons/attendee/${cellInfo.data.registrant_attendee_id}">
+                           (Info)
+                         </a>`;
+          }
+          cellElement.append(template);
           if (cellInfo && cellInfo.data) {
 
-            let html = `<div class="btn-group-vertical btn-group-sm"
+            let html = `<br><br>
+                          <div class="btn-group-vertical btn-group-sm"
                              role="group">
                           <input type="checkbox"
                                  class="btn-check roll-call-button"
@@ -861,7 +879,7 @@ Attendees.roster = {
       },
       {
         dataField: 'character',
-//        groupIndex: 0,
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         lookup: {
          valueExpr: 'id',
@@ -935,6 +953,7 @@ Attendees.roster = {
       },
       {
         dataField: 'team',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         editorOptions: {
           showClearButton: true,
         },

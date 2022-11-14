@@ -127,7 +127,7 @@ class AttendanceService:
         )
 
     @staticmethod
-    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, gatherings, orderbys, photo_instead_of_gathering_assembly=False, search_value=None, search_expression=None, search_operation=None, filter=None):
+    def by_organization_meet_characters(current_user, meet_slugs, character_slugs, start, finish, gatherings, orderbys, attendee, photo_instead_of_gathering_assembly=False, search_value=None, search_expression=None, search_operation=None, filter=None):
         orderby_list = AttendanceService.orderby_parser(orderbys)
         extra_filters = Q(
             gathering__meet__assembly__division__organization=current_user.organization
@@ -155,6 +155,9 @@ class AttendanceService:
         if finish:  # but if user search in popup editor, relax time limits to allow adding future new ones.
             # extra_filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
             extra_filters.add(Q(gathering__start__lte=finish), Q.AND)
+
+        if attendee:
+            extra_filters.add((Q(attending__attendee_id=attendee)), Q.AND)
 
         if filter:  # only support single/double level so far
             filter_list = json.loads(filter)
@@ -209,6 +212,7 @@ class AttendanceService:
                 output_field=CharField()
             ),
             'attendee_id': F("attending__attendee__id"),
+            'registrant_attendee_id': F("attending__registration__registrant_id"),
         }
 
         if photo_instead_of_gathering_assembly:
@@ -222,11 +226,11 @@ class AttendanceService:
                 output_field=CharField()
             )
         else:
-            annotations['registrant_attendee_id'] = F("attending__registration__registrant_id")
-            annotations['attending__attendee__first_name'] = F("attending__attendee__first_name")
-            annotations['attending__attendee__last_name'] = F("attending__attendee__last_name")
-            annotations['attending__attendee__first_name2'] = F("attending__attendee__first_name2")
-            annotations['attending__attendee__last_name2'] = F("attending__attendee__last_name2")
+            if not attendee:
+                annotations['attending__attendee__first_name'] = F("attending__attendee__first_name")
+                annotations['attending__attendee__last_name'] = F("attending__attendee__last_name")
+                annotations['attending__attendee__first_name2'] = F("attending__attendee__first_name2")
+                annotations['attending__attendee__last_name2'] = F("attending__attendee__last_name2")
             annotations['gathering_name'] = Trim(
                 Concat("gathering__display_name",
                        Value(' in '),
@@ -237,7 +241,7 @@ class AttendanceService:
         return Attendance.objects.annotate(**annotations).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
-    def batch_create(begin, end, meet_slug, meet, user_time_zone):
+    def batch_create(begin, end, meet_slug, meet, user_time_zone, attendee_id=None):
         """
         Idempotently create attendances based on the following params and attendingmeet.
 
@@ -246,6 +250,7 @@ class AttendanceService:
         :param meet:
         :param meet_slug:
         :param user_time_zone:
+        :param attendee_id:
         :return: number of attendances created
         """
         number_created = 0
@@ -262,7 +267,15 @@ class AttendanceService:
             ).astimezone(user_time_zone)
 
             for gathering in meet.gathering_set.filter(finish__gte=begin_time, start__lte=end_time, infos__generate_attendance=True):
-                for attendingmeet in AttendingMeet.objects.filter(meet=meet, finish__gte=gathering.start, start__lte=gathering.finish):
+                filters = {
+                    'meet': meet,
+                    'finish__gte': gathering.start,
+                    'start__lte': gathering.finish,
+                }
+                if attendee_id:
+                    filters['attending__attendee_id'] = attendee_id
+
+                for attendingmeet in AttendingMeet.objects.filter(**filters):
                     attendance, attendance_created = Attendance.objects.get_or_create(
                         gathering=gathering,
                         attending=attendingmeet.attending,

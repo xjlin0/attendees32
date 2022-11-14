@@ -7,17 +7,17 @@
 {% block extra_css %}
 
   <link rel="stylesheet"
-        href="{% static 'devextreme/dx.common.css' %}">
+        href="{% static 'devextreme/dx.light.compact.min.css' %}">
 
   <link rel="stylesheet"
-        href="{% static 'devextreme/dx.light.compact.css' %}">
+        href="{% static 'css/directory.css' %}">
 {% endblock extra_css %}
 
 {% block extra_head %}
   <script defer
           type="text/javascript"
-          src="{% static 'devextreme/dx.all.min.js' %}"
-          integrity="sha256-3yi1QgXajjT5E8ZOUey5/GJwHdmtr3I3mQmYuKsid8g="
+          src="https://cdn3.devexpress.com/jslib/21.2.11/js/dx.web.js"
+          integrity="sha384-209QJH8lCoDrB70trdPkGFr84168dIgFO2IYDKFYUv73DqCa161cBayeTRYdzjSp"
           crossorigin="anonymous">
   </script>
 
@@ -50,7 +50,7 @@
     </div>
 
   </div>
-
+  <div id="directory-preview-popup"></div>
   <form class="d-flex flex-wrap attendees-filter"
         data-url="{{request.get_full_path}}">
 

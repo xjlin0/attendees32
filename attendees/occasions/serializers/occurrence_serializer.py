@@ -10,6 +10,7 @@ class OccurrenceSerializer(serializers.ModelSerializer):
     """
     text = serializers.SerializerMethodField(read_only=True)
     color = serializers.SerializerMethodField(read_only=True)
+    calendar = serializers.SerializerMethodField(read_only=True)
 
     def get_text(self, obj):
         if obj.id:
@@ -29,6 +30,9 @@ class OccurrenceSerializer(serializers.ModelSerializer):
     def get_color(self, obj):
         color_code = obj.event and obj.event.color_event
         return color_code if color_code and color_code.startswith('#') else None
+
+    def get_calendar(self, obj):
+        return obj.event.calendar_id
 
     class Meta:
         model = Occurrence

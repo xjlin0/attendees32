@@ -50,6 +50,7 @@ class SeriesAttendancesViewSet(RouteGuard, viewsets.ViewSet):
             meet_slug=request.data.get('meet_slug'),
             meet=meet,
             user_time_zone=pytz.timezone(parse.unquote(tzname)),
+            attendee_id=request.data.get('attendee'),
         )
         attendance_results['gathering_generation_success'] = gathering_results['success']
         attendance_results['gathering_created'] = gathering_results['number_created']

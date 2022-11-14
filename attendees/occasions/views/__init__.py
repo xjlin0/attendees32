@@ -29,9 +29,7 @@ from .page.attendances_list_view import attendances_list_view
 from .page.datagrid_assembly_all_attendances import (
     datagrid_assembly_all_attendances_list_view,
 )
-from .page.datagrid_coworker_organization_attendances import (
-    datagrid_coworker_organization_attendances_list_view,
-)
+from .page.location_timeline_list_view import location_timeline_list_view
 # from .division.assembly_attendances_others import assembly_attendance_others_list_view
 from .page.datagrid_user_organization_attendances import (
     datagrid_user_organization_attendances_list_view,

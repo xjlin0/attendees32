@@ -23,6 +23,7 @@ class AttendeesListView(RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user_groups = self.request.user.groups.values_list('name', flat=True)
         # Todo include user divisions and meets slugs in context
         family_attendances_menu = Menu.objects.filter(
             url_name="datagrid_user_organization_attendances"
@@ -32,12 +33,13 @@ class AttendeesListView(RouteGuard, ListView):
                 (Q(finish__isnull=True) | Q(finish__gt=Utility.now_with_timezone())),
                 assembly__division__organization=self.request.user.organization,
                 infos__allowed_models__regex='attendingmeet',
-            )
+                infos__allowed_groups__regex=fr"({'|'.join([name for name in user_groups])})",
+            )   # Todo 20221018: restrict infos__preview_url to only allowed group in meet.infos
             .annotate(
                 assembly_name=F("assembly__display_name"),
             )
             .order_by("assembly_name")
-            .values("id", "slug", "display_name", "assembly_name")
+            .values("id", "slug", "display_name", "assembly_name", "infos__preview_url")
         )  # Todo 20210711 only coworkers can see all Meet, general users should only see what they attended
         allowed_to_create_attendee = Menu.user_can_create_attendee(self.request.user)
         context.update(

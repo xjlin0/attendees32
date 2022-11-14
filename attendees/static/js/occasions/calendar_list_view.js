@@ -88,12 +88,12 @@ Attendees.calendar = {
     dataSource: new DevExpress.data.DataSource({
       store: new DevExpress.data.CustomStore({
         key: 'id',
-        load: (searchOpts) => {
+        load: (searchOpts) => {  //Attendees.calendar.scheduler
           const d = new $.Deferred();
           const params = {
             take: 9999,
-            start: searchOpts.dxScheduler.startDate.toISOString(),
-            end: searchOpts.dxScheduler.endDate.toISOString(),
+            start: Attendees.calendar.scheduler && Attendees.calendar.scheduler.getStartViewDate().toISOString(),
+            end: Attendees.calendar.scheduler && Attendees.calendar.scheduler.getEndViewDate().toISOString(),
           };
           params['calendar'] = Attendees.calendar.calendarSelector ? Attendees.calendar.calendarSelector.option('value') : parseInt(document.querySelector('div#scheduler').dataset.organizationDefaultCalendar);
 
@@ -109,7 +109,7 @@ Attendees.calendar = {
                 if (o.description && o.description.startsWith('allDay:')){  // magic word to label full day event
                   o['allDay'] = true;
                 }
-              })
+              });
               d.resolve(result.data);
             });
 

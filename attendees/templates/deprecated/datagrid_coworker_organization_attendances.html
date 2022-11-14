@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  leader list
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="stylesheet"
+        href="{% static 'tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.css' %}">
+
+  <link rel="stylesheet"
+        href="{% static 'select2-bootstrap4-theme/select2.min.css' %}">
+
+  <link rel="stylesheet"
+        href="{% static 'select2-bootstrap4-theme/select2-bootstrap4.min.css' %}">
+
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.light.compact.min.css' %}">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="{% static 'moment.js/moment.min.js' %}"
+          integrity="sha384-sIzeKWIAHvT0Vm8QbfLCqZwBG0WMCkWVAOYd/330YSNeeQ1Y57N3T9lQz5Ry/EHH">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.js' %}"
+          integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="https://cdn3.devexpress.com/jslib/21.2.11/js/dx.web.js"
+          integrity="sha384-209QJH8lCoDrB70trdPkGFr84168dIgFO2IYDKFYUv73DqCa161cBayeTRYdzjSp"
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'select2-bootstrap4-theme/select2.full.min.js' %}"
+          integrity="sha256-XG/auAy4aieWldzMImofrFDiySK+pwJC7aoo9St7rS0="
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/occasions/datagrid_coworker_organization_attendances.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+
+  {% if True %} <!--If user is coworker/admin of the organization-->
+    <h3>
+      My ongoing activities with coworkers
+    </h3>
+
+    <form class="d-flex flex-wrap organization-attendances-filter"
+          data-url="{{request.get_full_path}}">
+
+      <div class="form-group col-3"
+           title="Shown in {{timezone_name}} timezone">
+        <label class="control-label"
+             for="filter-start-date">
+          Filter from:
+        </label>
+        <div class="input-group date datetimepickers"
+             id="filter-start-date"
+             data-target-input="nearest">
+          <input name="start"
+                 type="text"
+                 class="form-control datetimepicker-input filter-start-date"
+                 data-target="#filter-start-date"/>
+          <div class="input-group-append"
+               data-target="#filter-start-date"
+               data-toggle="datetimepicker">
+            <div class="input-group-text">
+              <i class="fa fa-calendar"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group col-3"
+           title="Shown in {{timezone_name}} timezone">
+        <label class="control-label"
+               for="filter-finish-date">
+          Filter till (excluded):
+        </label>
+        <div class="input-group date datetimepickers"
+             id="filter-finish-date"
+             data-target-input="nearest">
+          <input name="finish"
+                 type="text"
+                 class="form-control datetimepicker-input filter-finish-date"
+                 data-target="#filter-finish-date"/>
+          <div class="input-group-append"
+               data-target="#filter-finish-date"
+               data-toggle="datetimepicker">
+            <div class="input-group-text">
+              <i class="fa fa-calendar"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group d-flex flex-column col-6">
+        <label class="control-label"
+               for="filter-meets">
+          Select activities(meets):
+        </label>
+        <div class="input-group for-select-all">
+          <select class="form-control filter-meets basic-multiple search-filters"
+                  data-placeholder="No meets! did you select/register any?"
+                  data-allow-clear="true"
+                  id="filter-meets"
+                  name="meets"
+                  multiple="multiple">
+            {% for meet in available_meets %}
+              <option value="{{meet.slug}}"
+                      title="{{meet.slug}}"
+                      selected="selected">
+                {{meet.display_name}}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="input-group-append"
+               title="select all items">
+            <div class="input-group-text">
+              <input type="checkbox"
+                     autocomplete="off"
+                     class="select-all">
+              all
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="organization-attendances"
+        data-target-attendee-id="{{target_attendee_id}}"
+        data-teams-endpoint="{{teams_endpoint}}"
+        data-gatherings-endpoint="{{gatherings_endpoint}}"
+        data-characters-endpoint="{{characters_endpoint}}"
+        data-attendings-endpoint="{{attendings_endpoint}}"
+        data-attendances-endpoint="{{attendances_endpoint}}">
+    </div>
+  {% endif %}
+{% endblock content %}

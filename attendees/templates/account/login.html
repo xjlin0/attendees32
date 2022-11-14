@@ -25,11 +25,11 @@
 
   <div class="socialaccount_ballot">
 
-    <ul class="socialaccount_providers">
+    <div class="socialaccount_providers list-group">
       {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-    </ul>
+    </div>
 
-    <div class="login-or">{% translate "or" %}</div>
+    <h3 class="login-or">{% translate "or" %}</h3>
 
   </div>
 
@@ -52,8 +52,8 @@
   {% if redirect_field_value %}
   <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
   {% endif %}
-  <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% translate "Forgot Password?" %}</a>
   <button class="primaryAction btn btn-primary" type="submit">{% translate "Sign In" %}</button>
+  <a class="button secondaryAction btn btn-outline-warning" href="{% url 'account_reset_password' %}">{% translate "Forgot Password?" %}</a>
 </form>
 
 {% endblock %}

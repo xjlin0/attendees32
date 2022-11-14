@@ -1,17 +1,26 @@
 Attendees.dataAttendees = {
   meetTagBox: null,
   attendeeDatagrid: null,
+  attendeeUrn: null,
+  familyAttendancesUrn: null,
+  directoryPreviewPopup: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
+    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
+    const availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets);
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
     Attendees.dataAttendees.startMeetSelector();
     Attendees.dataAttendees.setDataAttrs();
-    Attendees.dataAttendees.setMeetsColumns([]);
+    Attendees.dataAttendees.setMeetsColumns(availableMeets.filter(meet => selectedMeetSlugs.includes(meet.id)));
     Attendees.dataAttendees.startDataGrid();
+    Attendees.dataAttendees.initDirectoryPreview();
   },
 
-  attendeeUrn: null,
-  familyAttendancesUrn: null,
+  reloadPreviewLinks: () => {
+    $('div.dataAttendees')
+      .off('click', 'u.directory-preview')  // in case of datagrid data change
+      .on('click','u.directory-preview', Attendees.dataAttendees.loadDirectoryPreview);
+  },
 
   setDataAttrs: () => {
     const $AttendeeAttrs = document.querySelector('div.dataAttendees').dataset;
@@ -19,7 +28,58 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
   },
 
+  initDirectoryPreview: () => {
+    Attendees.dataAttendees.directoryPreviewPopup = $('div#directory-preview-popup').dxPopup(Attendees.dataAttendees.directoryPreviewPopupConfig).dxPopup('instance');
+  },
+
+  directoryPreviewPopupConfig: {
+    maxWidth: 900,
+    width: '95%',
+    height: 350,
+    container: '.dataAttendees',
+    showTitle: true,
+    resizeEnabled: true,
+    title: 'Directory Preview',
+    dragEnabled: true,
+    position: {
+      at: 'center',
+      my: 'center',
+    },
+  },
+
+  loadDirectoryPreview: (e) => {
+    const deferred = $.Deferred();
+    const fullName = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').first().text();
+    Attendees.dataAttendees.directoryPreviewPopup.option('title', `Directory preview for ${fullName}`);
+    Attendees.dataAttendees.directoryPreviewPopup.content().empty();
+    let content = 'Sorry the preview cannot be loaded';
+    const scrollView = $("<div id='scroll-view'></div>");
+    $.ajax({
+      url: e.currentTarget.dataset.url,
+      dataType: 'html',
+      success: (result) => {
+        content = result;
+        deferred.resolve();
+      },
+      error: (e) => {
+        console.log('loading directory preview error, here is error: ', e);
+        deferred.reject('Data Loading Error, probably time out?');
+      },
+      complete: () => {
+        scrollView.append(content);
+        scrollView.dxScrollView({
+          height: '100%',
+          width: '100%'
+        });
+        Attendees.dataAttendees.directoryPreviewPopup.content().append(scrollView);
+        Attendees.dataAttendees.directoryPreviewPopup.show();
+      },
+      timeout: 10000,
+    });
+  },
+
   startMeetSelector: () => {
+    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
     Attendees.dataAttendees.meetTagBox = $('div.meet-tag-box').dxTagBox({
       dataSource: new DevExpress.data.DataSource({
         store: JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets),
@@ -33,7 +93,9 @@ Attendees.dataAttendees = {
       searchEnabled: true,
       grouped: true,
       displayExpr: 'display_name',
+      value: selectedMeetSlugs,
       onValueChanged: (e) => {
+        Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds', e.value);
         Attendees.dataAttendees.setMeetsColumns(Attendees.dataAttendees.meetTagBox._selectedItems);
         Attendees.dataAttendees.startDataGrid();
       },
@@ -76,6 +138,9 @@ Attendees.dataAttendees = {
             summary:    result.summary,
             groupCount: result.groupCount
           });
+          if (result.totalCount > 0) {
+            Attendees.dataAttendees.reloadPreviewLinks();
+          }
         },
         error: (e) => {
           console.log("loading error, here is error: ", e);
@@ -136,21 +201,39 @@ Attendees.dataAttendees = {
     },
     stateStoring: {
       enabled: true,
-      storageKey: "attendeesAttendeesList",
+      storageKey: Attendees.utilities.datagridStorageKeys['attendeesAttendeesList'],
       type: "custom",  // "sessionStorage",
-      customLoad: () => JSON.parse(sessionStorage.getItem("attendeesAttendeesList")),
+      customLoad: () => JSON.parse(sessionStorage.getItem(Attendees.utilities.datagridStorageKeys['attendeesAttendeesList'])),
       customSave: (state) => {
         if (state && state.searchText) {state.searchText = "";}  // don't store user search terms
-        sessionStorage.setItem("attendeesAttendeesList", JSON.stringify(state));
+        sessionStorage.setItem(Attendees.utilities.datagridStorageKeys['attendeesAttendeesList'], JSON.stringify(state));
       },
     },
     columns: null,  // will be initialized later.
+    onToolbarPreparing: (e) => {
+      const toolbarItems = e.toolbarOptions.items;
+      toolbarItems.unshift({
+        location: 'after',
+        widget: 'dxButton',
+        options: {
+          hint: 'Reset Sort/Columns/Meets settings',
+          icon: 'clearsquare',
+          onClick() {
+            if(confirm('Are you sure to reset all settings (Sort/Columns/Meets) in this page?')) {
+              Attendees.dataAttendees.attendeeDatagrid.state(null);
+              window.sessionStorage.removeItem(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts']);
+              Attendees.dataAttendees.meetTagBox.option('value', []);
+            }
+          },
+        },
+      });
     },
+  },
 
   initialAttendeesColumns: [
     {
       caption: "Full name",
-      // allowSorting: false,
+      cssClass: 'full-name',
       dataField: "infos.names",
       name: 'infos.names.original',
       dataType: "string",
@@ -266,21 +349,32 @@ Attendees.dataAttendees = {
 
   setMeetsColumns: (availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets)) => {
     const meetColumns=[];
-    // const availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets); // $('div.attendings').data('available-meets');
-
+    const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});
     availableMeets.forEach(meet => {
       meetColumns.push({
         // visible: meet.id > 0,
         caption: meet.display_name,
         dataField: meet.slug,
         allowHeaderFiltering: false,
-        calculateCellValue: (rowData) => {
-          if (rowData.attendingmeets && rowData.attendingmeets.includes(meet.slug)) {
-            return meet.display_name;
+        cellTemplate: (container, rowData) => {
+          if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
+            const preview_url = previews[meet.slug];
+            const attr = {
+              text: meet.display_name
+            };
+            if (preview_url) {
+              attr['class'] = 'text-info directory-preview';
+              attr['role'] = 'button';
+              attr['data-url'] = preview_url + rowData.data.id;
+              attr['title'] = `click to see ${rowData.data.infos.names.original} in directory preview.`;
+              $($('<u>', attr)).appendTo(container);
+            } else {
+              $($('<span>', attr)).appendTo(container);
+            }
           }else{
-            return '-';
+            $($('<span>', {text: '-'})).appendTo(container);
           }
-        }
+        },
       })
     });
 

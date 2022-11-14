@@ -155,6 +155,9 @@ class AttendeeService:
         :param include_dead:
         :return:
         """
+        if not hasattr(current_user, 'attendee'):
+            return []
+
         orderby_list = AttendeeService.orderby_parser(
             orderby_string, meets, current_user
         )

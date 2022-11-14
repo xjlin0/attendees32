@@ -1,48 +1,44 @@
 import logging
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
-from attendees.occasions.models import Meet
+from attendees.users.authorization import RouteGuard
 from attendees.users.authorization import PeekOther
+from attendees.users.services import MenuService
 
 logger = logging.getLogger(__name__)
 
 
-class DatagridUserOrganizationAttendancesListView(LoginRequiredMixin, ListView):
+@method_decorator([login_required], name='dispatch')
+class DatagridUserOrganizationAttendancesListView(RouteGuard, ListView):
     queryset = []
     template_name = 'occasions/datagrid_user_organization_attendances.html'
 
     def get_context_data(self, **kwargs):
         attendee_id = self.kwargs.get("attendee_id")
         current_user = self.request.user
-        user_organization = current_user.organization
         attendee = PeekOther.get_attendee_or_self(current_user, attendee_id)
         context = super().get_context_data(**kwargs)
-
-        available_meets = (
-            Meet.objects.filter(
-                Q(attendings__attendee=attendee),
-                # |
-                # Q(attendings__attendee__in=attendee.related_ones.filter(
-                #     from_attendee__scheduler=True,
-                # ))
-            )
-            .order_by(
-                "display_name",
-            )
-            .distinct()
-        )  # get all user's and user care receivers' joined meets, no time limit on the first load
-
         context.update(
             {
                 "attendee_name": attendee.display_label,
-                "current_organization_slug": user_organization.slug,
-                "available_meets": available_meets,
+                "attendee_id": attendee.id,
+                "user_can_write": MenuService.is_user_allowed_to_write(self.request),
+                "assemblies_endpoint": "/occasions/api/user_assemblies/",
+                "categories_endpoint": "/persons/api/all_categories/",
+                "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
+                "attendances_endpoint": "/occasions/api/organization_meet_character_attendances/",
+                "attendings_endpoint": "/persons/api/organization_meet_character_attendings_for_attendance/",
+                "characters_endpoint": "/occasions/api/organization_characters/",
+                "series_attendances_endpoint": "/occasions/api/series_attendances/",
+                "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
+                "meets_endpoint_by_id": "/occasions/api/user_assembly_meets/",
+                "teams_endpoint": "/occasions/api/organization_meet_teams/",
             }
         )
         return context
@@ -53,16 +49,6 @@ class DatagridUserOrganizationAttendancesListView(LoginRequiredMixin, ListView):
                 pass
 
             else:
-                # chosen_character_slugs = self.request.GET.getlist('characters', [])
-                # context.update({'chosen_character_slugs': chosen_character_slugs})
-                context.update({
-                    "teams_endpoint": "/occasions/api/organization_meet_teams/",
-                    "gatherings_endpoint": "/occasions/api/family_organization_gatherings/",
-                    "characters_endpoint": "/occasions/api/family_organization_characters/",
-                    "attendings_endpoint": "/persons/api/family_organization_attendings/",
-                    "attendances_endpoint": "/occasions/api/family_organization_attendances/",
-                    "categories_endpoint": "/persons/api/all_categories/",
-                })
                 return render(self.request, self.get_template_names()[0], context)
         else:
             time.sleep(2)

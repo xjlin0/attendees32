@@ -26,6 +26,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
     serializer_class = AttendanceEtcSerializer
 
     def list(self, request, *args, **kwargs):
+        attendee = self.request.query_params.get("attendee")
         start = self.request.query_params.get("start")
         finish = self.request.query_params.get("finish")
         gatherings = self.request.query_params.getlist("gatherings[]", [])
@@ -46,6 +47,9 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
                     filters.add((Q(gathering__finish__gte=start)), Q.AND)
                 if finish:
                     filters.add((Q(gathering__start__lte=finish)), Q.AND)
+
+                if attendee:
+                    filters.add((Q(attending__attendee_id=attendee)), Q.AND)
 
                 if gatherings:
                     filters.add(Q(gathering__in=gatherings), Q.AND)
@@ -115,6 +119,7 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
                     finish=self.request.query_params.get("finish"),
                     gatherings=self.request.query_params.getlist("gatherings[]", []),
                     orderbys=orderby_list,
+                    attendee=self.request.query_params.get("attendee"),
                     photo_instead_of_gathering_assembly=self.request.query_params.get("photoInsteadOfGatheringAssembly"),
                     filter=self.request.query_params.get("filter"),
                 )  # The start/finish will filter on Gathering instead of Attendance!!
