@@ -14803,6 +14803,7 @@
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
+          "data_organizer",
           "children_organizer",
           "conference_organizer"
         ],
@@ -14935,6 +14936,7 @@
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
+          "data_organizer",
           "children_organizer",
           "conference_organizer"
         ],
@@ -14978,6 +14980,7 @@
         "preview_url": "/persons/directory_preview/",
         "allowed_groups": [
           "data_counselor",
+          "data_organizer",
           "children_organizer",
           "conference_organizer"
         ],
@@ -15018,6 +15021,7 @@
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
+          "data_organizer",
           "children_organizer",
           "conference_organizer"
         ],
@@ -15303,6 +15307,7 @@
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
+          "data_organizer",
           "children_organizer",
           "children_coworker",
           "conference_organizer"
@@ -15342,6 +15347,7 @@
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
+          "data_organizer",
           "children_organizer",
           "children_coworker",
           "conference_organizer"

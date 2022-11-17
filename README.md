@@ -245,7 +245,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * copy the real data to attendees/scripts/real_data/ and import real data by `docker-compose -f production.yml run django python manage.py load_access_csv attendees/scripts/real_data/tblHousehold20220929m.csv attendees/scripts/real_data/tblPeople20220929m.csv attendees/scripts/real_data/tblAddress20220929m.csv cfcch_chinese_ministry cfcch_crossing_ministry cfcch_children_ministry cfcch_congregation_data d7c8Fd_cfcch_congregation_member d7c8Fd_cfcch_congregation_directory d7c8Fd_cfcch_congregation_baptized d7c8Fd_cfcch_congregation_english_worship_roster d7c8Fd_cfcch_congregation_chinese_worship_roster d7c8Fd_cfcch_congregation_believer d7c8Fd_cfcch_junior_regular_the_rock d7c8Fd_cfcch_junior_regular_little_foot`
 
 * start server by `docker-compose -f production.yml up -d`
-
+* enter Django shell by `docker-compose -f production.yml run django python manage.py shell`
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/<ADMIN_URL>/users/user/
 
 * For keeping the site surviving reboot, add starting of the Django upon system reboot, such as `sudo su user_name sh -c 'sleep 99 && cd ~user_name/repo_dir && docker-compose -f production.yml up -d' >> /tmp/attendee_startup.log` (need work)
