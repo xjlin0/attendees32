@@ -39,6 +39,7 @@ Attendees.dataAttendees = {
     container: '.dataAttendees',
     showTitle: true,
     resizeEnabled: true,
+    hideOnOutsideClick: true,
     title: 'Directory Preview',
     dragEnabled: true,
     position: {
