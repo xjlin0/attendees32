@@ -401,6 +401,7 @@ class Command(BaseCommand):
         baptized_meet = Meet.objects.select_related('major_character').get(slug=baptized_meet_slug)
         baptized_category = Category.objects.filter(type='status', display_name='baptized').first()
         believer_category = Category.objects.filter(type='status', display_name='receive').first()
+        visitor_category = Category.objects.filter(type='status', display_name='visitor').first()
         member_category = Category.objects.filter(type='status', display_name='member').first()
         believer_meet = Meet.objects.select_related('major_character').get(slug=believer_meet_slug)
         successfully_processed_count = 0  # Somehow peoples.line_num incorrect, maybe csv file come with extra new lines.
@@ -608,7 +609,7 @@ class Command(BaseCommand):
                         else:
                             self.stdout.write(f"\nBad data, cannot find the household id: {household_id} for people: {people}, Other columns of this people will still be saved. Continuing. \n")
 
-                    self.update_attendee_worship_roster(attendee, data_assembly, visitor_meet, division_converter)
+                    self.update_attendee_worship_roster(attendee, data_assembly, visitor_meet, division_converter, attendee_content_type, visitor_category)
                 else:
                     self.stdout.write(f'There is no household_id or first/lastname of the people: {people}')
                 successfully_processed_count += 1
@@ -908,7 +909,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def update_attendee_worship_roster(self, attendee, data_assembly, visitor_meet, division_converter):
+    def update_attendee_worship_roster(self, attendee, data_assembly, visitor_meet, division_converter, attendee_content_type, visitor_category):
         pdt = pytz.timezone('America/Los_Angeles')
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         data_registration = Registration.objects.filter(
@@ -921,16 +922,35 @@ class Command(BaseCommand):
             registration=data_registration,
         ).first()
 
+        visitor_start_date = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('visit_since'), default_date=pdt.localize(datetime(1800, 1, 1), is_dst=None))
+
         AttendingMeet.objects.update_or_create(
             meet=visitor_meet,
             attending=data_attending,
             character=visitor_meet.major_character,
             defaults={
                 'character': visitor_meet.major_character,
-                'category_id': -1,
-                'start': visitor_meet.start,
+                'category_id': -1,  # This stop auto create Past via post-save signal
+                'start': visitor_start_date,
                 'finish': visitor_meet.finish,
             },
+        )
+
+        visitor_past_defaults = {
+            'organization': data_assembly.division.organization,
+            'content_type': attendee_content_type,
+            'object_id': attendee.id,
+            'category': visitor_category,
+            'when': visitor_start_date,
+            'display_name': 'Visit since',
+            "is_removed": False,
+        }
+
+        Utility.update_or_create_last(
+            Past,
+            update=False,
+            filters=visitor_past_defaults,
+            defaults={**visitor_past_defaults, "infos": {**Utility.relationship_infos(), "comment": "importer"}},  # stop auto-create
         )
 
         if attendee.infos.get('fixed', {}).get('attendance_count') in ['1', 'TRUE', 1] and attendee.division.id in division_converter:
