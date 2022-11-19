@@ -1,8 +1,9 @@
 from uuid import uuid4
 import pghistory
+import partial_date.fields
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-# from django.contrib.postgres.fields.jsonb import JSONField
+from partial_date import PartialDateField
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 import django.utils.timezone
@@ -32,9 +33,7 @@ class Past(TimeStampedModel, SoftDeletableModel, Utility):
     )
     object_id = models.CharField(max_length=36, null=False, blank=False)
     subject = GenericForeignKey("content_type", "object_id")
-    when = models.DateTimeField(
-        null=True, blank=True, default=Utility.now_with_timezone
-    )
+    when = PartialDateField(blank=True, null=True, default=Utility.today_string, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
     finish = models.DateTimeField(null=True, blank=True)
     category = models.ForeignKey(
         "persons.Category",
@@ -104,7 +103,7 @@ class PastsHistory(pghistory.get_event_model(
     category = models.ForeignKey(db_constraint=False, help_text="subtype: for education it's primary/high/college sub-types etc", on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.category')
     content_type = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='contenttypes.contenttype')
     organization = models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.organization')
-    when = models.DateTimeField(blank=True, default=Utility.now_with_timezone, null=True)
+    when = partial_date.fields.PartialDateField(blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)
     finish = models.DateTimeField(blank=True, null=True)
     display_name = models.CharField(blank=True, max_length=50, null=True)
     pgh_context = models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')

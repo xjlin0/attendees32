@@ -185,6 +185,10 @@ class Utility:
         return datetime.now(timezone.utc) + delta
 
     @staticmethod
+    def today_string(format_string='%Y-%m-%d'):
+        return datetime.now(pytz.timezone(settings.CLIENT_DEFAULT_TIME_ZONE)).strftime(format_string)
+
+    @staticmethod
     def is_truthy(value):
         converter = defaultdict(lambda: False)
         converter['1'] = True
