@@ -922,7 +922,7 @@ class Command(BaseCommand):
             registration=data_registration,
         ).first()
 
-        visitor_start_date = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('visit_since'), default_date=pdt.localize(datetime(1800, 1, 1), is_dst=None))
+        visitor_start_date = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('visit_since'))
 
         AttendingMeet.objects.update_or_create(
             meet=visitor_meet,
@@ -941,8 +941,8 @@ class Command(BaseCommand):
             'content_type': attendee_content_type,
             'object_id': attendee.id,
             'category': visitor_category,
-            'when': visitor_start_date,
-            'display_name': 'Visit since',
+            'when': None if visitor_start_date is None or visitor_start_date.date() == datetime.today().date() else visitor_start_date.strftime('%Y-%m-%d'),
+            'display_name': 'First visit 初訪',
             "is_removed": False,
         }
 
@@ -1006,9 +1006,10 @@ class Command(BaseCommand):
         )
         member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since', '').replace('*', '1'))
         is_member = (True if member_date_text else False) or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('cfcc_member'))
+        baptism_location = attendee.infos.get('progressions', {}).get('baptism_location')
         bap_date_text = None
-        if attendee.infos.get('progressions', {}).get('baptized_since') or attendee.infos.get('progressions', {}).get('baptism_location'):
-            bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since', '').replace('*', '1'), error_context=f' when parsing baptized_since of {attendee.display_label} at line 861')
+        if attendee.infos.get('progressions', {}).get('baptized_since') or baptism_location:
+            bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since', '').replace('*', '1'), error_context=f' when parsing baptized_since of {attendee.display_label} at line 1012')
 
         is_believer = is_member or bap_date_text or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('christian'))
 
@@ -1033,6 +1034,7 @@ class Command(BaseCommand):
                 'content_type': attendee_content_type,
                 'object_id': attendee.id,
                 'category': believer_category,
+                'when': None if bap_date_text is None or bap_date_text.date() == datetime.today().date() else bap_date_text.strftime('%Y-%m-%d'),
                 'display_name': '已信主 Christian',
                 "is_removed": False,
             }
@@ -1045,9 +1047,8 @@ class Command(BaseCommand):
             )
 
         if bap_date_text or is_member:
-            member_date_or_now = Utility.parsedate_or_now(member_date_text, error_context=f' when parsing member_since of {attendee.display_label} at line 899')
-            bap_date_or_now = Utility.parsedate_or_now(bap_date_text, error_context=f' when parsing baptized_since of {attendee.display_label} at line 899')
-            baptized_date_or_now = min(member_date_or_now, bap_date_or_now)
+            member_date_or_now = Utility.parsedate_or_now(member_date_text, error_context=f' when parsing member_since of {attendee.display_label} at line 1050')
+            baptized_date_or_now = min(d for d in [member_date_or_now, bap_date_text] if d is not None)
             bap_date_or_unknown = Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('baptized_since', 'unknown'))
 
             AttendingMeet.objects.update_or_create(
@@ -1064,16 +1065,21 @@ class Command(BaseCommand):
                 },
             )
 
+            baptism_comment = f'[importer] possible date: {bap_date_or_unknown}'  # importer stops auto creation of AttenddingMeet
+
+            if baptism_location:
+                baptism_comment += f' at {baptism_location}'
+
             Past.objects.update_or_create(
                 organization=data_assembly.division.organization,
                 content_type=attendee_content_type,
                 object_id=attendee.id,
                 category=baptized_category,
                 display_name='已受洗 baptized',
-                when=None if baptized_date_or_now.date() == datetime.today().date() else baptized_date_or_now,
+                when=None if bap_date_or_unknown is None or bap_date_or_unknown == 'unknown' else baptized_date_or_now.strftime('%Y-%m-%d'),
                 infos={
                     **Utility.relationship_infos(),
-                    'comment': f'[importer] possible date: {bap_date_or_unknown}',  # importer stops auto creation of AttenddingMeet
+                    'comment': baptism_comment,
                 },
             )
 
@@ -1105,7 +1111,7 @@ class Command(BaseCommand):
                 object_id=attendee.id,
                 category=member_category,
                 display_name='成為會員 become member',
-                when=None if member_since_or_now.date() == datetime.today().date() else member_since_or_now,
+                when=None if member_since_or_now and member_since_or_now.date() == datetime.today().date() else member_since_or_now.strftime('%Y-%m-%d'),
                 infos={
                     **Utility.relationship_infos(),
                     'comment': f'[importer] possible date: {member_since_text}',  # importer stops auto creation of AttenddingMeet
@@ -1181,10 +1187,10 @@ class Command(BaseCommand):
                     object_id=attendee.id,
                     category_id=36,  # "Check" (won't show up in Attendee details)
                     display_name=history_name.title().replace('_', ' '),
-                    when=datetime.strptime(time_string, time_format).astimezone(time_zone) if time_string else None,
+                    when=time_string[0:10] if time_string else None,
                     infos={
                         **Utility.relationship_infos(),
-                        'comment': f'importer',  # importer stops auto creation of AttenddingMeet
+                        'comment': f'importer',  # importer stops auto creation of AttendingMeet
                     },
                 )
 

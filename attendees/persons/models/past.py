@@ -33,7 +33,7 @@ class Past(TimeStampedModel, SoftDeletableModel, Utility):
     )
     object_id = models.CharField(max_length=36, null=False, blank=False)
     subject = GenericForeignKey("content_type", "object_id")
-    when = PartialDateField(blank=True, null=True, default=Utility.today_string, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
+    when = PartialDateField(blank=True, null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')
     finish = models.DateTimeField(null=True, blank=True)
     category = models.ForeignKey(
         "persons.Category",

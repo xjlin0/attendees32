@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('display_order', models.SmallIntegerField(db_index=True, default=30000)),
                 ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.ContentType')),
                 ('object_id', models.CharField(max_length=36)),
-                ('when', PartialDateField(blank=True, null=True, default=Utility.today_string, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')),
+                ('when', PartialDateField(blank=True, null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')),
                 ('finish', models.DateTimeField(blank=True, null=True)),
                 ('display_name', models.CharField(blank=True, max_length=50, null=True)),
                 ('infos', models.JSONField(blank=True, default=Utility.relationship_infos, help_text=('Example: {"show_secret": {"attendee1id": true, "attendee2id": false}}.Please keep {} here even no data',), null=True)),

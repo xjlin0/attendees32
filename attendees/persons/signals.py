@@ -91,7 +91,7 @@ def post_save_handler_for_attendingmeet_to_create_past(sender, **kwargs):
                 )
                 defaults = {
                     "display_name": "activity added",
-                    "when": None,  # AttendingMeet's start may not be actual date
+                    "when": None,  # AttendingMeet's start may not be actual date, ie. accept 30 years ago not remembering the date
                     "infos": {
                         **Utility.relationship_infos(),
                         "comment": "Auto created by AttendingMeet signal",

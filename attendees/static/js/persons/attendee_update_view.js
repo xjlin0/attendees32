@@ -1158,7 +1158,7 @@ Attendees.datagridUpdate = {
           {
             type: 'pattern',
             pattern: /^[0-9\-]+$/,
-            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD',
+            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD, enter year 1800 if year unknown',
           },
         ],
       },
@@ -3231,7 +3231,7 @@ Attendees.datagridUpdate = {
           {
             type: 'pattern',
             pattern: /^[0-9\-]+$/,
-            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD',
+            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD, enter year 1800 if year unknown',
           },
         ],
         editorOptions: {
