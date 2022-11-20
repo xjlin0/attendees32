@@ -1143,18 +1143,24 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'estimated_birthday',
-        helpText: 'YYYY-MM-DD',
+        helpText: 'month & day is optional',
         label: {
           text: 'estimated birthday',
         },
-//        editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-//          placeholder: 'click calendar',
+          placeholder: 'YYYY-MM-DD',
           elementAttr: {
             title: 'Enter your best guess year for the age estimation, please enter year 1800 if year unknown. YYYY-MM or YYYY is also acceptable',
           },
         },
+        validationRules: [
+          {
+            type: 'pattern',
+            pattern: /^[0-9\-]+$/,
+            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD',
+          },
+        ],
       },
       {
         colSpan: 7,
@@ -3218,7 +3224,20 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'when',
-        dataType: 'date',
+        format: 'yyyy-MM-dd',
+        hint: 'enter 1800 if year unknown',
+        placeholder: 'YYYY-MM-DD',
+        validationRules: [
+          {
+            type: 'pattern',
+            pattern: /^[0-9\-]+$/,
+            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD',
+          },
+        ],
+        editorOptions: {
+          title: 'Month & day is optional, enter 1800 if year unknown',
+          showClearButton: true,
+        },
       },
       {
         dataField: 'finish',
@@ -3253,6 +3272,10 @@ Attendees.datagridUpdate = {
             return d.promise();
           },
           update: (key, values) => {
+            if ('when' in values) {
+              const when = values['when'] && values['when'].trim();
+              values['when'] = when ? when.replace(/-+/g, '-').replace(/^-+|-+$/g, '') : null;
+            }
             return $.ajax({
               url: Attendees.datagridUpdate.attendeeAttrs.dataset.pastsEndpoint + key + '/?' + $.param({category__type: args.type}),
               method: 'PATCH',
