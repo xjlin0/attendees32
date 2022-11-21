@@ -1034,7 +1034,7 @@ class Command(BaseCommand):
                 'content_type': attendee_content_type,
                 'object_id': attendee.id,
                 'category': believer_category,
-                'when': None if bap_date_text is None or bap_date_text.date() == datetime.today().date() else bap_date_text.strftime('%Y-%m-%d'),
+                'when': Utility.reformat_partial_date(attendee.infos.get('progressions', {}).get('baptized_since'), error_context=f'parse bap date for attendee: {attendee} at line 1037'),
                 'display_name': '已信主 Christian',
                 "is_removed": False,
             }
@@ -1076,7 +1076,7 @@ class Command(BaseCommand):
                 object_id=attendee.id,
                 category=baptized_category,
                 display_name='已受洗 baptized',
-                when=None if bap_date_or_unknown is None or bap_date_or_unknown == 'unknown' else baptized_date_or_now.strftime('%Y-%m-%d'),
+                when=Utility.reformat_partial_date(attendee.infos.get('progressions', {}).get('baptized_since'), error_context=f'parse bap date for attendee: {attendee} at line 1079'),
                 infos={
                     **Utility.relationship_infos(),
                     'comment': baptism_comment,
@@ -1084,11 +1084,8 @@ class Command(BaseCommand):
             )
 
         if is_member:
-
             member_since_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
-            # member_since_reason = ', member since ' + member_since_text if member_since_text else ''
-
-            member_since_or_now = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('member_since'), error_context=f' when parsing member_since of {attendee.display_label} at line 1065')
+            member_since_or_now = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('member_since'), error_context=f' when parsing member_since of {attendee.display_label} at line 1088')
             member_attending_meet_default = {
                 'attending': data_attending,
                 'meet': member_meet,
@@ -1111,32 +1108,12 @@ class Command(BaseCommand):
                 object_id=attendee.id,
                 category=member_category,
                 display_name='成為會員 become member',
-                when=None if member_since_or_now and member_since_or_now.date() == datetime.today().date() else member_since_or_now.strftime('%Y-%m-%d'),
+                when=Utility.reformat_partial_date(member_since_text, error_context=f'parse member date for attendee: {attendee}'),
                 infos={
                     **Utility.relationship_infos(),
                     'comment': f'[importer] possible date: {member_since_text}',  # importer stops auto creation of AttenddingMeet
                 },
             )
-
-            # Attendance.objects.update_or_create(
-            #     gathering=member_gathering,
-            #     attending=data_attending,
-            #     character=member_meet.major_character,
-            #     team=None,
-            #     defaults={
-            #         'gathering': member_gathering,
-            #         'attending': data_attending,
-            #         'character': member_meet.major_character,
-            #         'team': None,
-            #         # 'category_id': 6,  # Active, membership can be inactive temporarily
-            #         'start': member_attending_meet_default['start'],
-            #         'finish': member_gathering.finish,
-            #         'infos': {
-            #             'access_household_id': access_household_id,
-            #             'created_reason': 'CFCCH member/directory registration from importer',
-            #         },
-            #     }
-            # )
 
         tzname = cr_meet.infos.get('default_time_zone')
         time_zone = pytz.timezone(parse.unquote(tzname))
