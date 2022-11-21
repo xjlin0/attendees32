@@ -1,7 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+import pytz
+from datetime import datetime
 from attendees.occasions.models import Meet
 from attendees.persons.models import (
     Attendee,
@@ -38,7 +39,7 @@ def post_save_handler_for_past_to_create_attendingmeet(sender, **kwargs):
             .get(category_id)
         )
         past_comment = created_past.infos.get("comment", "")
-        if meet_id and "importer" not in (past_comment or ''):  # skip for access importer
+        if meet_id is not None and "importer" not in (past_comment or ''):  # skip for access importer
             meet = Meet.objects.filter(pk=meet_id).first()
             if meet:
                 target_attendee = created_past.subject
@@ -48,8 +49,8 @@ def post_save_handler_for_past_to_create_attendingmeet(sender, **kwargs):
                         "character": meet.major_character,
                         "finish": Utility.forever(),
                     }
-                    if created_past.when:
-                        defaults["start"] = created_past.when
+                    if created_past.when and created_past.when.date.year != 1800:
+                        defaults["start"] = datetime.combine(created_past.when.date, datetime.max.time(), tzinfo=pytz.utc)
                     Utility.update_or_create_last(
                         AttendingMeet,
                         update=False,

@@ -818,7 +818,7 @@ Attendees.datagridUpdate = {
       return {
         itemType: 'button',
         name: 'mainAttendeeFormSubmit',
-        colSpan: 4,
+        colSpan: 3,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {

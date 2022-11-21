@@ -6811,6 +6811,7 @@
           "past_category_to_attendingmeet_meet": {
             "4": 17,
             "5": 16,
+            "19": 0,
             "37": 9
           }
         },
@@ -14640,7 +14641,7 @@
         },
         "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
-          "Past": null,
+          "Past": 19,
           "Gathering": null,
           "Attendance": null
         },
