@@ -326,13 +326,14 @@ class AttendeeService:
         return field_converter.get(query_field, query_field).replace(".", "__")
 
     @staticmethod
-    def add_past(attendee, past_category_id):
+    def add_past(attendee, past_category_id, user_time_zone):
         category = Category.objects.get(pk=past_category_id)
         Past.objects.update_or_create(  # past does not have uniq key by natural
             organization=attendee.division.organization,
             content_type=ContentType.objects.get_for_model(attendee),
             object_id=attendee.id,
             category=category,
+            when=datetime.now(user_time_zone).strftime('%Y-%m-%d'),
             display_name=f'become {category.display_name}',
             infos=Utility.relationship_infos(),
         )

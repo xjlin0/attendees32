@@ -1,5 +1,5 @@
-import time
-
+import time, pytz
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.aggregates.general import JSONBAgg
 from django.db.models import Func, Value
@@ -8,7 +8,7 @@ from django.db.models.functions import Concat, Trim
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import ModelViewSet
-
+from urllib import parse
 from attendees.occasions.models import Gathering, Meet
 from attendees.persons.models import (  # , Relationship
     Attendee,
@@ -135,6 +135,12 @@ class ApiDatagridDataAttendeeViewSet(
         target_attendee = get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
+        tzname = (
+            self.request.COOKIES.get("timezone")
+            or target_attendee.division.organization.infos.get("default_time_zone")
+            or settings.CLIENT_DEFAULT_TIME_ZONE
+        )
+
         if self.request.user.privileged_to_edit(
             target_attendee.id
         ):  # intentionally forbid user delete him/herself
@@ -143,7 +149,7 @@ class ApiDatagridDataAttendeeViewSet(
                 AttendeeService.end_all_activities(instance, self.request.user.attendee_uuid_str())
 
             if self.request.META.get("HTTP_X_ADD_PAST"):
-                AttendeeService.add_past(instance, self.request.META.get("HTTP_X_ADD_PAST"))
+                AttendeeService.add_past(instance, self.request.META.get("HTTP_X_ADD_PAST"), pytz.timezone(parse.unquote(tzname)))
 
         else:
             time.sleep(2)

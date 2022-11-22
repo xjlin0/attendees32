@@ -36,7 +36,7 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
         if user_organization and start and end:
             tzname = (
                 self.request.COOKIES.get("timezone")
-                or user_organization.infos["default_time_zone"]
+                or user_organization.infos.get("default_time_zone")
                 or settings.CLIENT_DEFAULT_TIME_ZONE
             )
             user_time_zone = pytz.timezone(parse.unquote(tzname))
