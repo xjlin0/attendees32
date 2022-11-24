@@ -133,7 +133,7 @@ def post_save_handler_for_attendee_to_folk_and_attending(sender, **kwargs):
 
         AttendeeService.create_or_update_first_folk(
             created_attendee,
-            f"{created_attendee.infos['names']['original']} general relationship",
+            f"{created_attendee.infos['names']['original']} circle",
             Attendee.NON_FAMILY_CATEGORY,
             Attendee.HIDDEN_ROLE,
             False,

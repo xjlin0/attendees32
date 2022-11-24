@@ -52,7 +52,7 @@ class Folk(TimeStampedModel, SoftDeletableModel):
 
     class Meta:
         db_table = "persons_folks"
-        ordering = ("division", "category", "display_order", "-modified")
+        ordering = ("division", "category", "display_order", "display_name", "-modified")
         indexes = [
             GinIndex(
                 fields=["infos"],

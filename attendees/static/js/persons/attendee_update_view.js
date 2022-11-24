@@ -566,7 +566,7 @@ Attendees.datagridUpdate = {
         apiUrlName: 'api_attendee_relationships_view_set',
         colSpan: 24,
         colCount: 24,
-        caption: 'Relationships & Access: double click table cells to edit if editing mode is on. Click away or hit Enter to save',
+        caption: 'Relationships: double click table cells to edit if editing mode is on. Click away or hit Enter to save',
         cssClass: 'h6',
         itemType: "group",
         items: [
@@ -2526,6 +2526,11 @@ Attendees.datagridUpdate = {
   },
 
   getFolkAttendeeDatagridConfig: (categoryId, displayName) => {
+    const columnsToShow = {
+      0: new Set(['folk.id', 'role', 'attendee', 'display_order', 'schedulers', 'emergency_contacts', 'infos.show_secret', 'start', 'finish']),
+      25: new Set(['folk.id', 'role', 'attendee', 'infos.show_secret', 'file', 'start', 'finish']),
+    };
+
     const originalColumns = [
       {
         dataField: 'folk.id',
@@ -2538,7 +2543,20 @@ Attendees.datagridUpdate = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, {categoryId: categoryId}),
+              load: (searchOpts) => {
+                const d = new $.Deferred();
+                const params = {categoryId: categoryId};
+                if (searchOpts["searchValue"]) {
+                  params["searchValue"] = searchOpts["searchValue"];
+                  params["searchExpr"] = searchOpts['searchExpr'];
+                  params["searchOperation"] = searchOpts['searchOperation'];
+                }
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, params)
+                  .done((result) => {
+                    d.resolve(result.data);
+                  });
+                return d.promise();
+              },
               byKey: (key) => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/'),
             }),
           },
@@ -2620,7 +2638,7 @@ Attendees.datagridUpdate = {
         },
       },
       {
-        dataField: "display_order",
+        dataField: 'display_order',
         caption: 'Rank',
         dataType: 'number',
       },
@@ -2639,7 +2657,7 @@ Attendees.datagridUpdate = {
         },
       },
       {
-        dataField: "emergency_contacts",
+        dataField: 'emergency_contacts',
         caption: 'Emergency contact',
         calculateCellValue: (rowData) => {
           const attendeeData = Attendees.datagridUpdate.attendeeFormConfigs && Attendees.datagridUpdate.attendeeFormConfigs.formData;
@@ -2826,7 +2844,7 @@ Attendees.datagridUpdate = {
         Attendees.datagridUpdate.alterSchedulersAndEmergencyContacts(rowData.oldData.attendee, rowData.newData, false); // changing fields are only available upon onRowUpdating, not after
       },
       columns: originalColumns.filter(item => {
-        return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
+        return columnsToShow[categoryId].has(item.dataField) && (item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true);
       }),
     };
   },
