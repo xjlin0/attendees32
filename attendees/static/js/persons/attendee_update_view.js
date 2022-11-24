@@ -3786,7 +3786,7 @@ Attendees.datagridUpdate = {
           dataField: 'attending',
         },
         {
-          dataField: 'assembly',
+          dataField: 'meet__assembly',
         },
         {
           dataField: 'meet',
