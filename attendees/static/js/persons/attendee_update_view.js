@@ -2557,7 +2557,14 @@ Attendees.datagridUpdate = {
                   });
                 return d.promise();
               },
-              byKey: (key) => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/'),
+              byKey: (key) => {
+                const d = new $.Deferred();
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/', {categoryId: categoryId})
+                  .done((result) => {
+                    d.resolve(result);
+                  });
+                return d.promise();
+              },
             }),
           },
         },
