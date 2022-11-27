@@ -2527,8 +2527,8 @@ Attendees.datagridUpdate = {
 
   getFolkAttendeeDatagridConfig: (categoryId, displayName) => {
     const columnsToShow = {
-      0: new Set(Attendees.datagridUpdate.familyFolkAttendeeEditingArgs('family').form.items.map(i => i.dataField)),
-      25: new Set(Attendees.datagridUpdate.otherFolkAttendeeEditingArgs('other').form.items.map(i => i.dataField)),
+      0: new Set(['folk.id', 'role', 'attendee', 'display_order', 'schedulers', 'emergency_contacts', 'infos.show_secret', 'start', 'finish', 'infos.comment']),
+      25: new Set(['folk.id', 'attendee', 'infos.show_secret', 'role', 'start', 'finish', 'infos.comment']),
     };
 
     const originalColumns = [
@@ -2703,6 +2703,11 @@ Attendees.datagridUpdate = {
         },
       },
       {
+        dataField: 'infos.comment',
+        caption: 'Comment',
+        dataType: 'string',
+      },
+      {
         dataField: 'start',
         dataType: 'date',
         editorOptions: {
@@ -2715,11 +2720,6 @@ Attendees.datagridUpdate = {
         editorOptions: {
           dateSerializationFormat: 'yyyy-MM-dd',
         },
-      },
-      {
-        dataField: 'infos.comment',
-        caption: 'Comment',
-        dataType: 'string',
       },
     ];
     return {
@@ -2846,7 +2846,6 @@ Attendees.datagridUpdate = {
       onEditingStart: (e) => {
         const grid = e.component;
         grid.beginUpdate();
-        console.log("hi 2845 (check e.data) here is e: ", e);
         if (e.data && typeof e.data === 'object') {
           // if (e.data.attendee && e.data.attendee === Attendees.datagridUpdate.attendeeId && !['start', 'finish', 'role', 'display_order','infos.show_secret'].includes(e.column.dataField)) {
           //   e.cancel = true;  // no need to label as the scheduler for self, etc.
@@ -2938,7 +2937,7 @@ Attendees.datagridUpdate = {
         helpText: 'end time of the relationship',
       },
       {
-        dataField: 'infos.note',
+        dataField: 'infos.comment',
         helpText: 'special memo',
         editorType: 'dxTextArea',
         colSpan: 2,
@@ -2994,7 +2993,7 @@ Attendees.datagridUpdate = {
         helpText: 'end time of the relationship',
       },
       {
-        dataField: 'infos.note',
+        dataField: 'infos.comment',
         helpText: 'special memo',
         editorType: 'dxTextArea',
         colSpan: 2,

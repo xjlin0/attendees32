@@ -6,6 +6,7 @@ from attendees.persons.serializers import FolkSerializer
 
 class FolkAttendeeSerializer(serializers.ModelSerializer):
     folk = FolkSerializer(many=False)
+    file_path = serializers.SerializerMethodField(required=False, read_only=True)
     # attendee = AttendeeSerializer(many=False)
 
     class Meta:
@@ -14,6 +15,9 @@ class FolkAttendeeSerializer(serializers.ModelSerializer):
         # fields = [f.name for f in model._meta.fields if f.name not in ['is_removed']] + [
         #     'family',
         # ]
+
+    def get_file_path(self, obj):
+        return obj.file.url if obj.file else ""
 
     def create(self, validated_data):
         """
