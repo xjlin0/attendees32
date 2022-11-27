@@ -73,7 +73,7 @@ Attendees.datagridUpdate = {
     Attendees.datagridUpdate.attachContactAddButton();
 
     $(window).keydown((event) => {
-      if (event.keyCode === 13) {
+      if (event.keyCode === 13) {  // Enter key
         DevExpress.ui.notify(
           {
             message: 'Click the "Save Attendee" button to save data',
@@ -103,15 +103,15 @@ Attendees.datagridUpdate = {
     Attendees.datagridUpdate.attendeePhotoFileUploader.option('disabled', !enabled);
 
     if (enabled) {
-      Attendees.datagridUpdate.familyAttendeeDatagrid.clearGrouping();
-      Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.clearGrouping();
+      // Attendees.datagridUpdate.familyAttendeeDatagrid.clearGrouping();
+      // Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.clearGrouping();
       if (Attendees.datagridUpdate.families.length > 0) {
         newAttendeeDxDropDownButton.option('disabled', false);
       }
     } else {
       newAttendeeDxDropDownButton.option('disabled', true);
-      Attendees.datagridUpdate.familyAttendeeDatagrid.columnOption('folk.id', 'groupIndex', 0);
-      Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.columnOption('folk.id', 'groupIndex', 0);
+      // Attendees.datagridUpdate.familyAttendeeDatagrid.columnOption('folk.id', 'groupIndex', 0);
+      // Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.columnOption('folk.id', 'groupIndex', 0);
     }
 
     const cellEditingArgs = {
@@ -123,8 +123,8 @@ Attendees.datagridUpdate = {
         confirmDeleteMessage: 'Are you sure to delete it? Instead, setting the "finish" date is usually enough!',
       },
     };
-    Attendees.datagridUpdate.familyAttendeeDatagrid.option('editing', cellEditingArgs);
-    Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.option('editing', cellEditingArgs);
+    Attendees.datagridUpdate.familyAttendeeDatagrid.option('editing', Attendees.datagridUpdate.familyFolkAttendeeEditingArgs('family'));
+    Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.option('editing', Attendees.datagridUpdate.otherFolkAttendeeEditingArgs('relationship'));
     Attendees.datagridUpdate.educationDatagrid && Attendees.datagridUpdate.educationDatagrid.option('editing', cellEditingArgs);
     Attendees.datagridUpdate.statusDatagrid && Attendees.datagridUpdate.statusDatagrid.option('editing', cellEditingArgs);
     Attendees.datagridUpdate.noteDatagrid && Attendees.datagridUpdate.noteDatagrid.option('editing', {...cellEditingArgs, ...Attendees.datagridUpdate.noteEditingArgs});
@@ -221,7 +221,7 @@ Attendees.datagridUpdate = {
     if (newFamily) {
       Attendees.datagridUpdate.families.push(newFamily);
     } else {
-      Attendees.datagridUpdate.families = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set.map(familyattendee => familyattendee.folk);
+      Attendees.datagridUpdate.families = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set.flatMap(fa => fa.folk.category === 0 ? fa.folk : []);  // 0 is family
     }
     if (Attendees.datagridUpdate.families.length > 0) {
       newAttendeeDxDropDownButton.option('dataSource', Attendees.datagridUpdate.families);
@@ -2527,8 +2527,8 @@ Attendees.datagridUpdate = {
 
   getFolkAttendeeDatagridConfig: (categoryId, displayName) => {
     const columnsToShow = {
-      0: new Set(['folk.id', 'role', 'attendee', 'display_order', 'schedulers', 'emergency_contacts', 'infos.show_secret', 'start', 'finish']),
-      25: new Set(['folk.id', 'role', 'attendee', 'infos.show_secret', 'file', 'start', 'finish']),
+      0: new Set(Attendees.datagridUpdate.familyFolkAttendeeEditingArgs('family').form.items.map(i => i.dataField)),
+      25: new Set(Attendees.datagridUpdate.otherFolkAttendeeEditingArgs('other').form.items.map(i => i.dataField)),
     };
 
     const originalColumns = [
@@ -2596,6 +2596,14 @@ Attendees.datagridUpdate = {
                 return d.promise();
               },
             }),
+            postProcess: (data) => {
+              return data.map((x) => {
+                if (x.id === 38) {  // intentionally disable 38(passenger) to avoid duplicating relationships
+                  x.disabled = true;
+                }
+                return x;
+              });
+            },
           },
         },
       },
@@ -2625,18 +2633,23 @@ Attendees.datagridUpdate = {
             store: new DevExpress.data.CustomStore({
               key: 'id',
               load: (searchOpts) => {
+                const d = new $.Deferred();
                 const params = {take: 30};
                 if (searchOpts.searchValue) {
                   const searchCondition = ['infos__names', searchOpts.searchOperation, searchOpts.searchValue];
                   params.filter = JSON.stringify(searchCondition);
                 }
-                return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint, params);
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint)
+                  .done(result => {
+                    d.resolve(result.data);
+                  });
+                return d.promise();
               },
               byKey: (key) => {
                 const d = new $.Deferred();
                 $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint + key + '/')
                   .done(result => {
-                    d.resolve(result.data);
+                    d.resolve(result);
                   });
                 return d.promise();
               },
@@ -2703,6 +2716,11 @@ Attendees.datagridUpdate = {
           dateSerializationFormat: 'yyyy-MM-dd',
         },
       },
+      {
+        dataField: 'infos.comment',
+        caption: 'Comment',
+        dataType: 'string',
+      },
     ];
     return {
       dataSource: {
@@ -2738,6 +2756,18 @@ Attendees.datagridUpdate = {
                     },
                   }, 'success', 2000);
               },
+              error: (response) => {
+                console.log('Failed to update data of folk attendee, response: ', response);
+                DevExpress.ui.notify(
+                  {
+                    message: 'update folk attendee error, please try again',
+                    position: {
+                      my: 'center',
+                      at: 'center',
+                      of: window,
+                    },
+                  }, 'error', 5000);
+              },
             });
           },
           insert: function (values) {
@@ -2758,6 +2788,18 @@ Attendees.datagridUpdate = {
                       of: window,
                     },
                   }, "success", 2000);
+              },
+              error: (response) => {
+                console.log('Failed to create folk attendee, response: ', response);
+                DevExpress.ui.notify(
+                  {
+                    message: 'creating folk attendee error, please try again',
+                    position: {
+                      my: 'center',
+                      at: 'center',
+                      of: window,
+                    },
+                  }, 'error', 5000);
               },
             });
           },
@@ -2781,15 +2823,7 @@ Attendees.datagridUpdate = {
         }),
       },
       onInitNewRow: (e) => {
-        DevExpress.ui.notify(
-          {
-            message: "Let's create a new family member, click away or hit Enter to save. Hit Esc to quit without save",
-            position: {
-              my: 'center',
-              at: 'center',
-              of: window,
-            },
-          }, 'info', 3000);
+        console.log("hi 2822 here is e: ")
       },
       allowColumnReordering: true,
       columnAutoWidth: true,
@@ -2809,23 +2843,30 @@ Attendees.datagridUpdate = {
       grouping: {
         autoExpandAll: true,
       },
-      editing: {
-        mode: 'cell',
-        allowUpdating: Attendees.utilities.editingEnabled,
-        allowAdding: Attendees.utilities.editingEnabled,
-        allowDeleting: false,
-      },
-      onEditingStart: (info) => {  // forbid editing names or names on top of page will be inconsistent.
-        if (info.data.attendee && info.data.attendee === Attendees.datagridUpdate.attendeeId && !['start', 'finish', 'role', 'display_order','infos.show_secret'].includes(info.column.dataField)) {
-          info.cancel = true;
+      onEditingStart: (e) => {
+        const grid = e.component;
+        grid.beginUpdate();
+        console.log("hi 2845 (check e.data) here is e: ", e);
+        if (e.data && typeof e.data === 'object') {
+          // if (e.data.attendee && e.data.attendee === Attendees.datagridUpdate.attendeeId && !['start', 'finish', 'role', 'display_order','infos.show_secret'].includes(e.column.dataField)) {
+          //   e.cancel = true;  // no need to label as the scheduler for self, etc.
+          // }
+
+          const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Viewing: ';
+          const folkType = e.data['folk']['category'] ? 'circle' : 'family';
+          grid.option('editing.popup.title', `${prefix} relationship in ${e.data['folk']['display_name']} ${folkType}`);
         }
+        // grid.option("columns").forEach((column) => {
+        //   grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
+        // });
+        grid.endUpdate();
       },
-      onRowPrepared: (e) => {
-        if (e.rowType === 'data' && e.data.attendee && e.data.attendee.id === Attendees.datagridUpdate.attendeeId) {
-          e.rowElement.css('color', 'SeaGreen');
-          e.rowElement.attr('title', 'Please scroll up and change main attendee data there!');
-        }
-      },
+      // onRowPrepared: (e) => {
+      //   if (e.rowType === 'data' && e.data.attendee && e.data.attendee.id === Attendees.datagridUpdate.attendeeId) {
+      //     e.rowElement.css('color', 'SeaGreen');
+      //     e.rowElement.attr('title', 'Please scroll up and change main attendee data there!');
+      //   }
+      // },
       onRowInserting: (rowData) => {
         const infos = {show_secret: {}, updating_attendees: {}, comment: null, body: null};
         if (rowData.data.infos && rowData.data.infos.show_secret) {
@@ -2851,12 +2892,137 @@ Attendees.datagridUpdate = {
         Attendees.datagridUpdate.alterSchedulersAndEmergencyContacts(rowData.oldData.attendee, rowData.newData, false); // changing fields are only available upon onRowUpdating, not after
       },
       columns: originalColumns.filter(item => {
-        return columnsToShow[categoryId].has(item.dataField) && (item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true);
+        return columnsToShow[categoryId].has(item.dataField);
       }),
     };
   },
 
-  alterSchedulersAndEmergencyContacts: (attendeeId, newData, deleting) => {
+  familyFolkAttendeeEditingArgs: (displayName) => {
+    const items = [
+      {
+        dataField: 'folk.id',
+        helpText: "In who's relationship?",
+      },
+      {
+        dataField: 'role',
+        helpText: "subject's relation",
+      },
+      {
+        dataField: 'attendee',
+        helpText: 'subject',
+      },
+      {
+        dataField: 'display_order',
+        helpText: 'For sorting display',
+      },
+      {
+        dataField: 'schedulers',
+        apiUrlName: 'api_attendee_folkattendee_scheduler_column',
+        helpText: `Can subject alter ${Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original} schedule?`,
+      },
+      {
+        dataField: 'emergency_contacts',
+        helpText: "Is subject emergency_contacts of main attendee?",
+      },
+      {
+        dataField: 'infos.show_secret',
+        apiUrlName: 'api_attendee_folkattendee_secret_column',
+        helpText: 'Is this secret? Others cannot see if checked',
+      },
+      {
+        dataField: 'start',
+        helpText: 'start time of the relationship',
+      },
+      {
+        dataField: 'finish',
+        helpText: 'end time of the relationship',
+      },
+      {
+        dataField: 'infos.note',
+        helpText: 'special memo',
+        editorType: 'dxTextArea',
+        colSpan: 2,
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
+      },
+    ];
+
+    return {
+      allowUpdating: Attendees.utilities.editingEnabled,
+      allowAdding: Attendees.utilities.editingEnabled,
+      allowDeleting: Attendees.utilities.editingEnabled,
+      texts: {
+        confirmDeleteMessage: 'Are you sure to delete it? Instead, setting the "finish" date is usually enough!',
+      },
+      mode: 'popup',
+        popup: {
+        showTitle: true,
+          title: `editing ${displayName}`,
+      },
+      form: {
+        items: items.filter(item => item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true),
+      },
+    }
+  },
+
+  otherFolkAttendeeEditingArgs: (displayName) => {
+    const items = [
+      {
+        dataField: 'folk.id',
+        helpText: "In who's relationship?",
+      },
+      {
+        dataField: 'attendee',
+        helpText: 'subject',
+      },
+      {
+        dataField: 'infos.show_secret',
+        apiUrlName: 'api_attendee_folkattendee_secret_column',
+        helpText: 'Is this secret? Others cannot see if checked',
+      },
+      {
+        dataField: 'role',
+        helpText: "subject's relation",
+      },
+      {
+        dataField: 'start',
+        helpText: 'start time of the relationship',
+      },
+      {
+        dataField: 'finish',
+        helpText: 'end time of the relationship',
+      },
+      {
+        dataField: 'infos.note',
+        helpText: 'special memo',
+        editorType: 'dxTextArea',
+        colSpan: 2,
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
+      },
+    ];
+
+    return {
+      allowUpdating: Attendees.utilities.editingEnabled,
+      allowAdding: Attendees.utilities.editingEnabled,
+      allowDeleting: Attendees.utilities.editingEnabled,
+      texts: {
+        confirmDeleteMessage: 'Are you sure to delete it? Instead, setting the "finish" date is usually enough!',
+      },
+      mode: 'popup',
+      popup: {
+        showTitle: true,
+        title: `editing ${displayName}`,
+      },
+      form: {
+        items: items.filter(item => item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true),
+      },
+    }
+  },
+
+  alterSchedulersAndEmergencyContacts: (attendeeId, newData, deleting) => {  // updating target attendee from other objects such as folkattendee
     if (newData && ('schedulers' in newData || 'emergency_contacts' in newData) ) {  // user is changing scheduler or emergency_contact
       const attendeeData = Attendees.datagridUpdate.attendeeFormConfigs && Attendees.datagridUpdate.attendeeFormConfigs.formData;
       const previousInfos = Attendees.datagridUpdate.attendeeMainDxForm.option('formData.infos');
