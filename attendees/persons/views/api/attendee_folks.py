@@ -1,7 +1,7 @@
 import time
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Value
+from django.db.models import F, Q, Value
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
@@ -49,9 +49,9 @@ class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
             if folk_id:
                 return Folk.objects.filter(extra_filter)
             else:
-                attendees_folks = attendee.folks.annotate(relative_order=Value(1)).filter(extra_filter)
-                other_folks = Folk.objects.annotate(relative_order=Value(10)).filter(extra_filter)
-                return attendees_folks.union(other_folks).order_by('relative_order')
+                attendees_folks = attendee.folks.annotate(relative_order=Value(1), role_order=F('folkattendee__role')).filter(extra_filter)
+                other_folks = Folk.objects.annotate(relative_order=Value(10), role_order=Value(9999)).filter(extra_filter)
+                return attendees_folks.union(other_folks).order_by('relative_order', 'role_order')
         else:
             return attendee.folks.filter(extra_filter)
 

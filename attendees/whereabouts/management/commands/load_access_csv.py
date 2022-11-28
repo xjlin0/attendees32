@@ -964,8 +964,8 @@ class Command(BaseCommand):
                     'character': meet.major_character,
                     'category_id': -1,  # This stop auto create Past via post-save signal
                     'start': meet.start,
-                    'finish': datetime.now(pdt) + timedelta(365),  # whoever don't attend for a year won't be counted anymore
-                },
+                    'finish': meet.finish,
+                },  # finish can be datetime.now(pdt) + timedelta(365) for whoever not attend for a year won't be counted anymore
             )
 
             if meet.infos.get("gathering_infos", {}).get("generate_attendance"):

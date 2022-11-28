@@ -33,6 +33,7 @@ Attendees.datagridUpdate = {
   },
   // addressId: '', // for sending address data by AJAX
   divisionShowAttendeeInfos: {},
+  firstFolkId: {},
   placePopup: null, // for show/hide popup
   placePopupDxForm: null,  // for getting formData
   placePopupDxFormData: {},  // for storing formData
@@ -2528,7 +2529,7 @@ Attendees.datagridUpdate = {
   getFolkAttendeeDatagridConfig: (categoryId, displayName) => {
     const columnsToShow = {
       0: new Set(['folk.id', 'role', 'attendee', 'display_order', 'schedulers', 'emergency_contacts', 'infos.show_secret', 'start', 'finish', 'infos.comment']),
-      25: new Set(['folk.id', 'attendee', 'infos.show_secret', 'role', 'start', 'finish', 'infos.comment']),
+      25: new Set(['folk.id', 'attendee', 'infos.show_secret', 'role', 'start', 'finish', 'infos.comment', 'file_path']),
     };
 
     const originalColumns = [
@@ -2553,6 +2554,9 @@ Attendees.datagridUpdate = {
                 }
                 $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, params)
                   .done((result) => {
+                    if (result.data && result.data[0]){
+                      Attendees.datagridUpdate.firstFolkId[categoryId] = result.data[0].id;
+                    }
                     d.resolve(result.data);
                   });
                 return d.promise();
@@ -2692,6 +2696,7 @@ Attendees.datagridUpdate = {
       {
         apiUrlName: 'api_attendee_folkattendee_secret_column',
         caption: 'Secret?',
+        dataType: 'boolean',
         dataField: 'infos.show_secret',
         calculateCellValue: (rowData) => {
           if (rowData.infos) {
@@ -2706,6 +2711,20 @@ Attendees.datagridUpdate = {
         dataField: 'infos.comment',
         caption: 'Comment',
         dataType: 'string',
+      },
+      {
+        dataField: 'file_path',
+        caption: 'File',
+        allowFiltering: false,
+        allowSorting: false,
+        allowGrouping: false,
+        allowHeaderFiltering: false,
+        cellTemplate: (container, options) => {
+          if (options.value){
+            $('<a>', {text: 'view', title: 'click to open the file', href: options.value, target: 'blank'})
+              .appendTo(container);
+          }
+        },
       },
       {
         dataField: 'start',
@@ -2727,13 +2746,18 @@ Attendees.datagridUpdate = {
         store: new DevExpress.data.CustomStore({
           key: 'id',
           load: () => {
-            return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {categoryId: categoryId});
+            const d = new $.Deferred();
+            $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {categoryId: categoryId})
+              .done((result) => {
+                d.resolve(result.data);
+              });
+            return d.promise();
           },
           byKey: (key) => {
             const d = new $.Deferred();
             $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {familyattendee_id: key, categoryId: categoryId})
               .done((result) => {
-                d.resolve(result.data);
+                d.resolve(result);
               });
             return d.promise();
           },
@@ -2823,7 +2847,10 @@ Attendees.datagridUpdate = {
         }),
       },
       onInitNewRow: (e) => {
-        console.log("hi 2822 here is e: ")
+        console.log("hi 2849 herre is e: ", e);
+        e.data['folk'] = {id: Attendees.datagridUpdate.firstFolkId[categoryId], category: categoryId};
+        e.data['start'] = new Date();
+        console.log("hi 2852 herre is e: ", e);
       },
       allowColumnReordering: true,
       columnAutoWidth: true,
@@ -2851,7 +2878,7 @@ Attendees.datagridUpdate = {
           //   e.cancel = true;  // no need to label as the scheduler for self, etc.
           // }
 
-          const prefix = Attendees.utilities.editingEnabled ? 'Editing: ' : 'Viewing: ';
+          const prefix = Attendees.utilities.editingEnabled ? (e.data.id ? 'Editing: ' : 'Adding ') : 'Viewing: ';
           const folkType = e.data['folk']['category'] ? 'circle' : 'family';
           grid.option('editing.popup.title', `${prefix} relationship in ${e.data['folk']['display_name']} ${folkType}`);
         }
