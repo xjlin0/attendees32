@@ -31,6 +31,18 @@ Attendees.utilities = {
     }
   },
 
+  merge2dObjects: (newObject, oldObject) => {  // 2d (not 3d) merge obj of obj of from old to new, new values wins if exist
+    if (newObject && typeof(newObject) === 'object' && oldObject && typeof(oldObject) === 'object') {
+      for ([oldKey, oldValue] of Object.entries(oldObject)){
+        if (oldValue && typeof(oldValue) === 'object') {
+          newObject[oldKey] = {...oldObject[oldKey], ...(newObject[oldKey] || {})};
+        } else if (!(oldKey in newObject)) {
+          newObject[oldKey] = oldValue;
+        }
+      }
+    }
+  },  // more than JQuery extend
+
   toggleEditingAndReturnStatus: (event) => {
     if (confirm('Are you sure to toggle editing mode?')){
       Attendees.utilities.editingEnabled = event.currentTarget.checked;
