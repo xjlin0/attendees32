@@ -2873,10 +2873,7 @@ Attendees.datagridUpdate = {
         const grid = e.component;
         grid.beginUpdate();
         if (e.data && typeof e.data === 'object') {
-          // if (e.data.attendee && e.data.attendee === Attendees.datagridUpdate.attendeeId && !['start', 'finish', 'role', 'display_order','infos.show_secret'].includes(e.column.dataField)) {
-          //   e.cancel = true;  // no need to label as the scheduler for self, etc.
-          // }
-
+          Attendees.datagridUpdate.editingSelfInFolkAttendee = e.data.attendee && e.data.attendee === Attendees.datagridUpdate.attendeeId;
           const prefix = Attendees.utilities.editingEnabled ? (e.data.id ? 'Editing: ' : 'Adding ') : 'Viewing: ';
           const folkType = e.data['folk']['category'] ? 'circle' : 'family';
           grid.option('editing.popup.title', `${prefix} relationship in ${e.data['folk']['display_name']} ${folkType}`);
@@ -2885,6 +2882,11 @@ Attendees.datagridUpdate = {
         //   grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
         // });
         grid.endUpdate();
+      },
+      onEditorPreparing: (e) => {
+        if (Attendees.datagridUpdate.editingSelfInFolkAttendee) {
+          e.editorOptions.disabled = !['start', 'finish', 'role', 'display_order', 'infos.comment'].includes(e.name);
+        }
       },
       // onRowPrepared: (e) => {
       //   if (e.rowType === 'data' && e.data.attendee && e.data.attendee.id === Attendees.datagridUpdate.attendeeId) {
