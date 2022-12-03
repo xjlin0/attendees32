@@ -2847,10 +2847,9 @@ Attendees.datagridUpdate = {
         }),
       },
       onInitNewRow: (e) => {
-        console.log("hi 2849 herre is e: ", e);
         e.data['folk'] = {id: Attendees.datagridUpdate.firstFolkId[categoryId], category: categoryId};
         e.data['start'] = new Date();
-        console.log("hi 2852 herre is e: ", e);
+        e.component.option('editing.popup.title', `Add ${displayName} relationship`);
       },
       allowColumnReordering: true,
       columnAutoWidth: true,
@@ -2904,16 +2903,19 @@ Attendees.datagridUpdate = {
       onRowRemoving: (rowData) => {
         Attendees.datagridUpdate.alterSchedulersAndEmergencyContacts(rowData.data.attendee, Attendees.datagridUpdate.attendeeMainDxForm.option('formData.infos'), true);
       },
-      onRowUpdating: (rowData) => { // checking box will arrive one at a time, never multiple fields simultaneously
-        if (rowData.newData.infos && 'show_secret' in rowData.newData.infos) { // value could be intentionally false to prevent someone seeing it
-          const showSecret = rowData.oldData.infos.show_secret;
-          const isItSecretWithCurrentUser = rowData.newData.infos.show_secret;
-          if (isItSecretWithCurrentUser) {
-            showSecret[Attendees.utilities.userAttendeeId] = true;
-          } else {
-            delete showSecret[Attendees.utilities.userAttendeeId];
+      onRowUpdating: (rowData) => { // Todo 20221128: now value arrives at the same time from popup editor!!  Before: checking box will arrive one at a time, never multiple fields simultaneously
+        if (rowData.newData.infos) {
+          if ('show_secret' in rowData.newData.infos) { // value could be intentionally false to prevent someone seeing it
+            const showSecret = rowData.oldData.infos.show_secret || {};
+            const isItSecretWithCurrentUser = rowData.newData.infos.show_secret;
+            if (isItSecretWithCurrentUser) {
+              showSecret[Attendees.utilities.userAttendeeId] = true;
+            } else {
+              delete showSecret[Attendees.utilities.userAttendeeId];
+            }
+            rowData.newData.infos.show_secret = showSecret;
           }
-          rowData.newData.infos.show_secret = showSecret;
+          Attendees.utilities.merge2dObjects(rowData.newData.infos, rowData.oldData.infos);
         } // Todo 20211126 If user save datagrid with showSecret unchecked, don't let it save as false.  Only save false if previously labelled true.
         Attendees.datagridUpdate.alterSchedulersAndEmergencyContacts(rowData.oldData.attendee, rowData.newData, false); // changing fields are only available upon onRowUpdating, not after
       },
@@ -3011,6 +3013,23 @@ Attendees.datagridUpdate = {
         dataField: 'role',
         helpText: "subject's relation",
       },
+      // {
+      //   dataField: 'file',
+      //   editorType: 'dxFileUploader',
+      //   editorOptions: {
+      //     selectButtonText: 'Select file',
+      //     accept: 'image/*',
+      //     multiple: false,
+      //     uploadMode: 'useForm',
+      //     onValueChanged: (e) => {
+      //       console.log("hi 3022 here is e: ", e);
+      //       if (e.value.length) {
+      //         const ttt = (window.URL ? URL : webkitURL).createObjectURL(e.value[0]);
+      //         console.log("hi 3025 here is ttt: ", ttt);
+      //       }
+      //     },
+      //   },
+      // },
       {
         dataField: 'start',
         helpText: 'start time of the relationship',
@@ -3372,7 +3391,7 @@ Attendees.datagridUpdate = {
 
 
   initRelationshipDatagrid: (data, itemElement) => {
-    const relationshipDatagridConfig = Attendees.datagridUpdate.getFolkAttendeeDatagridConfig(25, 'Circle');
+    const relationshipDatagridConfig = Attendees.datagridUpdate.getFolkAttendeeDatagridConfig(25, 'Other');
     const $relationshipDatagrid = $("<div id='relationship-datagrid-container'>").dxDataGrid(relationshipDatagridConfig);
     itemElement.append($relationshipDatagrid);
     Attendees.datagridUpdate.relationshipDatagrid = $relationshipDatagrid.dxDataGrid('instance');

@@ -179,6 +179,17 @@ class Utility:
         }
 
     @staticmethod
+    def add_update_attendee_in_infos(instance, requester_attendee_id):
+        if requester_attendee_id:
+            infos = instance.infos or Utility.relationship_infos()
+            if infos.get('updating_attendees'):
+                infos['updating_attendees'][requester_attendee_id] = Utility.now_with_timezone().isoformat()
+            else:
+                infos['updating_attendees'] = {requester_attendee_id: Utility.now_with_timezone().isoformat()}
+            instance.infos = infos
+            instance.save()
+
+    @staticmethod
     def forever():  # 1923 years from now
         return datetime.now(timezone.utc) + timedelta(weeks=99999)
 
