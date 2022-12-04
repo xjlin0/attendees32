@@ -2763,12 +2763,26 @@ Attendees.datagridUpdate = {
           },
           update: (key, values) => {
             values.category = categoryId;
+            console.log("hi 2766 updating values: ", values);
+            const folkAttendeeFormData = new FormData();
+
+            if (values && typeof(values) === 'object'){
+              for ([formKey, formValue] of Object.entries(values)){
+                if (formKey === 'file') {
+                  folkAttendeeFormData.append(formKey, formValue);
+                } else {
+                  folkAttendeeFormData.append(formKey, JSON.stringify(formValue));
+                }
+              }
+            }
+
             return $.ajax({
               url: Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint + key + '/',
               method: 'PATCH',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify(values),
+              contentType: false,
+              processData: false,
+              cache: false,
+              data: folkAttendeeFormData,
               success: (result) => {
                 DevExpress.ui.notify(
                   {
@@ -2873,27 +2887,18 @@ Attendees.datagridUpdate = {
         const grid = e.component;
         grid.beginUpdate();
         if (e.data && typeof e.data === 'object') {
-          Attendees.datagridUpdate.editingSelfInFolkAttendee = e.data.attendee && e.data.attendee === Attendees.datagridUpdate.attendeeId;
+          Attendees.datagridUpdate.editingSelfInFolkAttendee = e.data.attendee && e.data.attendee === Attendees.datagridUpdate.attendeeId;  // disable editing of some fields in onEditorPreparing()
           const prefix = Attendees.utilities.editingEnabled ? (e.data.id ? 'Editing: ' : 'Adding ') : 'Viewing: ';
           const folkType = e.data['folk']['category'] ? 'circle' : 'family';
           grid.option('editing.popup.title', `${prefix} relationship in ${e.data['folk']['display_name']} ${folkType}`);
         }
-        // grid.option("columns").forEach((column) => {
-        //   grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
-        // });
         grid.endUpdate();
       },
       onEditorPreparing: (e) => {
-        if (Attendees.datagridUpdate.editingSelfInFolkAttendee) {
+        if (Attendees.datagridUpdate.editingSelfInFolkAttendee) {  // set in onEditingStart()
           e.editorOptions.disabled = !['start', 'finish', 'role', 'display_order', 'infos.comment'].includes(e.name);
         }
       },
-      // onRowPrepared: (e) => {
-      //   if (e.rowType === 'data' && e.data.attendee && e.data.attendee.id === Attendees.datagridUpdate.attendeeId) {
-      //     e.rowElement.css('color', 'SeaGreen');
-      //     e.rowElement.attr('title', 'Please scroll up and change main attendee data there!');
-      //   }
-      // },
       onRowInserting: (rowData) => {
         const infos = {show_secret: {}, updating_attendees: {}, comment: null, body: null};
         if (rowData.data.infos && rowData.data.infos.show_secret) {
@@ -3015,23 +3020,6 @@ Attendees.datagridUpdate = {
         dataField: 'role',
         helpText: "subject's relation",
       },
-      // {
-      //   dataField: 'file',
-      //   editorType: 'dxFileUploader',
-      //   editorOptions: {
-      //     selectButtonText: 'Select file',
-      //     accept: 'image/*',
-      //     multiple: false,
-      //     uploadMode: 'useForm',
-      //     onValueChanged: (e) => {
-      //       console.log("hi 3022 here is e: ", e);
-      //       if (e.value.length) {
-      //         const ttt = (window.URL ? URL : webkitURL).createObjectURL(e.value[0]);
-      //         console.log("hi 3025 here is ttt: ", ttt);
-      //       }
-      //     },
-      //   },
-      // },
       {
         dataField: 'start',
         helpText: 'start time of the relationship',
@@ -3039,6 +3027,26 @@ Attendees.datagridUpdate = {
       {
         dataField: 'finish',
         helpText: 'end time of the relationship',
+      },
+      {
+        dataField: 'file',
+        editorType: 'dxFileUploader',
+        editorOptions: {
+          selectButtonText: 'Select file',
+          accept: 'image/*',
+          // allowedFileExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
+          maxFileSize: 4 * 1024 * 1024,  // 4mb
+          multiple: false,
+          uploadMode: 'useForm',
+          // invalidFileExtensionMessage: "hi 3054 invalidFileExtensionMessage",
+          // onValueChanged: (e) => {
+          //   console.log("hi 3056 here is e: ", e);
+          //   if (e.value.length) {
+          //     const ttt = (window.URL ? URL : webkitURL).createObjectURL(e.value[0]);
+          //     console.log("hi 3059 here is ttt: ", ttt);
+          //   }
+          // },
+        },
       },
       {
         dataField: 'infos.comment',
