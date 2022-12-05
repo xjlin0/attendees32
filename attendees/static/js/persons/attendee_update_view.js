@@ -2715,7 +2715,7 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'file_path',
-        // caption: 'File',
+        caption: 'Current File',
         allowFiltering: false,
         allowSorting: false,
         allowGrouping: false,
@@ -2743,46 +2743,21 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: "file",
+        caption: 'New File',
         visible: false,
         allowFiltering: false,
         allowSorting: false,
-        cellTemplate: (container, options) => {
-          console.log("hi 2749 cellTemplate options: ", options);
-          // const imgElement = document.createElement("img");
-          // imgElement.setAttribute("src", backendURL + options.value);
-          // container.append(imgElement);
-        },
         editCellTemplate: (cellElement, cellInfo) => {
-          console.log("hi 2755 editCellTemplate cellInfo: ", cellInfo);
           const fileUploaderElement = document.createElement("div");
           $(fileUploaderElement).dxFileUploader({
             multiple: false,
             accept: "*",
+            allowedFileExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'gif', 'png', 'txt'],
             uploadMode: "useForm",
             onValueChanged: (e) => {
-              console.log("hi 2762 onValueChanged e: ", e);
-              // cellInfo.setValue((window.URL ? URL : webkitURL).createObjectURL(e.value[0]));
               Attendees.datagridUpdate.folkAttendeeFileUploaded = e.value[0];
-              // let reader = new FileReader();
-              // reader.onload = function(args) {
-              //   imageElement.setAttribute('src', args.target.result);
-              // };
-              // reader.readAsDataURL(e.value[0]); // convert to base64 string
+              cellInfo.setValue(Attendees.utilities.uuidv4());  // don't know how to set it dirty to trigger form update
             },
-            // onUploaded: (e) => {
-            //   cellInfo.setValue("images/employees/" + e.request.responseText);
-            //   retryButton.option("visible", false);
-            // },
-            // onUploadError: function(e){
-            //   let xhttp = e.request;
-            //   if(xhttp.status === 400){
-            //     e.message = e.error.responseText;
-            //   }
-            //   if(xhttp.readyState === 4 && xhttp.status === 0) {
-            //     e.message = "Connection refused";
-            //   }
-            //   retryButton.option("visible", true);
-            // }
           }).dxFileUploader("instance");
 
           cellElement.append(fileUploaderElement);
@@ -2811,20 +2786,20 @@ Attendees.datagridUpdate = {
           },
           update: (key, values) => {
             values.category = categoryId;
-            console.log("hi 2814 updating values: ", values);
             const folkAttendeeFormData = new FormData();
 
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
-                // if (formKey === 'file') {
-                //   folkAttendeeFormData.append(formKey, formValue);
-                // } else {
+                if (formKey !== 'file') {
                   folkAttendeeFormData.append(formKey, JSON.stringify(formValue));
-                // }
+                }
               }
             }
             if (Attendees.datagridUpdate.folkAttendeeFileUploaded) {
               folkAttendeeFormData.append('file', Attendees.datagridUpdate.folkAttendeeFileUploaded);
+              if (Attendees.datagridUpdate.folkAttendeeFileUploaded.size > 500 *1024) {  // 500k
+                $('div.dx-loadpanel').dxLoadPanel('show');
+              }
             }
 
             return $.ajax({
@@ -2835,6 +2810,8 @@ Attendees.datagridUpdate = {
               cache: false,
               data: folkAttendeeFormData,
               success: (result) => {
+                $('div.dx-loadpanel').dxLoadPanel('hide');
+                Attendees.datagridUpdate.folkAttendeeFileUploaded = null;
                 DevExpress.ui.notify(
                   {
                     message: 'update success, please reload page if changing family',
@@ -2846,10 +2823,11 @@ Attendees.datagridUpdate = {
                   }, 'success', 2000);
               },
               error: (response) => {
+                $('div.dx-loadpanel').dxLoadPanel('hide');
                 console.log('Failed to update data of folk attendee, response: ', response);
                 DevExpress.ui.notify(
                   {
-                    message: 'update folk attendee error, please try again',
+                    message: 'update folk attendee error, please try again, did someone create the same relationship secretly?',
                     position: {
                       my: 'center',
                       at: 'center',
@@ -2861,13 +2839,31 @@ Attendees.datagridUpdate = {
           },
           insert: function (values) {
             values.category = categoryId;
+            const folkAttendeeFormData = new FormData();
+
+            if (values && typeof(values) === 'object'){
+              for ([formKey, formValue] of Object.entries(values)){
+                if (formKey !== 'file') {
+                  folkAttendeeFormData.append(formKey, JSON.stringify(formValue));
+                }
+              }
+            }
+            if (Attendees.datagridUpdate.folkAttendeeFileUploaded) {
+              folkAttendeeFormData.append('file', Attendees.datagridUpdate.folkAttendeeFileUploaded);
+              if (Attendees.datagridUpdate.folkAttendeeFileUploaded.size > 500 * 1024) {  // 500k
+                $('div.dx-loadpanel').dxLoadPanel('show');
+              }
+            }
             return $.ajax({
               url: Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint,
               method: 'POST',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify(values),
+              contentType: false,
+              processData: false,
+              cache: false,
+              data: folkAttendeeFormData,
               success: (result) => {
+                Attendees.datagridUpdate.folkAttendeeFileUploaded = null;
+                $('div.dx-loadpanel').dxLoadPanel('hide');
                 DevExpress.ui.notify(
                   {
                     message: 'Create success, please find the new attendee in the table',
@@ -2879,10 +2875,11 @@ Attendees.datagridUpdate = {
                   }, "success", 2000);
               },
               error: (response) => {
+                $('div.dx-loadpanel').dxLoadPanel('hide');
                 console.log('Failed to create folk attendee, response: ', response);
                 DevExpress.ui.notify(
                   {
-                    message: 'creating folk attendee error, please try again',
+                    message: 'creating folk attendee error, please try again, did someone create the same relationship secretly?',
                     position: {
                       my: 'center',
                       at: 'center',
@@ -2927,7 +2924,7 @@ Attendees.datagridUpdate = {
         mode: 'select',
       },
       loadPanel: {
-        message: 'Fetching...',
+        message: 'Uploading...',
         enabled: true,
       },
       wordWrapEnabled: false,
@@ -3082,23 +3079,6 @@ Attendees.datagridUpdate = {
       {
         dataField: 'file',
         helpText: 'test in popup ',
-        // editorType: 'dxFileUploader',
-        // editorOptions: {
-        //   selectButtonText: 'Select file',
-        //   accept: 'image/*',
-          // allowedFileExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
-          // maxFileSize: 4 * 1024 * 1024,  // 4mb
-          // multiple: false,
-          // uploadMode: 'useForm',
-          // invalidFileExtensionMessage: "hi 3054 invalidFileExtensionMessage",
-          // onValueChanged: (e) => {
-          //   console.log("hi 3056 here is e: ", e);
-          //   if (e.value.length) {
-          //     const ttt = (window.URL ? URL : webkitURL).createObjectURL(e.value[0]);
-          //     console.log("hi 3059 here is ttt: ", ttt);
-          //   }
-          // },
-        // },
       },
       {
         dataField: 'infos.comment',
