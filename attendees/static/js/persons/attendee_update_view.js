@@ -34,6 +34,7 @@ Attendees.datagridUpdate = {
   // addressId: '', // for sending address data by AJAX
   divisionShowAttendeeInfos: {},
   firstFolkId: {},
+  folkAttendeeFileUploaded: null,
   placePopup: null, // for show/hide popup
   placePopupDxForm: null,  // for getting formData
   placePopupDxFormData: {},  // for storing formData
@@ -2529,7 +2530,7 @@ Attendees.datagridUpdate = {
   getFolkAttendeeDatagridConfig: (categoryId, displayName) => {
     const columnsToShow = {
       0: new Set(['folk.id', 'role', 'attendee', 'display_order', 'schedulers', 'emergency_contacts', 'infos.show_secret', 'start', 'finish', 'infos.comment']),
-      25: new Set(['folk.id', 'attendee', 'infos.show_secret', 'role', 'start', 'finish', 'infos.comment', 'file_path']),
+      25: new Set(['folk.id', 'attendee', 'infos.show_secret', 'role', 'start', 'finish', 'infos.comment', 'file', 'file_path']),
     };
 
     const originalColumns = [
@@ -2714,7 +2715,7 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'file_path',
-        caption: 'File',
+        // caption: 'File',
         allowFiltering: false,
         allowSorting: false,
         allowGrouping: false,
@@ -2740,6 +2741,53 @@ Attendees.datagridUpdate = {
           dateSerializationFormat: 'yyyy-MM-dd',
         },
       },
+      {
+        dataField: "file",
+        visible: false,
+        allowFiltering: false,
+        allowSorting: false,
+        cellTemplate: (container, options) => {
+          console.log("hi 2749 cellTemplate options: ", options);
+          // const imgElement = document.createElement("img");
+          // imgElement.setAttribute("src", backendURL + options.value);
+          // container.append(imgElement);
+        },
+        editCellTemplate: (cellElement, cellInfo) => {
+          console.log("hi 2755 editCellTemplate cellInfo: ", cellInfo);
+          const fileUploaderElement = document.createElement("div");
+          $(fileUploaderElement).dxFileUploader({
+            multiple: false,
+            accept: "*",
+            uploadMode: "useForm",
+            onValueChanged: (e) => {
+              console.log("hi 2762 onValueChanged e: ", e);
+              // cellInfo.setValue((window.URL ? URL : webkitURL).createObjectURL(e.value[0]));
+              Attendees.datagridUpdate.folkAttendeeFileUploaded = e.value[0];
+              // let reader = new FileReader();
+              // reader.onload = function(args) {
+              //   imageElement.setAttribute('src', args.target.result);
+              // };
+              // reader.readAsDataURL(e.value[0]); // convert to base64 string
+            },
+            // onUploaded: (e) => {
+            //   cellInfo.setValue("images/employees/" + e.request.responseText);
+            //   retryButton.option("visible", false);
+            // },
+            // onUploadError: function(e){
+            //   let xhttp = e.request;
+            //   if(xhttp.status === 400){
+            //     e.message = e.error.responseText;
+            //   }
+            //   if(xhttp.readyState === 4 && xhttp.status === 0) {
+            //     e.message = "Connection refused";
+            //   }
+            //   retryButton.option("visible", true);
+            // }
+          }).dxFileUploader("instance");
+
+          cellElement.append(fileUploaderElement);
+        },
+      },
     ];
     return {
       dataSource: {
@@ -2763,17 +2811,20 @@ Attendees.datagridUpdate = {
           },
           update: (key, values) => {
             values.category = categoryId;
-            console.log("hi 2766 updating values: ", values);
+            console.log("hi 2814 updating values: ", values);
             const folkAttendeeFormData = new FormData();
 
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
-                if (formKey === 'file') {
-                  folkAttendeeFormData.append(formKey, formValue);
-                } else {
+                // if (formKey === 'file') {
+                //   folkAttendeeFormData.append(formKey, formValue);
+                // } else {
                   folkAttendeeFormData.append(formKey, JSON.stringify(formValue));
-                }
+                // }
               }
+            }
+            if (Attendees.datagridUpdate.folkAttendeeFileUploaded) {
+              folkAttendeeFormData.append('file', Attendees.datagridUpdate.folkAttendeeFileUploaded);
             }
 
             return $.ajax({
@@ -3030,14 +3081,15 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'file',
-        editorType: 'dxFileUploader',
-        editorOptions: {
-          selectButtonText: 'Select file',
-          accept: 'image/*',
+        helpText: 'test in popup ',
+        // editorType: 'dxFileUploader',
+        // editorOptions: {
+        //   selectButtonText: 'Select file',
+        //   accept: 'image/*',
           // allowedFileExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
-          maxFileSize: 4 * 1024 * 1024,  // 4mb
-          multiple: false,
-          uploadMode: 'useForm',
+          // maxFileSize: 4 * 1024 * 1024,  // 4mb
+          // multiple: false,
+          // uploadMode: 'useForm',
           // invalidFileExtensionMessage: "hi 3054 invalidFileExtensionMessage",
           // onValueChanged: (e) => {
           //   console.log("hi 3056 here is e: ", e);
@@ -3046,7 +3098,7 @@ Attendees.datagridUpdate = {
           //     console.log("hi 3059 here is ttt: ", ttt);
           //   }
           // },
-        },
+        // },
       },
       {
         dataField: 'infos.comment',
