@@ -2726,7 +2726,13 @@ Attendees.datagridUpdate = {
               .appendTo(container);
           }
         },
-      },
+        editCellTemplate: (container, options) => {
+            if (options.value){
+              $('<a>', {class: 'folkattenee-file-link', text: 'view', title: 'click to open the file', href: options.value, target: 'blank'})
+                .appendTo(container);
+            }
+          },
+        },
       {
         dataField: 'start',
         dataType: 'date',
@@ -2743,20 +2749,50 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: "file",
-        caption: 'New File',
+        caption: 'File Operation',
         visible: false,
         allowFiltering: false,
         allowSorting: false,
         editCellTemplate: (cellElement, cellInfo) => {
+          const $clearInput = $('<input>', {
+            id: 'folkattendee-file-clear',
+            disabled: !Attendees.utilities.editingEnabled,
+            type: 'checkbox',
+            name: 'folkattendee-file-clear',
+            class: 'form-check-input',
+          });
+          const $clearInputLabel = $('<label>', {
+            for: 'folkattendee-file-clear',
+            text: 'delete current file',
+            class: 'form-check-label'
+          });
+
+          $clearInput.on('change', (e) => {
+            const $checkbox = $(e.currentTarget);
+            if (!confirm("Are you sure?")) {
+              $checkbox.prop('checked', !$checkbox.is(":checked"));
+            }
+            if ($checkbox.is(":checked")) {
+              Attendees.datagridUpdate.folkAttendeeFileUploader.option('value', []);
+              document.querySelector('a.folkattenee-file-link').remove();
+            }
+          });
+
+          cellElement.append($clearInput);
+          cellElement.append($clearInputLabel);
+
           const fileUploaderElement = document.createElement("div");
-          $(fileUploaderElement).dxFileUploader({
+          Attendees.datagridUpdate.folkAttendeeFileUploader = $(fileUploaderElement).dxFileUploader({
+            // disabled: $clearInput.is(":checked"),
+            selectButtonText: 'Select new file',
             multiple: false,
-            accept: "*",
-            allowedFileExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'gif', 'png', 'txt'],
+            accept: "application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.openxmlformats-officedocument.presentationml.slideshow, text/plain, application/pdf, image/*",
+            minFileSize: 10, // 0.01 KB
+            maxFileSize: 10 * 1024 * 1024, // 10 MB
             uploadMode: "useForm",
             onValueChanged: (e) => {
               Attendees.datagridUpdate.folkAttendeeFileUploaded = e.value[0];
-              cellInfo.setValue(Attendees.utilities.uuidv4());  // don't know how to set it dirty to trigger form update
+              cellInfo.setValue("File attached");  // don't know how to set it dirty to trigger form update
             },
           }).dxFileUploader("instance");
 
@@ -2800,6 +2836,9 @@ Attendees.datagridUpdate = {
               if (Attendees.datagridUpdate.folkAttendeeFileUploaded.size > 500 *1024) {  // 500k
                 $('div.dx-loadpanel').dxLoadPanel('show');
               }
+            }
+            if (document.querySelector('input#folkattendee-file-clear').checked) {
+              folkAttendeeFormData.set('file', '');
             }
 
             return $.ajax({
@@ -2853,6 +2892,9 @@ Attendees.datagridUpdate = {
               if (Attendees.datagridUpdate.folkAttendeeFileUploaded.size > 500 * 1024) {  // 500k
                 $('div.dx-loadpanel').dxLoadPanel('show');
               }
+            }
+            if (document.querySelector('input#folkattendee-file-clear').checked) {
+              folkAttendeeFormData.set('file', '');
             }
             return $.ajax({
               url: Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint,
@@ -3077,8 +3119,8 @@ Attendees.datagridUpdate = {
         helpText: 'end time of the relationship',
       },
       {
-        dataField: 'file',
-        helpText: 'test in popup ',
+        dataField: 'file_path',
+        helpText: '(saved on server)',
       },
       {
         dataField: 'infos.comment',
@@ -3088,6 +3130,10 @@ Attendees.datagridUpdate = {
         editorOptions: {
           autoResizeEnabled: true,
         },
+      },
+      {
+        dataField: 'file',
+        helpText: 'Click to upload a new one',
       },
     ];
 
