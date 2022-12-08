@@ -34,7 +34,6 @@ Attendees.datagridUpdate = {
   // addressId: '', // for sending address data by AJAX
   divisionShowAttendeeInfos: {},
   firstFolkId: {},
-  folkAttendeeFileUploaded: null,
   placePopup: null, // for show/hide popup
   placePopupDxForm: null,  // for getting formData
   placePopupDxFormData: {},  // for storing formData
@@ -2644,7 +2643,7 @@ Attendees.datagridUpdate = {
                   const searchCondition = ['infos__names', searchOpts.searchOperation, searchOpts.searchValue];
                   params.filter = JSON.stringify(searchCondition);
                 }
-                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint)
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint, params)
                   .done(result => {
                     d.resolve(result.data);
                   });
@@ -2791,7 +2790,6 @@ Attendees.datagridUpdate = {
             maxFileSize: 10 * 1024 * 1024, // 10 MB
             uploadMode: "useForm",
             onValueChanged: (e) => {
-              Attendees.datagridUpdate.folkAttendeeFileUploaded = e.value[0];
               cellInfo.setValue("File attached");  // don't know how to set it dirty to trigger form update
             },
           }).dxFileUploader("instance");
@@ -2831,9 +2829,10 @@ Attendees.datagridUpdate = {
                 }
               }
             }
-            if (Attendees.datagridUpdate.folkAttendeeFileUploaded) {
-              folkAttendeeFormData.append('file', Attendees.datagridUpdate.folkAttendeeFileUploaded);
-              if (Attendees.datagridUpdate.folkAttendeeFileUploaded.size > 500 *1024) {  // 500k
+            const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
+            if (fileUploaded) {
+              folkAttendeeFormData.set('file', fileUploaded);
+              if (fileUploaded.size > 1024 * 1024) {  // 1M
                 $('div.dx-loadpanel').dxLoadPanel('show');
               }
             }
@@ -2850,7 +2849,6 @@ Attendees.datagridUpdate = {
               data: folkAttendeeFormData,
               success: (result) => {
                 $('div.dx-loadpanel').dxLoadPanel('hide');
-                Attendees.datagridUpdate.folkAttendeeFileUploaded = null;
                 DevExpress.ui.notify(
                   {
                     message: 'update success, please reload page if changing family',
@@ -2887,9 +2885,10 @@ Attendees.datagridUpdate = {
                 }
               }
             }
-            if (Attendees.datagridUpdate.folkAttendeeFileUploaded) {
-              folkAttendeeFormData.append('file', Attendees.datagridUpdate.folkAttendeeFileUploaded);
-              if (Attendees.datagridUpdate.folkAttendeeFileUploaded.size > 500 * 1024) {  // 500k
+            const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
+            if (fileUploaded) {
+              folkAttendeeFormData.set('file', fileUploaded);
+              if (fileUploaded.size > 1024 * 1024) {  // 1M
                 $('div.dx-loadpanel').dxLoadPanel('show');
               }
             }
@@ -2904,7 +2903,6 @@ Attendees.datagridUpdate = {
               cache: false,
               data: folkAttendeeFormData,
               success: (result) => {
-                Attendees.datagridUpdate.folkAttendeeFileUploaded = null;
                 $('div.dx-loadpanel').dxLoadPanel('hide');
                 DevExpress.ui.notify(
                   {
@@ -3126,7 +3124,6 @@ Attendees.datagridUpdate = {
         dataField: 'infos.comment',
         helpText: 'special memo',
         editorType: 'dxTextArea',
-        colSpan: 2,
         editorOptions: {
           autoResizeEnabled: true,
         },
