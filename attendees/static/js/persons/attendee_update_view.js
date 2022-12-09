@@ -2875,23 +2875,36 @@ Attendees.datagridUpdate = {
             });
           },
           insert: function (values) {
-            values.category = categoryId;
+            values.category = categoryId;  // used in backend for filtering folk
             const folkAttendeeFormData = new FormData();
-
+console.log("hi 2880 here is values: ", values);
+            const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
-                if (formKey !== 'file') {
-                  folkAttendeeFormData.append(formKey, JSON.stringify(formValue));
+                switch(formKey) {
+                  case 'infos':
+                    folkAttendeeFormData.set(formKey, JSON.stringify(formValue));
+                    break;
+                  case 'folk':
+                    console.log("hi 2889 formKey: ", formKey);
+                    console.log("hi 2890 formValue: ", formValue);
+                    folkAttendeeFormData.set("folk", formValue.id);  // somehow folk[id] didn't work
+                    folkAttendeeFormData.set("folk.category", categoryId);
+                    break;
+                  case 'file':
+                    if (fileUploaded) {
+                      folkAttendeeFormData.set('file', fileUploaded);
+                      if (fileUploaded.size > 1024 * 1024) {  // 1M
+                        $('div.dx-loadpanel').dxLoadPanel('show');
+                      }
+                    }
+                    break;
+                  default:
+                    folkAttendeeFormData.append(formKey, formValue);
                 }
               }
             }
-            const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
-            if (fileUploaded) {
-              folkAttendeeFormData.set('file', fileUploaded);
-              if (fileUploaded.size > 1024 * 1024) {  // 1M
-                $('div.dx-loadpanel').dxLoadPanel('show');
-              }
-            }
+            console.log("hi 2907 folkAttendeeFormData: ", [...folkAttendeeFormData]);
             if (document.querySelector('input#folkattendee-file-clear').checked) {
               folkAttendeeFormData.set('file', '');
             }
@@ -2949,8 +2962,10 @@ Attendees.datagridUpdate = {
         }),
       },
       onInitNewRow: (e) => {
+        const todayDate = new Date();  // UTC
+        todayDate.setMinutes(todayDate.getMinutes() - todayDate.getTimezoneOffset());
         e.data['folk'] = {id: Attendees.datagridUpdate.firstFolkId[categoryId], category: categoryId};
-        e.data['start'] = new Date();
+        e.data['start'] = todayDate.toISOString().slice(0,10);
         e.component.option('editing.popup.title', `Add ${displayName} relationship`);
       },
       allowColumnReordering: true,
@@ -2988,6 +3003,7 @@ Attendees.datagridUpdate = {
         }
       },
       onRowInserting: (rowData) => {
+        console.log("hi 3005 here is new data rowData: ", rowData);
         const infos = {show_secret: {}, updating_attendees: {}, comment: null, body: null};
         if (rowData.data.infos && rowData.data.infos.show_secret) {
           infos.show_secret[Attendees.utilities.userAttendeeId] = true;

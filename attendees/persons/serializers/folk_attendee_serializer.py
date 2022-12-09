@@ -27,10 +27,11 @@ class FolkAttendeeSerializer(serializers.ModelSerializer):
         new_folk = Folk.objects.filter(
             pk=self._kwargs.get("data", {}).get("folk", {}).get("id")
         ).first()
+        print("hi 30 here is new_folk: ", new_folk)
         # new_attendee_id = validated_data.get('attendee', {})
         if new_folk:
             validated_data["folk"] = new_folk
-        # print("hi 27 here is validated_data: ", validated_data)
+        print("hi 34 here is validated_data: ", validated_data)
         # if new_attendee_id:
         #     # attendee, attendee_created = Attendee.objects.update_or_create(
         #     #     id=new_attendee_data.get('id'),
