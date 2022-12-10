@@ -2720,16 +2720,16 @@ Attendees.datagridUpdate = {
         allowGrouping: false,
         allowHeaderFiltering: false,
         cellTemplate: (container, options) => {
-          if (options.value){
-            $('<a>', {text: 'view', title: 'click to open the file', href: options.value, target: 'blank'})
+          if (options.value){  // don't add class folkattenee-file-link as duplicates interfere with flipping of folkattendee-file-clear check box
+            $('<a>', {text: 'Download', title: 'click to download a copy', href: options.value, target: 'blank'})
               .appendTo(container);
           }
         },
         editCellTemplate: (container, options) => {
-            if (options.value){
-              $('<a>', {class: 'folkattenee-file-link', text: 'view', title: 'click to open the file', href: options.value, target: 'blank'})
-                .appendTo(container);
-            }
+          if (options.value){
+            $('<a>', {class: 'folkattenee-file-link', text: 'Download', title: 'click to download a copy', href: options.value, target: 'blank'})
+              .appendTo(container);
+          }
           },
         },
       {
@@ -2765,7 +2765,7 @@ Attendees.datagridUpdate = {
             text: 'delete current file',
             class: 'form-check-label'
           });
-
+          const savedFileALink = document.querySelector('a.folkattenee-file-link');
           $clearInput.on('change', (e) => {
             const $checkbox = $(e.currentTarget);
             if (!confirm("Are you sure?")) {
@@ -2773,7 +2773,11 @@ Attendees.datagridUpdate = {
             }
             if ($checkbox.is(":checked")) {
               Attendees.datagridUpdate.folkAttendeeFileUploader.option('value', []);
-              document.querySelector('a.folkattenee-file-link').remove();
+              Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', true);
+              savedFileALink.textContent = 'will be deleted';
+            } else {
+              Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', false);
+              savedFileALink.textContent = 'Download';
             }
           });
 
@@ -3001,7 +3005,7 @@ Attendees.datagridUpdate = {
         e.component.refresh();  // for attendee names to show instead of attendee id.
       },
       onRowInserting: (rowData) => {
-        console.log("hi 3004 here is new data rowData: ", rowData);
+        console.log("hi 3008 here is new data rowData: ", rowData);
         const infos = {show_secret: {}, updating_attendees: {}, comment: null, body: null};
         if (rowData.data.infos && rowData.data.infos.show_secret) {
           infos.show_secret[Attendees.utilities.userAttendeeId] = true;
