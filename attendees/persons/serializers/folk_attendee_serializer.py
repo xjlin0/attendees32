@@ -25,21 +25,11 @@ class FolkAttendeeSerializer(serializers.ModelSerializer):
         """
         folkattendee_id = self._kwargs.get("data", {}).get("id")
         new_folk = Folk.objects.filter(
-            pk=self._kwargs.get("data", {}).get("folk", {}).get("id")
+            pk=self._kwargs.get("data", {}).get("folk", {})
         ).first()
-        print("hi 30 here is new_folk: ", new_folk)
-        # new_attendee_id = validated_data.get('attendee', {})
         if new_folk:
             validated_data["folk"] = new_folk
-        print("hi 34 here is validated_data: ", validated_data)
-        # if new_attendee_id:
-        #     # attendee, attendee_created = Attendee.objects.update_or_create(
-        #     #     id=new_attendee_data.get('id'),
-        #     #     defaults=new_attendee_data,
-        #     # )
-        #     attendee = Attendee.objects.get(pk=new_attendee_id)
-        #     validated_data['attendee'] = attendee
-        # Todo: 20210517  create relationships among families such as siblings, etc
+
         obj, created = FolkAttendee.objects.update_or_create(
             id=folkattendee_id,
             defaults=validated_data,

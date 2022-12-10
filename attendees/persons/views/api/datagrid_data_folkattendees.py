@@ -72,7 +72,6 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
         AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance.attendee], directory_meet_id, print_directory)
 
     def perform_create(self, serializer):
-        print("hi 75 here is serializer.validated_data", serializer.validated_data)
         instance = serializer.save()
         Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
         print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
