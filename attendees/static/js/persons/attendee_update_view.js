@@ -2885,7 +2885,7 @@ Attendees.datagridUpdate = {
                     folkAttendeeFormData.set(formKey, JSON.stringify(formValue));
                     break;
                   case 'folk':
-                    folkAttendeeFormData.set("folk", formValue.id);  // this work! somehow folk[id] didn't work
+                    folkAttendeeFormData.set("folk", formValue.id);  // this work with below line! somehow folk[id] didn't work
                     folkAttendeeFormData.set("folk.category", categoryId);  // somehow needed with the above "folk" in formdata but will generate 'folk.category': ['25'],
                     break;
                   case 'file':
@@ -2913,6 +2913,7 @@ Attendees.datagridUpdate = {
               data: folkAttendeeFormData,
               success: (result) => {
                 $('div.dx-loadpanel').dxLoadPanel('hide');
+                console.log("2916 result: ", result);
                 DevExpress.ui.notify(
                   {
                     message: 'Create success, please find the new attendee in the table',
@@ -2958,10 +2959,8 @@ Attendees.datagridUpdate = {
         }),
       },
       onInitNewRow: (e) => {
-        const todayDate = new Date();  // UTC
-        todayDate.setMinutes(todayDate.getMinutes() - todayDate.getTimezoneOffset());
         e.data['folk'] = {id: Attendees.datagridUpdate.firstFolkId[categoryId], category: categoryId};
-        e.data['start'] = todayDate.toISOString().slice(0,10);
+        e.data['start'] = new Date().toLocaleDateString('sv');  // somehow new Date().toDateString() is UTC, Sweden locale "sv" uses the ISO 8601 format
         e.component.option('editing.popup.title', `Add ${displayName} relationship`);
       },
       allowColumnReordering: true,
@@ -2998,8 +2997,11 @@ Attendees.datagridUpdate = {
           e.editorOptions.disabled = !['start', 'finish', 'role', 'display_order', 'infos.comment'].includes(e.name);
         }
       },
+      onRowInserted: (e) => {
+        e.component.refresh();  // for attendee names to show instead of attendee id.
+      },
       onRowInserting: (rowData) => {
-        console.log("hi 3005 here is new data rowData: ", rowData);
+        console.log("hi 3004 here is new data rowData: ", rowData);
         const infos = {show_secret: {}, updating_attendees: {}, comment: null, body: null};
         if (rowData.data.infos && rowData.data.infos.show_secret) {
           infos.show_secret[Attendees.utilities.userAttendeeId] = true;
