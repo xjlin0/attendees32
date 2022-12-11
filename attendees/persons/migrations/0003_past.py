@@ -3,7 +3,7 @@
 from attendees.persons.models import Utility
 import django.contrib.postgres.indexes
 from django.db import migrations, models
-import pgtrigger.compiler
+from partial_date.fields import PartialDateField
 import pgtrigger.migrations
 import django.utils.timezone
 import model_utils.fields
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('display_order', models.SmallIntegerField(db_index=True, default=30000)),
                 ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.ContentType')),
                 ('object_id', models.CharField(max_length=36)),
-                ('when', models.DateTimeField(blank=True, default=Utility.now_with_timezone, null=True)),
+                ('when', PartialDateField(blank=True, null=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known')),
                 ('finish', models.DateTimeField(blank=True, null=True)),
                 ('display_name', models.CharField(blank=True, max_length=50, null=True)),
                 ('infos', models.JSONField(blank=True, default=Utility.relationship_infos, help_text=('Example: {"show_secret": {"attendee1id": true, "attendee2id": false}}.Please keep {} here even no data',), null=True)),
@@ -65,7 +65,7 @@ class Migration(migrations.Migration):
                 ('category', models.ForeignKey(db_constraint=False, help_text="subtype: for education it's primary/high/college sub-types etc", on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='persons.category')),
                 ('content_type', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='contenttypes.contenttype')),
                 ('organization', models.ForeignKey(db_constraint=False, on_delete=models.deletion.DO_NOTHING, related_name='+', related_query_name='+', to='whereabouts.organization')),
-                ('when', models.DateTimeField(blank=True, default=Utility.now_with_timezone, null=True)),
+                ('when', PartialDateField(blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)),
                 ('finish', models.DateTimeField(blank=True, null=True)),
                 ('display_name', models.CharField(blank=True, max_length=50, null=True)),
                 ('pgh_context', models.ForeignKey(db_constraint=False, null=True, on_delete=models.deletion.DO_NOTHING, related_name='+', to='pghistory.context')),

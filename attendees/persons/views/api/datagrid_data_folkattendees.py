@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 
-from attendees.persons.models import Attendee, FolkAttendee
+from attendees.persons.models import Attendee, FolkAttendee, Utility
 from attendees.persons.serializers import FolkAttendeeSerializer
 from attendees.persons.services import AttendingMeetService
 from attendees.users.authorization.route_guard import SpyGuard
@@ -66,15 +66,21 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
 
     def perform_update(self, serializer):  # Todo 20220706 respond for joining and families count
         instance = serializer.save()
+        Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
         print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
         AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance.attendee], directory_meet_id, print_directory)
 
     def perform_create(self, serializer):
         instance = serializer.save()
+        Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
         print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
         AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance.attendee], directory_meet_id, print_directory)
+
+    def perform_destroy(self, instance):  # Todo 20221203 should it flip_attendingmeet_by_existing_attending?
+        Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
+        instance.delete()
 
 
 api_datagrid_data_folkattendees_viewset = ApiDatagridDataFolkAttendeesViewsSet

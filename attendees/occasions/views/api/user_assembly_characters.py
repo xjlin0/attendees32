@@ -35,11 +35,13 @@ class ApiUserAssemblyCharactersViewSet(viewsets.ModelViewSet):
         )
 
         if current_user_organization:
-            assemblies = self.request.query_params.getlist("assemblies[]")
             return CharacterService.by_organization_assemblies(
                 organization=current_user_organization,
-                assemblies=assemblies,
+                assemblies=self.request.query_params.getlist("assemblies[]"),
                 target_attendee=target_attendee,
+                search_value=self.request.query_params.get("searchValue"),
+                search_operation=self.request.query_params.get("searchOperation"),
+                search_column=self.request.query_params.get("searchExpr")
             )
 
         else:

@@ -1,12 +1,13 @@
 import time
 
 from django.contrib.auth.decorators import login_required
+from django.db.models import F, Q, Value
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 
-from attendees.persons.models import Attendee, Category
+from attendees.persons.models import Attendee, Category, Folk
 from attendees.persons.serializers import FolkSerializer
 from attendees.persons.services import FolkService, AttendingMeetService
 from attendees.users.authorization.route_guard import SpyGuard
@@ -29,10 +30,30 @@ class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
             Category,
             pk=self.request.query_params.get("categoryId", Attendee.FAMILY_CATEGORY),
         )
+        current_user = self.request.user
+        search_value = self.request.query_params.get("searchValue")
+        search_expression = self.request.query_params.get("searchExpr")
+        search_operation = self.request.query_params.get("searchOperation")
+        extra_filter = Q(category=category)
+        extra_filter.add(Q(division__organization=current_user.organization), Q.AND)
+
+        if search_value and search_expression == 'display_name' and search_operation == 'contains':
+            extra_filter.add((Q(attendees__infos__icontains=search_value)
+                              |
+                              Q(display_name__icontains=search_value)), Q.AND)
+
         if folk_id:
-            return attendee.folks.filter(pk=folk_id, category=category)
+            extra_filter.add(Q(pk=folk_id), Q.AND)
+
+        if current_user.privileged_to_edit(attendee.id):
+            if folk_id:
+                return Folk.objects.filter(extra_filter)
+            else:
+                attendees_folks = attendee.folks.annotate(relative_order=Value(1), role_order=F('folkattendee__role')).filter(extra_filter)
+                other_folks = Folk.objects.annotate(relative_order=Value(10), role_order=Value(9999)).filter(extra_filter)
+                return attendees_folks.union(other_folks).order_by('relative_order', 'role_order')
         else:
-            return attendee.folks.filter(category=category).order_by("display_order")
+            return attendee.folks.filter(extra_filter)
 
     def perform_update(self, serializer):  # Todo 20220706 respond for joining and families count
         instance = serializer.save()

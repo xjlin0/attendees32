@@ -1,6 +1,8 @@
 import re
 import sys
 import base64
+
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from datetime import datetime, timedelta, timezone
 from itertools import groupby
@@ -177,12 +179,27 @@ class Utility:
         }
 
     @staticmethod
+    def add_update_attendee_in_infos(instance, requester_attendee_id):
+        if requester_attendee_id:
+            infos = instance.infos or Utility.relationship_infos()
+            if infos.get('updating_attendees'):
+                infos['updating_attendees'][requester_attendee_id] = Utility.now_with_timezone().isoformat()
+            else:
+                infos['updating_attendees'] = {requester_attendee_id: Utility.now_with_timezone().isoformat()}
+            instance.infos = infos
+            instance.save()
+
+    @staticmethod
     def forever():  # 1923 years from now
         return datetime.now(timezone.utc) + timedelta(weeks=99999)
 
     @staticmethod
     def now_with_timezone(delta=timedelta(weeks=0)):  # 1923 years from now
         return datetime.now(timezone.utc) + delta
+
+    @staticmethod
+    def today_string(format_string='%Y-%m-%d'):
+        return datetime.now(pytz.timezone(settings.CLIENT_DEFAULT_TIME_ZONE)).strftime(format_string)
 
     @staticmethod
     def is_truthy(value):
@@ -205,6 +222,39 @@ class Utility:
                 return default_when_none
             else:
                 return string.strip()
+
+    @staticmethod
+    def reformat_partial_date(
+        date_text,
+        error_context='',
+    ):
+        parsed_date = None
+        if date_text and isinstance(date_text, str):
+            date_text = date_text.strip().strip("'").replace('*', '1').strip("/").replace('//', '/')
+            if date_text.count("/") == 2:
+                month, day, year = date_text.split('/')
+                year = year if len(year) > 3 else (f'20{year}' if int(year) < 23 else f'19{year}')
+                try:
+                    PartialDate.parseDate(f'{year}-{month}-{day}')
+                    parsed_date = f'{year}-{month}-{day}'
+                except ValidationError:
+                    print("\nCannot parse date for date_text: ", date_text, error_context)
+            if date_text.count("/") == 1:
+                month, year = date_text.split('/')
+                year = year if len(year) > 3 else (f'20{year}' if int(year) < 23 else f'19{year}')
+                try:
+                    PartialDate.parseDate(f'{year}-{month}')
+                    parsed_date = f'{year}-{month}'
+                except ValidationError:
+                    print("\nCannot parse date for date_text: ", date_text, error_context)
+            if date_text.count("/") < 1:
+                year = date_text if len(date_text) > 3 else (f'20{date_text}' if int(date_text) < 23 else f'19{date_text}')
+                try:
+                    PartialDate.parseDate(year)
+                    parsed_date = year
+                except ValidationError:
+                    print("\nCannot parse date for date_text: ", date_text, error_context)
+        return parsed_date
 
     @staticmethod
     def parsedate_or_now(
@@ -241,7 +291,7 @@ class Utility:
         }
 
         if isinstance(original_value, str):
-            value = original_value.strip().strip("'").replace('//', '/') if strip_first else original_value.replace('//', '/')
+            value = original_value.strip().strip("'").replace('*', '1').replace('//', '/') if strip_first else original_value.replace('//', '/')
             if value.upper() in boolean_converter:
                 return boolean_converter.get(value.upper())
             else:

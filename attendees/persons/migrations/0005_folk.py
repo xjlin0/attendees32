@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'persons_folks',
-                'ordering': ('division', 'category', 'display_order', '-modified'),
+                'ordering': ('division', 'category', 'display_order', 'display_name', '-modified'),
             },
         ),
         migrations.RunSQL(Utility.default_sql('persons_folks')),

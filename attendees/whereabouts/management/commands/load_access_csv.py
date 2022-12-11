@@ -401,6 +401,7 @@ class Command(BaseCommand):
         baptized_meet = Meet.objects.select_related('major_character').get(slug=baptized_meet_slug)
         baptized_category = Category.objects.filter(type='status', display_name='baptized').first()
         believer_category = Category.objects.filter(type='status', display_name='receive').first()
+        visitor_category = Category.objects.filter(type='status', display_name='visitor').first()
         member_category = Category.objects.filter(type='status', display_name='member').first()
         believer_meet = Meet.objects.select_related('major_character').get(slug=believer_meet_slug)
         successfully_processed_count = 0  # Somehow peoples.line_num incorrect, maybe csv file come with extra new lines.
@@ -608,7 +609,7 @@ class Command(BaseCommand):
                         else:
                             self.stdout.write(f"\nBad data, cannot find the household id: {household_id} for people: {people}, Other columns of this people will still be saved. Continuing. \n")
 
-                    self.update_attendee_worship_roster(attendee, data_assembly, visitor_meet, division_converter)
+                    self.update_attendee_worship_roster(attendee, data_assembly, visitor_meet, division_converter, attendee_content_type, visitor_category)
                 else:
                     self.stdout.write(f'There is no household_id or first/lastname of the people: {people}')
                 successfully_processed_count += 1
@@ -908,7 +909,7 @@ class Command(BaseCommand):
         self.stdout.write('done!')
         return successfully_processed_count
 
-    def update_attendee_worship_roster(self, attendee, data_assembly, visitor_meet, division_converter):
+    def update_attendee_worship_roster(self, attendee, data_assembly, visitor_meet, division_converter, attendee_content_type, visitor_category):
         pdt = pytz.timezone('America/Los_Angeles')
         access_household_id = attendee.infos.get('fixed', {}).get('access_people_household_id')
         data_registration = Registration.objects.filter(
@@ -921,16 +922,35 @@ class Command(BaseCommand):
             registration=data_registration,
         ).first()
 
+        visitor_start_date = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('visit_since'))
+
         AttendingMeet.objects.update_or_create(
             meet=visitor_meet,
             attending=data_attending,
             character=visitor_meet.major_character,
             defaults={
                 'character': visitor_meet.major_character,
-                'category_id': -1,
-                'start': visitor_meet.start,
+                'category_id': -1,  # This stop auto create Past via post-save signal
+                'start': visitor_start_date,
                 'finish': visitor_meet.finish,
             },
+        )
+
+        visitor_past_defaults = {
+            'organization': data_assembly.division.organization,
+            'content_type': attendee_content_type,
+            'object_id': attendee.id,
+            'category': visitor_category,
+            'when': None if visitor_start_date is None or visitor_start_date.date() == datetime.today().date() else visitor_start_date.strftime('%Y-%m-%d'),
+            'display_name': 'First visit 初訪',
+            "is_removed": False,
+        }
+
+        Utility.update_or_create_last(
+            Past,
+            update=False,
+            filters=visitor_past_defaults,
+            defaults={**visitor_past_defaults, "infos": {**Utility.relationship_infos(), "comment": "importer"}},  # stop auto-create
         )
 
         if attendee.infos.get('fixed', {}).get('attendance_count') in ['1', 'TRUE', 1] and attendee.division.id in division_converter:
@@ -944,8 +964,8 @@ class Command(BaseCommand):
                     'character': meet.major_character,
                     'category_id': -1,  # This stop auto create Past via post-save signal
                     'start': meet.start,
-                    'finish': datetime.now(pdt) + timedelta(365),  # whoever don't attend for a year won't be counted anymore
-                },
+                    'finish': meet.finish,
+                },  # finish can be datetime.now(pdt) + timedelta(365) for whoever not attend for a year won't be counted anymore
             )
 
             if meet.infos.get("gathering_infos", {}).get("generate_attendance"):
@@ -986,9 +1006,10 @@ class Command(BaseCommand):
         )
         member_date_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since', '').replace('*', '1'))
         is_member = (True if member_date_text else False) or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('cfcc_member'))
+        baptism_location = attendee.infos.get('progressions', {}).get('baptism_location')
         bap_date_text = None
-        if attendee.infos.get('progressions', {}).get('baptized_since') or attendee.infos.get('progressions', {}).get('baptism_location'):
-            bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since', '').replace('*', '1'), error_context=f' when parsing baptized_since of {attendee.display_label} at line 861')
+        if attendee.infos.get('progressions', {}).get('baptized_since') or baptism_location:
+            bap_date_text = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('baptized_since', '').replace('*', '1'), error_context=f' when parsing baptized_since of {attendee.display_label} at line 1012')
 
         is_believer = is_member or bap_date_text or Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('christian'))
 
@@ -1013,6 +1034,7 @@ class Command(BaseCommand):
                 'content_type': attendee_content_type,
                 'object_id': attendee.id,
                 'category': believer_category,
+                'when': Utility.reformat_partial_date(attendee.infos.get('progressions', {}).get('baptized_since'), error_context=f'parse bap date for attendee: {attendee} at line 1037'),
                 'display_name': '已信主 Christian',
                 "is_removed": False,
             }
@@ -1025,9 +1047,8 @@ class Command(BaseCommand):
             )
 
         if bap_date_text or is_member:
-            member_date_or_now = Utility.parsedate_or_now(member_date_text, error_context=f' when parsing member_since of {attendee.display_label} at line 899')
-            bap_date_or_now = Utility.parsedate_or_now(bap_date_text, error_context=f' when parsing baptized_since of {attendee.display_label} at line 899')
-            baptized_date_or_now = min(member_date_or_now, bap_date_or_now)
+            member_date_or_now = Utility.parsedate_or_now(member_date_text, error_context=f' when parsing member_since of {attendee.display_label} at line 1050')
+            baptized_date_or_now = min(d for d in [member_date_or_now, bap_date_text] if d is not None)
             bap_date_or_unknown = Utility.boolean_or_datetext_or_original(attendee.infos.get('progressions', {}).get('baptized_since', 'unknown'))
 
             AttendingMeet.objects.update_or_create(
@@ -1044,25 +1065,27 @@ class Command(BaseCommand):
                 },
             )
 
+            baptism_comment = f'[importer] possible date: {bap_date_or_unknown}'  # importer stops auto creation of AttenddingMeet
+
+            if baptism_location:
+                baptism_comment += f' at {baptism_location}'
+
             Past.objects.update_or_create(
                 organization=data_assembly.division.organization,
                 content_type=attendee_content_type,
                 object_id=attendee.id,
                 category=baptized_category,
                 display_name='已受洗 baptized',
-                when=None if baptized_date_or_now.date() == datetime.today().date() else baptized_date_or_now,
+                when=Utility.reformat_partial_date(attendee.infos.get('progressions', {}).get('baptized_since'), error_context=f'parse bap date for attendee: {attendee} at line 1079'),
                 infos={
                     **Utility.relationship_infos(),
-                    'comment': f'[importer] possible date: {bap_date_or_unknown}',  # importer stops auto creation of AttenddingMeet
+                    'comment': baptism_comment,
                 },
             )
 
         if is_member:
-
             member_since_text = Utility.presence(attendee.infos.get('progressions', {}).get('member_since'))
-            # member_since_reason = ', member since ' + member_since_text if member_since_text else ''
-
-            member_since_or_now = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('member_since'), error_context=f' when parsing member_since of {attendee.display_label} at line 1065')
+            member_since_or_now = Utility.parsedate_or_now(attendee.infos.get('progressions', {}).get('member_since'), error_context=f' when parsing member_since of {attendee.display_label} at line 1088')
             member_attending_meet_default = {
                 'attending': data_attending,
                 'meet': member_meet,
@@ -1085,32 +1108,12 @@ class Command(BaseCommand):
                 object_id=attendee.id,
                 category=member_category,
                 display_name='成為會員 become member',
-                when=None if member_since_or_now.date() == datetime.today().date() else member_since_or_now,
+                when=Utility.reformat_partial_date(member_since_text, error_context=f'parse member date for attendee: {attendee}'),
                 infos={
                     **Utility.relationship_infos(),
                     'comment': f'[importer] possible date: {member_since_text}',  # importer stops auto creation of AttenddingMeet
                 },
             )
-
-            # Attendance.objects.update_or_create(
-            #     gathering=member_gathering,
-            #     attending=data_attending,
-            #     character=member_meet.major_character,
-            #     team=None,
-            #     defaults={
-            #         'gathering': member_gathering,
-            #         'attending': data_attending,
-            #         'character': member_meet.major_character,
-            #         'team': None,
-            #         # 'category_id': 6,  # Active, membership can be inactive temporarily
-            #         'start': member_attending_meet_default['start'],
-            #         'finish': member_gathering.finish,
-            #         'infos': {
-            #             'access_household_id': access_household_id,
-            #             'created_reason': 'CFCCH member/directory registration from importer',
-            #         },
-            #     }
-            # )
 
         tzname = cr_meet.infos.get('default_time_zone')
         time_zone = pytz.timezone(parse.unquote(tzname))
@@ -1161,10 +1164,10 @@ class Command(BaseCommand):
                     object_id=attendee.id,
                     category_id=36,  # "Check" (won't show up in Attendee details)
                     display_name=history_name.title().replace('_', ' '),
-                    when=datetime.strptime(time_string, time_format).astimezone(time_zone) if time_string else None,
+                    when=time_string[0:10] if time_string else None,
                     infos={
                         **Utility.relationship_infos(),
-                        'comment': f'importer',  # importer stops auto creation of AttenddingMeet
+                        'comment': f'importer',  # importer stops auto creation of AttendingMeet
                     },
                 )
 

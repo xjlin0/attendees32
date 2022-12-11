@@ -27,12 +27,14 @@ Attendees.datagridUpdate = {
   },
   attendingmeetDefaults: {
     // assembly: parseInt(document.querySelector('div.datagrid-attendee-update').dataset.currentAssemblyId),
-    category: 'primary',
+    category: 1,  // scheduled
     start: new Date().toISOString(),
     finish: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), // 1 years from now
   },
   // addressId: '', // for sending address data by AJAX
   divisionShowAttendeeInfos: {},
+  firstFolkId: {},
+  folkAttendeeInfos: {comment: null},
   placePopup: null, // for show/hide popup
   placePopupDxForm: null,  // for getting formData
   placePopupDxFormData: {},  // for storing formData
@@ -73,7 +75,7 @@ Attendees.datagridUpdate = {
     Attendees.datagridUpdate.attachContactAddButton();
 
     $(window).keydown((event) => {
-      if (event.keyCode === 13) {
+      if (event.keyCode === 13) {  // Enter key
         DevExpress.ui.notify(
           {
             message: 'Click the "Save Attendee" button to save data',
@@ -103,15 +105,15 @@ Attendees.datagridUpdate = {
     Attendees.datagridUpdate.attendeePhotoFileUploader.option('disabled', !enabled);
 
     if (enabled) {
-      Attendees.datagridUpdate.familyAttendeeDatagrid.clearGrouping();
-      Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.clearGrouping();
+      // Attendees.datagridUpdate.familyAttendeeDatagrid.clearGrouping();
+      // Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.clearGrouping();
       if (Attendees.datagridUpdate.families.length > 0) {
         newAttendeeDxDropDownButton.option('disabled', false);
       }
     } else {
       newAttendeeDxDropDownButton.option('disabled', true);
-      Attendees.datagridUpdate.familyAttendeeDatagrid.columnOption('folk.id', 'groupIndex', 0);
-      Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.columnOption('folk.id', 'groupIndex', 0);
+      // Attendees.datagridUpdate.familyAttendeeDatagrid.columnOption('folk.id', 'groupIndex', 0);
+      // Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.columnOption('folk.id', 'groupIndex', 0);
     }
 
     const cellEditingArgs = {
@@ -123,8 +125,8 @@ Attendees.datagridUpdate = {
         confirmDeleteMessage: 'Are you sure to delete it? Instead, setting the "finish" date is usually enough!',
       },
     };
-    Attendees.datagridUpdate.familyAttendeeDatagrid.option('editing', cellEditingArgs);
-    Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.option('editing', cellEditingArgs);
+    Attendees.datagridUpdate.familyAttendeeDatagrid.option('editing', Attendees.datagridUpdate.familyFolkAttendeeEditingArgs('family'));
+    Attendees.datagridUpdate.relationshipDatagrid && Attendees.datagridUpdate.relationshipDatagrid.option('editing', Attendees.datagridUpdate.otherFolkAttendeeEditingArgs('relationship'));
     Attendees.datagridUpdate.educationDatagrid && Attendees.datagridUpdate.educationDatagrid.option('editing', cellEditingArgs);
     Attendees.datagridUpdate.statusDatagrid && Attendees.datagridUpdate.statusDatagrid.option('editing', cellEditingArgs);
     Attendees.datagridUpdate.noteDatagrid && Attendees.datagridUpdate.noteDatagrid.option('editing', {...cellEditingArgs, ...Attendees.datagridUpdate.noteEditingArgs});
@@ -221,7 +223,7 @@ Attendees.datagridUpdate = {
     if (newFamily) {
       Attendees.datagridUpdate.families.push(newFamily);
     } else {
-      Attendees.datagridUpdate.families = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set.map(familyattendee => familyattendee.folk);
+      Attendees.datagridUpdate.families = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set.flatMap(fa => fa.folk.category === 0 ? fa.folk : []);  // 0 is family
     }
     if (Attendees.datagridUpdate.families.length > 0) {
       newAttendeeDxDropDownButton.option('dataSource', Attendees.datagridUpdate.families);
@@ -566,7 +568,7 @@ Attendees.datagridUpdate = {
         apiUrlName: 'api_attendee_relationships_view_set',
         colSpan: 24,
         colCount: 24,
-        caption: 'Relationships & Access: double click table cells to edit if editing mode is on. Click away or hit Enter to save',
+        caption: 'Relationships: double click table cells to edit if editing mode is on. Click away or hit Enter to save',
         cssClass: 'h6',
         itemType: "group",
         items: [
@@ -818,7 +820,7 @@ Attendees.datagridUpdate = {
       return {
         itemType: 'button',
         name: 'mainAttendeeFormSubmit',
-        colSpan: 4,
+        colSpan: 3,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {
@@ -1143,18 +1145,24 @@ Attendees.datagridUpdate = {
       {
         colSpan: 7,
         dataField: 'estimated_birthday',
-        helpText: 'YYYY-MM-DD',
+        helpText: 'month & day is optional',
         label: {
           text: 'estimated birthday',
         },
-//        editorType: 'dxDateBox',
         editorOptions: {
           showClearButton: true,
-//          placeholder: 'click calendar',
+          placeholder: 'YYYY-MM-DD',
           elementAttr: {
             title: 'Enter your best guess year for the age estimation, please enter year 1800 if year unknown. YYYY-MM or YYYY is also acceptable',
           },
         },
+        validationRules: [
+          {
+            type: 'pattern',
+            pattern: /^[0-9\-]+$/,
+            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD, enter year 1800 if year unknown',
+          },
+        ],
       },
       {
         colSpan: 7,
@@ -2520,6 +2528,11 @@ Attendees.datagridUpdate = {
   },
 
   getFolkAttendeeDatagridConfig: (categoryId, displayName) => {
+    const columnsToShow = {
+      0: new Set(['folk.id', 'role', 'attendee', 'display_order', 'schedulers', 'emergency_contacts', 'infos.show_secret', 'start', 'finish', 'infos.comment']),
+      25: new Set(['folk.id', 'attendee', 'role', 'display_order', 'infos.show_secret', 'start', 'finish', 'infos.comment', 'file', 'file_path']),
+    };
+
     const originalColumns = [
       {
         dataField: 'folk.id',
@@ -2532,8 +2545,31 @@ Attendees.datagridUpdate = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, {categoryId: categoryId}),
-              byKey: (key) => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/'),
+              load: (searchOpts) => {
+                const d = new $.Deferred();
+                const params = {categoryId: categoryId};
+                if (searchOpts["searchValue"]) {
+                  params["searchValue"] = searchOpts["searchValue"];
+                  params["searchExpr"] = searchOpts['searchExpr'];
+                  params["searchOperation"] = searchOpts['searchOperation'];
+                }
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, params)
+                  .done((result) => {
+                    if (result.data && result.data[0]){
+                      Attendees.datagridUpdate.firstFolkId[categoryId] = result.data[0].id;
+                    }
+                    d.resolve(result.data);
+                  });
+                return d.promise();
+              },
+              byKey: (key) => {
+                const d = new $.Deferred();
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/', {categoryId: categoryId})
+                  .done((result) => {
+                    d.resolve(result);
+                  });
+                return d.promise();
+              },
             }),
           },
         },
@@ -2565,6 +2601,14 @@ Attendees.datagridUpdate = {
                 return d.promise();
               },
             }),
+            postProcess: (data) => {
+              return data.map((x) => {
+                if (x.id === 38) {  // intentionally disable 38(passenger) to avoid duplicating relationships
+                  x.disabled = true;
+                }
+                return x;
+              });
+            },
           },
         },
       },
@@ -2594,18 +2638,23 @@ Attendees.datagridUpdate = {
             store: new DevExpress.data.CustomStore({
               key: 'id',
               load: (searchOpts) => {
+                const d = new $.Deferred();
                 const params = {take: 30};
                 if (searchOpts.searchValue) {
                   const searchCondition = ['infos__names', searchOpts.searchOperation, searchOpts.searchValue];
                   params.filter = JSON.stringify(searchCondition);
                 }
-                return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint, params);
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint, params)
+                  .done(result => {
+                    d.resolve(result.data);
+                  });
+                return d.promise();
               },
               byKey: (key) => {
                 const d = new $.Deferred();
                 $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.relatedAttendeesEndpoint + key + '/')
                   .done(result => {
-                    d.resolve(result.data);
+                    d.resolve(result);
                   });
                 return d.promise();
               },
@@ -2614,7 +2663,7 @@ Attendees.datagridUpdate = {
         },
       },
       {
-        dataField: "display_order",
+        dataField: 'display_order',
         caption: 'Rank',
         dataType: 'number',
       },
@@ -2633,7 +2682,7 @@ Attendees.datagridUpdate = {
         },
       },
       {
-        dataField: "emergency_contacts",
+        dataField: 'emergency_contacts',
         caption: 'Emergency contact',
         calculateCellValue: (rowData) => {
           const attendeeData = Attendees.datagridUpdate.attendeeFormConfigs && Attendees.datagridUpdate.attendeeFormConfigs.formData;
@@ -2648,6 +2697,7 @@ Attendees.datagridUpdate = {
       {
         apiUrlName: 'api_attendee_folkattendee_secret_column',
         caption: 'Secret?',
+        dataType: 'boolean',
         dataField: 'infos.show_secret',
         calculateCellValue: (rowData) => {
           if (rowData.infos) {
@@ -2658,6 +2708,31 @@ Attendees.datagridUpdate = {
           }
         },
       },
+      {
+        dataField: 'infos.comment',
+        caption: 'Comment',
+        dataType: 'string',
+      },
+      {
+        dataField: 'file_path',
+        caption: 'Current File',
+        allowFiltering: false,
+        allowSorting: false,
+        allowGrouping: false,
+        allowHeaderFiltering: false,
+        cellTemplate: (container, options) => {
+          if (options.value){  // don't add class folkattenee-file-link as duplicates interfere with flipping of folkattendee-file-clear check box
+            $('<a>', {text: 'Download', title: 'click to download a copy', href: options.value, target: 'blank'})
+              .appendTo(container);
+          }
+        },
+        editCellTemplate: (container, options) => {
+          if (options.value){
+            $('<a>', {class: 'folkattenee-file-link', text: 'Download', title: 'click to download a copy', href: options.value, target: 'blank'})
+              .appendTo(container);
+          }
+          },
+        },
       {
         dataField: 'start',
         dataType: 'date',
@@ -2672,31 +2747,114 @@ Attendees.datagridUpdate = {
           dateSerializationFormat: 'yyyy-MM-dd',
         },
       },
+      {
+        dataField: "file",
+        caption: 'File Operation',
+        visible: false,
+        allowFiltering: false,
+        allowSorting: false,
+        editCellTemplate: (cellElement, cellInfo) => {
+          const $clearInput = $('<input>', {
+            id: 'folkattendee-file-clear',
+            disabled: !Attendees.utilities.editingEnabled,
+            type: 'checkbox',
+            name: 'folkattendee-file-clear',
+            class: 'form-check-input',
+          });
+          const $clearInputLabel = $('<label>', {
+            for: 'folkattendee-file-clear',
+            text: 'delete current file',
+            class: 'form-check-label'
+          });
+          const savedFileALink = document.querySelector('a.folkattenee-file-link');
+          $clearInput.on('change', (e) => {
+            const $checkbox = $(e.currentTarget);
+            if (!confirm("Are you sure?")) {
+              $checkbox.prop('checked', !$checkbox.is(":checked"));
+            }
+            if ($checkbox.is(":checked")) {
+              Attendees.datagridUpdate.folkAttendeeFileUploader.option('value', []);
+              Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', true);
+              savedFileALink.textContent = 'will be deleted';
+            } else {
+              Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', false);
+              savedFileALink.textContent = 'Download';
+            }
+          });
+
+          cellElement.append($clearInput);
+          cellElement.append($clearInputLabel);
+
+          const fileUploaderElement = document.createElement("div");
+          Attendees.datagridUpdate.folkAttendeeFileUploader = $(fileUploaderElement).dxFileUploader({
+            // disabled: $clearInput.is(":checked"),
+            selectButtonText: 'Select new file',
+            multiple: false,
+            accept: "application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.openxmlformats-officedocument.presentationml.slideshow, text/plain, application/pdf, image/*",
+            minFileSize: 10, // 0.01 KB
+            maxFileSize: 10 * 1024 * 1024, // 10 MB
+            uploadMode: "useForm",
+            onValueChanged: (e) => {
+              cellInfo.setValue("File attached");  // don't know how to set it dirty to trigger form update, set file to e.data failed
+            },
+          }).dxFileUploader("instance");
+
+          cellElement.append(fileUploaderElement);
+        },
+      },
     ];
     return {
       dataSource: {
         store: new DevExpress.data.CustomStore({
           key: 'id',
           load: () => {
-            return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {categoryId: categoryId});
-          },
-          byKey: (key) => {
             const d = new $.Deferred();
-            $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {familyattendee_id: key, categoryId: categoryId})
+            $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {categoryId: categoryId})
               .done((result) => {
                 d.resolve(result.data);
               });
             return d.promise();
           },
+          byKey: (key) => {
+            const d = new $.Deferred();
+            $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint, {familyattendee_id: key, categoryId: categoryId})
+              .done((result) => {
+                d.resolve(result);
+              });
+            return d.promise();
+          },
           update: (key, values) => {
             values.category = categoryId;
+            const folkAttendeeFormData = new FormData();
+
+            if (values && typeof(values) === 'object'){
+              for ([formKey, formValue] of Object.entries(values)){
+                if (formKey !== 'file') {
+                  folkAttendeeFormData.append(formKey, JSON.stringify(formValue));
+                }
+              }
+            }
+            const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
+            if (fileUploaded) {
+              folkAttendeeFormData.set('file', fileUploaded);
+              if (fileUploaded.size > 1024 * 1024) {  // 1M
+                $('div.dx-loadpanel').dxLoadPanel('show');
+              }
+            }
+            if (document.querySelector('input#folkattendee-file-clear').checked) {
+              folkAttendeeFormData.set('file', '');
+            }
+
             return $.ajax({
               url: Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint + key + '/',
               method: 'PATCH',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify(values),
+              contentType: false,
+              processData: false,
+              cache: false,
+              timeout: 120000,
+              data: folkAttendeeFormData,
               success: (result) => {
+                $('div.dx-loadpanel').dxLoadPanel('hide');
                 DevExpress.ui.notify(
                   {
                     message: 'update success, please reload page if changing family',
@@ -2707,17 +2865,61 @@ Attendees.datagridUpdate = {
                     },
                   }, 'success', 2000);
               },
+              error: (response) => {
+                $('div.dx-loadpanel').dxLoadPanel('hide');
+                console.log('Failed to update data of folk attendee, response: ', response);
+                DevExpress.ui.notify(
+                  {
+                    message: 'update folk attendee error, please try again, did someone create the same relationship secretly?',
+                    position: {
+                      my: 'center',
+                      at: 'center',
+                      of: window,
+                    },
+                  }, 'error', 5000);
+              },
             });
           },
-          insert: function (values) {
-            values.category = categoryId;
+          insert: (values) => {
+            values.category = categoryId;  // somehow backend can't receive it if nested in folk object
+            const folkAttendeeFormData = new FormData();
+            const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
+            if (values && typeof(values) === 'object'){
+              for ([formKey, formValue] of Object.entries(values)){
+                switch(formKey) {
+                  case 'infos':
+                    folkAttendeeFormData.set(formKey, JSON.stringify(formValue));
+                    break;
+                  case 'folk':
+                    folkAttendeeFormData.set("folk", formValue.id);  // this work with below line! somehow folk[id] didn't work
+                    folkAttendeeFormData.set("folk.category", categoryId);  // somehow needed with the above "folk" in formdata but will generate 'folk.category': ['25'],
+                    break;
+                  case 'file':
+                    if (fileUploaded) {
+                      folkAttendeeFormData.set('file', fileUploaded);
+                      if (fileUploaded.size > 1024 * 1024) {  // 1M
+                        $('div.dx-loadpanel').dxLoadPanel('show');
+                      }
+                    }
+                    break;
+                  default:
+                    folkAttendeeFormData.append(formKey, formValue);
+                }
+              }
+            }
+            if (document.querySelector('input#folkattendee-file-clear').checked) {
+              folkAttendeeFormData.set('file', '');
+            }
             return $.ajax({
               url: Attendees.datagridUpdate.attendeeAttrs.dataset.familyAttendeesEndpoint,
               method: 'POST',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify(values),
+              contentType: false,
+              processData: false,
+              cache: false,
+              timeout: 120000,
+              data: folkAttendeeFormData,
               success: (result) => {
+                $('div.dx-loadpanel').dxLoadPanel('hide');
                 DevExpress.ui.notify(
                   {
                     message: 'Create success, please find the new attendee in the table',
@@ -2727,6 +2929,19 @@ Attendees.datagridUpdate = {
                       of: window,
                     },
                   }, "success", 2000);
+              },
+              error: (response) => {
+                $('div.dx-loadpanel').dxLoadPanel('hide');
+                console.log('Failed to create folk attendee, response: ', response);
+                DevExpress.ui.notify(
+                  {
+                    message: 'creating folk attendee error, please try again, did someone create the same relationship secretly?',
+                    position: {
+                      my: 'center',
+                      at: 'center',
+                      of: window,
+                    },
+                  }, 'error', 5000);
               },
             });
           },
@@ -2750,15 +2965,9 @@ Attendees.datagridUpdate = {
         }),
       },
       onInitNewRow: (e) => {
-        DevExpress.ui.notify(
-          {
-            message: "Let's create a new family member, click away or hit Enter to save. Hit Esc to quit without save",
-            position: {
-              my: 'center',
-              at: 'center',
-              of: window,
-            },
-          }, 'info', 3000);
+        e.data['folk'] = {id: Attendees.datagridUpdate.firstFolkId[categoryId], category: categoryId};
+        e.data['start'] = new Date().toLocaleDateString('sv');  // somehow new Date().toDateString() is UTC, Sweden locale "sv" uses the ISO 8601 format
+        e.component.option('editing.popup.title', `Add ${displayName} relationship`);
       },
       allowColumnReordering: true,
       columnAutoWidth: true,
@@ -2771,33 +2980,49 @@ Attendees.datagridUpdate = {
         mode: 'select',
       },
       loadPanel: {
-        message: 'Fetching...',
+        message: 'Uploading...',
         enabled: true,
       },
       wordWrapEnabled: false,
       grouping: {
         autoExpandAll: true,
       },
-      editing: {
-        mode: 'cell',
-        allowUpdating: Attendees.utilities.editingEnabled,
-        allowAdding: Attendees.utilities.editingEnabled,
-        allowDeleting: false,
+      onEditingStart: (e) => {
+        const grid = e.component;
+        grid.beginUpdate();
+        if (e.data && typeof e.data === 'object') {
+          Attendees.datagridUpdate.editingSelfInFolkAttendee = e.data.attendee && e.data.attendee === Attendees.datagridUpdate.attendeeId;  // disable editing of some fields in onEditorPreparing()
+          const prefix = Attendees.utilities.editingEnabled ? (e.data.id ? 'Editing: ' : 'Adding ') : 'Viewing: ';
+          const folkType = e.data['folk']['category'] ? 'circle' : 'family';
+          grid.option('editing.popup.title', `${prefix} relationship in ${e.data['folk']['display_name']} ${folkType}`);
+        }
+        grid.endUpdate();
       },
-      onEditingStart: (info) => {  // forbid editing names or names on top of page will be inconsistent.
-        if (info.data.attendee && info.data.attendee === Attendees.datagridUpdate.attendeeId && !['start', 'finish', 'role', 'display_order','infos.show_secret'].includes(info.column.dataField)) {
-          info.cancel = true;
+      onEditorPreparing: (e) => {
+        if (Attendees.datagridUpdate.editingSelfInFolkAttendee) {  // set in onEditingStart()
+          e.editorOptions.disabled = !['start', 'finish', 'role', 'display_order', 'infos.comment'].includes(e.name);
+        }
+        if (e.parentType === 'dataRow' && e.dataField === 'infos.comment') {
+          const defaultValueChangeHandler = e.editorOptions.onValueChanged;
+          e.editorOptions.onValueChanged = (args) => {
+             e.setValue(args.value);
+             Attendees.datagridUpdate.folkAttendeeInfos['comment'] = args.value;
+          };  // Somehow update works but create doesn't work unless set specifically.
+        }
+        if (e.parentType === 'dataRow' && e.dataField === 'infos.show_secret') {
+          const defaultValueChangeHandler = e.editorOptions.onValueChanged;
+          e.editorOptions.onValueChanged = (args) => {
+             e.setValue(args.value);
+             Attendees.datagridUpdate.folkAttendeeInfos['show_secret'] = args.value;
+          };  // Somehow update works but create doesn't work unless set specifically.
         }
       },
-      onRowPrepared: (e) => {
-        if (e.rowType === 'data' && e.data.attendee && e.data.attendee.id === Attendees.datagridUpdate.attendeeId) {
-          e.rowElement.css('color', 'SeaGreen');
-          e.rowElement.attr('title', 'Please scroll up and change main attendee data there!');
-        }
-      },
+      onRowInserted: (e) => {
+        e.component.refresh();  // for attendee names to show instead of attendee id.
+      },  // because api/datagrid_data_familyattendees doesn't have rowData.displayValue for calculateDisplayValue of new attendee
       onRowInserting: (rowData) => {
-        const infos = {show_secret: {}, updating_attendees: {}, comment: null, body: null};
-        if (rowData.data.infos && rowData.data.infos.show_secret) {
+        const infos = {show_secret: {}, updating_attendees: {}, comment: Attendees.datagridUpdate.folkAttendeeInfos.comment, body: null};
+        if (rowData.data.infos && Attendees.datagridUpdate.folkAttendeeInfos.show_secret) {
           infos.show_secret[Attendees.utilities.userAttendeeId] = true;
         }
         rowData.data.infos = infos;
@@ -2806,26 +3031,165 @@ Attendees.datagridUpdate = {
       onRowRemoving: (rowData) => {
         Attendees.datagridUpdate.alterSchedulersAndEmergencyContacts(rowData.data.attendee, Attendees.datagridUpdate.attendeeMainDxForm.option('formData.infos'), true);
       },
-      onRowUpdating: (rowData) => { // checking box will arrive one at a time, never multiple fields simultaneously
-        if (rowData.newData.infos && 'show_secret' in rowData.newData.infos) { // value could be intentionally false to prevent someone seeing it
-          const showSecret = rowData.oldData.infos.show_secret;
-          const isItSecretWithCurrentUser = rowData.newData.infos.show_secret;
-          if (isItSecretWithCurrentUser) {
-            showSecret[Attendees.utilities.userAttendeeId] = true;
-          } else {
-            delete showSecret[Attendees.utilities.userAttendeeId];
+      onRowUpdating: (rowData) => { // Todo 20221128: now value arrives at the same time from popup editor!!  Before: checking box will arrive one at a time, never multiple fields simultaneously
+        if (rowData.newData.infos) {
+          if ('show_secret' in rowData.newData.infos) { // value could be intentionally false to prevent someone seeing it
+            const showSecret = rowData.oldData.infos.show_secret || {};
+            const isItSecretWithCurrentUser = rowData.newData.infos.show_secret;
+            if (isItSecretWithCurrentUser) {
+              showSecret[Attendees.utilities.userAttendeeId] = true;
+            } else {
+              delete showSecret[Attendees.utilities.userAttendeeId];
+            }
+            rowData.newData.infos.show_secret = showSecret;
           }
-          rowData.newData.infos.show_secret = showSecret;
+          Attendees.utilities.merge2dObjects(rowData.newData.infos, rowData.oldData.infos);
         } // Todo 20211126 If user save datagrid with showSecret unchecked, don't let it save as false.  Only save false if previously labelled true.
         Attendees.datagridUpdate.alterSchedulersAndEmergencyContacts(rowData.oldData.attendee, rowData.newData, false); // changing fields are only available upon onRowUpdating, not after
       },
       columns: originalColumns.filter(item => {
-        return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
+        return columnsToShow[categoryId].has(item.dataField) && (item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true);
       }),
     };
   },
 
-  alterSchedulersAndEmergencyContacts: (attendeeId, newData, deleting) => {
+  familyFolkAttendeeEditingArgs: (displayName) => {
+    const items = [
+      {
+        dataField: 'folk.id',
+        helpText: "In who's relationship?",
+      },
+      {
+        dataField: 'role',
+        helpText: "subject's relation",
+      },
+      {
+        dataField: 'attendee',
+        helpText: 'subject',
+      },
+      {
+        dataField: 'display_order',
+        helpText: 'For sorting display',
+      },
+      {
+        dataField: 'schedulers',
+        apiUrlName: 'api_attendee_folkattendee_scheduler_column',
+        helpText: `Can subject alter ${Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original} schedule?`,
+      },
+      {
+        dataField: 'emergency_contacts',
+        helpText: "Is subject emergency_contacts of main attendee?",
+      },
+      {
+        dataField: 'infos.show_secret',
+        apiUrlName: 'api_attendee_folkattendee_secret_column',
+        helpText: 'Is this secret? Others cannot see if checked',
+      },
+      {
+        dataField: 'start',
+        helpText: 'start time of the relationship',
+      },
+      {
+        dataField: 'finish',
+        helpText: 'end time of the relationship',
+      },
+      {
+        dataField: 'infos.comment',
+        helpText: 'special memo',
+        editorType: 'dxTextArea',
+        colSpan: 2,
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
+      },
+    ];
+
+    return {
+      allowUpdating: Attendees.utilities.editingEnabled,
+      allowAdding: Attendees.utilities.editingEnabled,
+      allowDeleting: Attendees.utilities.editingEnabled,
+      texts: {
+        confirmDeleteMessage: 'Are you sure to delete it? Instead, setting the "finish" date is usually enough!',
+      },
+      mode: 'popup',
+        popup: {
+        showTitle: true,
+          title: `editing ${displayName}`,
+      },
+      form: {
+        items: items.filter(item => item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true),
+      },
+    }
+  },
+
+  otherFolkAttendeeEditingArgs: (displayName) => {
+    const items = [
+      {
+        dataField: 'folk.id',
+        helpText: "In who's relationship?",
+      },
+      {
+        dataField: 'attendee',
+        helpText: 'subject',
+      },
+      {
+        dataField: 'display_order',
+        helpText: 'For sorting display',
+      },
+      {
+        dataField: 'infos.show_secret',
+        apiUrlName: 'api_attendee_folkattendee_secret_column',
+        helpText: 'Is this secret? Others cannot see if checked',
+      },
+      {
+        dataField: 'role',
+        helpText: "subject's relation",
+      },
+      {
+        dataField: 'start',
+        helpText: 'start time of the relationship',
+      },
+      {
+        dataField: 'finish',
+        helpText: 'end time of the relationship',
+      },
+      {
+        dataField: 'file_path',
+        helpText: '(saved on server)',
+      },
+      {
+        dataField: 'infos.comment',
+        helpText: 'special memo',
+        editorType: 'dxTextArea',
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
+      },
+      {
+        dataField: 'file',
+        helpText: 'Click to upload a new one',
+      },
+    ];
+
+    return {
+      allowUpdating: Attendees.utilities.editingEnabled,
+      allowAdding: Attendees.utilities.editingEnabled,
+      allowDeleting: Attendees.utilities.editingEnabled,
+      texts: {
+        confirmDeleteMessage: 'Are you sure to delete it? Instead, setting the "finish" date is usually enough!',
+      },
+      mode: 'popup',
+      popup: {
+        showTitle: true,
+        title: `editing ${displayName}`,
+      },
+      form: {
+        items: items.filter(item => item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true),
+      },
+    }
+  },
+
+  alterSchedulersAndEmergencyContacts: (attendeeId, newData, deleting) => {  // updating target attendee from other objects such as folkattendee
     if (newData && ('schedulers' in newData || 'emergency_contacts' in newData) ) {  // user is changing scheduler or emergency_contact
       const attendeeData = Attendees.datagridUpdate.attendeeFormConfigs && Attendees.datagridUpdate.attendeeFormConfigs.formData;
       const previousInfos = Attendees.datagridUpdate.attendeeMainDxForm.option('formData.infos');
@@ -3149,7 +3513,7 @@ Attendees.datagridUpdate = {
 
 
   initRelationshipDatagrid: (data, itemElement) => {
-    const relationshipDatagridConfig = Attendees.datagridUpdate.getFolkAttendeeDatagridConfig(25, 'Circle');
+    const relationshipDatagridConfig = Attendees.datagridUpdate.getFolkAttendeeDatagridConfig(25, 'Other');
     const $relationshipDatagrid = $("<div id='relationship-datagrid-container'>").dxDataGrid(relationshipDatagridConfig);
     itemElement.append($relationshipDatagrid);
     Attendees.datagridUpdate.relationshipDatagrid = $relationshipDatagrid.dxDataGrid('instance');
@@ -3197,7 +3561,8 @@ Attendees.datagridUpdate = {
         dataField: 'display_name',
       },
       {
-        caption: 'Secret shared with you',
+        apiUrlName: 'api_attendee_folkattendee_secret_column',
+        caption: 'Secret?',
         dataField: 'infos.show_secret',
         width: '18%',
         calculateCellValue: (rowData) => {
@@ -3218,7 +3583,20 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'when',
-        dataType: 'date',
+        format: 'yyyy-MM-dd',
+        hint: 'enter 1800 if year unknown',
+        placeholder: 'YYYY-MM-DD',
+        validationRules: [
+          {
+            type: 'pattern',
+            pattern: /^[0-9\-]+$/,
+            message: 'Only digits and dashes allowed. Format: YYYY-MM-DD, enter year 1800 if year unknown',
+          },
+        ],
+        editorOptions: {
+          title: 'Month & day is optional, enter 1800 if year unknown',
+          showClearButton: true,
+        },
       },
       {
         dataField: 'finish',
@@ -3253,6 +3631,10 @@ Attendees.datagridUpdate = {
             return d.promise();
           },
           update: (key, values) => {
+            if ('when' in values) {
+              const when = values['when'] && values['when'].trim();
+              values['when'] = when ? when.replace(/-+/g, '-').replace(/^-+|-+$/g, '') : null;
+            }
             return $.ajax({
               url: Attendees.datagridUpdate.attendeeAttrs.dataset.pastsEndpoint + key + '/?' + $.param({category__type: args.type}),
               method: 'PATCH',
@@ -3385,7 +3767,9 @@ Attendees.datagridUpdate = {
       },
       columns: columns.flatMap(column => {
         if (column.dataField in args.dataFieldAndOpts) {
-          return [{...column, ...args.dataFieldAndOpts[column.dataField]}];
+          return [{...column, ...args.dataFieldAndOpts[column.dataField]}].filter(item => {
+            return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
+          });
         } else {
           return [];
         }
@@ -3410,6 +3794,7 @@ Attendees.datagridUpdate = {
         },
         {
           dataField: 'infos.show_secret',
+          apiUrlName: 'api_attendee_folkattendee_secret_column',
         },
         {
           dataField: 'when',
@@ -3422,7 +3807,9 @@ Attendees.datagridUpdate = {
             autoResizeEnabled: true,
           }
         },
-      ],
+      ].filter(item => {
+        return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
+      }),
     },
   },
 
@@ -3511,7 +3898,7 @@ Attendees.datagridUpdate = {
       }),
     },
     onRowInserted: (e) => {
-      Attendees.datagridUpdate.attendingMeetDatagrid.refresh();
+      e.component.refresh();
     },
     onInitNewRow: (e) => {
       for (const [key, value] of Object.entries(Attendees.datagridUpdate.attendingmeetDefaults)) {
@@ -3569,7 +3956,7 @@ Attendees.datagridUpdate = {
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
         setCellValue: (newData, value, currentData) => {
-          newData.assembly = value;
+          newData.meet__assembly = value;
           newData.meet = null;
           newData.character = null;
         },
@@ -3579,7 +3966,13 @@ Attendees.datagridUpdate = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.assembliesEndpoint),
+              load: (searchOptions) => {
+                const d = new $.Deferred();
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.assembliesEndpoint, searchOptions).done((response) => {
+                  d.resolve(response.data);
+                });
+                return d.promise();
+              },
               byKey: (key) => {
                 if (key) {
                   const d = $.Deferred();
@@ -3607,17 +4000,20 @@ Attendees.datagridUpdate = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              filter: options.data ? {'assemblies[]': options.data.meet__assembly} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
+                  const filter = searchOpts.filter;
+                  delete searchOpts.filter;
+                  searchOpts = filter ? {...searchOpts, ...filter} : searchOpts;
                   const d = new $.Deferred();
-                  $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts.filter)
+                  $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts)
                     .done((result) => {
                       if (result.data && Attendees.datagridUpdate.meetCharacters === null) {
                         Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
                       }  // cache the every meet's major characters for later use
-                      d.resolve(result);
+                      d.resolve(result.data);
                     });
                   return d.promise();
                 },
@@ -3642,11 +4038,19 @@ Attendees.datagridUpdate = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              filter: options.data ? {'assemblies[]': options.data.meet__assembly} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint, searchOpts.filter);
+                  const filter = searchOpts.filter;
+                  delete searchOpts.filter;
+                  searchOpts = filter ? {...searchOpts, ...filter} : searchOpts;
+                  const d = new $.Deferred();
+                  $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint, searchOpts)
+                    .done((result) => {
+                      d.resolve(result.data);
+                    });
+                  return d.promise();
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
@@ -3713,7 +4117,10 @@ Attendees.datagridUpdate = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.teamsEndpoint, searchOpts.filter);
+                  const filter = searchOpts.filter;
+                  delete searchOpts.filter;
+                  searchOpts = filter ? {...searchOpts, ...filter} : searchOpts;
+                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.teamsEndpoint, searchOpts);
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
@@ -3742,7 +4149,10 @@ Attendees.datagridUpdate = {
         dataField: 'infos.note',
         visible: false,
         caption: 'Note',
-        dataType: 'string',
+        editorType: 'dxTextArea',
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
       },
     ],
   },
@@ -3763,7 +4173,7 @@ Attendees.datagridUpdate = {
           dataField: 'attending',
         },
         {
-          dataField: 'assembly',
+          dataField: 'meet__assembly',
         },
         {
           dataField: 'meet',
@@ -3789,9 +4199,6 @@ Attendees.datagridUpdate = {
         {
           dataField: 'infos.note',
           helpText: 'special memo',
-          editorOptions: {
-            autoResizeEnabled: true,
-          },
         },
       ],
     },

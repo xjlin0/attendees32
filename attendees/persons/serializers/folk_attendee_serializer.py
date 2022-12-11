@@ -6,6 +6,7 @@ from attendees.persons.serializers import FolkSerializer
 
 class FolkAttendeeSerializer(serializers.ModelSerializer):
     folk = FolkSerializer(many=False)
+    file_path = serializers.SerializerMethodField(required=False, read_only=True)
     # attendee = AttendeeSerializer(many=False)
 
     class Meta:
@@ -15,26 +16,20 @@ class FolkAttendeeSerializer(serializers.ModelSerializer):
         #     'family',
         # ]
 
+    def get_file_path(self, obj):
+        return obj.file.url if obj.file else ""
+
     def create(self, validated_data):
         """
         Create or update `FolkAttendee` instance, given the validated data.
         """
         folkattendee_id = self._kwargs.get("data", {}).get("id")
         new_folk = Folk.objects.filter(
-            pk=self._kwargs.get("data", {}).get("folk", {}).get("id")
+            pk=self._kwargs.get("data", {}).get("folk", {})
         ).first()
-        # new_attendee_id = validated_data.get('attendee', {})
         if new_folk:
             validated_data["folk"] = new_folk
-        # print("hi 27 here is validated_data: ", validated_data)
-        # if new_attendee_id:
-        #     # attendee, attendee_created = Attendee.objects.update_or_create(
-        #     #     id=new_attendee_data.get('id'),
-        #     #     defaults=new_attendee_data,
-        #     # )
-        #     attendee = Attendee.objects.get(pk=new_attendee_id)
-        #     validated_data['attendee'] = attendee
-        # Todo: 20210517  create relationships among families such as siblings, etc
+
         obj, created = FolkAttendee.objects.update_or_create(
             id=folkattendee_id,
             defaults=validated_data,
