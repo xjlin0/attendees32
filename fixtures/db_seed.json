@@ -6732,6 +6732,19 @@
     }
   },
   {
+    "model": "users.menuauthgroup",
+    "pk": 144,
+    "fields": {
+      "created": "2022-12-11T01:08:24.740Z",
+      "modified": "2022-12-11T01:08:24.740Z",
+      "is_removed": false,
+      "auth_group": 500,
+      "read": true,
+      "write": true,
+      "menu": 24
+    }
+  },
+  {
     "model": "whereabouts.organization",
     "pk": -1,
     "fields": {
