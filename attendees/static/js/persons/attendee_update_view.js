@@ -34,6 +34,7 @@ Attendees.datagridUpdate = {
   // addressId: '', // for sending address data by AJAX
   divisionShowAttendeeInfos: {},
   firstFolkId: {},
+  folkAttendeeInfos: {comment: null},
   placePopup: null, // for show/hide popup
   placePopupDxForm: null,  // for getting formData
   placePopupDxFormData: {},  // for storing formData
@@ -2529,7 +2530,7 @@ Attendees.datagridUpdate = {
   getFolkAttendeeDatagridConfig: (categoryId, displayName) => {
     const columnsToShow = {
       0: new Set(['folk.id', 'role', 'attendee', 'display_order', 'schedulers', 'emergency_contacts', 'infos.show_secret', 'start', 'finish', 'infos.comment']),
-      25: new Set(['folk.id', 'attendee', 'infos.show_secret', 'role', 'start', 'finish', 'infos.comment', 'file', 'file_path']),
+      25: new Set(['folk.id', 'attendee', 'role', 'display_order', 'infos.show_secret', 'start', 'finish', 'infos.comment', 'file', 'file_path']),
     };
 
     const originalColumns = [
@@ -2794,7 +2795,7 @@ Attendees.datagridUpdate = {
             maxFileSize: 10 * 1024 * 1024, // 10 MB
             uploadMode: "useForm",
             onValueChanged: (e) => {
-              cellInfo.setValue("File attached");  // don't know how to set it dirty to trigger form update
+              cellInfo.setValue("File attached");  // don't know how to set it dirty to trigger form update, set file to e.data failed
             },
           }).dxFileUploader("instance");
 
@@ -2850,6 +2851,7 @@ Attendees.datagridUpdate = {
               contentType: false,
               processData: false,
               cache: false,
+              timeout: 120000,
               data: folkAttendeeFormData,
               success: (result) => {
                 $('div.dx-loadpanel').dxLoadPanel('hide');
@@ -2878,7 +2880,7 @@ Attendees.datagridUpdate = {
               },
             });
           },
-          insert: function (values) {
+          insert: (values) => {
             values.category = categoryId;  // somehow backend can't receive it if nested in folk object
             const folkAttendeeFormData = new FormData();
             const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
@@ -2914,10 +2916,10 @@ Attendees.datagridUpdate = {
               contentType: false,
               processData: false,
               cache: false,
+              timeout: 120000,
               data: folkAttendeeFormData,
               success: (result) => {
                 $('div.dx-loadpanel').dxLoadPanel('hide');
-                console.log("2916 result: ", result);
                 DevExpress.ui.notify(
                   {
                     message: 'Create success, please find the new attendee in the table',
@@ -3000,14 +3002,27 @@ Attendees.datagridUpdate = {
         if (Attendees.datagridUpdate.editingSelfInFolkAttendee) {  // set in onEditingStart()
           e.editorOptions.disabled = !['start', 'finish', 'role', 'display_order', 'infos.comment'].includes(e.name);
         }
+        if (e.parentType === 'dataRow' && e.dataField === 'infos.comment') {
+          const defaultValueChangeHandler = e.editorOptions.onValueChanged;
+          e.editorOptions.onValueChanged = (args) => {
+             e.setValue(args.value);
+             Attendees.datagridUpdate.folkAttendeeInfos['comment'] = args.value;
+          };  // Somehow update works but create doesn't work unless set specifically.
+        }
+        if (e.parentType === 'dataRow' && e.dataField === 'infos.show_secret') {
+          const defaultValueChangeHandler = e.editorOptions.onValueChanged;
+          e.editorOptions.onValueChanged = (args) => {
+             e.setValue(args.value);
+             Attendees.datagridUpdate.folkAttendeeInfos['show_secret'] = args.value;
+          };  // Somehow update works but create doesn't work unless set specifically.
+        }
       },
       onRowInserted: (e) => {
         e.component.refresh();  // for attendee names to show instead of attendee id.
-      },
+      },  // because api/datagrid_data_familyattendees doesn't have rowData.displayValue for calculateDisplayValue of new attendee
       onRowInserting: (rowData) => {
-        console.log("hi 3008 here is new data rowData: ", rowData);
-        const infos = {show_secret: {}, updating_attendees: {}, comment: null, body: null};
-        if (rowData.data.infos && rowData.data.infos.show_secret) {
+        const infos = {show_secret: {}, updating_attendees: {}, comment: Attendees.datagridUpdate.folkAttendeeInfos.comment, body: null};
+        if (rowData.data.infos && Attendees.datagridUpdate.folkAttendeeInfos.show_secret) {
           infos.show_secret[Attendees.utilities.userAttendeeId] = true;
         }
         rowData.data.infos = infos;
@@ -3116,6 +3131,10 @@ Attendees.datagridUpdate = {
       {
         dataField: 'attendee',
         helpText: 'subject',
+      },
+      {
+        dataField: 'display_order',
+        helpText: 'For sorting display',
       },
       {
         dataField: 'infos.show_secret',
