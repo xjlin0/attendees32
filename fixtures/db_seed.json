@@ -5309,8 +5309,8 @@
       "modified": "2020-04-13T15:13:46.035Z",
       "is_removed": false,
       "auth_group": 300,
-      "read": true,
-      "write": true,
+      "read": false,
+      "write": false,
       "menu": 5
     }
   },
@@ -5322,8 +5322,8 @@
       "modified": "2020-04-13T15:13:46.035Z",
       "is_removed": false,
       "auth_group": 200,
-      "read": true,
-      "write": true,
+      "read": false,
+      "write": false,
       "menu": 5
     }
   },
@@ -5335,8 +5335,8 @@
       "modified": "2020-04-13T15:13:46.036Z",
       "is_removed": false,
       "auth_group": 100,
-      "read": true,
-      "write": true,
+      "read": false,
+      "write": false,
       "menu": 5
     }
   },
@@ -6742,6 +6742,19 @@
       "read": true,
       "write": true,
       "menu": 24
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 145,
+    "fields": {
+      "created": "2022-12-11T15:44:38.484Z",
+      "modified": "2022-12-11T15:44:38.484Z",
+      "is_removed": false,
+      "auth_group": 600,
+      "read": true,
+      "write": true,
+      "menu": 32
     }
   },
   {
