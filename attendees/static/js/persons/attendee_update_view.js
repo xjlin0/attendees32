@@ -4051,7 +4051,7 @@ Attendees.datagridUpdate = {
                       d.resolve(result.data);
                     });
                   return d.promise();
-                },  // Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint
+                },
                 byKey: (key) => {
                   const d = new $.Deferred();
                   $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint + key + '/')
@@ -4117,7 +4117,10 @@ Attendees.datagridUpdate = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.teamsEndpoint, searchOpts.filter);
+                  const filter = searchOpts.filter;
+                  delete searchOpts.filter;
+                  searchOpts = filter ? {...searchOpts, ...filter} : searchOpts;
+                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.teamsEndpoint, searchOpts);
                 },
                 byKey: (key) => {
                   const d = new $.Deferred();
