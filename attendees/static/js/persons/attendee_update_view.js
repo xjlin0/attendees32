@@ -3048,7 +3048,7 @@ Attendees.datagridUpdate = {
         Attendees.datagridUpdate.alterSchedulersAndEmergencyContacts(rowData.oldData.attendee, rowData.newData, false); // changing fields are only available upon onRowUpdating, not after
       },
       columns: originalColumns.filter(item => {
-        return columnsToShow[categoryId].has(item.dataField);
+        return columnsToShow[categoryId].has(item.dataField) && (item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true);
       }),
     };
   },
@@ -3561,6 +3561,7 @@ Attendees.datagridUpdate = {
         dataField: 'display_name',
       },
       {
+        apiUrlName: 'api_attendee_folkattendee_secret_column',
         caption: 'Secret shared with you',
         dataField: 'infos.show_secret',
         width: '18%',
@@ -3766,7 +3767,9 @@ Attendees.datagridUpdate = {
       },
       columns: columns.flatMap(column => {
         if (column.dataField in args.dataFieldAndOpts) {
-          return [{...column, ...args.dataFieldAndOpts[column.dataField]}];
+          return [{...column, ...args.dataFieldAndOpts[column.dataField]}].filter(item => {
+            return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
+          });
         } else {
           return [];
         }
@@ -3791,6 +3794,7 @@ Attendees.datagridUpdate = {
         },
         {
           dataField: 'infos.show_secret',
+          apiUrlName: 'api_attendee_folkattendee_secret_column',
         },
         {
           dataField: 'when',
@@ -3803,7 +3807,9 @@ Attendees.datagridUpdate = {
             autoResizeEnabled: true,
           }
         },
-      ],
+      ].filter(item => {
+        return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
+      }),
     },
   },
 
@@ -4123,7 +4129,10 @@ Attendees.datagridUpdate = {
         dataField: 'infos.note',
         visible: false,
         caption: 'Note',
-        dataType: 'string',
+        editorType: 'dxTextArea',
+        editorOptions: {
+          autoResizeEnabled: true,
+        },
       },
     ],
   },
