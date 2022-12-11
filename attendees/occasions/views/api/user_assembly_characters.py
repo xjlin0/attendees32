@@ -33,20 +33,16 @@ class ApiUserAssemblyCharactersViewSet(viewsets.ModelViewSet):
         ) if settings.DEBUG else get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
-        search_value = self.request.query_params.get("searchValue")
-        search_operation = self.request.query_params.get("searchOperation")
 
         if current_user_organization:
-            filters = {
-                'organization': current_user_organization,
-                'assemblies': self.request.query_params.getlist("assemblies[]"),
-                'target_attendee': target_attendee
-            }
-            # if search_value and search_operation == 'contains':
-            #     search_column = self.request.query_params.get("searchExpr")
-            #     filters[f'{search_column}__icontains'] = search_value
-
-            return CharacterService.by_organization_assemblies(**filters)
+            return CharacterService.by_organization_assemblies(
+                organization=current_user_organization,
+                assemblies=self.request.query_params.getlist("assemblies[]"),
+                target_attendee=target_attendee,
+                search_value=self.request.query_params.get("searchValue"),
+                search_operation=self.request.query_params.get("searchOperation"),
+                search_column=self.request.query_params.get("searchExpr")
+            )
 
         else:
             time.sleep(2)

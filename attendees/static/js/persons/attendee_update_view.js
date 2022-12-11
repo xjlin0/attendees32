@@ -3957,7 +3957,6 @@ Attendees.datagridUpdate = {
         caption: 'Group (Assembly)',
         setCellValue: (newData, value, currentData) => {
           newData.meet__assembly = value;
-          newData.assembly = value;
           newData.meet = null;
           newData.character = null;
         },
@@ -4001,7 +4000,7 @@ Attendees.datagridUpdate = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              filter: options.data ? {'assemblies[]': options.data.meet__assembly} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
@@ -4039,7 +4038,7 @@ Attendees.datagridUpdate = {
           displayExpr: 'display_name',
           dataSource: (options) => {
             return {
-              filter: options.data ? {'assemblies[]': options.data.assembly} : null,
+              filter: options.data ? {'assemblies[]': options.data.meet__assembly} : null,
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {

@@ -43,10 +43,14 @@ class CharacterService:
         )  # another way is to get assemblys from registration, but it relies on attendingmeet validations
 
     @staticmethod
-    def by_organization_assemblies(organization, assemblies, target_attendee):
+    def by_organization_assemblies(organization, assemblies, target_attendee, search_value, search_operation, search_column):
         filters = {"assembly__division__organization": organization}
         if assemblies:
             filters["assembly__in"] = assemblies
+
+        if search_value and search_operation == 'contains':
+            filters[f'{search_column}__icontains'] = search_value
+
         return Character.objects.filter(**filters).order_by(
             Case(
                 When(
