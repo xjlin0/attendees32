@@ -3562,7 +3562,7 @@ Attendees.datagridUpdate = {
       },
       {
         apiUrlName: 'api_attendee_folkattendee_secret_column',
-        caption: 'Secret shared with you',
+        caption: 'Secret?',
         dataField: 'infos.show_secret',
         width: '18%',
         calculateCellValue: (rowData) => {

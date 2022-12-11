@@ -872,6 +872,7 @@ Attendees.gatherings = {
         caption: 'Auto generate attendance?',
         dataType: 'boolean',
         editorType: 'dxCheckBox',
+        calculateCellValue: rowData => !!(rowData.infos && rowData.infos.generate_attendance),
       },
       {
         dataField: 'infos.note',
