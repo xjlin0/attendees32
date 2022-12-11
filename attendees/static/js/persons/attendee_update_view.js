@@ -27,7 +27,7 @@ Attendees.datagridUpdate = {
   },
   attendingmeetDefaults: {
     // assembly: parseInt(document.querySelector('div.datagrid-attendee-update').dataset.currentAssemblyId),
-    category: 'primary',
+    category: 1,  // scheduled
     start: new Date().toISOString(),
     finish: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), // 1 years from now
   },
@@ -3898,7 +3898,7 @@ Attendees.datagridUpdate = {
       }),
     },
     onRowInserted: (e) => {
-      Attendees.datagridUpdate.attendingMeetDatagrid.refresh();
+      e.component.refresh();
     },
     onInitNewRow: (e) => {
       for (const [key, value] of Object.entries(Attendees.datagridUpdate.attendingmeetDefaults)) {
@@ -3956,6 +3956,7 @@ Attendees.datagridUpdate = {
         validationRules: [{type: 'required'}],
         caption: 'Group (Assembly)',
         setCellValue: (newData, value, currentData) => {
+          newData.meet__assembly = value;
           newData.assembly = value;
           newData.meet = null;
           newData.character = null;
@@ -3966,7 +3967,13 @@ Attendees.datagridUpdate = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.assembliesEndpoint),
+              load: (searchOptions) => {
+                const d = new $.Deferred();
+                $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.assembliesEndpoint, searchOptions).done((response) => {
+                  d.resolve(response.data);
+                });
+                return d.promise();
+              },
               byKey: (key) => {
                 if (key) {
                   const d = $.Deferred();
@@ -3998,13 +4005,16 @@ Attendees.datagridUpdate = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
+                  const filter = searchOpts.filter;
+                  delete searchOpts.filter;
+                  searchOpts = filter ? {...searchOpts, ...filter} : searchOpts;
                   const d = new $.Deferred();
-                  $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts.filter)
+                  $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts)
                     .done((result) => {
                       if (result.data && Attendees.datagridUpdate.meetCharacters === null) {
                         Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
                       }  // cache the every meet's major characters for later use
-                      d.resolve(result);
+                      d.resolve(result.data);
                     });
                   return d.promise();
                 },
@@ -4033,8 +4043,16 @@ Attendees.datagridUpdate = {
               store: new DevExpress.data.CustomStore({
                 key: 'id',
                 load: (searchOpts) => {
-                  return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint, searchOpts.filter);
-                },
+                  const filter = searchOpts.filter;
+                  delete searchOpts.filter;
+                  searchOpts = filter ? {...searchOpts, ...filter} : searchOpts;
+                  const d = new $.Deferred();
+                  $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint, searchOpts)
+                    .done((result) => {
+                      d.resolve(result.data);
+                    });
+                  return d.promise();
+                },  // Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint
                 byKey: (key) => {
                   const d = new $.Deferred();
                   $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.charactersEndpoint + key + '/')
@@ -4179,9 +4197,6 @@ Attendees.datagridUpdate = {
         {
           dataField: 'infos.note',
           helpText: 'special memo',
-          editorOptions: {
-            autoResizeEnabled: true,
-          },
         },
       ],
     },
