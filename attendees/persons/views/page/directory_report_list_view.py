@@ -19,10 +19,17 @@ class DirectoryReportListView(RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        division_ids = self.request.GET.getlist('divisionSelector', [])
         index_row_per_page = int(self.request.GET.get("indexRowPerPage", '26'))
         page_breaks_before_index = int(self.request.GET.get("pageBreaksBeforeIndex", '2'))
         user_org_settings = self.request.user.organization.infos.get("settings", {})
-        indexes, families = FolkService.families_in_directory(user_org_settings.get('default_directory_meet'), user_org_settings.get('default_member_meet'), index_row_per_page)
+        indexes, families = FolkService.families_in_directory(
+            directory_meet_id=user_org_settings.get('default_directory_meet'),
+            member_meet_id=user_org_settings.get('default_member_meet'),
+            row_limit=index_row_per_page,
+            targeting_attendee_id=None,
+            division_ids=division_ids,
+        )
         context.update({
             'directory_header': self.request.GET.get('directoryHeader', ''),
             'index_header': self.request.GET.get('indexHeader', ''),

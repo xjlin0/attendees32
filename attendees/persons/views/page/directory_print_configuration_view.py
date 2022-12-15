@@ -6,6 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from attendees.users.authorization import RouteGuard
+from attendees.whereabouts.models import Division
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,10 @@ class DirectoryPrintConfigurationView(RouteGuard, ListView):
         context = super().get_context_data(**kwargs)
         context.update({
             'pdf_url': '/persons/directory_report/',
-            'organization_direct_meet': self.request.user.organization.infos.get("settings", {}).get("default_directory_meet")
+            'organization_direct_meet': self.request.user.organization.infos.get("settings", {}).get("default_directory_meet"),
+            "divisions": Division.objects.filter(
+                        organization=self.request.user.attendee.division.organization if hasattr(self.request.user, 'attendee') else self.request.user.organization,
+                    ).values("id", "display_name"),
         })
         return context
 

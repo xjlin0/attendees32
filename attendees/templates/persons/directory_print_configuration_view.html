@@ -112,6 +112,23 @@
                  id="index-row-per-page">
         </div>
       </div>
+      <div class="row mb-3">
+        <label for="division-selector"
+               class="col-sm-2 col-form-label">
+          Division Selector
+        </label>
+        <div class="col-sm-10">
+          <select required multiple
+                 name="divisionSelector"
+                 title="Limit divisions of families. (can select multiple by holding the control key)"
+                 class="form-select form-select-lg"
+                 id="division-selector">
+            {% for division in divisions %}
+              <option selected value="{{division.id}}">{{division.display_name}}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
       <button class="btn btn-primary"
               title="Get the directory for print (it will take some time)."
               type="submit">
