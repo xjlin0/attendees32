@@ -2586,6 +2586,7 @@ Attendees.datagridUpdate = {
               key: 'id',
               load: (searchOpts) => {
                 const params = {take: 999};
+                params['relative'] = categoryId === 0;  // for limiting family/other roles
                 if (searchOpts.searchValue) {
                   const searchCondition = ['title', searchOpts.searchOperation, searchOpts.searchValue];
                   params.filter = JSON.stringify(searchCondition);
