@@ -55,8 +55,8 @@
                  type="text"
                  title="Directory header on the upper right corner of every directory page."
                  class="form-control"
-                 value="2023 Directory"
-                 placeholder="For example: 2023 Directory"
+                 value="{% now 'Y F' %} Directory"
+                 placeholder="For example: {% now 'Y F' %} Directory"
                  id="directory-header">
         </div>
       </div>
@@ -89,8 +89,8 @@
                  type="text"
                  class="form-control"
                  title="Index header on the upper right corner of every index page."
-                 value="2023 Area Directory"
-                 placeholder="For example: 2023 Area Directory"
+                 value="{% now 'Y F' %} Area Directory"
+                 placeholder="For example: {% now 'Y F' %} Area Directory"
                  id="index-header">
         </div>
       </div>
