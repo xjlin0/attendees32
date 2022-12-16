@@ -79,6 +79,7 @@ class FolkService:
                 if family_address:
                     address_line1 = f'{family_address.street_number} {family_address.route}'
                     address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
+                    attrs['address_link'] = f'{address_line1}+{address_line2}'.replace(' ',  '+')
                     if family_address.extra:
                         address_line1 += f' {family_address.extra}'
                     attrs['address_line1'] = address_line1

@@ -68,3 +68,8 @@ img.directory-photo-img {
 .left, .right {
   flex: 1;
 }
+
+div.contacts-container a.link-as-text {
+  text-decoration: none;
+  color: inherit;
+}
