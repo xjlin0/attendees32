@@ -17,7 +17,7 @@ opencc==1.1.3  ## https://github.com/BYVoid/OpenCC
 -e git+https://github.com/xjlin0/django-address.git@address_extra_field_026#egg=django-address
 #django-parler==2.2   # https://github.com/django-parler/django-parler  # works on Django 3?
 
-django-summernote==0.8.20.0 # https://github.com/summernote/django-summernote
+# django-summernote==0.8.20.0 # https://github.com/summernote/django-summernote
 # -e git+https://github.com/llazzaro/django-scheduler.git@develop#egg=django-scheduler
 django-scheduler==0.10.0  # https://github.com/llazzaro/django-scheduler
 django-mptt==0.13.4 # https://github.com/django-mptt/django-mptt
