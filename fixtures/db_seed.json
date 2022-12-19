@@ -2022,7 +2022,7 @@
     "pk": 0,
     "fields": {
       "calendar": 0,
-      "content_type": 54,
+      "content_type": 53,
       "object_id": 0,
       "distinction": "source",
       "inheritable": true
@@ -2033,7 +2033,7 @@
     "pk": 1,
     "fields": {
       "calendar": 1,
-      "content_type": 54,
+      "content_type": 53,
       "object_id": 1,
       "distinction": "source",
       "inheritable": true
@@ -2044,7 +2044,7 @@
     "pk": 2,
     "fields": {
       "calendar": 2,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 1,
       "distinction": "source",
       "inheritable": true
@@ -2055,7 +2055,7 @@
     "pk": 3,
     "fields": {
       "calendar": 3,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 8,
       "distinction": "source",
       "inheritable": true
@@ -2066,7 +2066,7 @@
     "pk": 4,
     "fields": {
       "calendar": 4,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 9,
       "distinction": "source",
       "inheritable": true
@@ -2077,7 +2077,7 @@
     "pk": 5,
     "fields": {
       "calendar": 5,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 10,
       "distinction": "source",
       "inheritable": true
@@ -2088,7 +2088,7 @@
     "pk": 6,
     "fields": {
       "calendar": 6,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 11,
       "distinction": "source",
       "inheritable": true
@@ -2099,7 +2099,7 @@
     "pk": 7,
     "fields": {
       "calendar": 7,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 6,
       "distinction": "source",
       "inheritable": true
@@ -2110,7 +2110,7 @@
     "pk": 8,
     "fields": {
       "calendar": 8,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 12,
       "distinction": "source",
       "inheritable": true
@@ -2121,7 +2121,7 @@
     "pk": 9,
     "fields": {
       "calendar": 9,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 7,
       "distinction": "source",
       "inheritable": true
@@ -2132,7 +2132,7 @@
     "pk": 10,
     "fields": {
       "calendar": 10,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 19,
       "distinction": "source",
       "inheritable": true
@@ -2143,7 +2143,7 @@
     "pk": 11,
     "fields": {
       "calendar": 11,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 20,
       "distinction": "source",
       "inheritable": true
@@ -2154,7 +2154,7 @@
     "pk": 12,
     "fields": {
       "calendar": 12,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 3,
       "distinction": "source",
       "inheritable": true
@@ -2165,7 +2165,7 @@
     "pk": 13,
     "fields": {
       "calendar": 13,
-      "content_type": 54,
+      "content_type": 53,
       "object_id": 1,
       "distinction": "source",
       "inheritable": true
@@ -2176,7 +2176,7 @@
     "pk": 14,
     "fields": {
       "calendar": 14,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 21,
       "distinction": "source",
       "inheritable": true
@@ -2187,7 +2187,7 @@
     "pk": 15,
     "fields": {
       "calendar": 15,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 14,
       "distinction": "source",
       "inheritable": true
@@ -2198,7 +2198,7 @@
     "pk": 16,
     "fields": {
       "calendar": 16,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 15,
       "distinction": "source",
       "inheritable": true
@@ -2209,7 +2209,7 @@
     "pk": 17,
     "fields": {
       "calendar": 17,
-      "content_type": 64,
+      "content_type": 63,
       "object_id": 16,
       "distinction": "source",
       "inheritable": true
@@ -3231,7 +3231,7 @@
     "pk": 1,
     "fields": {
       "event": 1,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 1,
       "distinction": "source"
     }
@@ -3241,7 +3241,7 @@
     "pk": 2,
     "fields": {
       "event": 2,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 2,
       "distinction": "source"
     }
@@ -3251,7 +3251,7 @@
     "pk": 3,
     "fields": {
       "event": 3,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 3,
       "distinction": "source"
     }
@@ -3261,7 +3261,7 @@
     "pk": 4,
     "fields": {
       "event": 4,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 4,
       "distinction": "source"
     }
@@ -3271,7 +3271,7 @@
     "pk": 5,
     "fields": {
       "event": 5,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 7,
       "distinction": "source"
     }
@@ -3281,7 +3281,7 @@
     "pk": 6,
     "fields": {
       "event": 6,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 1,
       "distinction": "location"
     }
@@ -3291,7 +3291,7 @@
     "pk": 7,
     "fields": {
       "event": 7,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 2,
       "distinction": "location"
     }
@@ -3301,7 +3301,7 @@
     "pk": 8,
     "fields": {
       "event": 8,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 3,
       "distinction": "location"
     }
@@ -3311,7 +3311,7 @@
     "pk": 9,
     "fields": {
       "event": 9,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 4,
       "distinction": "location"
     }
@@ -3321,7 +3321,7 @@
     "pk": 10,
     "fields": {
       "event": 10,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 7,
       "distinction": "location"
     }
@@ -3331,7 +3331,7 @@
     "pk": 11,
     "fields": {
       "event": 25,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 19,
       "distinction": "source"
     }
@@ -3341,7 +3341,7 @@
     "pk": 12,
     "fields": {
       "event": 26,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 19,
       "distinction": "location"
     }
@@ -3351,7 +3351,7 @@
     "pk": 13,
     "fields": {
       "event": 27,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 20,
       "distinction": "source"
     }
@@ -3361,7 +3361,7 @@
     "pk": 14,
     "fields": {
       "event": 28,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 20,
       "distinction": "location"
     }
@@ -3371,7 +3371,7 @@
     "pk": 15,
     "fields": {
       "event": 29,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 5,
       "distinction": "source"
     }
@@ -3381,7 +3381,7 @@
     "pk": 16,
     "fields": {
       "event": 30,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 5,
       "distinction": "location"
     }
@@ -3391,7 +3391,7 @@
     "pk": 17,
     "fields": {
       "event": 31,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 21,
       "distinction": "source"
     }
@@ -3401,7 +3401,7 @@
     "pk": 18,
     "fields": {
       "event": 32,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 21,
       "distinction": "location"
     }
@@ -3411,7 +3411,7 @@
     "pk": 19,
     "fields": {
       "event": 33,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 21,
       "distinction": "location"
     }
@@ -3421,7 +3421,7 @@
     "pk": 20,
     "fields": {
       "event": 34,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 21,
       "distinction": "location"
     }
@@ -3431,7 +3431,7 @@
     "pk": 21,
     "fields": {
       "event": 35,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 21,
       "distinction": "location"
     }
@@ -3441,7 +3441,7 @@
     "pk": 22,
     "fields": {
       "event": 36,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 22,
       "distinction": "source"
     }
@@ -3451,7 +3451,7 @@
     "pk": 23,
     "fields": {
       "event": 37,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 22,
       "distinction": "location"
     }
@@ -3461,7 +3461,7 @@
     "pk": 24,
     "fields": {
       "event": 38,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 23,
       "distinction": "source"
     }
@@ -3471,7 +3471,7 @@
     "pk": 25,
     "fields": {
       "event": 39,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 23,
       "distinction": "location"
     }
@@ -3481,7 +3481,7 @@
     "pk": 26,
     "fields": {
       "event": 40,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 24,
       "distinction": "source"
     }
@@ -3491,7 +3491,7 @@
     "pk": 27,
     "fields": {
       "event": 41,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 24,
       "distinction": "location"
     }
@@ -3501,7 +3501,7 @@
     "pk": 28,
     "fields": {
       "event": 42,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 24,
       "distinction": "location"
     }
@@ -3511,7 +3511,7 @@
     "pk": 29,
     "fields": {
       "event": 43,
-      "content_type": 103,
+      "content_type": 102,
       "object_id": 25,
       "distinction": "source"
     }
@@ -7059,7 +7059,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 97,
+      "content_type": 96,
       "object_id": "7",
       "organization": 1,
       "address": 2,
@@ -7089,7 +7089,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "a48e4375-1a64-4c4f-beb3-8f088bf77340",
       "organization": 1,
       "address": 5,
@@ -7111,7 +7111,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 60,
+      "content_type": 59,
       "object_id": "1",
       "organization": 1,
       "address": 1,
@@ -7135,7 +7135,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "80f2e82f-0a72-49ea-b3e2-3fc892c49599",
       "organization": 1,
       "address": 3,
@@ -7157,7 +7157,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "80f2e82f-0a72-49ea-b3e2-3fc892c49599",
       "organization": 1,
       "address": 4,
@@ -7179,7 +7179,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "f3b780ad-c736-490e-8731-58b96dfd81f8",
       "organization": 1,
       "address": 6,
@@ -7201,7 +7201,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "ffd3881a-7a77-437a-ba11-c90610839523",
       "organization": 1,
       "address": 6,
@@ -7223,7 +7223,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "organization": 1,
       "address": 6,
@@ -7245,7 +7245,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "d7e6ec14-302e-46a3-9f32-537d1fc0256b",
       "organization": 1,
       "address": 2,
@@ -7275,7 +7275,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 97,
+      "content_type": 96,
       "object_id": "4",
       "organization": 1,
       "address": 9,
@@ -7305,7 +7305,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 97,
+      "content_type": 96,
       "object_id": "6",
       "organization": 1,
       "address": 11,
@@ -7335,7 +7335,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 97,
+      "content_type": 96,
       "object_id": "5",
       "organization": 1,
       "address": 1,
@@ -7365,7 +7365,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 97,
+      "content_type": 96,
       "object_id": "3",
       "organization": 1,
       "address": 10,
@@ -7395,7 +7395,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 97,
+      "content_type": 96,
       "object_id": "1",
       "organization": 1,
       "address": 1,
@@ -7424,7 +7424,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 97,
+      "content_type": 96,
       "object_id": "2",
       "organization": 1,
       "address": 1,
@@ -7446,7 +7446,7 @@
       "created": "2021-05-05T05:46:36.216Z",
       "modified": "2021-05-05T05:46:36.216Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "22c29cd5-a5ab-46a3-afe6-d5a600c33fc9",
       "organization": 1,
       "address": 3,
@@ -8698,7 +8698,7 @@
       "created": "2021-05-23T13:03:48.096Z",
       "modified": "2021-05-23T13:11:31.627Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "when": "2021-05-23",
       "finish": null,
@@ -8721,7 +8721,7 @@
       "created": "2021-05-23T13:03:28.804Z",
       "modified": "2021-05-23T13:11:11.686Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "when": "2021-05-23",
       "finish": null,
@@ -8742,7 +8742,7 @@
       "created": "2021-05-23T13:14:49.684Z",
       "modified": "2021-06-11T16:23:58.098Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "when": "2021-05-23",
       "finish": null,
@@ -8763,7 +8763,7 @@
       "created": "2021-05-23T13:10:51.374Z",
       "modified": "2021-05-23T13:10:51.374Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "when": "2021-05-23",
       "finish": null,
@@ -8784,7 +8784,7 @@
       "created": "2021-05-23T13:05:34.202Z",
       "modified": "2021-05-23T13:09:48.778Z",
       "is_removed": false,
-      "content_type": 85,
+      "content_type": 84,
       "object_id": "aa24758f-cc70-4353-b1d7-9c616b3db425",
       "when": "2021-05-23",
       "finish": null,
@@ -14098,7 +14098,7 @@
         "link": null,
         "週報": "https://sdasdasd.com/asdadsasd.pdf"
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "1"
     }
   },
@@ -14114,7 +14114,7 @@
       "finish": "2020-05-17T18:59:59Z",
       "display_name": "05/17/2020",
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "1"
     }
   },
@@ -14132,7 +14132,7 @@
       "infos": {
         "link": null
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "7"
     }
   },
@@ -14150,7 +14150,7 @@
       "infos": {
         "link": null
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "6"
     }
   },
@@ -14168,7 +14168,7 @@
       "infos": {
         "link": null
       },
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "e50d2b9c-0f92-4048-a524-918909d7a0c5"
     }
   },
@@ -14184,7 +14184,7 @@
       "finish": "2020-07-21T06:00:00Z",
       "display_name": "07/20/2020 Basic I",
       "infos": {},
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "edd6463b-3757-423e-83a8-4ff823ee9059"
     }
   },
@@ -14202,7 +14202,7 @@
       "infos": {
         "LG_location": "Burbank Library"
       },
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -14218,7 +14218,7 @@
       "finish": "2020-12-24T18:59:59Z",
       "display_name": "12/24/2020 主日崇拜",
       "infos": {},
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -14234,7 +14234,7 @@
       "finish": "2020-07-19T20:15:00Z",
       "display_name": "CFCC夏令會2020住宿",
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "4"
     }
   },
@@ -14250,7 +14250,7 @@
       "finish": "2020-07-18T01:00:00Z",
       "display_name": "CFCC夏令會2020 July 17 晚餐",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "4"
     }
   },
@@ -14266,7 +14266,7 @@
       "finish": "2020-07-19T04:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 宵夜聯誼",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "6"
     }
   },
@@ -14282,7 +14282,7 @@
       "finish": "2020-07-18T15:15:00Z",
       "display_name": "CFCC夏令會2020 July 18 早餐",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "4"
     }
   },
@@ -14298,7 +14298,7 @@
       "finish": "2020-07-18T19:45:00Z",
       "display_name": "CFCC夏令會2020 July 18 中餐",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "4"
     }
   },
@@ -14314,7 +14314,7 @@
       "finish": "2020-07-19T02:00:00Z",
       "display_name": "CFCC夏令會2020 July 18 晚餐",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "4"
     }
   },
@@ -14330,7 +14330,7 @@
       "finish": "2020-07-18T04:30:00Z",
       "display_name": "CFCC夏令會2020 July 17 破冰遊戲",
       "infos": {},
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "3"
     }
   },
@@ -14346,7 +14346,7 @@
       "finish": "2020-07-19T15:15:00Z",
       "display_name": "CFCC夏令會2020 July 19 早餐",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "4"
     }
   },
@@ -14362,7 +14362,7 @@
       "finish": "2020-07-19T19:45:00Z",
       "display_name": "CFCC夏令會2020 July 19 中餐",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "4"
     }
   },
@@ -14378,7 +14378,7 @@
       "finish": "2020-07-18T03:30:00Z",
       "display_name": "CFCC夏令會2020 July 17 講道信息 I",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "3"
     }
   },
@@ -14394,7 +14394,7 @@
       "finish": "2020-07-18T17:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 講道信息 II",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "5"
     }
   },
@@ -14410,7 +14410,7 @@
       "finish": "2020-07-18T22:00:00Z",
       "display_name": "CFCC夏令會2020 July 18 講道信息 III",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "5"
     }
   },
@@ -14426,7 +14426,7 @@
       "finish": "2020-07-19T03:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 講道信息 IV",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "5"
     }
   },
@@ -14442,7 +14442,7 @@
       "finish": "2020-07-19T17:30:00Z",
       "display_name": "CFCC夏令會2020 July 19 講道信息 V",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "5"
     }
   },
@@ -14458,7 +14458,7 @@
       "finish": "2020-07-18T05:30:00Z",
       "display_name": "CFCC夏令會2020 July 17 同工會議",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "2"
     }
   },
@@ -14474,7 +14474,7 @@
       "finish": "2020-07-19T05:30:00Z",
       "display_name": "CFCC夏令會2020 July 18 組長會議",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "4"
     }
   },
@@ -14490,7 +14490,7 @@
       "finish": "2020-07-18T20:15:00Z",
       "display_name": "CFCC夏令會2020 July 18 團體合影",
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "4"
     }
   },
@@ -14506,7 +14506,7 @@
       "finish": "2020-07-18T19:00:00Z",
       "display_name": "CFCC夏令會2020 小組分享1",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "2"
     }
   },
@@ -14522,7 +14522,7 @@
       "finish": "2020-07-20T01:00:00Z",
       "display_name": "CFCC夏令會2020 接送",
       "infos": {},
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "e6e50c89-f4b7-4071-8a58-850800445304"
     }
   },
@@ -14538,7 +14538,7 @@
       "finish": "2020-07-18T19:00:00Z",
       "display_name": "CFCC夏令會2020 小組分享2",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "3"
     }
   },
@@ -14554,7 +14554,7 @@
       "finish": "2020-07-18T19:00:00Z",
       "display_name": "CFCC夏令會2020 小組分享3",
       "infos": {},
-      "site_type": 62,
+      "site_type": 61,
       "site_id": "4"
     }
   },
@@ -14570,7 +14570,7 @@
       "finish": "2022-10-18T19:00:00Z",
       "display_name": "CFCCH會員大會秋季2022 Fall congregation meeting",
       "infos": {},
-      "site_type": 56,
+      "site_type": 55,
       "site_id": "1"
     }
   },
@@ -14586,7 +14586,7 @@
       "finish": "2199-07-18T19:00:00Z",
       "display_name": "CFCCH通訊錄 directory",
       "infos": {},
-      "site_type": 56,
+      "site_type": 55,
       "site_id": "1"
     }
   },
@@ -14628,7 +14628,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -14673,7 +14673,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "680656f5-a475-439e-9844-1129bd5aa5a4"
     }
   },
@@ -14719,7 +14719,7 @@
         },
         "default_attendingmeet_in_weeks": 53
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "1"
     }
   },
@@ -14765,7 +14765,7 @@
         },
         "default_attendingmeet_in_weeks": 53
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "22"
     }
   },
@@ -14807,7 +14807,7 @@
         },
         "default_attendingmeet_in_weeks": 53
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "7"
     }
   },
@@ -14850,7 +14850,7 @@
         "extending_attending_days": 90,
         "default_attendingmeet_in_weeks": 30
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "19"
     }
   },
@@ -14896,7 +14896,7 @@
         },
         "default_attendingmeet_in_weeks": 30
       },
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "1"
     }
   },
@@ -14983,7 +14983,7 @@
         "extending_attending_days": 90,
         "default_attendingmeet_in_weeks": 30
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "19"
     }
   },
@@ -15025,7 +15025,7 @@
         },
         "default_attendingmeet_in_weeks": 60
       },
-      "site_type": 54,
+      "site_type": 53,
       "site_id": "1"
     }
   },
@@ -15066,7 +15066,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 54,
+      "site_type": 53,
       "site_id": "1"
     }
   },
@@ -15107,7 +15107,7 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "3"
     }
   },
@@ -15148,7 +15148,7 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "3"
     }
   },
@@ -15188,7 +15188,7 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "3"
     }
   },
@@ -15229,7 +15229,7 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "3"
     }
   },
@@ -15270,7 +15270,7 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "3"
     }
   },
@@ -15311,7 +15311,7 @@
         },
         "default_attendingmeet_in_weeks": 50
       },
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "3"
     }
   },
@@ -15351,7 +15351,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 54,
+      "site_type": 53,
       "site_id": "1"
     }
   },
@@ -15391,7 +15391,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 54,
+      "site_type": 53,
       "site_id": "1"
     }
   },
@@ -15430,7 +15430,7 @@
         },
         "default_attendingmeet_in_weeks": 99999
       },
-      "site_type": 58,
+      "site_type": 57,
       "site_id": "2"
     }
   },
@@ -15474,7 +15474,7 @@
         },
         "default_attendingmeet_in_weeks": 25
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "3"
     }
   },
@@ -15520,7 +15520,7 @@
         },
         "default_attendingmeet_in_weeks": 53
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "21"
     }
   },
@@ -15564,7 +15564,7 @@
         },
         "default_attendingmeet_in_weeks": 25
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "7"
     }
   },
@@ -15608,7 +15608,7 @@
         },
         "default_attendingmeet_in_weeks": 25
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "3"
     }
   },
@@ -15652,7 +15652,7 @@
         },
         "default_attendingmeet_in_weeks": 25
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "19"
     }
   },
@@ -15696,7 +15696,7 @@
         },
         "default_attendingmeet_in_weeks": 25
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "3"
     }
   },
@@ -15740,7 +15740,7 @@
         },
         "default_attendingmeet_in_weeks": 25
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "3"
     }
   },
@@ -15779,7 +15779,7 @@
         "automatic_creation": {},
         "default_attendingmeet_in_weeks": 530
       },
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "1"
     }
   },
@@ -15833,7 +15833,7 @@
       "display_name": "CFCCH CM The Rock PreSchool",
       "display_order": 500,
       "infos": {},
-      "site_type": 60,
+      "site_type": 59,
       "site_id": "1"
     }
   },
@@ -15849,7 +15849,7 @@
       "display_name": "CFCCH 2020夏令會中文討論小組1",
       "display_order": 0,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "5"
     }
   },
@@ -15865,7 +15865,7 @@
       "display_name": "CFCCH 2020夏令會中文討論小組2",
       "display_order": 0,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "4"
     }
   },
@@ -15881,7 +15881,7 @@
       "display_name": "CFCCH 2020夏令會 接送 pickup1",
       "display_order": 0,
       "infos": {},
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "a37797e4-32a6-4ecd-b820-c04330b94662"
     }
   },
@@ -15897,7 +15897,7 @@
       "display_name": "CFCCH 2020夏令會 接送 pickup2",
       "display_order": 0,
       "infos": {},
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "721be461-4304-49f4-a477-3e45f7ed38bd"
     }
   },
@@ -15913,7 +15913,7 @@
       "display_name": "CFCCH CM The Rock Large Group",
       "display_order": 100,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "22"
     }
   },
@@ -15929,7 +15929,7 @@
       "display_name": "女高音 soprano",
       "display_order": 100,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "7"
     }
   },
@@ -15945,7 +15945,7 @@
       "display_name": "女低音 alto",
       "display_order": 200,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "7"
     }
   },
@@ -15961,7 +15961,7 @@
       "display_name": "男高音 tenor",
       "display_order": 300,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "7"
     }
   },
@@ -15977,7 +15977,7 @@
       "display_name": "男低音 bass",
       "display_order": 400,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "7"
     }
   },
@@ -15993,7 +15993,7 @@
       "display_name": "CFCCH 2020夏令會 接送 pickup3",
       "display_order": 0,
       "infos": {},
-      "site_type": 53,
+      "site_type": 52,
       "site_id": "721be461-4304-49f4-a477-3e45f7ed38bd"
     }
   },
@@ -16009,7 +16009,7 @@
       "display_name": "CFCCH CM Under 3",
       "display_order": 600,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "22"
     }
   },
@@ -16025,7 +16025,7 @@
       "display_name": "CFCCH CM The Rock Kindergarten & Pre-K",
       "display_order": 100,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "22"
     }
   },
@@ -16041,7 +16041,7 @@
       "display_name": "CFCCH CM The Rock 1st Grade",
       "display_order": 200,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "11"
     }
   },
@@ -16057,7 +16057,7 @@
       "display_name": "CFCCH CM The Rock 2nd Grade",
       "display_order": 300,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "11"
     }
   },
@@ -16073,7 +16073,7 @@
       "display_name": "CFCCH CM The Rock 3rd Grade",
       "display_order": 400,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "9"
     }
   },
@@ -16089,7 +16089,7 @@
       "display_name": "CFCCH CM The Rock 4th Grade",
       "display_order": 500,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "9"
     }
   },
@@ -16105,7 +16105,7 @@
       "display_name": "CFCCH CM The Rock 5th Grade",
       "display_order": 600,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "6"
     }
   },
@@ -16121,7 +16121,7 @@
       "display_name": "CFCCH CM The Rock 1st & 2nd Grade",
       "display_order": 250,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "11"
     }
   },
@@ -16137,7 +16137,7 @@
       "display_name": "CFCCH CM The Rock 2nd & 3rd Grade",
       "display_order": 350,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "9"
     }
   },
@@ -16153,7 +16153,7 @@
       "display_name": "CFCCH CM The Rock 3rd & 4th Grade",
       "display_order": 450,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "9"
     }
   },
@@ -16169,7 +16169,7 @@
       "display_name": "CFCCH CM The Rock 4th & 5th Grade",
       "display_order": 550,
       "infos": {},
-      "site_type": 64,
+      "site_type": 63,
       "site_id": "6"
     }
   }
