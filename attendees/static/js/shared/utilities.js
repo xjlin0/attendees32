@@ -78,7 +78,7 @@ Attendees.utilities = {
 
   toggleDxFormGroups: (animationSpeed="fast") => {
     $(".h6:not(.not-shrinkable) .dx-form-group-caption")
-      .each(function () {
+      .each( () => {
         $(this)
           .prepend(
             $('<div />')
@@ -120,11 +120,11 @@ Attendees.utilities = {
         }, new FormData()),
 
   setAjaxLoaderOnDevExtreme: () => {
-    $(document).ajaxStop(function(){
+    $(document).ajaxStop(() => {
       $('div.dx-loadpanel').dxLoadPanel('hide');
     });
 
-    $(document).ajaxStart(function(){
+    $(document).ajaxStart(() => {
       $('div.dx-loadpanel').dxLoadPanel('show');
     });
 

@@ -1,21 +1,21 @@
 ;console.log("loading list_filter_collapse.js"); // Fancier version https://stackoverflow.com/a/10815237/4257237
 
-document.addEventListener("DOMContentLoaded", function(event){
+document.addEventListener("DOMContentLoaded", (event) => {
   console.log("DOM ready!");
   $=django.jQuery.noConflict();
-  $('#changelist-filter > h3').each(function(){
-      var $title = $(this);
+  $('#changelist-filter > h3').each(() => {
+      const $title = $(this);
       $title.next().toggle();
       $title.css("cursor","pointer");
-      $title.click(function(){
+      $title.click(() => {
           $title.next().slideToggle();
       });
   });
-  var toggle_flag = false;
+  let toggle_flag = false;
   $('#changelist-filter > h2').css("cursor","pointer");
-  $('#changelist-filter > h2').click(function () {
+  $('#changelist-filter > h2').click(() => {
       toggle_flag = ! toggle_flag;
-      $('#changelist-filter > ul').each(function(){
+      $('#changelist-filter > ul').each(() => {
           $(this).slideToggle(toggle_flag);
       });
   });

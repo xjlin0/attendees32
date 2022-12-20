@@ -29,10 +29,10 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
         calendar_id = self.request.query_params.get("calendar")
         start = self.request.query_params.get("start")
         end = self.request.query_params.get("end")
-        pk = self.kwargs.get("pk")
-        search_value = self.request.query_params.get("searchValue")
-        search_expression = self.request.query_params.get("searchExpr")
-        search_operation = self.request.query_params.get("searchOperation")
+        # pk = self.kwargs.get("pk")
+        # search_value = self.request.query_params.get("searchValue")
+        # search_expression = self.request.query_params.get("searchExpr")
+        # search_operation = self.request.query_params.get("searchOperation")
         if user_organization and start and end:
             tzname = (
                 self.request.COOKIES.get("timezone")
@@ -49,28 +49,24 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
             calendars = Calendar.objects.filter(filters)
 
             if calendars:
-                user_organization_calendar_all_day_events = Event.objects.filter(calendar=user_organization_calendar, description__startswith='allDay:')
-                events = Event.objects.filter(calendar__in=calendars)
-
-                period = Period(
-                    events,
-                    datetime.strptime(start, iso_time_format),
-                    datetime.strptime(end, iso_time_format),
-                    tzinfo=user_time_zone,
-                )
-
                 if calendar_id and int(calendar_id) == user_organization_calendar.id:
-                    return period.get_occurrences()
-
-                else:   # UI is showing other calendar, needs all day events
-                    all_day_period = Period(
-                        user_organization_calendar_all_day_events,
+                    return Period(
+                        Event.objects.filter(calendar__in=calendars),  # no need to filter for end_recurring_period
                         datetime.strptime(start, iso_time_format),
                         datetime.strptime(end, iso_time_format),
                         tzinfo=user_time_zone,
-                    )
+                    ).get_occurrences()
 
-                    return period.get_occurrences() + all_day_period.get_occurrences()
+                else:   # UI is showing other calendar, needs all day events
+                    return Period(
+                        Event.objects.filter(
+                            Q(calendar__in=calendars)
+                            |
+                            (Q(calendar=user_organization_calendar) & Q(description__startswith='allDay:'))),
+                        datetime.strptime(start, iso_time_format),
+                        datetime.strptime(end, iso_time_format),
+                        tzinfo=user_time_zone,
+                    ).get_occurrences()
 
             else:
                 time.sleep(2)

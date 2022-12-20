@@ -2909,7 +2909,7 @@
     "fields": {
       "start": "2020-02-09T18:00:00Z",
       "end": "2020-02-09T19:15:00Z",
-      "title": "source: 秋季主日學 Chinese Sunday School 10:00AM-11:15AM",
+      "title": "source: 成人主日學 Chinese Sunday School 10:00AM-11:15AM",
       "description": "room#3",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
@@ -3096,13 +3096,13 @@
     "fields": {
       "start": "2020-02-09T18:00:00Z",
       "end": "2020-02-09T19:15:00Z",
-      "title": "source: 週六團契 Chinese Saturday Bible study 10:00AM-11:15AM",
+      "title": "source: 查經 Chinese Bible study 10:00AM-11:15AM",
       "description": "room#3",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 10,
-      "end_recurring_period": null,
+      "end_recurring_period": "2022-12-11T18:55:53.117Z",
       "calendar": 1,
       "color_event": "#D85504"
     }
@@ -3119,7 +3119,7 @@
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
       "rule": 10,
-      "end_recurring_period": null,
+      "end_recurring_period": "2022-12-11T18:55:53.117Z",
       "calendar": 12,
       "color_event": "#D85504"
     }
@@ -15446,9 +15446,9 @@
       "shown_audience": true,
       "audience_editable": true,
       "start": "2022-09-01T14:53:44Z",
-      "finish": "2022-12-31T15:53:45Z",
-      "display_name": "2022 秋季主日學 Autumn Chinese Sunday School",
-      "slug": "d7c8Fd_cfcch_2022_autumn_chinese_sunday_school",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "2022 成人主日學 Chinese Sunday School",
+      "slug": "d7c8Fd_cfcch_adult_chinese_sunday_school",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -15580,9 +15580,9 @@
       "shown_audience": true,
       "audience_editable": true,
       "start": "2022-09-01T14:53:44Z",
-      "finish": "2032-12-31T15:53:45Z",
-      "display_name": "週六查經 Chinese Saturday Bible study",
-      "slug": "d7c8Fd_cfcch_chinese_saturday_bible_study",
+      "finish": "2022-12-11T18:55:53Z",
+      "display_name": "週間查經 Chinese Bible study",
+      "slug": "d7c8Fd_cfcch_chinese_bible_study",
       "infos": {
         "attendance": {},
         "allowed_groups": [
