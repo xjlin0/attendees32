@@ -26,14 +26,26 @@
     </div>
     <div class="contacts-container">
       <div class="phone_address left">
-        {{family.phone1}}       <br>
-        {{family.address_line1}}<br>
-        {{family.address_line2}}
+        {% if link %}
+          <a class="link-as-text" href="tel:{{family.phone1}}">{{family.phone1}}</a><br>
+          <a class="link-as-text" href="https://www.google.com/maps/place/{{family.address_link}}" target="_blank">{{family.address_line1}}</a><br>
+          <a class="link-as-text" href="https://www.google.com/maps/place/{{family.address_link}}" target="_blank">{{family.address_line2}}</a>
+        {% else %}
+          {{family.phone1}}       <br>
+          {{family.address_line1}}<br>
+          {{family.address_line2}}
+        {% endif %}
       </div>
       <div class="phone_email">
-        {{family.phone2}}<br>
-        {{family.email1}}<br>
-        {{family.email2}}
+        {% if link %}
+          <a class="link-as-text" href="tel:{{family.phone2}}">{{family.phone2}}</a><br>
+          <a class="link-as-text" href="mailto:{{family.email1}}">{{family.email1}}</a><br>
+          <a class="link-as-text" href="mailto:{{family.email2}}">{{family.email2}}</a>
+        {% else %}
+          {{family.phone2}}<br>
+          {{family.email1}}<br>
+          {{family.email2}}
+        {% endif %}
       </div>
       <div class="right"></div>
     </div>

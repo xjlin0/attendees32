@@ -2,7 +2,6 @@ from django.contrib import admin, messages
 from django.db import models
 from django.db.models import Q
 from django_json_widget.widgets import JSONEditorWidget
-from django_summernote.admin import SummernoteModelAdmin
 
 from attendees.occasions.models import Attendance, Meet, Team, Character, Assembly
 from attendees.persons.models import AttendingMeet, FolkAttendee, Category, Past, Note, Folk, Attendee, Registration, \
@@ -257,13 +256,11 @@ class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
         js = ["js/admin/list_filter_collapse.js"]
 
 
-class NoteAdmin(PgHistoryPage, SummernoteModelAdmin):
+class NoteAdmin(PgHistoryPage, admin.ModelAdmin):
     formfield_overrides = {
         models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = ("body",)
-    readonly_fields = ["id", "created", "modified"]
-    summernote_fields = ("body",)
     readonly_fields = ["id", "created", "modified"]
     list_display = ("id", "category", "content_object", "display_order", "modified")
 

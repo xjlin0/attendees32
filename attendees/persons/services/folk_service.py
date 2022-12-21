@@ -9,13 +9,13 @@ from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
 
 class FolkService:
     @staticmethod
-    def families_in_directory(directory_meet_id, member_meet_id, row_limit=26, targeting_attendee_id=None):
+    def families_in_directory(directory_meet_id, member_meet_id, row_limit=26, targeting_attendee_id=None, division_ids=[]):
         families = []
         index = defaultdict(lambda: {})
         index_list = []
         directory_meet = Meet.objects.filter(pk=directory_meet_id).first()
         member_meet = Meet.objects.filter(pk=member_meet_id).first()
-        targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks.filter(category=Attendee.FAMILY_CATEGORY) if targeting_attendee_id else Folk.objects
+        targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks if targeting_attendee_id else Folk.objects.filter(division__in=division_ids)
 
         if directory_meet:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
@@ -25,7 +25,7 @@ class FolkService:
                     Subquery(attendee_subquery.values_list('first_name')[:1]),
                 )
             ).filter(
-                category=0,  # Family
+                category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
                 infos__print_directory=True,
                 attendees__in=Attendee.objects.filter(
@@ -79,6 +79,7 @@ class FolkService:
                 if family_address:
                     address_line1 = f'{family_address.street_number} {family_address.route}'
                     address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
+                    attrs['address_link'] = f'{address_line1}+{address_line2}'.replace(' ',  '+')
                     if family_address.extra:
                         address_line1 += f' {family_address.extra}'
                     attrs['address_line1'] = address_line1

@@ -7,12 +7,20 @@ from django.urls import include, path, re_path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from django.views.static import serve
+from git import Repo
 from rest_framework.authtoken.views import obtain_auth_token
+
+repo = Repo(settings.ROOT_DIR)
 
 urlpatterns = [
     re_path("^private-media/", include(private_storage.urls)),
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    path(
+        "",
+        kwargs={"repo_version": f'{"DETACHED_" if repo.head.is_detached else repo.active_branch.name}/{repo.head.commit.hexsha[0:7] if repo.head.commit else "no sha"}'},
+        view=TemplateView.as_view(template_name="pages/home.html"),
+        name="home",
+    ),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
     ),
@@ -23,7 +31,7 @@ urlpatterns = [
     path("users/", include("attendees.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    path("summernote/", include("django_summernote.urls")),
+    # path("summernote/", include("django_summernote.urls")),
     path(
         "occasions/",
         include(

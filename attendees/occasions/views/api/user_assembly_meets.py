@@ -37,6 +37,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
         # Todo 20200530: filter meets by user's group like Meet.objects.filter(infos__allowed_groups__0__in=['children_coworker', 'hi']) if infos = {'allowed_groups': ['children_coworker', 'data_organizer']}
         if hasattr(current_user, 'attendee') and current_user_organization:
             filters = {"assembly__division__organization": current_user_organization}
+            model = self.request.query_params.get("model")
             assemblies = self.request.query_params.getlist("assemblies[]")
             search_value = self.request.query_params.get("searchValue")
             search_operation = self.request.query_params.get("searchOperation")
@@ -47,6 +48,10 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
 
             if assemblies:
                 filters["assembly__in"] = assemblies
+
+            if model:
+                filters["infos__allowed_models__regex"] = fr'({model})'
+
             return (
                 Meet.objects.filter(**filters)
                 .annotate(

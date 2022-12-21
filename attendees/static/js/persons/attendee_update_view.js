@@ -2586,6 +2586,7 @@ Attendees.datagridUpdate = {
               key: 'id',
               load: (searchOpts) => {
                 const params = {take: 999};
+                params['relative'] = categoryId === 0;  // for limiting family/other roles
                 if (searchOpts.searchValue) {
                   const searchCondition = ['title', searchOpts.searchOperation, searchOpts.searchValue];
                   params.filter = JSON.stringify(searchCondition);
@@ -2767,20 +2768,21 @@ Attendees.datagridUpdate = {
             class: 'form-check-label'
           });
           const savedFileALink = document.querySelector('a.folkattenee-file-link');
-          $clearInput.on('change', (e) => {
-            const $checkbox = $(e.currentTarget);
-            if (!confirm("Are you sure?")) {
-              $checkbox.prop('checked', !$checkbox.is(":checked"));
-            }
-            if ($checkbox.is(":checked")) {
-              Attendees.datagridUpdate.folkAttendeeFileUploader.option('value', []);
-              Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', true);
-              savedFileALink.textContent = 'will be deleted';
-            } else {
-              Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', false);
-              savedFileALink.textContent = 'Download';
-            }
-          });
+          $clearInput.off('change')  // preventing toggling edit from adding more listeners
+            .on('change', (e) => {
+              const $checkbox = $(e.currentTarget);
+              if (!confirm("Are you sure?")) {
+                $checkbox.prop('checked', !$checkbox.is(":checked"));
+              }
+              if ($checkbox.is(":checked")) {
+                Attendees.datagridUpdate.folkAttendeeFileUploader.option('value', []);
+                Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', true);
+                savedFileALink.textContent = 'will be deleted';
+              } else {
+                Attendees.datagridUpdate.folkAttendeeFileUploader.option('disabled', false);
+                savedFileALink.textContent = 'Download';
+              }
+            });
 
           cellElement.append($clearInput);
           cellElement.append($clearInputLabel);
@@ -2967,6 +2969,7 @@ Attendees.datagridUpdate = {
       onInitNewRow: (e) => {
         e.data['folk'] = {id: Attendees.datagridUpdate.firstFolkId[categoryId], category: categoryId};
         e.data['start'] = new Date().toLocaleDateString('sv');  // somehow new Date().toDateString() is UTC, Sweden locale "sv" uses the ISO 8601 format
+        e.data['display_order'] = categoryId === 0 ? 100 : 3000;  // families and other relationship ranking defaults
         e.component.option('editing.popup.title', `Add ${displayName} relationship`);
       },
       allowColumnReordering: true,
@@ -4006,7 +4009,7 @@ Attendees.datagridUpdate = {
                 load: (searchOpts) => {
                   const filter = searchOpts.filter;
                   delete searchOpts.filter;
-                  searchOpts = filter ? {...searchOpts, ...filter} : searchOpts;
+                  searchOpts = filter ? {...searchOpts, ...filter, model: 'attendingmeet'} : searchOpts;
                   const d = new $.Deferred();
                   $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts)
                     .done((result) => {

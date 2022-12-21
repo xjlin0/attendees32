@@ -1,4 +1,4 @@
-import ast
+import ast, json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
@@ -19,6 +19,7 @@ class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         relation_id = self.request.query_params.get("relation_id")
+        relative = self.request.query_params.get("relative", '""')
         filters_list_string = self.request.query_params.get("filter", "[]")
         filters_list = ast.literal_eval(
             filters_list_string
@@ -28,6 +29,10 @@ class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
             return Relation.objects.filter(pk=relation_id)
         else:
             init_query = Q(is_removed=False)
+
+            if relative:
+                init_query.add(Q(relative=json.loads(relative)), Q.AND)
+
             final_query = init_query.add(
                 AttendeeService.filter_parser(filters_list, None, self.request.user),
                 Q.AND,

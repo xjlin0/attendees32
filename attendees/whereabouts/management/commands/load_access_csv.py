@@ -500,9 +500,9 @@ class Command(BaseCommand):
                         try:
                             attendee.estimated_birthday = estimated_birthday_text
                             attendee.save()
-                            self.stdout.write(f"466 estimated_birthday of attendee {attendee.display_label} is being saved as {attendee.estimated_birthday}")
+                            self.stdout.write(f"503 estimated_birthday of attendee {attendee.display_label} is being saved as {attendee.estimated_birthday}")
                         except ValidationError:
-                            self.stdout.write(f"468 estimated_birthday of attendee {attendee.display_label} saved FAIL as {attendee.estimated_birthday}")
+                            self.stdout.write(f"505 estimated_birthday of attendee {attendee.display_label} saved FAIL as {attendee.estimated_birthday}")
                             attendee.estimated_birthday = ''
                     # potential_non_family_folk = attendee.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
                     # non_family_folk, folk_created = Folk.objects.update_or_create(
@@ -712,14 +712,14 @@ class Command(BaseCommand):
                     if not wife:  # widow? (since parents number is 2)
                         wife = folk.attendees.filter(folkattendee__role__title='self').order_by('created').first()
                     if not husband:
-                        self.stdout.write(f"618, no husband found, here is potential_primary_phone: {potential_primary_phone}")
+                        self.stdout.write(f"715, no husband found, here is potential_primary_phone: {potential_primary_phone}")
 
                     if husband and wife:  # depend on save by save_two_phones()
                         husband.infos['emergency_contacts'][str(wife.id)] = True
                         wife.infos['emergency_contacts'][str(husband.id)] = True
 
-                    self.save_two_phones(husband, potential_primary_phone or potential_secondary_phone or '+no phone+')
-                    self.save_two_phones(wife, potential_secondary_phone or potential_primary_phone or '+no phone+')
+                    self.save_two_phones(husband, potential_primary_phone or potential_secondary_phone)
+                    self.save_two_phones(wife, potential_secondary_phone or potential_primary_phone)
 
                     hushand_email = husband.infos.get('fixed', {}).get('access_people_values', {}).get('E-mail')
                     wife_email = wife.infos.get('fixed', {}).get('access_people_values', {}).get('E-mail')

@@ -46,7 +46,7 @@
         <div></div>
         <div>{{directory_header}}</div>
       </div>
-      {% include 'persons/_directory_families.html' %}
+      {% include 'persons/_directory_families.html' with link=False %}
     </div>
 
     {% for i in index_page_breaks %}
