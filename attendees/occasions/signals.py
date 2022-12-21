@@ -1,5 +1,5 @@
 from typing import Optional
-
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from schedule.models import Occurrence
@@ -51,6 +51,9 @@ def post_save_handler_for_meet_to_update_event_location(sender, **kwargs):
     # Todo 20220923 remove this once the meet editing UI implemented
     if not kwargs.get("raw"):  # to skip extra creation in loaddata seed
         meet = kwargs.get("instance")
+        # Todo 20221220 save title with something like source: Meet name local time am/pm
+        # user_organization = meet.assembly.division.organization
+        # timezone = user_organization.infos.get("default_time_zone") or settings.CLIENT_DEFAULT_TIME_ZONE
         first_event_id = None
         description = f'{meet.site.__class__.__name__.lower()}#{meet.site.pk}'
         for event_relation in meet.event_relations.filter(distinction='source'):

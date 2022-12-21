@@ -2018,6 +2018,14 @@
     }
   },
   {
+    "model": "schedule.calendar",
+    "pk": 18,
+    "fields": {
+      "name": "Fellowship hall 2F",
+      "slug": "cfcch_fellowship_hall_2F_suite"
+    }
+  },
+  {
     "model": "schedule.calendarrelation",
     "pk": 0,
     "fields": {
@@ -2211,6 +2219,17 @@
       "calendar": 17,
       "content_type": 63,
       "object_id": 16,
+      "distinction": "source",
+      "inheritable": true
+    }
+  },
+  {
+    "model": "schedule.calendarrelation",
+    "pk": 18,
+    "fields": {
+      "calendar": 18,
+      "content_type": 61,
+      "object_id": 1,
       "distinction": "source",
       "inheritable": true
     }
@@ -2977,8 +2996,8 @@
     "fields": {
       "start": "2020-02-09T03:30:00Z",
       "end": "2020-02-09T05:00:00Z",
-      "title": "source: Shining Star 7:30PM-9PM",
-      "description": "room#21",
+      "title": "source: 閃亮之星 Shining Star 7:30PM-9PM",
+      "description": "suite#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
@@ -2995,13 +3014,13 @@
       "start": "2020-02-09T03:30:00Z",
       "end": "2020-02-09T05:00:00Z",
       "title": "event#29",
-      "description": "room#21",
+      "description": "suite#1",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 26,
       "end_recurring_period": null,
-      "calendar": 14,
+      "calendar": 18,
       "color_event": "#691B7F"
     }
   },
@@ -3011,7 +3030,7 @@
     "fields": {
       "start": "2020-02-09T04:00:00Z",
       "end": "2020-02-09T05:40:00Z",
-      "title": "source: Ezra Fellowship 8PM-9:40PM",
+      "title": "source: 以斯拉團契 Ezra Fellowship 8PM-9:40PM",
       "description": "room#7",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -3043,16 +3062,16 @@
     "model": "schedule.event",
     "pk": 33,
     "fields": {
-      "start": "2020-02-09T04:00:00Z",
-      "end": "2020-02-09T05:40:00Z",
-      "title": "event#31",
-      "description": "room#14",
+      "start": "2020-02-09T18:00:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "event#25",
+      "description": "room#7",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
-      "rule": 26,
+      "rule": 9,
       "end_recurring_period": null,
-      "calendar": 15,
+      "calendar": 9,
       "color_event": "#D85504"
     }
   },
@@ -3060,16 +3079,16 @@
     "model": "schedule.event",
     "pk": 34,
     "fields": {
-      "start": "2020-02-09T04:00:00Z",
-      "end": "2020-02-09T05:40:00Z",
-      "title": "event#31",
-      "description": "room#15",
+      "start": "2020-02-09T18:00:00Z",
+      "end": "2020-02-09T19:15:00Z",
+      "title": "event#25",
+      "description": "room#14",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
-      "rule": 26,
+      "rule": 9,
       "end_recurring_period": null,
-      "calendar": 16,
+      "calendar": 15,
       "color_event": "#D85504"
     }
   },
@@ -3080,13 +3099,13 @@
       "start": "2020-02-09T04:00:00Z",
       "end": "2020-02-09T05:40:00Z",
       "title": "event#31",
-      "description": "room#16",
+      "description": "room#23",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
       "rule": 26,
       "end_recurring_period": null,
-      "calendar": 17,
+      "calendar": 13,
       "color_event": "#D85504"
     }
   },
@@ -3128,14 +3147,14 @@
     "model": "schedule.event",
     "pk": 38,
     "fields": {
-      "start": "2020-02-09T03:00:00Z",
-      "end": "2020-02-09T05:00:00Z",
-      "title": "source: Timothy Fellowship 7PM-9PM",
+      "start": "2020-02-09T04:00:00Z",
+      "end": "2020-02-09T05:40:00Z",
+      "title": "source: 提摩太團契 Timothy Fellowship 8PM-9:40PM",
       "description": "room#19",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
-      "rule": 10,
+      "rule": 26,
       "end_recurring_period": null,
       "calendar": 1,
       "color_event": "#D85504"
@@ -3145,14 +3164,14 @@
     "model": "schedule.event",
     "pk": 39,
     "fields": {
-      "start": "2020-02-09T03:00:00Z",
-      "end": "2020-02-09T05:00:00Z",
+      "start": "2020-02-09T04:00:00Z",
+      "end": "2020-02-09T05:40:00Z",
       "title": "event#38",
       "description": "room#19",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
-      "rule": 10,
+      "rule": 26,
       "end_recurring_period": null,
       "calendar": 10,
       "color_event": "#D85504"
@@ -3164,7 +3183,7 @@
     "fields": {
       "start": "2020-02-09T06:00:00Z",
       "end": "2020-02-09T07:30:00Z",
-      "title": "source: Shining Star 7:30PM-9PM",
+      "title": "source: 餐服團契 Chinese Restaurant Fellowship 10-11:30PM",
       "description": "room#3",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -3196,14 +3215,14 @@
     "model": "schedule.event",
     "pk": 42,
     "fields": {
-      "start": "2020-02-09T06:00:00Z",
-      "end": "2020-02-09T07:30:00Z",
-      "title": "event#40",
+      "start": "2020-02-09T18:00:00Z",
+      "end": "2020-02-09T19:30:00Z",
+      "title": "event#43",
       "description": "room#23",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
       "updated_on": "2020-04-11T19:41:28.645Z",
-      "rule": 27,
+      "rule": 28,
       "end_recurring_period": null,
       "calendar": 13,
       "color_event": "#D85504"
@@ -3216,7 +3235,7 @@
       "start": "2020-02-09T18:00:00Z",
       "end": "2020-02-09T19:30:00Z",
       "title": "source: 姐妹團契 Chinese Sister Fellowship 10:00AM-11:30AM",
-      "description": "room#3",
+      "description": "room#23",
       "creator": 1,
       "created_on": "2022-04-11T18:55:53.117Z",
       "updated_on": "2022-09-11T19:41:28.645Z",
@@ -3412,7 +3431,7 @@
     "fields": {
       "event": 33,
       "content_type": 102,
-      "object_id": 21,
+      "object_id": 19,
       "distinction": "location"
     }
   },
@@ -3422,7 +3441,7 @@
     "fields": {
       "event": 34,
       "content_type": 102,
-      "object_id": 21,
+      "object_id": 19,
       "distinction": "location"
     }
   },
@@ -3502,7 +3521,7 @@
     "fields": {
       "event": 42,
       "content_type": 102,
-      "object_id": 24,
+      "object_id": 25,
       "distinction": "location"
     }
   },
