@@ -40,14 +40,31 @@ def post_save_handler_for_gathering_to_update_occurrence(sender, **kwargs):
                     occurrence.save()
 
 
-# @receiver(post_save, sender=Meet)
-# def post_save_handler_for_meet_to_update_event_location(sender, **kwargs):
-#     # Todo 20220923 remove this once the meet editing UI implemented
-#     if not kwargs.get("raw"):  # to skip extra creation in loaddata seed
-#         meet = kwargs.get("instance")
-#         # Todo 20220927 need to update location's event too
-#         for event_relation in meet.event_relations.filter(distinction='source'):
-#             description = f'{meet.site.__class__.__name__.lower()}#{meet.site.pk}'
-#             event = event_relation.event
-#             event.description = description
-#             event.save()
+@receiver(post_save, sender=Meet)
+def post_save_handler_for_meet_to_update_event_location(sender, **kwargs):
+    """
+    Copy meet's finish to Event's end_recurring_period, so the calendars shows correspondingly
+    :param sender: kwargs
+    :param kwargs: kwargs
+    :return:
+    """
+    # Todo 20220923 remove this once the meet editing UI implemented
+    if not kwargs.get("raw"):  # to skip extra creation in loaddata seed
+        meet = kwargs.get("instance")
+        first_event_id = None
+        description = f'{meet.site.__class__.__name__.lower()}#{meet.site.pk}'
+        for event_relation in meet.event_relations.filter(distinction='source'):
+            event = event_relation.event
+            event.description = description
+            event.end_recurring_period = meet.finish
+            event.save()
+            if not first_event_id:
+                first_event_id = event.id
+
+        if first_event_id:
+            for event_relation in meet.event_relations.filter(distinction='location'):
+                event = event_relation.event
+                event.description = description
+                event.title = f'event#{first_event_id}'
+                event.end_recurring_period = meet.finish
+                event.save()
