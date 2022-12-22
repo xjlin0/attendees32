@@ -78,7 +78,7 @@ Attendees.utilities = {
 
   toggleDxFormGroups: (animationSpeed="fast") => {
     $(".h6:not(.not-shrinkable) .dx-form-group-caption")
-      .each( () => {
+      .each(function () {  // somehow jQuery each cannot use arrow function?
         $(this)
           .prepend(
             $('<div />')
