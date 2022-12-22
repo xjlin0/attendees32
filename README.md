@@ -154,7 +154,7 @@ https://dbdiagram.io/d/5d5ff66eced98361d6dddc48
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
 * add web user to the docker group by `sudo usermod -aG docker <<web user name>>  && sudo service docker restart`
 * Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees32.git`.  Please do NOT clone under public html folder or guest will be able to see media, keys and passwords.
-* create a production setting by `vi .envs/.production/.django` and save the following content. Ensure using a non-default ADMIN_URL , add your DJANGO_ALLOWED_HOSTS and ensure DJANGO_DEBUG is False.
+* create a production setting by `vi .envs/.production/.django` with 640 and save the following content. Ensure using a non-default ADMIN_URL , add your DJANGO_ALLOWED_HOSTS and ensure DJANGO_DEBUG is False.
 ```
 # General
 # ------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ CELERY_FLOWER_PASSWORD=<<YOUR CELERY_FLOWER_PASSWORD>>
 ```
 user: "1001"
 ```
-* create a production setting by `vi .envs/.production/.postgres` and save the following content. Ensure the db password changed.
+* create a production setting by `vi .envs/.production/.postgres` with 640 and save the following content. Ensure the db password changed.
 ```
 # PostgreSQL
 # ------------------------------------------------------------------------------
@@ -220,7 +220,7 @@ POSTGRES_DB=attendees
 POSTGRES_USER=<<production database user name>>
 POSTGRES_PASSWORD=<<production database user password>>
 ```
-* create a [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` and save the following example content. (yes, local, really)
+* create a [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` with 640 and save the following example content. (yes, local, really)
 ```
 SENDGRID_API_KEY=YOUR_REAL_API_KEY
 DJANGO_DEFAULT_FROM_EMAIL=your@email.com
@@ -247,7 +247,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * start server by `docker-compose -f production.yml up -d`
 * enter Django shell by `docker-compose -f production.yml run django python manage.py shell`
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/<ADMIN_URL>/users/user/
-
+* if using proxy on apache, please set `ProxyPreserveHost on` to pass host header in requests, so that the email links will have the correct domain name.
 * For keeping the site surviving reboot, add starting of the Django upon system reboot, such as `sudo su user_name sh -c 'sleep 99 && cd ~user_name/repo_dir && docker-compose -f production.yml up -d' >> /tmp/attendee_startup.log` (need work)
 </details>
 
