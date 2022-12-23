@@ -11,17 +11,23 @@
     </div>
     <div class="attendees-container">
       {% for attendee in family.attendees|slice:"0:6" %}
-      <div class="attendee">
-        {{attendee.name2}}      <br>
-        {{attendee.first_name}} <br>
-        {% if attendee.photo_url%}
-        <img class="directory-photo-img"
-             src="{{attendee.photo_url}}">
-        {% else %}
-        <img class="directory-photo-img"
-             src="{{empty_image_link}}">
+        {% if link %}
+          <a class="link-as-text" href="{{attendee_urn}}{{attendee.id}}">
         {% endif %}
-      </div>
+          <div class="attendee">
+            {{attendee.name2}}      <br>
+            {{attendee.first_name}} <br>
+            {% if attendee.photo_url%}
+            <img class="directory-photo-img"
+                 src="{{attendee.photo_url}}">
+            {% else %}
+            <img class="directory-photo-img"
+                 src="{{empty_image_link}}">
+            {% endif %}
+          </div>
+        {% if link %}
+          </a>
+        {% endif %}
       {% endfor %}
     </div>
     <div class="contacts-container">

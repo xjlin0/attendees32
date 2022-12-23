@@ -91,6 +91,7 @@ class FolkService:
                 for attendee in attendees:
                     is_attendee_member = member_meet and AttendingMeet.check_participation_of(attendee, member_meet)
                     attendees_attr.append({
+                        'id': attendee.id,
                         'first_name': f'{attendee.first_name}{"*" if is_attendee_member else ""}',
                         'name2': attendee.name2(),
                         'photo_url': attendee.photo and attendee.photo.url,

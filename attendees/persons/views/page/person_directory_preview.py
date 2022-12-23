@@ -25,6 +25,7 @@ class PersonDirectoryPreview(RouteGuard, ListView):
         )
         context.update({
             'families': families,
+            'attendee_urn': '/persons/attendee/',
             'empty_image_link': f'{settings.STATIC_URL}images/empty.png'
         })
         return context

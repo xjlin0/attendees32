@@ -69,7 +69,7 @@ img.directory-photo-img {
   flex: 1;
 }
 
-div.contacts-container a.link-as-text {
+div.contacts-container,div.attendees-container a.link-as-text {
   text-decoration: none;
   color: inherit;
 }
