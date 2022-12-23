@@ -317,6 +317,7 @@ Attendees.datagridUpdate = {
                   disabled: !Attendees.utilities.editingEnabled,
                   selectButtonText: 'Select photo',
                   accept: 'image/*;capture=camera',  // see if Android can take picture from camera
+                  invalidFileExtensionMessage: '',  // Todo 20221222 somehow File type is not allowed shows everytime!!!
                   multiple: false,
                   uploadMode: 'useForm',
                   onValueChanged: (e) => {
