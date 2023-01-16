@@ -151,7 +151,15 @@ Attendees.dataAttendees = {
       });
 
       return deferred.promise();
-    }
+    },
+    byKey: (key) => {
+      const d = new $.Deferred();
+      $.get(`/persons/api/datagrid_data_attendees/${key}/`)
+        .done((result) => {
+          d.resolve(result);
+        });
+      return d.promise();
+    },
   }),
 
   dataGridOpts: {
@@ -276,6 +284,14 @@ Attendees.dataAttendees = {
             key: "id",
             load: () => {
               return $.getJSON($('div.dataAttendees').data('divisions-endpoint'));
+            },
+            byKey: (key) => {
+              const d = new $.Deferred();
+              $.get($('div.dataAttendees').data('divisions-endpoint') + key + '/')
+                .done((result) => {
+                  d.resolve(result);
+                });
+              return d.promise();
             },
           }),
         },
