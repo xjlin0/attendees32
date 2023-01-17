@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
-
+from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Case, F, Func, Q, When
@@ -333,7 +333,7 @@ class AttendeeService:
             content_type=ContentType.objects.get_for_model(attendee),
             object_id=attendee.id,
             category=category,
-            when=datetime.now(user_time_zone).strftime('%Y-%m-%d'),
+            when=PartialDate(datetime.now(user_time_zone).strftime('%Y-%m-%d')),
             display_name=f'become {category.display_name}',
             infos=Utility.relationship_infos(),
         )
