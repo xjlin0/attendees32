@@ -1779,6 +1779,15 @@
     }
   },
   {
+    "model": "auth.group",
+    "pk": 700,
+    "fields": {
+      "name": "roster_equipments",
+      "permissions": [
+      ]
+    }
+  },
+  {
     "model": "django_celery_beat.intervalschedule",
     "pk": 1,
     "fields": {
@@ -12959,9 +12968,9 @@
       "start": null,
       "finish": null,
       "category": 33,
-      "display_name": "CFCCH夏令會2023 Summer retreat",
+      "display_name": "CFCCH夏令會2024 Summer retreat",
       "display_order": 0,
-      "slug": "cfcch_summer_retreat_2023",
+      "slug": "cfcch_summer_retreat_2024",
       "division": 6,
       "infos": {
         "fixed": {},
@@ -14716,6 +14725,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14762,6 +14772,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14893,6 +14904,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14939,6 +14951,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14959,7 +14972,7 @@
         },
         "default_attendingmeet_in_weeks": 160
       },
-      "site_type": 27,
+      "site_type": 26,
       "site_id": "10"
     }
   },
@@ -15271,6 +15284,7 @@
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
+          "roster_equipments",
           "children_organizer",
           "conference_organizer"
         ],
@@ -15517,6 +15531,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",

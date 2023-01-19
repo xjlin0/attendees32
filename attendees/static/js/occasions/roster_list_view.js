@@ -575,6 +575,7 @@ Attendees.roster = {
       width: 150,
       placeholder: 'search name or notes ...',
     },
+    filterRow: { visible: true, },
     allowColumnReordering: true,
     columnAutoWidth: true,
     allowColumnResizing: true,
