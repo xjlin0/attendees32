@@ -1,4 +1,3 @@
-import re
 import time
 
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -52,7 +51,7 @@ class SpyGuard(UserPassesTestMixin):
                     return True  # self.request.resolver_match.url_name == Menu.ATTENDEE_UPDATE_VIEW # for make spy guard only allows self/new at certian view
                 if current_attendee.under_same_org_with(targeting_attendee_id):
                     return (
-                        self.request.user.privileged()
+                        self.request.user.can_see_all_organizational_meets_attendees()
                         or current_attendee.can_schedule_attendee(targeting_attendee_id)
                     )
         else:
