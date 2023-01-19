@@ -1837,7 +1837,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 2,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 2,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Shining Star\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_shining_star\",\r\n\t    \"months_adding\": 2,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -1865,7 +1865,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 11,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 9,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 11,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Shining Star\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_shining_star\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 9,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -6783,6 +6783,32 @@
       "read": true,
       "write": true,
       "menu": 32
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 146,
+    "fields": {
+      "created": "2023-01-19T05:03:50.363Z",
+      "modified": "2023-01-19T05:03:50.363Z",
+      "is_removed": false,
+      "auth_group": 700,
+      "read": true,
+      "write": true,
+      "menu": 4
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 147,
+    "fields": {
+      "created": "2023-01-19T05:04:01.788Z",
+      "modified": "2023-01-19T05:04:01.788Z",
+      "is_removed": false,
+      "auth_group": 700,
+      "read": true,
+      "write": true,
+      "menu": 35
     }
   },
   {
