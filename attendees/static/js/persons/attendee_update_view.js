@@ -903,7 +903,7 @@ Attendees.datagridUpdate = {
         extraHeaders['X-Join-Gathering'] = Attendees.datagridUpdate.familyAttrDefaults.joinGathering;
       }
 
-      const userInfos = Attendees.datagridUpdate.attendeeFormConfigs.formData.infos;
+      const userInfos = Attendees.datagridUpdate.attendeeId === 'new' ? Attendees.datagridUpdate.attendeeMainDxForm.option('formData').infos : Attendees.datagridUpdate.attendeeFormConfigs.formData.infos;
       userInfos['contacts'] = Attendees.utilities.trimBothKeyAndValueButKeepBasicContacts(userInfos.contacts);  // remove emptied contacts
       userData.set('infos', JSON.stringify(userInfos));
 
