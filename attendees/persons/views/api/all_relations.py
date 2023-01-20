@@ -31,7 +31,9 @@ class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
             init_query = Q(is_removed=False)
 
             if relative:
-                init_query.add(Q(relative=json.loads(relative)), Q.AND)
+                relative_json = json.loads(relative)
+                if relative_json:
+                    init_query.add(Q(relative=json.loads(relative)), Q.AND)
 
             final_query = init_query.add(
                 AttendeeService.filter_parser(filters_list, None, self.request.user),

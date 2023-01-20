@@ -111,7 +111,7 @@ class ApiDatagridDataAttendeeViewSet(
         """
         instance = serializer.save()
         folk_id = self.request.META.get("HTTP_X_ADD_FOLK")
-        role_id = self.request.META.get("HTTP_X_FAMILY_ROLE")
+        role_id = self.request.META.get("HTTP_X_FOLK_ROLE")
         meet_id = self.request.META.get("HTTP_X_JOIN_MEET")
         gathering_id = self.request.META.get("HTTP_X_JOIN_GATHERING")
 
