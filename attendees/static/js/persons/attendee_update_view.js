@@ -2829,6 +2829,7 @@ Attendees.datagridUpdate = {
           update: (key, values) => {
             values.category = categoryId;
             const folkAttendeeFormData = new FormData();
+            const fileRemoverCheckBox = document.querySelector('input#folkattendee-file-clear');
 
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
@@ -2844,7 +2845,7 @@ Attendees.datagridUpdate = {
                 $('div.dx-loadpanel').dxLoadPanel('show');
               }
             }
-            if (document.querySelector('input#folkattendee-file-clear').checked) {
+            if (fileRemoverCheckBox && fileRemoverCheckBox.checked) {
               folkAttendeeFormData.set('file', '');
             }
 
