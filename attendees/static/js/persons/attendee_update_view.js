@@ -1302,7 +1302,7 @@ Attendees.datagridUpdate = {
         name: 'infos-insurer',
         visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division || Attendees.datagridUpdate.divisions[0].id]['infos-insurer'],
         label: {
-          text: 'Insurer',
+          text: 'Medical',
         },
       },
       {

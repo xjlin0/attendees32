@@ -14138,6 +14138,21 @@
     }
   },
   {
+    "model": "occasions.character",
+    "pk": 49,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "After School Coworker",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_after_school_coworker",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
     "model": "occasions.gathering",
     "pk": 1,
     "fields": {
@@ -16227,6 +16242,54 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g4_g5",
       "display_name": "CFCCH CM The Rock 4th & 5th Grade",
+      "display_order": 550,
+      "infos": {},
+      "site_type": 63,
+      "site_id": "6"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 25,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 20,
+      "slug": "cfcch_kid_after_school_table_1",
+      "display_name": "Table 1",
+      "display_order": 550,
+      "infos": {},
+      "site_type": 63,
+      "site_id": "6"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 26,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 20,
+      "slug": "cfcch_kid_after_school_table_2",
+      "display_name": "Table 2",
+      "display_order": 550,
+      "infos": {},
+      "site_type": 63,
+      "site_id": "6"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 27,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 20,
+      "slug": "cfcch_kid_after_school_table_3",
+      "display_name": "Table 3",
       "display_order": 550,
       "infos": {},
       "site_type": 63,

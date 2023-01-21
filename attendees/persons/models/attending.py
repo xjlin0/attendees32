@@ -57,9 +57,9 @@ class Attending(TimeStampedModel, SoftDeletableModel, Utility):
         # Todo: check if meets' assemblies under attendee's organization
         if (
             self.registration
-            and self.registration.assembly.need_age
-            and self.infos.bed_needs < 1
-            and self.infos.age is None
+            and self.registration.assembly.infos.get('need_age')
+            and (self.infos.get('bed_needs') and self.infos.get('bed_needs') < 1)
+            and self.infos.get('age') is None
         ):
             raise ValidationError("You must specify age for the participant")
 
