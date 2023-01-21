@@ -1035,6 +1035,9 @@ Attendees.roster = {
       },
       {
         dataField: 'encoded_file',
+        allowFiltering: false,
+        allowSorting: false,
+        allowGrouping: false,
         dataType: 'string',
         visible: false,
       },
