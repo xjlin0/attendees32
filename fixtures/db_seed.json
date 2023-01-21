@@ -6937,6 +6937,7 @@
         "groups_see_all_meets_attendees": [
           "data_counselor",
           "data_organizer",
+          "roster_equipments",
           "cfcch_congregation_data",
           "children_organizer",
           "children_coworker",

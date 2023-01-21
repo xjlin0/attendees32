@@ -21,10 +21,11 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
     serializer_class = AttendingMinimalSerializer
 
     def get_queryset(self):
+        target_attendee_id = self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         target_attendee = get_object_or_404(  # for DRF UI
-            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID", self.request.user.attendee_uuid_str())
+            Attendee, pk=target_attendee_id or self.request.user.attendee_uuid_str()
         ) if settings.DEBUG else get_object_or_404(
-            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+            Attendee, pk=target_attendee_id
         )
         current_user_organization = self.request.user.organization
         is_self = (
@@ -32,7 +33,7 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
             and self.request.user.attendee
             and self.request.user.attendee == target_attendee
         )
-        is_privileged = current_user_organization and self.request.user.privileged()
+        is_privileged = current_user_organization and self.request.user.privileged_to_edit(target_attendee_id)
         if target_attendee and (
             is_self
             or is_privileged
