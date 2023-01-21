@@ -2071,9 +2071,9 @@ Attendees.datagridUpdate = {
                       const newRoute = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value').trim();
                       const newCity = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value').trim();
                       const newZIP = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value').trim();
-                      const newStateAttrs = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.state_id")._options;
-                      const newAddressWithoutZip = [newStreetNumber, newRoute, newAddressExtra, newCity, newStateAttrs.selectedItem.code].filter(item => !!item).join(', ');
-                      const newAddressText = newAddressWithoutZip + (newZIP ? ', ' + newZIP + ', ' : ', ' ) + newStateAttrs.selectedItem.country_name;
+                      const newStateAttrs = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.state_id").option('selectedItem');
+                      const newAddressWithoutZip = [newStreetNumber, newRoute, newAddressExtra, newCity, newStateAttrs.code].filter(item => !!item).join(', ');
+                      const newAddressText = newAddressWithoutZip + (newZIP ? ', ' + newZIP + ', ' : ', ' ) + newStateAttrs.country_name;
 
                       if (!(userData.address && userData.address.id)) {
                         userData.address = {
@@ -2087,10 +2087,10 @@ Attendees.datagridUpdate = {
                             route: newRoute,
                             locality: newCity,
                             post_code: newZIP,
-                            state: newStateAttrs.selectedItem.name,
-                            state_code: newStateAttrs.selectedItem.code,
-                            country: newStateAttrs.selectedItem.country_name,
-                            country_code: newStateAttrs.selectedItem.country_code,
+                            state: newStateAttrs.name,
+                            state_code: newStateAttrs.code,
+                            country: newStateAttrs.country_name,
+                            country_code: newStateAttrs.country_code,
                           },
                         };
                       }else{
