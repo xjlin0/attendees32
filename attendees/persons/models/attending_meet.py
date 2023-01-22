@@ -43,13 +43,7 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
     character = models.ForeignKey(
         "occasions.Character", null=False, blank=False, on_delete=models.SET(0)
     )
-    # category = models.CharField(
-    #     max_length=20,
-    #     default="primary",
-    #     blank=False,
-    #     null=False,
-    #     help_text="primary, secondary, etc (primary will be displayed first)",
-    # )
+
     category = models.ForeignKey(
         "persons.Category",
         default=1,  # scheduled
@@ -67,13 +61,12 @@ class AttendingMeet(TimeStampedModel, SoftDeletableModel, Utility):
 
     def clean(self):
         if (
-            not self.attending.registration.assembly
-            == self.meet.assembly
+            not self.meet.assembly
             == self.character.assembly
         ):
             raise ValidationError(
-                "The attending meet's assembly, registered assembly and character's assembly needed to be the same, "
-                "please pick another registration, character or meet "
+                "The attending meet's assembly and character's assembly needed to be the same, "
+                "please pick another character or meet "
             )
 
     class Meta:

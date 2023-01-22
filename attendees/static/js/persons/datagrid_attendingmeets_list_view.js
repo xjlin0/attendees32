@@ -648,7 +648,7 @@ Attendees.attendingmeets = {
         }
     },
     onInitNewRow: (e) => {
-      e.data.start = new Date();
+      e.data.start = new Date();  //new Date().toLocaleDateString('sv');  // somehow new Date().toDateString() is UTC, Sweden locale "sv" uses the ISO 8601 format
       e.data.category = 1;  // scheduled
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
       const selectedMeetSlugs = Attendees.attendingmeets.filtersForm.getEditor('meets').option('value');
