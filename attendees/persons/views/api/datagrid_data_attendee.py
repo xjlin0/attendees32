@@ -113,6 +113,7 @@ class ApiDatagridDataAttendeeViewSet(
         folk_id = self.request.META.get("HTTP_X_ADD_FOLK")
         role_id = self.request.META.get("HTTP_X_FOLK_ROLE")
         meet_id = self.request.META.get("HTTP_X_JOIN_MEET")
+        character_slug = self.request.META.get("HTTP_X_JOIN_CHARACTER")
         gathering_id = self.request.META.get("HTTP_X_JOIN_GATHERING")
 
         meet = Meet.objects.filter(pk=meet_id).first()
@@ -126,10 +127,10 @@ class ApiDatagridDataAttendeeViewSet(
 
         if gathering_id:  # elif is needed since using the very same function to add attendingmeet by gathering or meet
             gathering = get_object_or_404(Gathering, pk=gathering_id)
-            attendee_to_attendingmeets_cache = AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance], gathering.meet.id, True)
+            attendee_to_attendingmeets_cache = AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance], gathering.meet.id, True, None)
             # AttendanceService.join_attendance([instance], gathering, attendee_to_attendingmeets_cache)
         elif meet and meet.assembly.division.organization == self.request.user.organization:
-            AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance], meet_id, True)
+            AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance], meet_id, True, character_slug)
 
     def perform_update(self, serializer):
         target_attendee = get_object_or_404(

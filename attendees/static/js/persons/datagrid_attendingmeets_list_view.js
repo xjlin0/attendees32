@@ -29,6 +29,7 @@ Attendees.attendingmeets = {
         height: '110%',
         onValueChanged: (e) => {  // not reconfirm, it's already after change
           Attendees.utilities.editingEnabled = e.value;
+          console.log("hi 32 initEditingSwitch onValueChanged here is e.value: ", e.value);
           Attendees.attendingmeets.toggleEditing(e.value);
         },
       })
@@ -52,7 +53,9 @@ Attendees.attendingmeets = {
     if (addAttendeeLink) {
       const params = {familyName: 'without'};
       if (selectedMeetSlugs && selectedMeetSlugs.length === 1) {
-        params['joinMeet'] = selectedMeetSlugs[0];
+        const meet = Attendees.attendingmeets.meetScheduleRules[selectedMeetSlugs[0]];
+        params['joinMeetId'] = meet.id;
+        params['joinMeetName'] = meet.name;
       }
 
       addAttendeeLink.classList.remove("btn-outline-secondary");
@@ -68,7 +71,7 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowDeleting', enabled);
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
-
+    console.log("hi 73 here is enabled: ", enabled);
     if (enabled) {
       Attendees.attendingmeets.setNewAttendeeLink(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs'));
     } else {
@@ -216,7 +219,7 @@ Attendees.attendingmeets = {
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs', e.value);
-            Attendees.attendingmeets.setNewAttendeeLink(e.value);
+            if (Attendees.utilities.editingEnabled) { Attendees.attendingmeets.setNewAttendeeLink(e.value); }
             Attendees.attendingmeets.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules";
             const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -281,7 +284,7 @@ Attendees.attendingmeets = {
                     if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, character: meet.major_character, assembly: meet.assembly, id: meet.id, defaultTillInWeeks: meet.infos['default_attendingmeet_in_weeks']};
+                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, character: meet.major_character, assembly: meet.assembly, id: meet.id, name: meet.display_name, defaultTillInWeeks: meet.infos['default_attendingmeet_in_weeks']};
                         })
                       }); // schedule rules needed for attendingmeets generation
                     }

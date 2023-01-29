@@ -173,7 +173,8 @@ Attendees.datagridUpdate = {
       const urlParams = new URLSearchParams(window.location.search);
       Attendees.datagridUpdate.familyAttrDefaults.id = urlParams.get('familyId');
       Attendees.datagridUpdate.familyAttrDefaults.name = urlParams.get('familyName');
-      if (urlParams.has('joinMeet')) { Attendees.datagridUpdate.familyAttrDefaults.joinMeet = urlParams.get('joinMeet'); }
+      if (urlParams.has('joinMeetId')) { Attendees.datagridUpdate.familyAttrDefaults.joinMeetId = urlParams.get('joinMeetId'); }
+      if (urlParams.has('joinMeetName')) { Attendees.datagridUpdate.familyAttrDefaults.joinMeetName = urlParams.get('joinMeetName'); }
       if (urlParams.has('joinGathering')) { Attendees.datagridUpdate.familyAttrDefaults.joinGathering = urlParams.get('joinGathering'); }
       const titleWithFamilyName = Attendees.datagridUpdate.familyAttrDefaults.name ? Attendees.datagridUpdate.familyAttrDefaults.name + ' family': '';
 
@@ -407,11 +408,11 @@ Attendees.datagridUpdate = {
       });
     }
 
-    if (Attendees.datagridUpdate.familyAttrDefaults.joinMeet) {
+    if (Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
       potentialDuplicatesForNewAttendee.unshift({
         colSpan: 24,
         colCount: 24,
-        caption: `What is the Character of the new member joining meet ${Attendees.datagridUpdate.familyAttrDefaults.joinMeet} ?`,
+        caption: `What is the Character of the new member joining the meet "${Attendees.datagridUpdate.familyAttrDefaults.joinMeetName}"?`,
         cssClass: 'h6 not-shrinkable',
         itemType: 'group',
         items: [
@@ -432,7 +433,7 @@ Attendees.datagridUpdate = {
                 store: new DevExpress.data.CustomStore({
                   key: 'slug',
                   load: (searchOpts) => {
-                    const params = {take: 999, 'meetSlugs[]': Attendees.datagridUpdate.familyAttrDefaults.joinMeet};
+                    const params = {take: 999, 'meetIds[]': Attendees.datagridUpdate.familyAttrDefaults.joinMeetId};
                     if (searchOpts.searchValue) {
                       params.searchValue = searchOpts.searchValue;
                       params.searchOperation = searchOpts.searchOperation;
@@ -450,7 +451,7 @@ Attendees.datagridUpdate = {
                   },
                 }),
                 onChanged: () => {
-                  if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeet) {
+                  if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
                     const characterLookup = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('character');
                     const firstCharacter = characterLookup.getDataSource().items()[0];
                     characterLookup.option('value', firstCharacter.slug);
@@ -954,8 +955,9 @@ Attendees.datagridUpdate = {
         userData.delete('role');
       }
 
-      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeet) {
-        extraHeaders['X-Join-Meet'] = Attendees.datagridUpdate.familyAttrDefaults.joinMeet;  // join by self attending
+      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
+        extraHeaders['X-Join-Meet'] = Attendees.datagridUpdate.familyAttrDefaults.joinMeetId;  // join by self attending
+        extraHeaders['X-Join-Character'] =  Attendees.datagridUpdate.attendeeMainDxForm.getEditor('character').option('value')
       }
 
       if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinGathering) {

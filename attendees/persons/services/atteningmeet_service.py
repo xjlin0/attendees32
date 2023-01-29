@@ -6,7 +6,7 @@ from django.db.models.functions import Concat, Trim
 
 from rest_framework.utils import json
 
-from attendees.occasions.models import Meet
+from attendees.occasions.models import Meet, Character
 from attendees.persons.models import AttendingMeet, Attending, Utility
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class AttendingMeetService:
     @staticmethod
-    def flip_attendingmeet_by_existing_attending(current_user, attendees, meet_id, join=True):
+    def flip_attendingmeet_by_existing_attending(current_user, attendees, meet_id, join=True, character_slug=None):
         """
         If current_user has the permission, let attendees join/leave a meet. If there's no attending, create one
         attending.  Notice: This will overwrite existing attendingmeet, means mass assign will take higher priority
@@ -61,7 +61,7 @@ class AttendingMeetService:
                         AttendingMeet.objects.filter(
                             attending__in=attendee.attendings.all(),
                             meet=meet,
-                            character=meet.major_character,
+                            character=Character.objects.filter(slug=character_slug).first() or meet.major_character,
                             finish__gt=Utility.now_with_timezone()
                         ).update(finish=Utility.now_with_timezone())
 
