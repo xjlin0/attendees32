@@ -124,7 +124,7 @@ class ApiDatagridDataAttendeeViewSet(
                 role=get_object_or_404(Relation, pk=role_id),
             )
 
-        if gathering_id:
+        if gathering_id:  # elif is needed since using the very same function to add attendingmeet by gathering or meet
             gathering = get_object_or_404(Gathering, pk=gathering_id)
             attendee_to_attendingmeets_cache = AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, [instance], gathering.meet.id, True)
             # AttendanceService.join_attendance([instance], gathering, attendee_to_attendingmeets_cache)

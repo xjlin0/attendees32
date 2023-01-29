@@ -46,6 +46,21 @@ Attendees.attendingmeets = {
     }).dxCheckBox('instance');
   },
 
+  setNewAttendeeLink: (selectedMeetSlugs) => {
+    const addAttendeeLink = document.querySelector('a.add-attendee');
+
+    if (addAttendeeLink) {
+      const params = {familyName: 'without'};
+      if (selectedMeetSlugs && selectedMeetSlugs.length === 1) {
+        params['joinMeet'] = selectedMeetSlugs[0];
+      }
+
+      addAttendeeLink.classList.remove("btn-outline-secondary");
+      addAttendeeLink.classList.add("btn-outline-success");
+      addAttendeeLink.href = '/persons/attendee/new?' + new URLSearchParams(params).toString();
+    }
+  },
+
   toggleEditing: (enabled) => {
     if (Attendees.attendingmeets.attendingmeetsDatagrid) {
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowUpdating', enabled);
@@ -53,13 +68,12 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowDeleting', enabled);
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
-    const addAttendeeLink = document.querySelector('a.add-attendee');
-    if (addAttendeeLink) {
-      if (enabled) {
-        addAttendeeLink.classList.remove("btn-outline-secondary");
-        addAttendeeLink.classList.add("btn-outline-success");
-        addAttendeeLink.href = '/persons/attendee/new?familyName=without';
-      } else {
+
+    if (enabled) {
+      Attendees.attendingmeets.setNewAttendeeLink(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs'));
+    } else {
+      const addAttendeeLink = document.querySelector('a.add-attendee');
+      if (addAttendeeLink) {
         addAttendeeLink.removeAttribute("href");
         addAttendeeLink.classList.add("btn-outline-secondary");
         addAttendeeLink.classList.remove("btn-outline-success");
@@ -202,6 +216,7 @@ Attendees.attendingmeets = {
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs', e.value);
+            Attendees.attendingmeets.setNewAttendeeLink(e.value);
             Attendees.attendingmeets.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules";
             const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");

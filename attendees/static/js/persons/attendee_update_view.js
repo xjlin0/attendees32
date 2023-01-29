@@ -173,8 +173,8 @@ Attendees.datagridUpdate = {
       const urlParams = new URLSearchParams(window.location.search);
       Attendees.datagridUpdate.familyAttrDefaults.id = urlParams.get('familyId');
       Attendees.datagridUpdate.familyAttrDefaults.name = urlParams.get('familyName');
-      Attendees.datagridUpdate.familyAttrDefaults.joinMeet = urlParams.get('joinMeet');
-      Attendees.datagridUpdate.familyAttrDefaults.joinGathering = urlParams.get('joinGathering');
+      if (urlParams.has('joinMeet')) { Attendees.datagridUpdate.familyAttrDefaults.joinMeet = urlParams.get('joinMeet'); }
+      if (urlParams.has('joinGathering')) { Attendees.datagridUpdate.familyAttrDefaults.joinGathering = urlParams.get('joinGathering'); }
       const titleWithFamilyName = Attendees.datagridUpdate.familyAttrDefaults.name ? Attendees.datagridUpdate.familyAttrDefaults.name + ' family': '';
 
       Attendees.datagridUpdate.attendeeAjaxUrl = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeEndpoint;
@@ -401,6 +401,65 @@ Attendees.datagridUpdate = {
                   },
                 }),
               }),
+            },
+          },
+        ],
+      });
+    }
+
+    if (Attendees.datagridUpdate.familyAttrDefaults.joinMeet) {
+      potentialDuplicatesForNewAttendee.unshift({
+        colSpan: 24,
+        colCount: 24,
+        caption: `What is the Character of the new member joining meet ${Attendees.datagridUpdate.familyAttrDefaults.joinMeet} ?`,
+        cssClass: 'h6 not-shrinkable',
+        itemType: 'group',
+        items: [
+          {
+            colSpan: 12,
+            dataField: 'character',
+            editorType: 'dxLookup',
+            isRequired: true,
+            label: {
+              text: 'Joining Character',
+            },
+            editorOptions: {
+              valueExpr: 'slug',
+              displayExpr: 'display_name',
+              placeholder: 'Select a value...',
+              dataSource: new DevExpress.data.DataSource({
+                paginate: false,
+                store: new DevExpress.data.CustomStore({
+                  key: 'slug',
+                  load: (searchOpts) => {
+                    const params = {take: 999, 'meetSlugs[]': Attendees.datagridUpdate.familyAttrDefaults.joinMeet};
+                    if (searchOpts.searchValue) {
+                      params.searchValue = searchOpts.searchValue;
+                      params.searchOperation = searchOpts.searchOperation;
+                      params.searchExpr = 'display_name';
+                    }
+                    return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.organizationalCharactersEndpoint, params);
+                  },
+                  byKey: (slug) => {
+                    const d = new $.Deferred();
+                    $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.organizationalCharactersEndpoint, {slug: slug})
+                      .done( result => {
+                        d.resolve(result.data);
+                      });
+                    return d.promise();
+                  },
+                }),
+                onChanged: () => {
+                  if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeet) {
+                    const characterLookup = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('character');
+                    const firstCharacter = characterLookup.getDataSource().items()[0];
+                    characterLookup.option('value', firstCharacter.slug);
+                  }
+                },
+              }),
+              onInitialized: (e) => {
+                e.component.getDataSource().reload();
+              },
             },
           },
         ],

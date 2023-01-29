@@ -50,6 +50,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 "empty_image_link": f"{settings.STATIC_URL}images/empty.png",
                 "show_create_attendee": show_create_attendee,
                 "characters_endpoint": "/occasions/api/user_assembly_characters/",
+                "organizational_characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint": "/occasions/api/user_assembly_meets/",
                 "attendingmeets_endpoint": "/persons/api/datagrid_data_attendingmeet/",
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
