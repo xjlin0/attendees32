@@ -21,7 +21,7 @@ Attendees.roster = {
     const checkboxInput = event.currentTarget;
     const rowIndex = checkboxInput.getAttribute("name");  // $radioInput.prop('name');
     const buttonValue =  checkboxInput.getAttribute("value"); // $radioInput.prop('value');
-    const attendeeName = checkboxInput.parentElement.previousSibling.outerText;
+    const attendeeName = checkboxInput.parentElement.parentElement.querySelector('u.attendee-name').outerText;
 
     switch(buttonValue) {
       case "checkIn":
@@ -754,6 +754,7 @@ Attendees.roster = {
                             (Info)
                           </a>
                           <u title="click to see the attendance details"
+                             class="attendee-name"
                              role="button">
                             ${cellInfo['displayValue']}
                             </u>`;
