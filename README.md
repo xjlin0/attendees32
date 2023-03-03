@@ -240,7 +240,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * update content types after migration by `docker-compose -f production.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker-compose -f production.yml run django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f production.yml run django python manage.py loaddata fixtures/db_seed`
-* do NOT collect static file.
+* Do NOT collect static file. However, if the server previously started, you can clear the collected static file by `docker-compose -f production.yml run django python /app/manage.py collectstatic --noinput --clear --no-post-process`
 * prepare all member's photos from different server.
 * copy the real data to attendees/scripts/real_data/ and import real data by `docker-compose -f production.yml run django python manage.py load_access_csv attendees/scripts/real_data/tblHousehold20220929m.csv attendees/scripts/real_data/tblPeople20220929m.csv attendees/scripts/real_data/tblAddress20220929m.csv cfcch_chinese_ministry cfcch_crossing_ministry cfcch_children_ministry cfcch_congregation_data d7c8Fd_cfcch_congregation_member d7c8Fd_cfcch_congregation_directory d7c8Fd_cfcch_congregation_baptized d7c8Fd_cfcch_congregation_english_worship_roster d7c8Fd_cfcch_congregation_chinese_worship_roster d7c8Fd_cfcch_congregation_believer d7c8Fd_cfcch_junior_regular_the_rock d7c8Fd_cfcch_junior_regular_little_foot`
 

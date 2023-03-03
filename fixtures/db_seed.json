@@ -6892,6 +6892,7 @@
             "4": 17,
             "5": 16,
             "19": 0,
+            "21": 27,
             "37": 9
           }
         },
@@ -14154,6 +14155,21 @@
     }
   },
   {
+    "model": "occasions.character",
+    "pk": 50,
+    "fields": {
+      "created": "2023-02-22T15:09:58.833Z",
+      "modified": "2023-03-03T15:18:05.224Z",
+      "is_removed": false,
+      "assembly": 5,
+      "display_name": "慕道友 catechumen",
+      "display_order": 0,
+      "slug": "d7c8Fd_cfcch_congregation_data_catechumen",
+      "infos": {},
+      "type": "internal"
+    }
+  },
+  {
     "model": "occasions.gathering",
     "pk": 1,
     "fields": {
@@ -15856,6 +15872,46 @@
         "default_attendingmeet_in_weeks": 530
       },
       "site_type": 63,
+      "site_id": "1"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 27,
+    "fields": {
+      "created": "2020-04-24T18:47:42.792Z",
+      "modified": "2023-03-03T18:08:14.380Z",
+      "is_removed": false,
+      "assembly": 5,
+      "major_character": 50,
+      "shown_audience": false,
+      "audience_editable": false,
+      "start": "2023-03-03T14:54:44Z",
+      "finish": "2200-05-12T15:54:46Z",
+      "display_name": "慕道友 catechumen",
+      "slug": "d7c8Fd_cfcch_congregation_catechumen",
+      "infos": {
+      "attendance": {},
+      "allowed_groups": [
+        "data_counselor",
+        "data_organizer",
+        "children_organizer",
+        "children_coworker",
+        "conference_organizer"
+      ],
+      "allowed_models": [
+        "attendingmeet"
+      ],
+      "gathering_infos": {},
+      "default_time_zone": "America/Los_Angeles",
+      "automatic_creation": {
+        "Past": 21,
+        "Gathering": null,
+        "Attendance": null
+      },
+      "default_attendingmeet_in_weeks": 99999
+      },
+      "site_type": 53,
       "site_id": "1"
     }
   },
