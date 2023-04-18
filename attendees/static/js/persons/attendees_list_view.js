@@ -327,12 +327,18 @@ Attendees.dataAttendees = {
           if (key.match(/phone/gi) && rowData.data.infos.contacts[key]) {
             const phoneNumber = rowData.data.infos.contacts[key].trim();
             const attrs = {
-              "class": "text-info",
-              "text": Attendees.utilities.phoneNumberFormatter(phoneNumber),
-              "href": `tel:${phoneNumber}`,
+              class: "text-info",
+              text: Attendees.utilities.phoneNumberFormatter(phoneNumber),
+              href: `tel:${phoneNumber}`,
+            };
+            const sms = {
+              class: "text-success",
+              text: "(SMS)",
+              href: `sms:${phoneNumber}`,
             };
             if (phones > 0) {$('<span>', {text: ', '}).appendTo(container);}
             $('<a>', attrs).appendTo(container);
+            $('<a>', sms).appendTo(container);
             phones++;
           }
         }
