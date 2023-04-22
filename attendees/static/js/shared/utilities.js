@@ -86,8 +86,9 @@ Attendees.utilities = {
                 "margin-right": "1rem",
               })
               .dxButton({
-                "icon": "collapse",
-                "onClick": (e) => {
+                icon: 'collapse',
+                hint: 'click to hide/show this section',
+                onClick: (e) => {
                   const hidden = e.component.option('icon') === 'expand';
                   const $caption = e.element.closest('.dx-form-group-caption');
                   const $content = $caption.siblings(".dx-form-group-content");
@@ -101,6 +102,33 @@ Attendees.utilities = {
           );
       });
   },  // jQuery toggle() from https://supportcenter.devexpress.com/ticket/details/t525231
+
+  addCheckBoxToDxFormGroups: (checkboxClass='checkbox-instance', checked=true, animationSpeed='fast') => {
+    $('.h6.not-shrinkable.leading-checkbox .dx-form-group-caption')
+      .each(function () {  // somehow jQuery each cannot use arrow function?
+        $(this)
+          .prepend(
+            $('<div />')
+              .dxCheckBox({
+                value: checked,
+                hint: 'Uncheck to disable this section, check to enable this section',
+                elementAttr: {
+                  class: checkboxClass,
+                },
+                onValueChanged: (e) => {
+                  const $caption = e.element.closest('.dx-form-group-caption');
+                  const $content = $caption.siblings(".dx-form-group-content");
+                  // $content.toggle(animationSpeed);
+                  if (e.value) {
+                    console.log('The CheckBox is checked');
+                  } else {
+                    console.log('The CheckBox is unchecked');
+                  }
+                }
+              })
+          );
+      });
+  },
 
   trimBothKeyAndValueButKeepBasicContacts: (obj, keepEmpties=false) => {
     return Object.entries(obj).reduce((acc, curr) => {

@@ -63,7 +63,8 @@ class SpyGuard(UserPassesTestMixin):
     def handle_no_permission(self):
         """Show warning info so user can know what happened"""
         return HttpResponse(
-            "Do you have attendee associated with your user? You do not have permissions to visit this!"
+            "Do you have attendee associated with your user? You do not have permissions to visit this!",
+            status=403,
         )
 
 

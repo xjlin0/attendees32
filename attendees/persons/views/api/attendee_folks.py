@@ -22,15 +22,14 @@ class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
     serializer_class = FolkSerializer
 
     def get_queryset(self):
-        attendee = get_object_or_404(
-            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
-        )
         folk_id = self.kwargs.get("pk")
         category = get_object_or_404(
             Category,
             pk=self.request.query_params.get("categoryId", Attendee.FAMILY_CATEGORY),
         )
         current_user = self.request.user
+        target_attendee_id = self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        attendee = Attendee.objects.filter(pk=target_attendee_id).first() if target_attendee_id != 'new' else (current_user.attendee if current_user.can_see_all_organizational_meets_attendees() else None)
         search_value = self.request.query_params.get("searchValue")
         search_expression = self.request.query_params.get("searchExpr")
         search_operation = self.request.query_params.get("searchOperation")
@@ -42,10 +41,10 @@ class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
                               |
                               Q(display_name__icontains=search_value)), Q.AND)
 
-        if folk_id:
+        if folk_id and folk_id != 'new':
             extra_filter.add(Q(pk=folk_id), Q.AND)
 
-        if current_user.privileged_to_edit(attendee.id):
+        if current_user.privileged_to_edit(attendee and attendee.id):
             if folk_id:
                 return Folk.objects.filter(extra_filter)
             else:

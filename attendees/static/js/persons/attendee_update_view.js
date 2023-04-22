@@ -186,6 +186,7 @@ Attendees.datagridUpdate = {
       Attendees.datagridUpdate.attendeeMainDxForm = $("div.datagrid-attendee-update").dxForm(Attendees.datagridUpdate.attendeeFormConfigs).dxForm('instance');
       Attendees.datagridUpdate.attendeeFormConfigs.formData = Attendees.datagridUpdate.attendeeMainDxFormDefault;
       Attendees.datagridUpdate.populateBasicInfoBlock({});
+      Attendees.datagridUpdate.attendeeMainDxForm.getEditor('folk_id').option('value', Attendees.datagridUpdate.familyAttrDefaults.id);
     } else {
       Attendees.datagridUpdate.attendeeAjaxUrl = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeEndpoint + Attendees.datagridUpdate.attendeeId + '/';
       $.ajax({
@@ -369,25 +370,83 @@ Attendees.datagridUpdate = {
     ];
 
     if (Attendees.datagridUpdate.familyAttrDefaults.id) {
+      const newFamily = {id: 'new', display_name: 'Create a brand new family'};
       potentialDuplicatesForNewAttendee.unshift({
         colSpan: 24,
         colCount: 24,
-        caption: `What is the role of the new member in the ${Attendees.datagridUpdate.familyAttrDefaults.name} family?`,
-        cssClass: 'h6 not-shrinkable',
+        caption: 'Add the new member to a family?',
+        cssClass: 'h6 not-shrinkable leading-checkbox',
         itemType: 'group',
         items: [
           {
-            colSpan: 12,
+            colSpan: 18,
+            dataField: 'folk_id',
+            editorType: 'dxLookup',
+            label: {
+              text: 'Family',
+            },
+            validationRules: [{
+              type: 'custom',
+              reevaluate: true,
+              message: 'Selection of a (new) family is required',
+              validationCallback: (e) => $('div.h6.not-shrinkable.leading-checkbox div.add-family-checkboxes').dxCheckBox('instance').option('value') ? e.value : true,
+            }],
+            editorOptions: {
+              valueExpr: 'id',
+              displayExpr: 'display_name',
+              placeholder: 'Select or search ...',
+              dataSource: new DevExpress.data.DataSource({
+                paginate: false,
+                store: new DevExpress.data.CustomStore({
+                  key: 'id',
+                  load: (searchOpts) => {
+                    const d = new $.Deferred();
+                    const params = {categoryId: 0};
+                    if (searchOpts['searchValue']) {
+                      params['searchValue'] = searchOpts['searchValue'];
+                      params['searchExpr'] = searchOpts['searchExpr'];
+                      params['searchOperation'] = searchOpts['searchOperation'];
+                    }
+                    $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, params)
+                      .done((result) => {
+                        result.data.unshift(newFamily);
+                        d.resolve(result.data);
+                      });
+                    return d.promise();
+                  },
+                  byKey: (key) => {
+                    const d = new $.Deferred();
+                    if (key === 'new') {
+                      d.resolve(newFamily);
+                    } else {
+                      $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/', {categoryId: 0})
+                        .done((result) => {
+                          d.resolve(result);
+                        });
+                    }
+                    return d.promise();
+                  },
+                }),
+              }),
+            },
+          },
+          {
+            colSpan: 6,
             dataField: 'role',
             editorType: 'dxLookup',
-            isRequired: true,
             label: {
               text: 'Family Role',
             },
+            validationRules: [{
+              type: 'custom',
+              reevaluate: true,
+              message: 'Family Role is required',
+              validationCallback: (e) => $('div.h6.not-shrinkable.leading-checkbox div.add-family-checkboxes').dxCheckBox('instance').option('value') ? e.value : true,
+            }],
             editorOptions: {
               valueExpr: 'id',
               displayExpr: 'title',
-              placeholder: 'Select a value...',
+              placeholder: 'Select one...',
               dataSource: new DevExpress.data.DataSource({
                 paginate: false,
                 store: new DevExpress.data.CustomStore({
@@ -920,6 +979,9 @@ Attendees.datagridUpdate = {
       onContentReady: () => {
         $('div.spinner-border').hide();
         Attendees.utilities.toggleDxFormGroups();
+        if (Attendees.datagridUpdate.familyAttrDefaults.id) {
+          Attendees.utilities.addCheckBoxToDxFormGroups('add-family-checkboxes');
+        }
       },
       onFieldDataChanged: (e) => {
         Attendees.datagridUpdate.attendeeMainDxForm.validate();
@@ -949,11 +1011,12 @@ Attendees.datagridUpdate = {
         userData.delete('photo')
       }
 
-      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.id) {
-        extraHeaders['X-Add-Folk'] = Attendees.datagridUpdate.familyAttrDefaults.id;
+      if (Attendees.datagridUpdate.attendeeId === 'new' && $('div.h6.not-shrinkable.leading-checkbox div.add-family-checkboxes').dxCheckBox('instance').option('value')) {
+        extraHeaders['X-Add-Folk'] = userData.get('folk_id');
         extraHeaders['X-Folk-Role'] = userData.get('role');
-        userData.delete('role');
       }
+      userData.delete('role');
+      userData.delete('folk_id');
 
       if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
         extraHeaders['X-Join-Meet'] = Attendees.datagridUpdate.familyAttrDefaults.joinMeetId;  // join by self attending

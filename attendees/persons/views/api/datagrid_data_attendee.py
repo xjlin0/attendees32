@@ -110,13 +110,23 @@ class ApiDatagridDataAttendeeViewSet(
         Some post processing can be added for a new attendee just created.  Gathering_id is higher priority than meet.
         """
         instance = serializer.save()
-        folk_id = self.request.META.get("HTTP_X_ADD_FOLK")
+        raw_folk_id = self.request.META.get("HTTP_X_ADD_FOLK")
         role_id = self.request.META.get("HTTP_X_FOLK_ROLE")
         meet_id = self.request.META.get("HTTP_X_JOIN_MEET")
         character_slug = self.request.META.get("HTTP_X_JOIN_CHARACTER")
         gathering_id = self.request.META.get("HTTP_X_JOIN_GATHERING")
 
         meet = Meet.objects.filter(pk=meet_id).first()
+
+        if raw_folk_id == "new" and role_id:
+            folk = Folk.objects.create(
+                category=0,  # family
+                division=instance.division,
+                display_name=f'{instance.infos.get("names", {}).get("original", "")} family'
+            )
+            folk_id = folk.id
+        else:
+            folk_id = raw_folk_id
 
         if folk_id and role_id:
             FolkAttendee.objects.create(
