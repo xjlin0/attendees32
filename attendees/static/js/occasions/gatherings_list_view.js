@@ -698,7 +698,7 @@ Attendees.gatherings = {
               key: 'id',
               load: (searchOpts) => {
                 const d = new $.Deferred();
-                const params = {model: 'gathering'};
+                const params = {model: 'gathering', take: 999};
                 if (searchOpts["searchValue"]) {
                   params["searchValue"] = searchOpts["searchValue"];
                   params["searchExpr"] = searchOpts['searchExpr'];
