@@ -106,8 +106,8 @@ Attendees.utilities = {
   addCheckBoxToDxFormGroups: (checkboxClass='checkbox-instance', checked=true, animationSpeed='fast') => {
     $('.h6.not-shrinkable.leading-checkbox .dx-form-group-caption')
       .each(function () {  // somehow jQuery each cannot use arrow function?
-        $(this)
-          .prepend(
+        const $title = $(this);
+        $title.prepend(
             $('<div />')
               .dxCheckBox({
                 value: checked,
@@ -118,15 +118,13 @@ Attendees.utilities = {
                 onValueChanged: (e) => {
                   const $caption = e.element.closest('.dx-form-group-caption');
                   const $content = $caption.siblings(".dx-form-group-content");
-                  // $content.toggle(animationSpeed);
-                  if (e.value) {
-                    console.log('The CheckBox is checked');
-                  } else {
-                    console.log('The CheckBox is unchecked');
-                  }
+                  $content.toggle(animationSpeed);
                 }
               })
           );
+        if (!checked) {
+          $title.siblings(".dx-form-group-content").hide();
+        }
       });
   },
 

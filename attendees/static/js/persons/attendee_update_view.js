@@ -346,32 +346,9 @@ Attendees.datagridUpdate = {
       },
     ];
 
+    const newFamily = {id: 'new', display_name: 'Create a brand new family'};
     const potentialDuplicatesForNewAttendee = [
       {
-        colSpan: 24,
-        colCount: 24,
-        caption: "Maybe it already exists, so there's no need to create new?",
-        cssClass: 'h6',
-        itemType: 'group',
-        items: [
-          {
-            colSpan: 24,
-            dataField: 'duplicates_new_attendee',
-            name: 'duplicatesForNewAttendeeDatagrid',
-            label: {
-              location: 'top',
-              text: ' ',  // empty space required for removing label
-              showColon: false,
-            },
-            template: (data, itemElement) => Attendees.datagridUpdate.initDuplicatesForNewAttendeeDatagrid(data, itemElement),
-          }
-        ],
-      },
-    ];
-
-    if (Attendees.datagridUpdate.familyAttrDefaults.id) {
-      const newFamily = {id: 'new', display_name: 'Create a brand new family'};
-      potentialDuplicatesForNewAttendee.unshift({
         colSpan: 24,
         colCount: 24,
         caption: 'Add the new member to a family?',
@@ -452,7 +429,7 @@ Attendees.datagridUpdate = {
                 store: new DevExpress.data.CustomStore({
                   key: 'id',
                   load: (searchOpts) => {
-                    const params = {take: 100};
+                    const params = {take: 999};
                     if (searchOpts.searchValue) {
                       const searchCondition = ['title', searchOpts.searchOperation, searchOpts.searchValue];
                       params.filter = JSON.stringify(searchCondition);
@@ -464,8 +441,28 @@ Attendees.datagridUpdate = {
             },
           },
         ],
-      });
-    }
+      },
+      {
+        colSpan: 24,
+        colCount: 24,
+        caption: "Maybe it already exists, so there's no need to create new?",
+        cssClass: 'h6',
+        itemType: 'group',
+        items: [
+          {
+            colSpan: 24,
+            dataField: 'duplicates_new_attendee',
+            name: 'duplicatesForNewAttendeeDatagrid',
+            label: {
+              location: 'top',
+              text: ' ',  // empty space required for removing label
+              showColon: false,
+            },
+            template: (data, itemElement) => Attendees.datagridUpdate.initDuplicatesForNewAttendeeDatagrid(data, itemElement),
+          }
+        ],
+      },
+    ];
 
     if (Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
       potentialDuplicatesForNewAttendee.unshift({
@@ -979,9 +976,7 @@ Attendees.datagridUpdate = {
       onContentReady: () => {
         $('div.spinner-border').hide();
         Attendees.utilities.toggleDxFormGroups();
-        if (Attendees.datagridUpdate.familyAttrDefaults.id) {
-          Attendees.utilities.addCheckBoxToDxFormGroups('add-family-checkboxes');
-        }
+        Attendees.utilities.addCheckBoxToDxFormGroups('add-family-checkboxes', !!Attendees.datagridUpdate.familyAttrDefaults.id);
       },
       onFieldDataChanged: (e) => {
         Attendees.datagridUpdate.attendeeMainDxForm.validate();

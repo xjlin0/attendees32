@@ -32,7 +32,7 @@ class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
 
             if relative:
                 relative_json = json.loads(relative)
-                if relative_json:
+                if relative_json in [True, False]:
                     init_query.add(Q(relative=json.loads(relative)), Q.AND)
 
             final_query = init_query.add(
