@@ -120,9 +120,9 @@ class ApiDatagridDataAttendeeViewSet(
 
         if raw_folk_id == "new" and role_id:
             folk = Folk.objects.create(
-                category=0,  # family
+                category_id=0,  # family
                 division=instance.division,
-                display_name=f'{instance.infos.get("names", {}).get("original", "")} family'
+                display_name=f'{(instance.last_name + " ") if instance.last_name else ""}{instance.infos.get("names", {}).get("original", "")} family'
             )
             folk_id = folk.id
         else:
