@@ -14170,6 +14170,36 @@
     }
   },
   {
+    "model": "occasions.character",
+    "pk": 51,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 8,
+      "display_name": "團契帶領 Chinese fellowship leader",
+      "display_order": 10000,
+      "slug": "d7c8Fd_cfcch_chinese_fellowship_leader",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 52,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 8,
+      "display_name": "團契同工 Chinese fellowship coworker",
+      "display_order": 20000,
+      "slug": "d7c8Fd_cfcch_chinese_fellowship_coworker",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
     "model": "occasions.gathering",
     "pk": 1,
     "fields": {
@@ -15910,6 +15940,314 @@
         "Attendance": null
       },
       "default_attendingmeet_in_weeks": 99999
+      },
+      "site_type": 53,
+      "site_id": "1"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 28,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "幼家團契 youngster family Fellowship",
+      "slug": "d7c8Fd_cfcch_chinese_youngster_family_fellowship",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "21"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 29,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "迦勒團契 Caleb Fellowship",
+      "slug": "d7c8Fd_cfcch_chinese_caleb_fellowship",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "3"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 30,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "喜樂小組 Hayward Joy Group",
+      "slug": "d7c8Fd_cfcch_chinese_hayward_joy_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "21"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 31,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "更新小組 Oakland Renew Group",
+      "slug": "d7c8Fd_cfcch_chinese_oakland_renew_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "23"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 32,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "恩慈小組 Castro Valley Kind Group",
+      "slug": "d7c8Fd_cfcch_chinese_castro_valley_kind_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "16"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 33,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "信實小組 Pleasanton Faithful Group",
+      "slug": "d7c8Fd_cfcch_chinese_pleasanton_faithful_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "23"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 34,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "信心小組 Fremont confident Group",
+      "slug": "d7c8Fd_cfcch_chinese_fremont_confident_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
       },
       "site_type": 53,
       "site_id": "1"
