@@ -273,9 +273,18 @@ Attendees.dataAttendees = {
       visible: false,
     },
     {
-      dataHtmlTitle: "showing only divisions of current user organization",
-      caption: "division",
+      dataHtmlTitle: "click to sort, or click the funnel to select",
+      caption: "division & attendance",
       dataField: "division",
+      cellTemplate: (container, rowData) => {
+        const attrs = {
+          class: 'text-body',
+          text: rowData.displayValue,
+          title: 'click to check all attendances',
+          href: Attendees.dataAttendees.familyAttendancesUrn + rowData.data.id,
+        };
+        $($('<a>', attrs)).appendTo(container);
+      },
       lookup: {
         valueExpr: "id",   // valueExpr has to be string, not function
         displayExpr: "display_name",
@@ -301,19 +310,12 @@ Attendees.dataAttendees = {
 
   otherAttendeesColumns: [
     {
-      caption: "Attendance",
-      allowSorting: false,
-      allowHeaderFiltering: false,
-      cellTemplate: (container, rowData) => {
-        const attrs = {
-          class: 'text-info',
-          text: 'Attendances',
-          href: Attendees.dataAttendees.familyAttendancesUrn + rowData.data.id,
-        };
-        $($('<a>', attrs)).appendTo(container);
-      },
+      dataHtmlTitle: 'click to sort, or type to search',
+      dataField: 'folkcities',
+      caption: 'family cities',
+      allowHeaderFiltering: false,  // needs lookup with postprocess to locality id to avoid duplicates
+      filterRow: false,
     },
-
     {
       caption: "Phone",
       dataField: "infos.contacts",

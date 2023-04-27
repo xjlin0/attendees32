@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.aggregates.general import ArrayAgg
+from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
 from django.db.models import Case, F, Func, Q, When
 from django.db.models.expressions import OrderBy
 from django.http import Http404
@@ -157,7 +157,7 @@ class AttendeeService:
         """
         if not hasattr(current_user, 'attendee'):
             return []
-
+        now = datetime.now(timezone.utc)
         orderby_list = AttendeeService.orderby_parser(
             orderby_string, meets, current_user
         )
@@ -184,7 +184,15 @@ class AttendeeService:
             qs.select_related()
             .prefetch_related()
             .annotate(
-                attendingmeets=ArrayAgg("attendings__meets__slug", distinct=True),
+                attendingmeets=ArrayAgg('attendings__meets__slug',
+                                        filter=Q(attendings__attendingmeet__finish__gte=now),
+                                        distinct=True),
+                folkcities=StringAgg('folks__places__address__locality__name',
+                                     filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)),
+                                     delimiter=", ",
+                                     distinct=True,
+                                     default=None,
+                                     ),
             )
             .filter(final_query)
             .order_by(*orderby_list)
