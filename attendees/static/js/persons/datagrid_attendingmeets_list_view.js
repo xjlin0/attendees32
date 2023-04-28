@@ -347,16 +347,13 @@ Attendees.attendingmeets = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {take: 9999};
+                const params = {take: 9999, grouping: 'assembly_name'};  // for grouped: true,
                 const meetSlugs = $('div.selected-meets select').val();
                 const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendingmeets.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                 // const length = assemblies && assemblies.length
                 if (assemblies && assemblies.size){
                   params['assemblies[]'] = Array.from(assemblies);
-                }
-                if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
-                  params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
                 $.get($('form.filters-dxform').data('characters-endpoint'), params)
                   .done((result) => {
