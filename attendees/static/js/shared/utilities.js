@@ -238,7 +238,7 @@ Attendees.utilities = {
   },
 
   selectAllGroupedTags: (tagBoxEditor, tagSlugs) => {
-    const availableTagSlugs = tagSlugs === undefined ? tagBoxEditor.option('items').flatMap(category => category.items.map(item => item.slug)) : tagSlugs;
+    const availableTagSlugs = tagSlugs === undefined ? tagBoxEditor.option('items').flatMap(category => 'items' in category ? category.items.map(item => item.slug) : category.slug) : tagSlugs;
     tagBoxEditor.option('value', availableTagSlugs);
   },  // loop in loop/flatMap because of options grouped by assembly/category
 
