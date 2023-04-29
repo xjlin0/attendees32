@@ -1124,6 +1124,25 @@ Attendees.datagridUpdate = {
     const basicInfoItems = [
       {
         colSpan: 7,
+        dataField: 'last_name',
+        editorOptions: {
+          placeholder: 'English',
+        },
+        validationRules: [
+          {
+            type: 'custom',
+            validationCallback: Attendees.datagridUpdate.attendeeNameValidator,
+            message: 'first or last name is required'
+          },
+          {
+            type: 'stringLength',
+            max: 25,
+            message: 'No more than 25 characters'
+          },
+        ],
+      },
+      {
+        colSpan: 7,
         dataField: 'first_name',
         editorOptions: {
           placeholder: 'English',
@@ -1138,25 +1157,6 @@ Attendees.datagridUpdate = {
           {
             type: 'stringLength',
             reevaluate: true,
-            max: 25,
-            message: 'No more than 25 characters'
-          },
-        ],
-      },
-      {
-        colSpan: 7,
-        dataField: 'last_name',
-        editorOptions: {
-          placeholder: 'English',
-        },
-        validationRules: [
-          {
-            type: 'custom',
-            validationCallback: Attendees.datagridUpdate.attendeeNameValidator,
-            message: 'first or last name is required'
-          },
-          {
-            type: 'stringLength',
             max: 25,
             message: 'No more than 25 characters'
           },
@@ -1200,6 +1200,9 @@ Attendees.datagridUpdate = {
       },
       {
         colSpan: 7,
+        label: {
+          text: '(中文) 姓',
+        },
         dataField: 'last_name2',
         validationRules: [
           {
@@ -1216,6 +1219,9 @@ Attendees.datagridUpdate = {
       },
       {
         colSpan: 7,
+        label: {
+          text: '(中文) 名',
+        },
         dataField: 'first_name2',
         validationRules: [
           {
@@ -3032,7 +3038,8 @@ Attendees.datagridUpdate = {
                 }
               }
             }
-            if (document.querySelector('input#folkattendee-file-clear').checked) {
+            const folkAttendeeFileClear = document.querySelector('input#folkattendee-file-clear');
+            if (folkAttendeeFileClear && folkAttendeeFileClear.checked) {
               folkAttendeeFormData.set('file', '');
             }
             return $.ajax({
