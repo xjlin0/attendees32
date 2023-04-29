@@ -48,7 +48,7 @@ class FolkService:
                     folkattendee__role__title="masked",  # for joined attendees not to be shown in certain families
                 ).order_by('folkattendee__display_order')
                 parents = attendees.filter(
-                    folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife']  # no father/mother-in-law
+                    folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife', 'father', 'mother', 'parent']  # no father/mother-in-law
                 )
                 attrs['household_last_name'] = attendees.first().last_name
 
