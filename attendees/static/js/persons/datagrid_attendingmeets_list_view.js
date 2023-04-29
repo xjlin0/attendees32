@@ -475,7 +475,7 @@ Attendees.attendingmeets = {
             },
           });
         },
-        insert: function (values) {
+        insert: (values) => {
           return $.ajax({
             url: $('form.filters-dxform').data('attendingmeets-endpoint'),
             method: 'POST',
@@ -700,6 +700,7 @@ Attendees.attendingmeets = {
     columns: [
       {
         dataField: 'attending',
+        sortOrder: 'asc',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee',  // can't sort remotely for function https://supportcenter.devexpress.com/ticket/details/t897726
