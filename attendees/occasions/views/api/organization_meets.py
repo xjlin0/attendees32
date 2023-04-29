@@ -73,7 +73,7 @@ class OrganizationMeetsViewSet(viewsets.ModelViewSet):
                 .annotate(
                     assembly_name=F("assembly__display_name"),
                 )
-                .order_by("assembly_name")
+                .order_by('assembly_name', 'display_name')
             )
 
         else:

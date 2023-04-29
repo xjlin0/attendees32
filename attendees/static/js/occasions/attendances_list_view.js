@@ -764,6 +764,7 @@ Attendees.attendances = {
     columns: [
       {
         dataField: 'attending',
+        sortOrder: 'asc',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         width: '30%',
         validationRules: [{type: 'required'}],
@@ -892,6 +893,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'gathering',
+        sortOrder: 'asc',
         width: '20%',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
