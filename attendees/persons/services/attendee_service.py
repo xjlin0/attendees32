@@ -196,7 +196,7 @@ class AttendeeService:
             )
             .filter(final_query)
             .order_by(*orderby_list)
-        )
+        ).distinct()  # when meets present duplicates appear
 
     @staticmethod
     def orderby_parser(orderby_string, meets, current_user):
