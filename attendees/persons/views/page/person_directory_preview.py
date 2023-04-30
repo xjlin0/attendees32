@@ -18,10 +18,11 @@ class PersonDirectoryPreview(RouteGuard, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_org_settings = self.request.user.organization.infos.get("settings", {})
+        targeting_attendee_id = self.kwargs.get("attendee_id", "no attendee in current user")  # this API is only for single family preview so default can be set.
         indexes, families = FolkService.families_in_directory(
             directory_meet_id=user_org_settings.get('default_directory_meet'),
             member_meet_id=user_org_settings.get('default_member_meet'),
-            targeting_attendee_id=self.kwargs.get("attendee_id"),
+            targeting_attendee_id=targeting_attendee_id if self.request.user.privileged_to_edit(targeting_attendee_id) else self.request.user.attendee_uuid_str(),
         )
         context.update({
             'families': families,

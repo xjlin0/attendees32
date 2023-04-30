@@ -9,13 +9,18 @@ from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
 
 class FolkService:
     @staticmethod
-    def families_in_directory(directory_meet_id, member_meet_id, row_limit=26, targeting_attendee_id=None, division_ids=[]):
+    def families_in_directory(directory_meet_id, member_meet_id, row_limit=26, targeting_attendee_id=None, divisions=[]):
+        """
+        It generates data for printing/previewing single or participating families in chosen divisions.
+        The output includes indexes (families grouped in cities) and families (header and family member contacts).
+        It has no scope checks, so callers need to limit the scope by passing targeting_attendee_id or divisions.
+        """
         families = []
         index = defaultdict(lambda: {})
         index_list = []
         directory_meet = Meet.objects.filter(pk=directory_meet_id).first()
         member_meet = Meet.objects.filter(pk=member_meet_id).first()
-        targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks if targeting_attendee_id else Folk.objects.filter(division__in=division_ids)
+        targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks if targeting_attendee_id else Folk.objects.filter(division__in=divisions)
 
         if directory_meet:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
@@ -117,6 +122,13 @@ class FolkService:
                             index_list.append({'BREAKER': 'PAGE'})
 
         return index_list, families
+
+    @staticmethod
+    def families_in_participations(meet_id, current_user):
+        """
+        It generates printing data for attendances of a meet in current user's organization, grouped by families.
+        """
+        pass
 
     @staticmethod
     def destroy_with_associations(folk, attendee):
