@@ -73,8 +73,10 @@ class ApiCategorizedPastsViewSet(SpyGuard, viewsets.ModelViewSet):
 
         if self.request.user.is_counselor():
             return qs
-        else:
+        elif self.request.user.is_a(Past.COWORKER):
             return qs.exclude(category__display_name=Past.COUNSELING)
+        else:  # public
+            return qs.exclude(category__display_name__in=[Past.COUNSELING, Past.COWORKER])
 
     def perform_create(
         self, serializer

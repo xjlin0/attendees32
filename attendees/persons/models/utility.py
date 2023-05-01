@@ -131,6 +131,7 @@ class Utility:
             "groups_see_all_meets_attendees": [],
             "contacts": {},
             "counselor": [],
+            "coworker": [],
             "data_admins": [],
         }
 

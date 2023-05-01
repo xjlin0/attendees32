@@ -134,6 +134,12 @@ class User(AbstractUser):
         )
         return self.belongs_to_groups_of(organization_counselor_groups)
 
+    def is_a(self, category=None):
+        organization_categorized_groups = (
+            self.organization.infos.get(category, []) if self.organization else []
+        )
+        return self.belongs_to_groups_of(organization_categorized_groups)
+
     def attendee_uuid_str(self):
         return str(self.attendee.id) if hasattr(self, "attendee") else ""
 

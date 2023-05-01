@@ -6860,6 +6860,7 @@
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
+        "coworker": [],
         "data_admins": [],
         "default_time_zone": "America/Los_Angeles"
       }
@@ -6898,6 +6899,13 @@
         },
         "counselor": [
           "data_counselor"
+        ],
+        "coworker": [
+          "children_coworker",
+          "children_organizer",
+          "conference_organizer",
+          "data_counselor",
+          "data_organizer"
         ],
         "data_admins": [
           "data_organizer"
@@ -6969,6 +6977,7 @@
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
+        "coworker": [],
         "data_admins": [],
         "default_time_zone": "UTC"
       }
@@ -8415,7 +8424,7 @@
       "is_removed": false,
       "type": "note",
       "display_order": 0,
-      "display_name": "for coworkers",
+      "display_name": "coworker",
       "infos": {}
     }
   },
