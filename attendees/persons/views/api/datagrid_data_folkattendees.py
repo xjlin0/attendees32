@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 
-from attendees.persons.models import Attendee, FolkAttendee, Utility
+from attendees.persons.models import Attendee, FolkAttendee, Utility, Past
 from attendees.persons.serializers import FolkAttendeeSerializer
 from attendees.persons.services import AttendingMeetService
 from attendees.users.authorization.route_guard import SpyGuard
@@ -21,6 +21,8 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
     X-TARGET-ATTENDEE-ID) will return all 3 FamilyAttendee objects of Alice, Bob & Charlie. Also,
     attaching Bob's FamilyAttendee id at the end of the endpoint will return Bob's FamilyAttendee only.
 
+    scope: counsellors see all, coworkers see all families and drivers, others see their own familis only.
+
     Note: If Dick is not in the family, passing Dick's attendee id in headers plus Bob's FamilyAttendee
     id at the end of the endpoint will return nothing.
     """
@@ -32,37 +34,43 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         target_folkattendee_id = self.kwargs.get("pk")
-        category = self.request.query_params.get("categoryId")
+        category = self.request.query_params.get("categoryId")  # string so '0' is truthy
+        qs = FolkAttendee.objects if self.request.user.privileged_to_edit(target_attendee.id) else self.request.user.attendee.folkattendee_set
+        target_attendee_all_folks = target_attendee.folks.filter(folkattendee__is_removed=False)
+        target_attendee_other_folks = target_attendee_all_folks.exclude(category=Attendee.FAMILY_CATEGORY).filter(folkattendee__role=Attendee.HIDDEN_ROLE, folkattendee__attendee=target_attendee)
+        target_attendee_in_others_other_folks = target_attendee_all_folks.exclude(category=Attendee.FAMILY_CATEGORY).exclude(pk__in=target_attendee_other_folks)
+        filters = Q(folk__in=target_attendee_all_folks)
 
         if target_folkattendee_id:
-            return FolkAttendee.objects.filter(pk=target_folkattendee_id)
+            filters.add(Q(pk=target_folkattendee_id), Q.AND)
 
-        else:
-            filters = Q(
-                folk__in=target_attendee.folks.filter(folkattendee__is_removed=False)
-            )
-
+        if self.request.user.is_counselor():  # see both family and all other
             if category:
-                filters = filters & Q(folk__category=category)
+                filters.add(Q(folk__category=category), Q.AND)
+        elif self.request.user.is_a(Past.COWORKER):  # sees family and driver only
+            if category == '0':     # family type
+                filters.add(Q(folk__category=Attendee.FAMILY_CATEGORY), Q.AND)
+            elif category == '25':  # other type
+                filters.add(Q(role__title="driver"), Q.AND)
+            else:  # no category passed in to query both types
+                filters.add(Q(Q(folk__category=Attendee.FAMILY_CATEGORY) | Q(role__title="driver")), Q.AND)
+        else:  # ordinary attendee only see families, not even drivers since traffic arrangement is internal
+            filters.add(Q(folk__category=Attendee.FAMILY_CATEGORY), Q.AND)
 
-            if not self.request.user.privileged():
-                expire_filter = Q(finish__isnull=True).add(
-                    Q(finish__gte=datetime.now(timezone.utc)), Q.OR
-                )
-                filters = filters & expire_filter
+        if not self.request.user.privileged():  # ordinary users don't see past
+            filters.add(Q(Q(finish__isnull=True) | Q(finish__gte=datetime.now(timezone.utc))), Q.AND)
 
-            return (
-                FolkAttendee.objects.filter(filters)
-                .exclude(
-                    role=Attendee.HIDDEN_ROLE,
-                )
-                .order_by(
-                    "folk",
-                    "folk__display_order",
-                    "display_order",
-                    "role__display_order",
-                )
-            )
+        return qs.filter(filters).exclude(
+                role=Attendee.HIDDEN_ROLE,
+               ).exclude(  # Todo 20230502 optimize to exclude rows in other attendee's other folks
+                ~Q(attendee=target_attendee),
+                folk__in=target_attendee_in_others_other_folks,
+               ).order_by(
+                "folk",
+                "folk__display_order",
+                "display_order",
+                "role__display_order",
+               )
 
     def perform_update(self, serializer):  # Todo 20220706 respond for joining and families count
         instance = serializer.save()

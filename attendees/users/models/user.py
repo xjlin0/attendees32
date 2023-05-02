@@ -117,6 +117,9 @@ class User(AbstractUser):
         :return: boolean
         """
         if other_attendee_id and self.organization:
+            if self.attendee_uuid_str() == other_attendee_id:
+                return True
+
             return self.belongs_to_groups_of(
                 self.organization.infos["groups_see_all_meets_attendees"]
             ) and self.attendee.under_same_org_with(other_attendee_id)
