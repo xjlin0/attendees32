@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework import viewsets
 
-from attendees.persons.models import Relation
+from attendees.persons.models import Relation, Attendee
 from attendees.persons.serializers import RelationSerializer
 from attendees.persons.services import AttendeeService
 
@@ -19,6 +19,7 @@ class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         relation_id = self.request.query_params.get("relation_id")
+        category_id = self.request.query_params.get("category_id")
         relative = self.request.query_params.get("relative", '""')
         filters_list_string = self.request.query_params.get("filter", "[]")
         filters_list = ast.literal_eval(
@@ -29,6 +30,8 @@ class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
             return Relation.objects.filter(pk=relation_id)
         else:
             init_query = Q(is_removed=False)
+            if category_id != str(Attendee.FAMILY_CATEGORY) and not self.request.user.is_counselor():
+                init_query.add(Q(pk=7), Q.AND)  # Counselors can see other relationships. Others can only see driver
 
             if relative:
                 relative_json = json.loads(relative)
