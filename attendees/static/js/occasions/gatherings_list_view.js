@@ -332,7 +332,7 @@ Attendees.gatherings = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {model: 'gathering', grouping: 'assembly_name'};  // for grouped: true,
+                const params = {take: 999, model: 'gathering', grouping: 'assembly_name'};  // for grouped: true,
 
                 if (Attendees.gatherings.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;

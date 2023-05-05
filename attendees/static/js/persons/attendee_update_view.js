@@ -429,7 +429,7 @@ Attendees.datagridUpdate = {
                 store: new DevExpress.data.CustomStore({
                   key: 'id',
                   load: (searchOpts) => {
-                    const params = {take: 999};
+                    const params = {take: 999, category_id: 0}; // family
                     if (searchOpts.searchValue) {
                       const searchCondition = ['title', searchOpts.searchOperation, searchOpts.searchValue];
                       params.filter = JSON.stringify(searchCondition);

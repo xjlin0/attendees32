@@ -14914,6 +14914,7 @@
         "attendance": {},
         "allowed_groups": [
           "worship_organizer",
+          "data_organizer",
           "data_counselor"
         ],
         "allowed_models": [

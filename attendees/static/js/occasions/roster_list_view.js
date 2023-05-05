@@ -311,6 +311,7 @@ Attendees.roster = {
                 const filterTill = $('div.filter-till input')[1].value;
                 const d = new $.Deferred();
                 const params = {
+                  take: 999,
                   start: new Date(filterFrom).toISOString(),
                   finish: new Date(filterTill).toISOString(),
                   grouping: 'assembly_name',  // for grouped: true
