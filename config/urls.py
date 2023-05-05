@@ -17,7 +17,7 @@ urlpatterns = [
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     path(
         "",
-        kwargs={"repo_version": f'{"DETACHED_" if repo.head.is_detached else repo.active_branch.name}/{repo.head.commit.hexsha[0:7] if repo.head.commit else "no sha"}'},
+        kwargs={"repo_version": f'{"DETACHED_" if repo.head.is_detached else repo.active_branch.name}/{repo.head.commit.hexsha[0:7] if repo.head.commit and repo.head.commit.hexsha else "no sha"}'},
         view=TemplateView.as_view(template_name="pages/home.html"),
         name="home",
     ),
