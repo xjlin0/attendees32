@@ -44,8 +44,8 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v3
 
-      - name: Fix the unsafe repo error which was introduced by the CVE-2022-24765 git patches
-        run: git config --system --add safe.directory /github/workspace
+      - name: Run Git Config after CVE-2022-24765 git patches
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: show docker compose version
         run: docker-compose -v
