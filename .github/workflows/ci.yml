@@ -44,9 +44,6 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v3
 
-      - name: Run Git Config after CVE-2022-24765 git patches
-        run: git config --global --add safe.directory /github/workspace
-
       - name: show docker compose version
         run: docker-compose -v
 
