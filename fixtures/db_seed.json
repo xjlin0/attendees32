@@ -6827,6 +6827,7 @@
         "settings": {
           "opencc_convert": true,
           "default_member_meet": null,
+          "default_visitor_meet": null,
           "attendee_to_attending": false,
           "default_directory_meet": null,
           "attendingmeet_pdf_export": {},
@@ -6854,6 +6855,7 @@
         "settings": {
           "opencc_convert": true,
           "default_member_meet": null,
+          "default_visitor_meet": null,
           "attendee_to_attending": true,
           "default_directory_meet": null,
           "attendingmeet_pdf_export_groups": {},
@@ -6884,6 +6886,7 @@
           "default_member_meet": 9,
           "attendee_to_attending": true,
           "default_directory_meet": 8,
+          "default_visitor_meet": 0,
           "attendingmeet_pdf_export_groups": {
             "d7c8Fd_cfcch_congregation_directory": [
               "data_organizer"
@@ -6971,6 +6974,7 @@
         "settings": {
           "opencc_convert": true,
           "default_member_meet": null,
+          "default_visitor_meet": null,
           "attendee_to_attending": true,
           "default_directory_meet": null,
           "attendingmeet_pdf_export_groups": {},

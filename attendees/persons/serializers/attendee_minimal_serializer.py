@@ -16,6 +16,7 @@ class AttendeeMinimalSerializer(serializers.ModelSerializer):
     photo_path = serializers.SerializerMethodField(required=False, read_only=True)
     attendingmeets = serializers.JSONField(read_only=True)
     folkcities = serializers.CharField(read_only=True)
+    visitor_since = serializers.CharField(read_only=True)
     user = serializers.PrimaryKeyRelatedField(
         many=False, read_only=True
     )  # For MVP, Admin UI can handle this use case. Todo: when non admins start to use app, admin need to edit this on UI
@@ -37,6 +38,7 @@ class AttendeeMinimalSerializer(serializers.ModelSerializer):
             # 'parents_notifiers_names',
             "folkattendee_set",
             "folkcities",
+            "visitor_since",
             "photo_path",
             # 'caregiver_email_addresses',
             "places",

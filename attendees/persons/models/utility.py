@@ -124,6 +124,7 @@ class Utility:
             "settings": {
                 "default_directory_meet": None,
                 "default_member_meet": None,
+                "default_visitor_meet": None,
                 "attendee_to_attending": True,
                 "past_category_to_attendingmeet_meet": {},
                 "attendingmeet_pdf_export_groups": {},

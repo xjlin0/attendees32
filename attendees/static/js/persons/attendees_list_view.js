@@ -310,6 +310,13 @@ Attendees.dataAttendees = {
 
   otherAttendeesColumns: [
     {
+      dataHtmlTitle: 'click to sort, or type to search. Typing partial date works too',
+      dataField: 'visitor_since',
+      caption: 'Visit since',
+      allowHeaderFiltering: false,
+      filterRow: false,
+    },
+    {
       dataHtmlTitle: 'click to sort, or type to search',
       dataField: 'folkcities',
       caption: 'family cities',
