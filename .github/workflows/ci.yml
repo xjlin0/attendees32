@@ -43,6 +43,7 @@ jobs:
 
       - name: Checkout Code Repository
         uses: actions/checkout@v2
+        run: git config --system --add safe.directory /github/workspace
 
       - name: show docker compose version
         run: docker-compose -v
