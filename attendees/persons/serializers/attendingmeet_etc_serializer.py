@@ -19,7 +19,6 @@ class AttendingMeetEtcSerializer(serializers.ModelSerializer):
         """
         Create or update `AttendingMeet` instance, given the validated data.
         """
-        print("hi 22 here is validated_data: ", validated_data)
         attendingmeet_id = self._kwargs["data"].get("id")
         obj, created = AttendingMeet.objects.update_or_create(
             id=attendingmeet_id,
@@ -32,7 +31,6 @@ class AttendingMeetEtcSerializer(serializers.ModelSerializer):
         Update and return an existing `AttendingMeet` instance, given the validated data.
 
         """
-        print("hi 35 here is validated_data: ", validated_data)
         if (
             True
         ):  # need validations such as if the assembly matching meet, it's better to validate on UI first
