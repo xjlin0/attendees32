@@ -29,6 +29,7 @@ Attendees.attendingmeets = {
         height: '110%',
         onValueChanged: (e) => {  // not reconfirm, it's already after change
           Attendees.utilities.editingEnabled = e.value;
+          console.log("hi 32 initEditingSwitch onValueChanged here is e.value: ", e.value);
           Attendees.attendingmeets.toggleEditing(e.value);
         },
       })
@@ -46,6 +47,23 @@ Attendees.attendingmeets = {
     }).dxCheckBox('instance');
   },
 
+  setNewAttendeeLink: (selectedMeetSlugs) => {
+    const addAttendeeLink = document.querySelector('a.add-attendee');
+
+    if (addAttendeeLink) {
+      const params = {familyName: 'without'};
+      if (selectedMeetSlugs && selectedMeetSlugs.length === 1) {
+        const meet = Attendees.attendingmeets.meetScheduleRules[selectedMeetSlugs[0]];
+        params['joinMeetId'] = meet.id;
+        params['joinMeetName'] = meet.name;
+      }
+
+      addAttendeeLink.classList.remove("btn-outline-secondary");
+      addAttendeeLink.classList.add("btn-outline-success");
+      addAttendeeLink.href = '/persons/attendee/new?' + new URLSearchParams(params).toString();
+    }
+  },
+
   toggleEditing: (enabled) => {
     if (Attendees.attendingmeets.attendingmeetsDatagrid) {
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowUpdating', enabled);
@@ -53,13 +71,12 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowDeleting', enabled);
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
-    const addAttendeeLink = document.querySelector('a.add-attendee');
-    if (addAttendeeLink) {
-      if (enabled) {
-        addAttendeeLink.classList.remove("btn-outline-secondary");
-        addAttendeeLink.classList.add("btn-outline-success");
-        addAttendeeLink.href = '/persons/attendee/new?familyName=without';
-      } else {
+    console.log("hi 73 here is enabled: ", enabled);
+    if (enabled) {
+      Attendees.attendingmeets.setNewAttendeeLink(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs'));
+    } else {
+      const addAttendeeLink = document.querySelector('a.add-attendee');
+      if (addAttendeeLink) {
         addAttendeeLink.removeAttribute("href");
         addAttendeeLink.classList.add("btn-outline-secondary");
         addAttendeeLink.classList.remove("btn-outline-success");
@@ -202,6 +219,7 @@ Attendees.attendingmeets = {
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
           onValueChanged: (e)=> {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs', e.value);
+            if (Attendees.utilities.editingEnabled) { Attendees.attendingmeets.setNewAttendeeLink(e.value); }
             Attendees.attendingmeets.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules";
             const $meetHelpText = Attendees.attendingmeets.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
@@ -251,7 +269,7 @@ Attendees.attendingmeets = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {grouping: 'assembly_name', model: 'attendingmeet'};  // for grouped: true,
+                const params = {take: 999, grouping: 'assembly_name', model: 'attendingmeet'};  // for grouped: true,
 
                 if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;
@@ -266,7 +284,7 @@ Attendees.attendingmeets = {
                     if (Object.keys(Attendees.attendingmeets.meetScheduleRules).length < 1 && result.data && result.data[0]) {
                       result.data.forEach( assembly => {
                         assembly.items.forEach( meet => {
-                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, character: meet.major_character, assembly: meet.assembly, id: meet.id, defaultTillInWeeks: meet.infos['default_attendingmeet_in_weeks']};
+                          Attendees.attendingmeets.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, character: meet.major_character, assembly: meet.assembly, id: meet.id, name: meet.display_name, defaultTillInWeeks: meet.infos['default_attendingmeet_in_weeks']};
                         })
                       }); // schedule rules needed for attendingmeets generation
                     }
@@ -329,16 +347,13 @@ Attendees.attendingmeets = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {take: 9999};
+                const params = {take: 9999, grouping: 'assembly_name'};  // for grouped: true,
                 const meetSlugs = $('div.selected-meets select').val();
                 const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs');
                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendingmeets.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                 // const length = assemblies && assemblies.length
                 if (assemblies && assemblies.size){
                   params['assemblies[]'] = Array.from(assemblies);
-                }
-                if (Attendees.attendingmeets.filterMeetCheckbox.option('value')) {
-                  params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
                 $.get($('form.filters-dxform').data('characters-endpoint'), params)
                   .done((result) => {
@@ -460,7 +475,7 @@ Attendees.attendingmeets = {
             },
           });
         },
-        insert: function (values) {
+        insert: (values) => {
           return $.ajax({
             url: $('form.filters-dxform').data('attendingmeets-endpoint'),
             method: 'POST',
@@ -648,7 +663,7 @@ Attendees.attendingmeets = {
         }
     },
     onInitNewRow: (e) => {
-      e.data.start = new Date();
+      e.data.start = new Date();  //new Date().toLocaleDateString('sv');  // somehow new Date().toDateString() is UTC, Sweden locale "sv" uses the ISO 8601 format
       e.data.category = 1;  // scheduled
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.title', 'Adding AttendingMeet');
       const selectedMeetSlugs = Attendees.attendingmeets.filtersForm.getEditor('meets').option('value');
@@ -685,6 +700,7 @@ Attendees.attendingmeets = {
     columns: [
       {
         dataField: 'attending',
+        sortOrder: 'asc',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending__attendee',  // can't sort remotely for function https://supportcenter.devexpress.com/ticket/details/t897726

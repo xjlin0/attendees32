@@ -8,6 +8,7 @@ from django.views.generic import ListView
 
 from attendees.persons.services import FolkService
 from attendees.users.authorization import RouteGuard
+from attendees.whereabouts.models import Division
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class DirectoryReportListView(RouteGuard, ListView):
             member_meet_id=user_org_settings.get('default_member_meet'),
             row_limit=index_row_per_page,
             targeting_attendee_id=None,
-            division_ids=division_ids,
+            divisions=Division.objects.filter(pk__in=division_ids, organization=self.request.user.organization),
         )
         context.update({
             'directory_header': self.request.GET.get('directoryHeader', ''),

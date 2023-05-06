@@ -154,7 +154,7 @@ https://dbdiagram.io/d/5d5ff66eced98361d6dddc48
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
 * add web user to the docker group by `sudo usermod -aG docker <<web user name>>  && sudo service docker restart`
 * Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees32.git`.  Please do NOT clone under public html folder or guest will be able to see media, keys and passwords.
-* create a production setting by `vi .envs/.production/.django` and save the following content. Ensure using a non-default ADMIN_URL , add your DJANGO_ALLOWED_HOSTS and ensure DJANGO_DEBUG is False.
+* create a production setting by `vi .envs/.production/.django` with 640 and save the following content. Ensure using a non-default ADMIN_URL , add your DJANGO_ALLOWED_HOSTS and ensure DJANGO_DEBUG is False.
 ```
 # General
 # ------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ CELERY_FLOWER_PASSWORD=<<YOUR CELERY_FLOWER_PASSWORD>>
 ```
 user: "1001"
 ```
-* create a production setting by `vi .envs/.production/.postgres` and save the following content. Ensure the db password changed.
+* create a production setting by `vi .envs/.production/.postgres` with 640 and save the following content. Ensure the db password changed.
 ```
 # PostgreSQL
 # ------------------------------------------------------------------------------
@@ -220,7 +220,7 @@ POSTGRES_DB=attendees
 POSTGRES_USER=<<production database user name>>
 POSTGRES_PASSWORD=<<production database user password>>
 ```
-* create a [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` and save the following example content. (yes, local, really)
+* create a [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` with 640 and save the following example content. (yes, local, really)
 ```
 SENDGRID_API_KEY=YOUR_REAL_API_KEY
 DJANGO_DEFAULT_FROM_EMAIL=your@email.com
@@ -240,14 +240,14 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * update content types after migration by `docker-compose -f production.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker-compose -f production.yml run django python manage.py createsuperuser`
 * import the seed data by `docker-compose -f production.yml run django python manage.py loaddata fixtures/db_seed`
-* do NOT collect static file.
+* Do NOT collect static file. However, if the server previously started, you can clear the collected static file by `docker-compose -f production.yml run django python /app/manage.py collectstatic --noinput --clear --no-post-process`
 * prepare all member's photos from different server.
 * copy the real data to attendees/scripts/real_data/ and import real data by `docker-compose -f production.yml run django python manage.py load_access_csv attendees/scripts/real_data/tblHousehold20220929m.csv attendees/scripts/real_data/tblPeople20220929m.csv attendees/scripts/real_data/tblAddress20220929m.csv cfcch_chinese_ministry cfcch_crossing_ministry cfcch_children_ministry cfcch_congregation_data d7c8Fd_cfcch_congregation_member d7c8Fd_cfcch_congregation_directory d7c8Fd_cfcch_congregation_baptized d7c8Fd_cfcch_congregation_english_worship_roster d7c8Fd_cfcch_congregation_chinese_worship_roster d7c8Fd_cfcch_congregation_believer d7c8Fd_cfcch_junior_regular_the_rock d7c8Fd_cfcch_junior_regular_little_foot`
 
 * start server by `docker-compose -f production.yml up -d`
 * enter Django shell by `docker-compose -f production.yml run django python manage.py shell`
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/<ADMIN_URL>/users/user/
-
+* if using proxy on apache, please set `ProxyPreserveHost on` to pass host header in requests, so that the email links will have the correct domain name.
 * For keeping the site surviving reboot, add starting of the Django upon system reboot, such as `sudo su user_name sh -c 'sleep 99 && cd ~user_name/repo_dir && docker-compose -f production.yml up -d' >> /tmp/attendee_startup.log` (need work)
 </details>
 
@@ -516,4 +516,5 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
 - [ ] for all users:
    -[ ] show_secret in Relationship/Past are based on attendee id instead of user id, since secret relationship exists regardless of user accounts. For example, kid X bullied kid Y, and counsellors can configure kids parents & teachers to see it regardless of parent/teachers user accounts existence or switches.
    -[ ] There is no decision on display notes/infos of Relationships/FamilyAttendee/Past. Ordinary end users can see their families, so role-dependent showing/hiding notes columns need designs, such as storing allowed columns in Menu.infos read by User.allowed_url_names()?  Currently UI only expose separated sections on Past which conditionally show to ordinary end users.
+   - [ ] let different meets/assemblies share the very same attending via attendingmeet and registration, since AttendingMeetService.flip_attendingmeet_by_existing_attending cannot know attendings from attendee update, and creating attending is by default when creating new attendee.  If force registration/attendingmeet validation, creating attendingmeet will be hard on UI.  Different attendings of the same attendee will be considered for summer meeting where registration with price involve. 
 </details>

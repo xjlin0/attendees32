@@ -42,9 +42,18 @@ class OrganizationCharactersViewSet(viewsets.ModelViewSet):
         search_expression = self.request.query_params.get("searchExpr")
         search_operation = self.request.query_params.get("searchOperation")
         assemblies = self.request.query_params.getlist("assemblies[]")
+        meet_ids = self.request.query_params.getlist("meetIds[]")
+        slug = self.request.query_params.get("slug")
+
         if current_user_organization:
 
             extra_filter = Q(assembly__division__organization=current_user_organization)
+
+            if slug:
+                extra_filter.add(Q(slug=slug), Q.AND)
+
+            if meet_ids:
+                extra_filter.add(Q(assembly__meet__in=meet_ids), Q.AND)
 
             if assemblies:
                 extra_filter.add(Q(assembly__in=assemblies), Q.AND)

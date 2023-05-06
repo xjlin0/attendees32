@@ -151,7 +151,15 @@ Attendees.dataAttendees = {
       });
 
       return deferred.promise();
-    }
+    },
+    byKey: (key) => {
+      const d = new $.Deferred();
+      $.get(`/persons/api/datagrid_data_attendees/${key}/`)
+        .done((result) => {
+          d.resolve(result);
+        });
+      return d.promise();
+    },
   }),
 
   dataGridOpts: {
@@ -265,9 +273,18 @@ Attendees.dataAttendees = {
       visible: false,
     },
     {
-      dataHtmlTitle: "showing only divisions of current user organization",
-      caption: "division",
+      dataHtmlTitle: "click to sort, or click the funnel to select",
+      caption: "division & attendance",
       dataField: "division",
+      cellTemplate: (container, rowData) => {
+        const attrs = {
+          class: 'text-body',
+          text: rowData.displayValue,
+          title: 'click to check all attendances',
+          href: Attendees.dataAttendees.familyAttendancesUrn + rowData.data.id,
+        };
+        $($('<a>', attrs)).appendTo(container);
+      },
       lookup: {
         valueExpr: "id",   // valueExpr has to be string, not function
         displayExpr: "display_name",
@@ -277,6 +294,14 @@ Attendees.dataAttendees = {
             load: () => {
               return $.getJSON($('div.dataAttendees').data('divisions-endpoint'));
             },
+            byKey: (key) => {
+              const d = new $.Deferred();
+              $.get($('div.dataAttendees').data('divisions-endpoint') + key + '/')
+                .done((result) => {
+                  d.resolve(result);
+                });
+              return d.promise();
+            },
           }),
         },
       },
@@ -285,19 +310,19 @@ Attendees.dataAttendees = {
 
   otherAttendeesColumns: [
     {
-      caption: "Attendance",
-      allowSorting: false,
+      dataHtmlTitle: 'click to sort, or type to search. Typing partial date works too',
+      dataField: 'visitor_since',
+      caption: 'Visit since',
       allowHeaderFiltering: false,
-      cellTemplate: (container, rowData) => {
-        const attrs = {
-          class: 'text-info',
-          text: 'Attendances',
-          href: Attendees.dataAttendees.familyAttendancesUrn + rowData.data.id,
-        };
-        $($('<a>', attrs)).appendTo(container);
-      },
+      filterRow: false,
     },
-
+    {
+      dataHtmlTitle: 'click to sort, or type to search',
+      dataField: 'folkcities',
+      caption: 'family cities',
+      allowHeaderFiltering: false,  // needs lookup with postprocess to locality id to avoid duplicates
+      filterRow: false,
+    },
     {
       caption: "Phone",
       dataField: "infos.contacts",
@@ -311,12 +336,18 @@ Attendees.dataAttendees = {
           if (key.match(/phone/gi) && rowData.data.infos.contacts[key]) {
             const phoneNumber = rowData.data.infos.contacts[key].trim();
             const attrs = {
-              "class": "text-info",
-              "text": Attendees.utilities.phoneNumberFormatter(phoneNumber),
-              "href": `tel:${phoneNumber}`,
+              class: "text-info",
+              text: Attendees.utilities.phoneNumberFormatter(phoneNumber),
+              href: `tel:${phoneNumber}`,
+            };
+            const sms = {
+              class: "text-success",
+              text: "(SMS)",
+              href: `sms:${phoneNumber}`,
             };
             if (phones > 0) {$('<span>', {text: ', '}).appendTo(container);}
             $('<a>', attrs).appendTo(container);
+            $('<a>', sms).appendTo(container);
             phones++;
           }
         }

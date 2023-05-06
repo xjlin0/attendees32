@@ -21,7 +21,7 @@ Attendees.roster = {
     const checkboxInput = event.currentTarget;
     const rowIndex = checkboxInput.getAttribute("name");  // $radioInput.prop('name');
     const buttonValue =  checkboxInput.getAttribute("value"); // $radioInput.prop('value');
-    const attendeeName = checkboxInput.parentElement.previousSibling.outerText;
+    const attendeeName = checkboxInput.parentElement.parentElement.querySelector('u.attendee-name').outerText;
 
     switch(buttonValue) {
       case "checkIn":
@@ -311,6 +311,7 @@ Attendees.roster = {
                 const filterTill = $('div.filter-till input')[1].value;
                 const d = new $.Deferred();
                 const params = {
+                  take: 999,
                   start: new Date(filterFrom).toISOString(),
                   finish: new Date(filterTill).toISOString(),
                   grouping: 'assembly_name',  // for grouped: true
@@ -575,6 +576,7 @@ Attendees.roster = {
       width: 150,
       placeholder: 'search name or notes ...',
     },
+    filterRow: { visible: true, },
     allowColumnReordering: true,
     columnAutoWidth: true,
     allowColumnResizing: true,
@@ -588,7 +590,7 @@ Attendees.roster = {
     },
     pager: {
       visible: true,
-      allowedPageSizes: [20, 100, 9999],
+      allowedPageSizes: [30, 150, 9999],
       showPageSizeSelector: true,
       showInfo: true,
       showNavigationButtons: true,
@@ -753,6 +755,7 @@ Attendees.roster = {
                             (Info)
                           </a>
                           <u title="click to see the attendance details"
+                             class="attendee-name"
                              role="button">
                             ${cellInfo['displayValue']}
                             </u>`;
@@ -1034,6 +1037,9 @@ Attendees.roster = {
       },
       {
         dataField: 'encoded_file',
+        allowFiltering: false,
+        allowSorting: false,
+        allowGrouping: false,
         dataType: 'string',
         visible: false,
       },

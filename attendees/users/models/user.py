@@ -16,6 +16,22 @@ from attendees.persons.models import Utility
 from attendees.whereabouts.models import Organization
 
 
+def allow_coworker(private_file):
+    """
+    Current bug: it gives across organizational access, but private_file.parent_object is None without
+    PrivateStorageDetailView https://github.com/edoburu/django-private-storage#retrieving-files-by-object-id
+    Todo 20230121: give scheduler/families access too
+    """
+    request = private_file.request
+    current_user = request.user
+
+    if current_user.is_authenticated:
+        return current_user.is_superuser or current_user.belongs_to_groups_of(
+                        current_user.organization.infos["groups_see_all_meets_attendees"]
+                    )  # and current_user.attendee.under_same_org_with(other_attendee_id)
+    return False
+
+
 class User(AbstractUser):
     calendar_relations = GenericRelation(CalendarRelation)
     # First Name and Last Name do not cover name patterns around the globe.
@@ -101,12 +117,11 @@ class User(AbstractUser):
         :return: boolean
         """
         if other_attendee_id and self.organization:
+            if self.attendee_uuid_str() == other_attendee_id:
+                return True
 
-            privileged_groups = self.organization.infos.get(
-                "data_admins", []
-            ) + self.organization.infos.get("counselor", [])
             return self.belongs_to_groups_of(
-                privileged_groups
+                self.organization.infos["groups_see_all_meets_attendees"]
             ) and self.attendee.under_same_org_with(other_attendee_id)
         return False
 
@@ -121,6 +136,12 @@ class User(AbstractUser):
             self.organization.infos.get("counselor", []) if self.organization else []
         )
         return self.belongs_to_groups_of(organization_counselor_groups)
+
+    def is_a(self, category=None):
+        organization_categorized_groups = (
+            self.organization.infos.get(category, []) if self.organization else []
+        )
+        return self.belongs_to_groups_of(organization_categorized_groups)
 
     def attendee_uuid_str(self):
         return str(self.attendee.id) if hasattr(self, "attendee") else ""

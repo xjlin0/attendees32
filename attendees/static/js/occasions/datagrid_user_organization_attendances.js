@@ -321,7 +321,7 @@ Attendees.personalAttendances = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {grouping: 'assembly_name', model: 'attendance'};  // for grouped: true,
+                const params = {take: 999, grouping: 'assembly_name', model: 'attendance'};  // for grouped: true,
 
                 if (Attendees.personalAttendances.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;

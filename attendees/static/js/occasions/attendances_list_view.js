@@ -340,7 +340,7 @@ Attendees.attendances = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {grouping: 'assembly_name', model: 'attendance'};  // for grouped: true,
+                const params = {take: 999, grouping: 'assembly_name', model: 'attendance'};  // for grouped: true,
 
                 if (Attendees.attendances.filterMeetCheckbox.option('value')) {
                   const filterFrom = $('div.filter-from input')[1].value;
@@ -432,15 +432,12 @@ Attendees.attendances = {
               key: 'slug',
               load: (loadOptions) => {
                 const d = new $.Deferred();
-                const params = {take: 9999};
+                const params = {take: 9999, grouping: 'assembly_name'};  // for grouped: true,
                 const meetSlugs = $('div.selected-meets select').val();
                 const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
                 const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
                 if (assemblies && assemblies.size){
                   params['assemblies[]'] = Array.from(assemblies);
-                }
-                if (Attendees.attendances.filterMeetCheckbox.option('value')) {
-                  params['grouping'] = 'assembly_name';  // for grouped: true,
                 }
                 $.get($('form.filters-dxform').data('characters-endpoint'), params)
                   .done((result) => {
@@ -767,6 +764,7 @@ Attendees.attendances = {
     columns: [
       {
         dataField: 'attending',
+        sortOrder: 'asc',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         width: '30%',
         validationRules: [{type: 'required'}],
@@ -895,6 +893,7 @@ Attendees.attendances = {
       },
       {
         dataField: 'gathering',
+        sortOrder: 'asc',
         width: '20%',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         validationRules: [{type: 'required'}],

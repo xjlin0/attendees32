@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 from pathlib import Path
-
+from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.db.models import Case, F, Func, Q, When
+from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
+from django.db.models import Case, F, Func, Q, When, CharField
+from django.db.models.functions import Cast, Substr
 from django.db.models.expressions import OrderBy
 from django.http import Http404
 from rest_framework.utils import json
@@ -157,7 +158,8 @@ class AttendeeService:
         """
         if not hasattr(current_user, 'attendee'):
             return []
-
+        visitor_meet_id = current_user.organization.infos.get("settings", {}).get("default_visitor_meet")
+        now = datetime.now(timezone.utc)
         orderby_list = AttendeeService.orderby_parser(
             orderby_string, meets, current_user
         )
@@ -184,11 +186,23 @@ class AttendeeService:
             qs.select_related()
             .prefetch_related()
             .annotate(
-                attendingmeets=ArrayAgg("attendings__meets__slug", distinct=True),
+                attendingmeets=ArrayAgg('attendings__meets__slug',
+                                        filter=Q(attendings__attendingmeet__finish__gte=now),
+                                        distinct=True),
+                folkcities=StringAgg('folks__places__address__locality__name',
+                                     filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)),
+                                     delimiter=", ",
+                                     distinct=True,
+                                     default=None),
+                visitor_since=StringAgg(Substr(Cast('attendings__attendingmeet__start', CharField()), 1, 10),
+                                        filter=Q(attendings__attendingmeet__meet=visitor_meet_id, attendings__attendingmeet__is_removed=False),
+                                        delimiter=", ",
+                                        distinct=True,
+                                        default=None),
             )
             .filter(final_query)
             .order_by(*orderby_list)
-        )
+        ).distinct()  # when meets present duplicates appear
 
     @staticmethod
     def orderby_parser(orderby_string, meets, current_user):
@@ -333,7 +347,7 @@ class AttendeeService:
             content_type=ContentType.objects.get_for_model(attendee),
             object_id=attendee.id,
             category=category,
-            when=datetime.now(user_time_zone).strftime('%Y-%m-%d'),
+            when=PartialDate(datetime.now(user_time_zone).strftime('%Y-%m-%d')),
             display_name=f'become {category.display_name}',
             infos=Utility.relationship_infos(),
         )

@@ -173,8 +173,9 @@ Attendees.datagridUpdate = {
       const urlParams = new URLSearchParams(window.location.search);
       Attendees.datagridUpdate.familyAttrDefaults.id = urlParams.get('familyId');
       Attendees.datagridUpdate.familyAttrDefaults.name = urlParams.get('familyName');
-      Attendees.datagridUpdate.familyAttrDefaults.joinMeet = urlParams.get('joinMeet');
-      Attendees.datagridUpdate.familyAttrDefaults.joinGathering = urlParams.get('joinGathering');
+      if (urlParams.has('joinMeetId')) { Attendees.datagridUpdate.familyAttrDefaults.joinMeetId = urlParams.get('joinMeetId'); }
+      if (urlParams.has('joinMeetName')) { Attendees.datagridUpdate.familyAttrDefaults.joinMeetName = urlParams.get('joinMeetName'); }
+      if (urlParams.has('joinGathering')) { Attendees.datagridUpdate.familyAttrDefaults.joinGathering = urlParams.get('joinGathering'); }
       const titleWithFamilyName = Attendees.datagridUpdate.familyAttrDefaults.name ? Attendees.datagridUpdate.familyAttrDefaults.name + ' family': '';
 
       Attendees.datagridUpdate.attendeeAjaxUrl = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeEndpoint;
@@ -185,6 +186,7 @@ Attendees.datagridUpdate = {
       Attendees.datagridUpdate.attendeeMainDxForm = $("div.datagrid-attendee-update").dxForm(Attendees.datagridUpdate.attendeeFormConfigs).dxForm('instance');
       Attendees.datagridUpdate.attendeeFormConfigs.formData = Attendees.datagridUpdate.attendeeMainDxFormDefault;
       Attendees.datagridUpdate.populateBasicInfoBlock({});
+      Attendees.datagridUpdate.attendeeMainDxForm.getEditor('folk_id').option('value', Attendees.datagridUpdate.familyAttrDefaults.id);
     } else {
       Attendees.datagridUpdate.attendeeAjaxUrl = Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeEndpoint + Attendees.datagridUpdate.attendeeId + '/';
       $.ajax({
@@ -317,6 +319,7 @@ Attendees.datagridUpdate = {
                   disabled: !Attendees.utilities.editingEnabled,
                   selectButtonText: 'Select photo',
                   accept: 'image/*;capture=camera',  // see if Android can take picture from camera
+                  invalidFileExtensionMessage: '',  // Todo 20221222 somehow File type is not allowed shows everytime!!!
                   multiple: false,
                   uploadMode: 'useForm',
                   onValueChanged: (e) => {
@@ -343,7 +346,102 @@ Attendees.datagridUpdate = {
       },
     ];
 
+    const newFamily = {id: 'new', display_name: 'Create a brand new family'};
     const potentialDuplicatesForNewAttendee = [
+      {
+        colSpan: 24,
+        colCount: 24,
+        caption: 'Add the new member to a family?',
+        cssClass: 'h6 not-shrinkable leading-checkbox',
+        itemType: 'group',
+        items: [
+          {
+            colSpan: 18,
+            dataField: 'folk_id',
+            editorType: 'dxLookup',
+            label: {
+              text: 'Family',
+            },
+            validationRules: [{
+              type: 'custom',
+              reevaluate: true,
+              message: 'Selection of a (new) family is required',
+              validationCallback: (e) => $('div.h6.not-shrinkable.leading-checkbox div.add-family-checkboxes').dxCheckBox('instance').option('value') ? e.value : true,
+            }],
+            editorOptions: {
+              valueExpr: 'id',
+              displayExpr: 'display_name',
+              placeholder: 'Select or search ...',
+              dataSource: new DevExpress.data.DataSource({
+                paginate: false,
+                store: new DevExpress.data.CustomStore({
+                  key: 'id',
+                  load: (searchOpts) => {
+                    const d = new $.Deferred();
+                    const params = {categoryId: 0};
+                    if (searchOpts['searchValue']) {
+                      params['searchValue'] = searchOpts['searchValue'];
+                      params['searchExpr'] = searchOpts['searchExpr'];
+                      params['searchOperation'] = searchOpts['searchOperation'];
+                    }
+                    $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint, params)
+                      .done((result) => {
+                        result.data.unshift(newFamily);
+                        d.resolve(result.data);
+                      });
+                    return d.promise();
+                  },
+                  byKey: (key) => {
+                    const d = new $.Deferred();
+                    if (key === 'new') {
+                      d.resolve(newFamily);
+                    } else {
+                      $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendeeFamiliesEndpoint + key + '/', {categoryId: 0})
+                        .done((result) => {
+                          d.resolve(result);
+                        });
+                    }
+                    return d.promise();
+                  },
+                }),
+              }),
+            },
+          },
+          {
+            colSpan: 6,
+            dataField: 'role',
+            editorType: 'dxLookup',
+            label: {
+              text: 'Family Role',
+            },
+            validationRules: [{
+              type: 'custom',
+              reevaluate: true,
+              message: 'Family Role is required',
+              validationCallback: (e) => $('div.h6.not-shrinkable.leading-checkbox div.add-family-checkboxes').dxCheckBox('instance').option('value') ? e.value : true,
+            }],
+            editorOptions: {
+              valueExpr: 'id',
+              displayExpr: 'title',
+              placeholder: 'Select one...',
+              dataSource: new DevExpress.data.DataSource({
+                paginate: false,
+                store: new DevExpress.data.CustomStore({
+                  key: 'id',
+                  load: (searchOpts) => {
+                    const params = {take: 999, category_id: 0}; // family
+                    if (searchOpts.searchValue) {
+                      const searchCondition = ['title', searchOpts.searchOperation, searchOpts.searchValue];
+                      params.filter = JSON.stringify(searchCondition);
+                    }
+                    return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.relationsEndpoint, params);
+                  },
+                }),
+              }),
+            },
+          },
+        ],
+      },
       {
         colSpan: 24,
         colCount: 24,
@@ -366,40 +464,59 @@ Attendees.datagridUpdate = {
       },
     ];
 
-    if (Attendees.datagridUpdate.familyAttrDefaults.id) {
+    if (Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
       potentialDuplicatesForNewAttendee.unshift({
         colSpan: 24,
         colCount: 24,
-        caption: `What is the role of the new member in the ${Attendees.datagridUpdate.familyAttrDefaults.name} family?`,
+        caption: `What is the Character of the new member joining the meet "${Attendees.datagridUpdate.familyAttrDefaults.joinMeetName}"?`,
         cssClass: 'h6 not-shrinkable',
         itemType: 'group',
         items: [
           {
             colSpan: 12,
-            dataField: 'role',
+            dataField: 'character',
             editorType: 'dxLookup',
             isRequired: true,
             label: {
-              text: 'Family Role',
+              text: 'Joining Character',
             },
             editorOptions: {
-              valueExpr: 'id',
-              displayExpr: 'title',
+              valueExpr: 'slug',
+              displayExpr: 'display_name',
               placeholder: 'Select a value...',
               dataSource: new DevExpress.data.DataSource({
                 paginate: false,
                 store: new DevExpress.data.CustomStore({
-                  key: 'id',
+                  key: 'slug',
                   load: (searchOpts) => {
-                    const params = {take: 100};
+                    const params = {take: 999, 'meetIds[]': Attendees.datagridUpdate.familyAttrDefaults.joinMeetId};
                     if (searchOpts.searchValue) {
-                      const searchCondition = ['title', searchOpts.searchOperation, searchOpts.searchValue];
-                      params.filter = JSON.stringify(searchCondition);
+                      params.searchValue = searchOpts.searchValue;
+                      params.searchOperation = searchOpts.searchOperation;
+                      params.searchExpr = 'display_name';
                     }
-                    return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.relationsEndpoint, params);
+                    return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.organizationalCharactersEndpoint, params);
+                  },
+                  byKey: (slug) => {
+                    const d = new $.Deferred();
+                    $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.organizationalCharactersEndpoint, {slug: slug})
+                      .done( result => {
+                        d.resolve(result.data);
+                      });
+                    return d.promise();
                   },
                 }),
+                onChanged: () => {
+                  if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
+                    const characterLookup = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('character');
+                    const firstCharacter = characterLookup.getDataSource().items()[0];
+                    characterLookup.option('value', firstCharacter.slug);
+                  }
+                },
               }),
+              onInitialized: (e) => {
+                e.component.getDataSource().reload();
+              },
             },
           },
         ],
@@ -725,7 +842,7 @@ Attendees.datagridUpdate = {
       {
         itemType: 'button',
         name: 'mainAttendeeFormSubmit',
-        colSpan: 4,
+        colSpan: 3,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {
@@ -746,7 +863,7 @@ Attendees.datagridUpdate = {
       {
         itemType: 'button',
         name: 'mainAttendeeFormDead',
-        colSpan: 4,
+        colSpan: 3,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {
@@ -765,7 +882,7 @@ Attendees.datagridUpdate = {
       {
         itemType: 'button',
         name: 'mainAttendeeFormDelete',
-        colSpan: 4,
+        colSpan: 3,
         horizontalAlignment: 'left',
         buttonOptions: {
           elementAttr: {
@@ -859,6 +976,7 @@ Attendees.datagridUpdate = {
       onContentReady: () => {
         $('div.spinner-border').hide();
         Attendees.utilities.toggleDxFormGroups();
+        Attendees.utilities.addCheckBoxToDxFormGroups('add-family-checkboxes', !!Attendees.datagridUpdate.familyAttrDefaults.id);
       },
       onFieldDataChanged: (e) => {
         Attendees.datagridUpdate.attendeeMainDxForm.validate();
@@ -888,14 +1006,16 @@ Attendees.datagridUpdate = {
         userData.delete('photo')
       }
 
-      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.id) {
-        extraHeaders['X-Add-Folk'] = Attendees.datagridUpdate.familyAttrDefaults.id;
+      if (Attendees.datagridUpdate.attendeeId === 'new' && $('div.h6.not-shrinkable.leading-checkbox div.add-family-checkboxes').dxCheckBox('instance').option('value')) {
+        extraHeaders['X-Add-Folk'] = userData.get('folk_id');
         extraHeaders['X-Folk-Role'] = userData.get('role');
-        userData.delete('role');
       }
+      userData.delete('role');
+      userData.delete('folk_id');
 
-      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeet) {
-        extraHeaders['X-Join-Meet'] = Attendees.datagridUpdate.familyAttrDefaults.joinMeet;  // join by self attending
+      if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinMeetId) {
+        extraHeaders['X-Join-Meet'] = Attendees.datagridUpdate.familyAttrDefaults.joinMeetId;  // join by self attending
+        extraHeaders['X-Join-Character'] =  Attendees.datagridUpdate.attendeeMainDxForm.getEditor('character').option('value')
       }
 
       if (Attendees.datagridUpdate.attendeeId === 'new' && Attendees.datagridUpdate.familyAttrDefaults.joinGathering) {
@@ -903,6 +1023,7 @@ Attendees.datagridUpdate = {
       }
 
       const userInfos = Attendees.datagridUpdate.attendeeFormConfigs.formData.infos;
+      if (Attendees.datagridUpdate.attendeeId === 'new'){ Object.assign(userInfos, Attendees.datagridUpdate.attendeeMainDxForm.option('formData').infos) }
       userInfos['contacts'] = Attendees.utilities.trimBothKeyAndValueButKeepBasicContacts(userInfos.contacts);  // remove emptied contacts
       userData.set('infos', JSON.stringify(userInfos));
 
@@ -1003,6 +1124,25 @@ Attendees.datagridUpdate = {
     const basicInfoItems = [
       {
         colSpan: 7,
+        dataField: 'last_name',
+        editorOptions: {
+          placeholder: 'English',
+        },
+        validationRules: [
+          {
+            type: 'custom',
+            validationCallback: Attendees.datagridUpdate.attendeeNameValidator,
+            message: 'first or last name is required'
+          },
+          {
+            type: 'stringLength',
+            max: 25,
+            message: 'No more than 25 characters'
+          },
+        ],
+      },
+      {
+        colSpan: 7,
         dataField: 'first_name',
         editorOptions: {
           placeholder: 'English',
@@ -1017,25 +1157,6 @@ Attendees.datagridUpdate = {
           {
             type: 'stringLength',
             reevaluate: true,
-            max: 25,
-            message: 'No more than 25 characters'
-          },
-        ],
-      },
-      {
-        colSpan: 7,
-        dataField: 'last_name',
-        editorOptions: {
-          placeholder: 'English',
-        },
-        validationRules: [
-          {
-            type: 'custom',
-            validationCallback: Attendees.datagridUpdate.attendeeNameValidator,
-            message: 'first or last name is required'
-          },
-          {
-            type: 'stringLength',
             max: 25,
             message: 'No more than 25 characters'
           },
@@ -1079,6 +1200,9 @@ Attendees.datagridUpdate = {
       },
       {
         colSpan: 7,
+        label: {
+          text: '(中文) 姓',
+        },
         dataField: 'last_name2',
         validationRules: [
           {
@@ -1095,6 +1219,9 @@ Attendees.datagridUpdate = {
       },
       {
         colSpan: 7,
+        label: {
+          text: '(中文) 名',
+        },
         dataField: 'first_name2',
         validationRules: [
           {
@@ -1300,7 +1427,7 @@ Attendees.datagridUpdate = {
         name: 'infos-insurer',
         visible: Attendees.datagridUpdate.divisionShowAttendeeInfos[Attendees.datagridUpdate.attendeeFormConfigs.formData.division || Attendees.datagridUpdate.divisions[0].id]['infos-insurer'],
         label: {
-          text: 'Insurer',
+          text: 'Medical',
         },
       },
       {
@@ -2069,9 +2196,9 @@ Attendees.datagridUpdate = {
                       const newRoute = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value').trim();
                       const newCity = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value').trim();
                       const newZIP = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value').trim();
-                      const newStateAttrs = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.state_id")._options;
-                      const newAddressWithoutZip = [newStreetNumber, newRoute, newAddressExtra, newCity, newStateAttrs.selectedItem.code].filter(item => !!item).join(', ');
-                      const newAddressText = newAddressWithoutZip + (newZIP ? ', ' + newZIP + ', ' : ', ' ) + newStateAttrs.selectedItem.country_name;
+                      const newStateAttrs = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.state_id").option('selectedItem');
+                      const newAddressWithoutZip = [newStreetNumber, newRoute, newAddressExtra, newCity, newStateAttrs.code].filter(item => !!item).join(', ');
+                      const newAddressText = newAddressWithoutZip + (newZIP ? ', ' + newZIP + ', ' : ', ' ) + newStateAttrs.country_name;
 
                       if (!(userData.address && userData.address.id)) {
                         userData.address = {
@@ -2085,10 +2212,10 @@ Attendees.datagridUpdate = {
                             route: newRoute,
                             locality: newCity,
                             post_code: newZIP,
-                            state: newStateAttrs.selectedItem.name,
-                            state_code: newStateAttrs.selectedItem.code,
-                            country: newStateAttrs.selectedItem.country_name,
-                            country_code: newStateAttrs.selectedItem.country_code,
+                            state: newStateAttrs.name,
+                            state_code: newStateAttrs.code,
+                            country: newStateAttrs.country_name,
+                            country_code: newStateAttrs.country_code,
                           },
                         };
                       }else{
@@ -2206,6 +2333,7 @@ Attendees.datagridUpdate = {
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('editAddressButton').option('visible', false);
                     Attendees.datagridUpdate.placePopup.option('title', 'Creating Address');
                     Attendees.datagridUpdate.placePopupDxForm.option('formData').address.id = null;
+                    Attendees.datagridUpdate.placePopupDxForm.getEditor('address.state_id').option('value', 6);  // CA
                   }
                 },
               },
@@ -2585,7 +2713,7 @@ Attendees.datagridUpdate = {
             store: new DevExpress.data.CustomStore({
               key: 'id',
               load: (searchOpts) => {
-                const params = {take: 999};
+                const params = {take: 999, category_id: categoryId};
                 params['relative'] = categoryId === 0;  // for limiting family/other roles
                 if (searchOpts.searchValue) {
                   const searchCondition = ['title', searchOpts.searchOperation, searchOpts.searchValue];
@@ -2604,7 +2732,7 @@ Attendees.datagridUpdate = {
             }),
             postProcess: (data) => {
               return data.map((x) => {
-                if (x.id === 38) {  // intentionally disable 38(passenger) to avoid duplicating relationships
+                if (x.id === 38) {  // intentionally disable 38(passenger) to avoid duplicating relationships for counselors
                   x.disabled = true;
                 }
                 return x;
@@ -2828,6 +2956,7 @@ Attendees.datagridUpdate = {
           update: (key, values) => {
             values.category = categoryId;
             const folkAttendeeFormData = new FormData();
+            const fileRemoverCheckBox = document.querySelector('input#folkattendee-file-clear');
 
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
@@ -2843,7 +2972,7 @@ Attendees.datagridUpdate = {
                 $('div.dx-loadpanel').dxLoadPanel('show');
               }
             }
-            if (document.querySelector('input#folkattendee-file-clear').checked) {
+            if (fileRemoverCheckBox && fileRemoverCheckBox.checked) {
               folkAttendeeFormData.set('file', '');
             }
 
@@ -2909,7 +3038,8 @@ Attendees.datagridUpdate = {
                 }
               }
             }
-            if (document.querySelector('input#folkattendee-file-clear').checked) {
+            const folkAttendeeFileClear = document.querySelector('input#folkattendee-file-clear');
+            if (folkAttendeeFileClear && folkAttendeeFileClear.checked) {
               folkAttendeeFormData.set('file', '');
             }
             return $.ajax({

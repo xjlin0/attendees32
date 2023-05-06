@@ -1779,6 +1779,15 @@
     }
   },
   {
+    "model": "auth.group",
+    "pk": 700,
+    "fields": {
+      "name": "roster_equipments",
+      "permissions": [
+      ]
+    }
+  },
+  {
     "model": "django_celery_beat.intervalschedule",
     "pk": 1,
     "fields": {
@@ -1828,7 +1837,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 2,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 12,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 2,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Shining Star\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_shining_star\",\r\n\t    \"months_adding\": 2,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 10,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -1856,7 +1865,7 @@
       "solar": null,
       "clocked": null,
       "args": "[]",
-      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 11,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 9,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
+      "kwargs": "{\r\n\t\"meet_infos\": [\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"The Rock\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_the_rock\",\r\n\t    \"months_adding\": 11,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Little foot\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_regular_little_foot\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"Shining Star\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_junior_shining_star\",\r\n\t    \"months_adding\": 1,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\", \"kowhejan@gmail.com\"]\r\n\t  },\r\n\t  {\r\n\t    \"desc\": \"Valid JSON with single key 'meet_infos' is required\",\r\n\t    \"meet_name\": \"中文詩班 Chinese choir\",\r\n\t    \"meet_slug\": \"d7c8Fd_cfcch_chinese_choir\",\r\n\t    \"months_adding\": 9,\r\n\t    \"recipients\": [\"sjlin0@gmail.com\"]\r\n\t  }\r\n\t]\r\n}",
       "queue": null,
       "exchange": null,
       "routing_key": null,
@@ -6777,6 +6786,32 @@
     }
   },
   {
+    "model": "users.menuauthgroup",
+    "pk": 146,
+    "fields": {
+      "created": "2023-01-19T05:03:50.363Z",
+      "modified": "2023-01-19T05:03:50.363Z",
+      "is_removed": false,
+      "auth_group": 700,
+      "read": true,
+      "write": true,
+      "menu": 4
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 147,
+    "fields": {
+      "created": "2023-01-19T05:04:01.788Z",
+      "modified": "2023-01-19T05:04:01.788Z",
+      "is_removed": false,
+      "auth_group": 700,
+      "read": true,
+      "write": true,
+      "menu": 35
+    }
+  },
+  {
     "model": "whereabouts.organization",
     "pk": -1,
     "fields": {
@@ -6792,6 +6827,7 @@
         "settings": {
           "opencc_convert": true,
           "default_member_meet": null,
+          "default_visitor_meet": null,
           "attendee_to_attending": false,
           "default_directory_meet": null,
           "attendingmeet_pdf_export": {},
@@ -6819,12 +6855,14 @@
         "settings": {
           "opencc_convert": true,
           "default_member_meet": null,
+          "default_visitor_meet": null,
           "attendee_to_attending": true,
           "default_directory_meet": null,
           "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
+        "coworker": [],
         "data_admins": [],
         "default_time_zone": "America/Los_Angeles"
       }
@@ -6848,6 +6886,7 @@
           "default_member_meet": 9,
           "attendee_to_attending": true,
           "default_directory_meet": 8,
+          "default_visitor_meet": 0,
           "attendingmeet_pdf_export_groups": {
             "d7c8Fd_cfcch_congregation_directory": [
               "data_organizer"
@@ -6857,11 +6896,19 @@
             "4": 17,
             "5": 16,
             "19": 0,
+            "21": 27,
             "37": 9
           }
         },
         "counselor": [
           "data_counselor"
+        ],
+        "coworker": [
+          "children_coworker",
+          "children_organizer",
+          "conference_organizer",
+          "data_counselor",
+          "data_organizer"
         ],
         "data_admins": [
           "data_organizer"
@@ -6902,7 +6949,7 @@
         "groups_see_all_meets_attendees": [
           "data_counselor",
           "data_organizer",
-          "cfcch_congregation_data",
+          "roster_equipments",
           "children_organizer",
           "children_coworker",
           "conference_organizer",
@@ -6927,12 +6974,14 @@
         "settings": {
           "opencc_convert": true,
           "default_member_meet": null,
+          "default_visitor_meet": null,
           "attendee_to_attending": true,
           "default_directory_meet": null,
           "attendingmeet_pdf_export_groups": {},
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
+        "coworker": [],
         "data_admins": [],
         "default_time_zone": "UTC"
       }
@@ -8379,7 +8428,7 @@
       "is_removed": false,
       "type": "note",
       "display_order": 0,
-      "display_name": "for coworkers",
+      "display_name": "coworker",
       "infos": {}
     }
   },
@@ -8394,7 +8443,7 @@
       "display_order": 0,
       "display_name": "counseling",
       "infos": {
-        "note": "private to assigners"
+        "note": "private to counsellors"
       }
     }
   },
@@ -12959,9 +13008,9 @@
       "start": null,
       "finish": null,
       "category": 33,
-      "display_name": "CFCCH夏令會2023 Summer retreat",
+      "display_name": "CFCCH夏令會2024 Summer retreat",
       "display_order": 0,
-      "slug": "cfcch_summer_retreat_2023",
+      "slug": "cfcch_summer_retreat_2024",
       "division": 6,
       "infos": {
         "fixed": {},
@@ -14103,6 +14152,66 @@
     }
   },
   {
+    "model": "occasions.character",
+    "pk": 49,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 1,
+      "display_name": "After School Coworker",
+      "display_order": 100,
+      "slug": "d7c8Fd_cfcch_kid_after_school_coworker",
+      "infos": {},
+      "type": "coworker"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 50,
+    "fields": {
+      "created": "2023-02-22T15:09:58.833Z",
+      "modified": "2023-03-03T15:18:05.224Z",
+      "is_removed": false,
+      "assembly": 5,
+      "display_name": "慕道友 catechumen",
+      "display_order": 0,
+      "slug": "d7c8Fd_cfcch_congregation_data_catechumen",
+      "infos": {},
+      "type": "internal"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 51,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 8,
+      "display_name": "團契帶領 Chinese fellowship leader",
+      "display_order": 10000,
+      "slug": "d7c8Fd_cfcch_chinese_fellowship_leader",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
+    "model": "occasions.character",
+    "pk": 52,
+    "fields": {
+      "created": "2020-04-11T18:42:52.655Z",
+      "modified": "2021-04-08T16:47:24.714Z",
+      "is_removed": false,
+      "assembly": 8,
+      "display_name": "團契同工 Chinese fellowship coworker",
+      "display_order": 20000,
+      "slug": "d7c8Fd_cfcch_chinese_fellowship_coworker",
+      "infos": {},
+      "type": "audience"
+    }
+  },
+  {
     "model": "occasions.gathering",
     "pk": 1,
     "fields": {
@@ -14716,6 +14825,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14762,6 +14872,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14807,6 +14918,7 @@
         "attendance": {},
         "allowed_groups": [
           "worship_organizer",
+          "data_organizer",
           "data_counselor"
         ],
         "allowed_models": [
@@ -14893,6 +15005,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14939,6 +15052,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -14959,7 +15073,7 @@
         },
         "default_attendingmeet_in_weeks": 160
       },
-      "site_type": 27,
+      "site_type": 26,
       "site_id": "10"
     }
   },
@@ -15100,10 +15214,10 @@
       "major_character": 16,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2023-07-14T15:28:40Z",
-      "finish": "2023-07-16T15:29:58Z",
-      "display_name": "夏令會食宿 2023 retreat accommodation",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2023_accommodation",
+      "start": "2024-07-12T15:28:40Z",
+      "finish": "2024-07-14T15:29:58Z",
+      "display_name": "夏令會食宿 2024 retreat accommodation",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2024_accommodation",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -15141,10 +15255,10 @@
       "major_character": 21,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2023-07-14T15:30:54Z",
-      "finish": "2023-07-16T15:31:42Z",
-      "display_name": "2023夏令會接送",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2023_transportation",
+      "start": "2024-07-12T15:30:54Z",
+      "finish": "2024-07-14T15:31:42Z",
+      "display_name": "2024夏令會接送",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2024_transportation",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -15182,10 +15296,10 @@
       "major_character": 19,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2023-07-14T15:34:41Z",
-      "finish": "2023-07-16T15:37:06Z",
-      "display_name": "2023夏令會討論小組",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2023_panel",
+      "start": "2024-07-12T15:34:41Z",
+      "finish": "2024-07-14T15:37:06Z",
+      "display_name": "2024夏令會討論小組",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2024_panel",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -15222,10 +15336,10 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2023-07-14T16:28:13Z",
-      "finish": "2023-07-16T16:28:42Z",
-      "display_name": "2023夏令會中文議程",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2023_chinese_program",
+      "start": "2024-07-12T16:28:13Z",
+      "finish": "2024-07-14T16:28:42Z",
+      "display_name": "2024夏令會中文議程",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2024_chinese_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -15263,14 +15377,15 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2023-07-14T16:32:20Z",
-      "finish": "2023-07-16T16:32:24Z",
-      "display_name": "2023夏令會兒童活動",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2023_junior_program",
+      "start": "2024-07-12T16:32:20Z",
+      "finish": "2024-07-14T16:32:24Z",
+      "display_name": "2024夏令會兒童活動",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2024_junior_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
+          "roster_equipments",
           "children_organizer",
           "conference_organizer"
         ],
@@ -15304,10 +15419,10 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2023-07-14T16:38:38Z",
-      "finish": "2023-07-16T16:39:12Z",
-      "display_name": "2023夏令會英文議程",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2023_english_program",
+      "start": "2024-07-12T16:38:38Z",
+      "finish": "2024-07-14T16:39:12Z",
+      "display_name": "2024夏令會英文議程",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2024_english_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -15466,7 +15581,7 @@
       "audience_editable": true,
       "start": "2022-09-01T14:53:44Z",
       "finish": "2032-12-31T15:53:45Z",
-      "display_name": "2022 成人主日學 Chinese Sunday School",
+      "display_name": "成人主日學 Chinese Sunday School",
       "slug": "d7c8Fd_cfcch_adult_chinese_sunday_school",
       "infos": {
         "attendance": {},
@@ -15517,6 +15632,7 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
+          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -15799,6 +15915,354 @@
         "default_attendingmeet_in_weeks": 530
       },
       "site_type": 63,
+      "site_id": "1"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 27,
+    "fields": {
+      "created": "2020-04-24T18:47:42.792Z",
+      "modified": "2023-03-03T18:08:14.380Z",
+      "is_removed": false,
+      "assembly": 5,
+      "major_character": 50,
+      "shown_audience": false,
+      "audience_editable": false,
+      "start": "2023-03-03T14:54:44Z",
+      "finish": "2200-05-12T15:54:46Z",
+      "display_name": "慕道友 catechumen",
+      "slug": "d7c8Fd_cfcch_congregation_catechumen",
+      "infos": {
+      "attendance": {},
+      "allowed_groups": [
+        "data_counselor",
+        "data_organizer",
+        "children_organizer",
+        "children_coworker",
+        "conference_organizer"
+      ],
+      "allowed_models": [
+        "attendingmeet"
+      ],
+      "gathering_infos": {},
+      "default_time_zone": "America/Los_Angeles",
+      "automatic_creation": {
+        "Past": 21,
+        "Gathering": null,
+        "Attendance": null
+      },
+      "default_attendingmeet_in_weeks": 99999
+      },
+      "site_type": 53,
+      "site_id": "1"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 28,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2032-12-31T15:53:45Z",
+      "display_name": "幼家團契 youngster family Fellowship",
+      "slug": "d7c8Fd_cfcch_chinese_youngster_family_fellowship",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "21"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 29,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "迦勒團契 Caleb Fellowship",
+      "slug": "d7c8Fd_cfcch_chinese_caleb_fellowship",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "3"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 30,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "喜樂小組 Hayward Joy Group",
+      "slug": "d7c8Fd_cfcch_chinese_hayward_joy_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "21"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 31,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "更新小組 Oakland Renew Group",
+      "slug": "d7c8Fd_cfcch_chinese_oakland_renew_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "23"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 32,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "恩慈小組 Castro Valley Kind Group",
+      "slug": "d7c8Fd_cfcch_chinese_castro_valley_kind_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "16"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 33,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "信實小組 Pleasanton Faithful Group",
+      "slug": "d7c8Fd_cfcch_chinese_pleasanton_faithful_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 63,
+      "site_id": "23"
+    }
+  },
+  {
+    "model": "occasions.meet",
+    "pk": 34,
+    "fields": {
+      "created": "2020-04-11T18:47:42.792Z",
+      "modified": "2021-04-08T16:37:22.469Z",
+      "is_removed": false,
+      "assembly": 8,
+      "major_character": 2,
+      "shown_audience": true,
+      "audience_editable": true,
+      "start": "2022-09-01T14:53:44Z",
+      "finish": "2042-12-31T15:53:45Z",
+      "display_name": "信心小組 Fremont confident Group",
+      "slug": "d7c8Fd_cfcch_chinese_fremont_confident_group",
+      "infos": {
+        "attendance": {},
+        "allowed_groups": [
+          "organization_participant",
+          "data_organizer",
+          "conference_organizer",
+          "data_counselor"
+        ],
+        "allowed_models": [
+          "gathering",
+          "attendingmeet",
+          "attendance",
+          "eventrelation"
+        ],
+        "gathering_infos": {
+          "generate_attendance": true
+        },
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": null,
+          "Gathering": true,
+          "Attendance": true
+        },
+        "default_attendingmeet_in_weeks": 25
+      },
+      "site_type": 53,
       "site_id": "1"
     }
   },
@@ -16186,6 +16650,54 @@
       "meet": 1,
       "slug": "cfcch_kid_rock_g4_g5",
       "display_name": "CFCCH CM The Rock 4th & 5th Grade",
+      "display_order": 550,
+      "infos": {},
+      "site_type": 63,
+      "site_id": "6"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 25,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 20,
+      "slug": "cfcch_kid_after_school_table_1",
+      "display_name": "Table 1",
+      "display_order": 550,
+      "infos": {},
+      "site_type": 63,
+      "site_id": "6"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 26,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 20,
+      "slug": "cfcch_kid_after_school_table_2",
+      "display_name": "Table 2",
+      "display_order": 550,
+      "infos": {},
+      "site_type": 63,
+      "site_id": "6"
+    }
+  },
+  {
+    "model": "occasions.team",
+    "pk": 27,
+    "fields": {
+      "created": "2020-04-11T19:09:48.250Z",
+      "modified": "2021-04-08T17:42:46.852Z",
+      "is_removed": false,
+      "meet": 20,
+      "slug": "cfcch_kid_after_school_table_3",
+      "display_name": "Table 3",
       "display_order": 550,
       "infos": {},
       "site_type": 63,

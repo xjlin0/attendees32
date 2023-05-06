@@ -23,6 +23,7 @@ class Past(TimeStampedModel, SoftDeletableModel, Utility):
     """
 
     COUNSELING = "counseling"  # for private data, and only assigned counselors
+    COWORKER = "coworker"  # for data of limited access for coworker & counselors
     ALL_COUNSELORS = (
         "all_counselors_"  # for private data, but accessible to all counselors
     )

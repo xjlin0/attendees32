@@ -12,12 +12,17 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 repo = Repo(settings.ROOT_DIR)
 
+try:
+    sha = repo.head.commit.hexsha[0:7] if repo.head.commit else "no sha"
+except ValueError:
+    sha = "no sha"
+
 urlpatterns = [
     re_path("^private-media/", include(private_storage.urls)),
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     path(
         "",
-        kwargs={"repo_version": f'{"DETACHED_" if repo.head.is_detached else repo.active_branch.name}/{repo.head.commit.hexsha[0:7] if repo.head.commit else "no sha"}'},
+        kwargs={"repo_version": f'{"DETACHED_" if repo.head.is_detached else repo.active_branch.name}/{sha}'},
         view=TemplateView.as_view(template_name="pages/home.html"),
         name="home",
     ),

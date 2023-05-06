@@ -31,7 +31,6 @@ class AttendingMeetEtcSerializer(serializers.ModelSerializer):
         Update and return an existing `AttendingMeet` instance, given the validated data.
 
         """
-
         if (
             True
         ):  # need validations such as if the assembly matching meet, it's better to validate on UI first

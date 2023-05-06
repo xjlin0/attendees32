@@ -78,7 +78,7 @@ Attendees.utilities = {
 
   toggleDxFormGroups: (animationSpeed="fast") => {
     $(".h6:not(.not-shrinkable) .dx-form-group-caption")
-      .each( () => {
+      .each(function () {  // somehow jQuery each cannot use arrow function?
         $(this)
           .prepend(
             $('<div />')
@@ -86,8 +86,9 @@ Attendees.utilities = {
                 "margin-right": "1rem",
               })
               .dxButton({
-                "icon": "collapse",
-                "onClick": (e) => {
+                icon: 'collapse',
+                hint: 'click to hide/show this section',
+                onClick: (e) => {
                   const hidden = e.component.option('icon') === 'expand';
                   const $caption = e.element.closest('.dx-form-group-caption');
                   const $content = $caption.siblings(".dx-form-group-content");
@@ -101,6 +102,31 @@ Attendees.utilities = {
           );
       });
   },  // jQuery toggle() from https://supportcenter.devexpress.com/ticket/details/t525231
+
+  addCheckBoxToDxFormGroups: (checkboxClass='checkbox-instance', checked=true, animationSpeed='fast') => {
+    $('.h6.not-shrinkable.leading-checkbox .dx-form-group-caption')
+      .each(function () {  // somehow jQuery each cannot use arrow function?
+        const $title = $(this);
+        $title.prepend(
+            $('<div />')
+              .dxCheckBox({
+                value: checked,
+                hint: 'Uncheck to disable this section, check to enable this section',
+                elementAttr: {
+                  class: checkboxClass,
+                },
+                onValueChanged: (e) => {
+                  const $caption = e.element.closest('.dx-form-group-caption');
+                  const $content = $caption.siblings(".dx-form-group-content");
+                  $content.toggle(animationSpeed);
+                }
+              })
+          );
+        if (!checked) {
+          $title.siblings(".dx-form-group-content").hide();
+        }
+      });
+  },
 
   trimBothKeyAndValueButKeepBasicContacts: (obj, keepEmpties=false) => {
     return Object.entries(obj).reduce((acc, curr) => {
@@ -212,7 +238,7 @@ Attendees.utilities = {
   },
 
   selectAllGroupedTags: (tagBoxEditor, tagSlugs) => {
-    const availableTagSlugs = tagSlugs === undefined ? tagBoxEditor.option('items').flatMap(category => category.items.map(item => item.slug)) : tagSlugs;
+    const availableTagSlugs = tagSlugs === undefined ? tagBoxEditor.option('items').flatMap(category => 'items' in category ? category.items.map(item => item.slug) : category.slug) : tagSlugs;
     tagBoxEditor.option('value', availableTagSlugs);
   },  // loop in loop/flatMap because of options grouped by assembly/category
 
