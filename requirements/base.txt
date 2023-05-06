@@ -1,18 +1,18 @@
 pytz==2022.1  # https://github.com/stub42/pytz
 python-slugify==7.0.0  # https://github.com/un33k/python-slugify
-Pillow==9.3.0  # https://github.com/python-pillow/Pillow
-rcssmin==1.1.0  # https://github.com/ndparker/rcssmin
+Pillow==9.5.0  # https://github.com/python-pillow/Pillow
+rcssmin==1.1.1  # https://github.com/ndparker/rcssmin
 argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
 whitenoise==6.2.0  # https://github.com/evansd/whitenoise
-redis==4.4.0  # https://github.com/redis/redis-py
-hiredis==2.0.0  # https://github.com/redis/hiredis-py
+redis==4.5.4  # https://github.com/redis/redis-py
+hiredis==2.2.3  # https://github.com/redis/hiredis-py
 celery==5.2.7  # pyup: < 6.0  # https://github.com/celery/celery
-django-celery-beat==2.4.0  # https://github.com/celery/django-celery-beat
+django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat
 flower==1.2.0  # https://github.com/mher/flower
-uvicorn[standard]==0.20.0  # https://github.com/encode/uvicorn
-psycopg2==2.9.5  # https://github.com/psycopg/psycopg2
-unidecode==1.3.2
-opencc==1.1.3  ## https://github.com/BYVoid/OpenCC
+uvicorn[standard]==0.22.0  # https://github.com/encode/uvicorn
+psycopg2==2.9.6  # https://github.com/psycopg/psycopg2
+unidecode==1.3.6  # https://github.com/avian2/unidecode
+opencc==1.1.6  ## https://github.com/BYVoid/OpenCC
 # opencc-python-reimplemented==0.1.6  ## https://github.com/yichen0831/opencc-python
 # django-address==0.2.5  # https://github.com/furious-luke/django-address
 -e git+https://github.com/xjlin0/django-address.git@address_extra_field_026#egg=django-address
@@ -20,16 +20,16 @@ opencc==1.1.3  ## https://github.com/BYVoid/OpenCC
 
 # django-summernote==0.8.20.0 # https://github.com/summernote/django-summernote
 # -e git+https://github.com/llazzaro/django-scheduler.git@develop#egg=django-scheduler
-django-scheduler==0.10.0  # https://github.com/llazzaro/django-scheduler
-django-mptt==0.13.4 # https://github.com/django-mptt/django-mptt
+django-scheduler==0.10.1  # https://github.com/llazzaro/django-scheduler
+django-mptt==0.14.0 # https://github.com/django-mptt/django-mptt
 django-json-widget==1.1.1  # https://github.com/jmrivas86/django-json-widget
 django-private-storage==3.0 # https://github.com/edoburu/django-private-storage
 # django-reversion==4.0.1 # https://github.com/etianen/django-reversion
-dateparser==1.1.1 # https://github.com/scrapinghub/dateparser
+dateparser==1.1.8 # https://github.com/scrapinghub/dateparser
 # sendgrid==6.9.3  # https://github.com/sendgrid/sendgrid-python
-django-anymail[sendgrid]==8.6  # https://github.com/anymail/django-anymail
+django-anymail[sendgrid]==9.2  # https://github.com/anymail/django-anymail
 django_partial_date==1.3.2  # https://github.com/ktowen/django_partial_date
-django-pghistory==2.4.1  # https://github.com/Opus10/django-pghistory
+django-pghistory==2.7.0  # https://github.com/Opus10/django-pghistory
 django-db-comments==0.4.1  # https://github.com/vanadium23/django-db-comments
 weasyprint==55.0  # https://github.com/Kozea/WeasyPrint
 django-weasyprint==2.1.0  # https://github.com/fdemmer/django-weasyprint
@@ -37,14 +37,14 @@ GitPython==3.1.31  # https://github.com/gitpython-developers/GitPython
 
 # Django
 # ------------------------------------------------------------------------------
-django==3.2.16  # pyup: < 4.0  # https://www.djangoproject.com/
+django==3.2.19  # pyup: < 4.0  # https://www.djangoproject.com/
 django-environ==0.9.0  # https://github.com/joke2k/django-environ
 django-model-utils==4.3.1  # https://github.com/jazzband/django-model-utils
-django-allauth==0.51.0  # https://github.com/pennersr/django-allauth
+django-allauth==0.54.0  # https://github.com/pennersr/django-allauth
 django-crispy-forms==1.14.0  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5==0.7  # https://github.com/django-crispy-forms/crispy-bootstrap5
-django-compressor==4.0  # https://github.com/django-compressor/django-compressor
+django-compressor==4.3.1  # https://github.com/django-compressor/django-compressor
 django-redis==5.2.0  # https://github.com/jazzband/django-redis
 # Django REST Framework
 djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework
-django-cors-headers==3.13.0 # https://github.com/adamchainz/django-cors-headers
+django-cors-headers==3.14.0 # https://github.com/adamchainz/django-cors-headers
