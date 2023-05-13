@@ -29,7 +29,7 @@ Attendees.datagridUpdate = {
     // assembly: parseInt(document.querySelector('div.datagrid-attendee-update').dataset.currentAssemblyId),
     category: 1,  // scheduled
     start: new Date().toISOString(),
-    finish: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), // 1 years from now
+    finish: new Date(new Date().setFullYear(new Date().getFullYear() + 20)).toISOString(), // 20 years from now
   },
   // addressId: '', // for sending address data by AJAX
   divisionShowAttendeeInfos: {},
