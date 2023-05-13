@@ -68,12 +68,11 @@ Attendees.datagridUpdate = {
   },
 
   initListeners: () => {
-    $("div.nav-buttons").on('click', 'input#custom-control-edit-checkbox', e => Attendees.datagridUpdate.toggleEditing(Attendees.utilities.toggleEditingAndReturnStatus(e)));
     $("div.form-container").on('click', 'button.attending-button', e => Attendees.datagridUpdate.initAttendingPopupDxForm(e));
     $("div.form-container").on('click', 'button.place-button', e => Attendees.datagridUpdate.initPlacePopupDxForm(e));
     $("div.form-container").on('click', 'button.family-button', e => Attendees.datagridUpdate.initFamilyAttrPopupDxForm(e));
     Attendees.datagridUpdate.attachContactAddButton();
-
+    $("div.nav-buttons").on('click', 'input#custom-control-edit-checkbox', e => Attendees.datagridUpdate.toggleEditing(Attendees.utilities.toggleEditingAndReturnStatus(e)));
     $(window).keydown((event) => {
       if (event.keyCode === 13) {  // Enter key
         DevExpress.ui.notify(
@@ -198,10 +197,10 @@ Attendees.datagridUpdate = {
           window.top.document.title = Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original;
           Attendees.datagridUpdate.attendeeMainDxForm = $("div.datagrid-attendee-update").dxForm(Attendees.datagridUpdate.attendeeFormConfigs).dxForm('instance');
           Attendees.datagridUpdate.populateBasicInfoBlock();
-          Attendees.datagridUpdate.initListeners();
           Attendees.datagridUpdate.familyAttrDefaults.division = response.division;
           Attendees.datagridUpdate.familyAttrDefaults.display_name = response.infos.names.original + ' family';
           Attendees.datagridUpdate.patchNewAttendeeDropDown(null);
+          Attendees.datagridUpdate.initListeners();
         },
         error: (response) => {
           console.log('Failed to fetch data in Attendees.datagridUpdate.initAttendeeForm(), error: ', response);
@@ -4069,7 +4068,7 @@ Attendees.datagridUpdate = {
               options.totalValue = 0;
           }
           if (options.summaryProcess === "calculate") {
-            options.totalValue = options.value
+            options.totalValue = options.value;
           }
         }
       },
