@@ -46,14 +46,17 @@ class ApiDatagridDataAttendingMeetViewSet(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         querying_attendingmeet_id = self.kwargs.get("pk")
-        qs = AttendingMeet.objects.annotate(assembly=F("meet__assembly"),).filter(
-            attending__attendee=target_attendee,
-        )
-
+        filters = {"attending__attendee": target_attendee}
         if querying_attendingmeet_id:
-            return qs.filter(pk=querying_attendingmeet_id)
-        else:
-            return qs
+            filters['pk'] = querying_attendingmeet_id
+        qs = AttendingMeet.objects.annotate(
+            assembly=F("meet__assembly"),
+            meet__assembly__display_order=F('meet__assembly__display_order'),
+        ).filter(**filters)
+
+        return qs.order_by(
+            'meet__assembly__display_order',
+        )
 
     def perform_destroy(self, instance):
         target_attendee = get_object_or_404(

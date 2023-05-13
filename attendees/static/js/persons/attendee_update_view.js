@@ -4056,6 +4056,27 @@ Attendees.datagridUpdate = {
     grouping: {
       autoExpandAll: true,
     },
+    summary: {
+      groupItems: [{
+          name: 'meet__assembly__display_order',
+          column: 'meet__assembly__display_order',
+          displayFormat: 'rank: {0}',
+          summaryType: 'custom',
+      }],
+      calculateCustomSummary: (options) => {
+        if (options.name === "meet__assembly__display_order") {
+          if (options.summaryProcess === "start") {
+              options.totalValue = 0;
+          }
+          if (options.summaryProcess === "calculate") {
+            options.totalValue = options.value
+          }
+        }
+      },
+    },
+    sortByGroupSummaryInfo: [{
+      summaryItem: 'meet__assembly__display_order',
+    }],
     columns: [
       {
         dataField: 'attending',
