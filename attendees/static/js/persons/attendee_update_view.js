@@ -2792,12 +2792,14 @@ Attendees.datagridUpdate = {
         },
       },
       {
+        dataHtmlTitle: 'parents: 0~9, kids: 10~99',
         dataField: 'display_order',
         caption: 'Rank',
         dataType: 'number',
       },
       {
         apiUrlName: 'api_attendee_folkattendee_scheduler_column',
+        dataHtmlTitle: "Who can see/update main attendee's activities",
         dataField: 'schedulers',
         caption: 'Scheduler',
         calculateCellValue: (rowData) => {
@@ -2812,6 +2814,7 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'emergency_contacts',
+        dataHtmlTitle: 'Who should be notified if main attendee is in emergency',
         caption: 'Emergency contact',
         calculateCellValue: (rowData) => {
           const attendeeData = Attendees.datagridUpdate.attendeeFormConfigs && Attendees.datagridUpdate.attendeeFormConfigs.formData;
@@ -2825,6 +2828,7 @@ Attendees.datagridUpdate = {
       },
       {
         apiUrlName: 'api_attendee_folkattendee_secret_column',
+        dataHtmlTitle: 'Only you, not other users, can see this relationship',
         caption: 'Secret?',
         dataType: 'boolean',
         dataField: 'infos.show_secret',
@@ -3120,6 +3124,7 @@ Attendees.datagridUpdate = {
       grouping: {
         autoExpandAll: true,
       },
+      onCellPrepared: e => e.column.dataHtmlTitle && e.cellElement.attr("title", e.column.dataHtmlTitle),
       onEditingStart: (e) => {
         const grid = e.component;
         grid.beginUpdate();
@@ -3202,7 +3207,7 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'display_order',
-        helpText: 'For sorting display',
+        helpText: 'For sorting display, parents: 0~9, kids: 10~99',
       },
       {
         dataField: 'schedulers',
@@ -3211,12 +3216,12 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'emergency_contacts',
-        helpText: "Is subject emergency_contacts of main attendee?",
+        helpText: "If the main attendee is in emergency, should the subject be notified?",
       },
       {
         dataField: 'infos.show_secret',
         apiUrlName: 'api_attendee_folkattendee_secret_column',
-        helpText: 'Is this secret? Others cannot see if checked',
+        helpText: 'Is this secret between you and the main attendee? Others cannot see if checked',
       },
       {
         dataField: 'start',
