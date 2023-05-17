@@ -1,7 +1,8 @@
 import logging
-
+from time import sleep
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
@@ -30,7 +31,7 @@ class DirectoryReportListView(RouteGuard, ListView):
             row_limit=index_row_per_page,
             targeting_attendee_id=None,
             divisions=Division.objects.filter(pk__in=division_ids, organization=self.request.user.organization),
-        )
+        ) if self.request.user.privileged() else [], []
         context.update({
             'directory_header': self.request.GET.get('directoryHeader', ''),
             'index_header': self.request.GET.get('indexHeader', ''),
@@ -42,7 +43,14 @@ class DirectoryReportListView(RouteGuard, ListView):
         return context
 
     def render_to_response(self, context, **kwargs):
-        return render(self.request, self.get_template_names()[0], context)
+        if self.request.user.privileged():  # data_admins and counselor
+            return render(self.request, self.get_template_names()[0], context)
+        else:
+            sleep(2)
+            return HttpResponse(
+                "Based on your organization's settings, you do not have permissions to visit this!",
+                status=403,
+            )
 
 
 directory_report_list_view = DirectoryReportListView.as_view()
