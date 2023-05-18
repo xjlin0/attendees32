@@ -26,6 +26,7 @@ from . import GenderEnum, Note, Utility
 class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
     FAMILY_CATEGORY = 0
     NON_FAMILY_CATEGORY = 25
+    PAUSED_CATEGORY = 27
     HIDDEN_ROLE = 0
     # RELATIVES_KEYWORDS = ['parent', 'mother', 'guardian', 'father', 'caregiver']
     # to find attendee's parents/caregiver in cowokers view of all activities

@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+from datetime import datetime, timezone
 from django.db.models import OuterRef, Subquery
 from django.db.models.functions import Concat
 
@@ -13,6 +13,8 @@ class FolkService:
         """
         It generates data for printing/previewing single or participating families in chosen divisions.
         The output includes indexes (families grouped in cities) and families (header and family member contacts).
+        An attendee will NOT be unique if it belongs to multiple families.  Folkattendees role of masked won't be shown.
+
         It has no scope checks, so callers need to limit the scope by passing targeting_attendee_id or divisions.
         """
         families = []
@@ -20,7 +22,7 @@ class FolkService:
         index_list = []
         directory_meet = Meet.objects.filter(pk=directory_meet_id).first()
         member_meet = Meet.objects.filter(pk=member_meet_id).first()
-        targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks if targeting_attendee_id else Folk.objects.filter(division__in=divisions)
+        targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks if targeting_attendee_id else Folk.objects.filter(division__in=divisions).prefetch_related('attendees', 'folkattendee_set')
 
         if directory_meet:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
@@ -51,6 +53,8 @@ class FolkService:
                     ),  # only for attendees join the meet
                 ).exclude(
                     folkattendee__role__title="masked",  # for joined attendees not to be shown in certain families
+                ).exclude(
+                    folkattendee__finish__lte=datetime.now(timezone.utc)
                 ).order_by('folkattendee__display_order')
                 parents = attendees.filter(
                     folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife', 'father', 'mother', 'parent']  # no father/mother-in-law
@@ -126,9 +130,81 @@ class FolkService:
     @staticmethod
     def families_in_participations(meet_id, current_user):
         """
-        It generates printing data for attendances of a meet in current user's organization, grouped by families.
+        Generates printing data for unique attendingmeet of a meet in current user's organization, grouped by families.
+        If an Attendee belongs to many families, only 1) lowest display order 2) the last created folkattendee will be
+        shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
+        It does NOT provide attendee counting, as view/template does https://stackoverflow.com/a/34059709/4257237
         """
-        pass
+        families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
+        attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
+        meet = Meet.objects.filter(pk=meet_id, assembly__division__organization=current_user.organization).first()
+        if meet:
+            attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
+            families_in_directory = Folk.objects.filter(
+                division__organization=current_user.organization,
+            ).prefetch_related('attendees', 'folkattendee_set').annotate(
+                householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
+                householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
+            ).filter(
+                category=Attendee.FAMILY_CATEGORY,
+                is_removed=False,
+                attendees__in=Attendee.objects.filter(
+                    attendings__in=meet.attendings.filter(
+                        attendingmeet__finish__gte=Utility.now_with_timezone()
+                    ),
+                    deathday=None,
+                    is_removed=False,
+                ),
+            ).distinct().order_by('householder_last_name', 'householder_first_name')
+
+            for family in families_in_directory:
+                attendee_candidates = family.attendees.filter(
+                    deathday=None,
+                    attendings__in=meet.attendings.filter(
+                        attendingmeet__finish__gte=Utility.now_with_timezone()
+                    ),  # only for attendees join the meet
+                ).exclude(
+                    folkattendee__role__title=Attendee.PAUSED_CATEGORY,  # for joined attendees not to be shown temporarily
+                ).exclude(
+                    folkattendee__finish__lte=datetime.now(timezone.utc)
+                ).order_by('folkattendee__display_order').values(
+                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created'
+                )
+
+                family_attrs = {"families": {}, 'family_name': 'no last names!'}
+
+                if attendee_candidates[0]:
+                    family_attrs['family_name'] = attendee_candidates[0].get('last_name') or attendee_candidates[0].get('last_name2')
+
+                for attendee in attendee_candidates:
+                    attendee_id = attendee.get('id')
+                    attendee_last_record = attendees_cache.get(attendee_id)
+                    if attendee_last_record:
+                        current_rank = attendee.get('folkattendee__display_order')
+                        last_rank = attendee_last_record.get('rank')
+                        current_created = attendee.get('created')
+                        last_created = attendee_last_record.get('created')
+
+                        if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
+                            continue  # unique by 1) lowest display order 2) the last created folkattendee
+                        else:  # current one will replace last one
+                            del families[family.id]['families'][attendee_id]
+
+                    attendees_cache[attendee_id] = {
+                        'rank': attendee.get('folkattendee__display_order'),
+                        'created': attendee.get('created'),
+                    }
+
+                    family_attrs['families'][attendee_id] = {
+                        'first_name': attendee.get('first_name'),
+                        'first_name2': attendee.get('first_name2'),
+                        'last_name2': attendee.get('last_name2'),
+                    }
+
+                if len(family_attrs.get('families', {})) > 0:
+                    families[family.id] = family_attrs
+
+            return families.values()  # is list() necessary?
 
     @staticmethod
     def destroy_with_associations(folk, attendee):
