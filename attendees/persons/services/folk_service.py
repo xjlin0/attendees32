@@ -168,7 +168,7 @@ class FolkService:
                 ).exclude(
                     folkattendee__finish__lte=datetime.now(timezone.utc)
                 ).order_by('folkattendee__display_order').values(
-                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created'
+                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created', 'division__infos__acronym'
                 )
 
                 family_attrs = {"families": {}, 'family_name': 'no last names!'}
@@ -196,6 +196,7 @@ class FolkService:
                     }
 
                     family_attrs['families'][attendee_id] = {
+                        'division': attendee.get('division__infos__acronym'),
                         'first_name': attendee.get('first_name'),
                         'first_name2': attendee.get('first_name2'),
                         'last_name2': attendee.get('last_name2'),

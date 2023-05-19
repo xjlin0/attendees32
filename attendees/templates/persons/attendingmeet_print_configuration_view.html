@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  Activity Participation Print Configuration
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.light.compact.min.css' %}">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          type="text/javascript"
+          src="https://cdn3.devexpress.com/jslib/21.2.11/js/dx.web.js"
+          integrity="sha384-209QJH8lCoDrB70trdPkGFr84168dIgFO2IYDKFYUv73DqCa161cBayeTRYdzjSp"
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/persons/attendingmeet_print_configuration_view.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+
+<div class="container">
+
+  <h3>
+    Activity participation grouped by family -- Printing Configuration
+  </h3>
+
+  <form id="attendingmeet-print-configuration"
+        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}"
+        data-divisions_endpoint="{{divisions_endpoint}}"
+        action="{{pdf_url}}">
+    <div id="print-configuration-form"></div>
+  </form>
+</div>
+{% endblock content %}
