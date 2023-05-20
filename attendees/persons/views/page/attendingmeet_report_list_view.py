@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 @method_decorator([login_required], name='dispatch')
-class DirectoryReportListView(RouteGuard, ListView):
+class AttendingmeetReportListView(RouteGuard, ListView):
     queryset = []
-    template_name = "persons/directory_report_list_view.html"
+    template_name = "persons/attendingmeet_report_list_view.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,4 +53,4 @@ class DirectoryReportListView(RouteGuard, ListView):
             )
 
 
-directory_report_list_view = DirectoryReportListView.as_view()
+attendingmeet_report_list_view = AttendingmeetReportListView.as_view()

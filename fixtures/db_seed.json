@@ -4480,7 +4480,7 @@
         "data-bs-toggle": "dropdown"
       },
       "lft": 1,
-      "rght": 16,
+      "rght": 20,
       "tree_id": 14,
       "level": 0
     }
@@ -5056,8 +5056,8 @@
         "class": "dropdown-item",
         "title": "directory pdf"
       },
-      "lft": 14,
-      "rght": 15,
+      "lft": 16,
+      "rght": 17,
       "tree_id": 14,
       "level": 1
     }
@@ -5184,6 +5184,56 @@
       "rght": 2,
       "tree_id": 12,
       "level": 0
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 39,
+    "fields": {
+      "created": "2023-05-20T01:12:01.386Z",
+      "modified": "2023-05-20T01:12:01.386Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "main",
+      "parent": 4,
+      "html_type": "a",
+      "urn": "/persons/attendingmeet_print_configuration/",
+      "url_name": "attendingmeet_print_configuration_view",
+      "display_name": "participation 參與名單",
+      "display_order": 2850,
+      "infos": {
+        "class": "dropdown-item",
+        "title": "attendingmeet print"
+      },
+      "lft": 14,
+      "rght": 15,
+      "tree_id": 14,
+      "level": 1
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 40,
+    "fields": {
+      "created": "2023-05-20T01:14:07.320Z",
+      "modified": "2023-05-20T01:14:07.320Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "main",
+      "parent": 4,
+      "html_type": "a",
+      "urn": "/persons/attendingmeet_report/",
+      "url_name": "attendingmeet_report_list_view",
+      "display_name": "參加名單PDF participation PDF",
+      "display_order": 2950,
+      "infos": {
+        "class": "dropdown-item",
+        "title": "attendingmeet pdf"
+      },
+      "lft": 18,
+      "rght": 19,
+      "tree_id": 14,
+      "level": 1
     }
   },
   {
@@ -6812,6 +6862,58 @@
     }
   },
   {
+    "model": "users.menuauthgroup",
+    "pk": 148,
+    "fields": {
+      "created": "2023-05-17T06:59:45.613Z",
+      "modified": "2023-05-17T06:59:45.613Z",
+      "is_removed": false,
+      "auth_group": 200,
+      "read": true,
+      "write": false,
+      "menu": 34
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 149,
+    "fields": {
+      "created": "2023-05-17T07:00:30.653Z",
+      "modified": "2023-05-17T07:00:30.653Z",
+      "is_removed": false,
+      "auth_group": 200,
+      "read": true,
+      "write": false,
+      "menu": 33
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 150,
+    "fields": {
+      "created": "2023-05-20T01:12:01.400Z",
+      "modified": "2023-05-20T01:12:01.400Z",
+      "is_removed": false,
+      "auth_group": 500,
+      "read": true,
+      "write": true,
+      "menu": 39
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 151,
+    "fields": {
+      "created": "2023-05-20T01:14:07.328Z",
+      "modified": "2023-05-20T01:14:07.328Z",
+      "is_removed": false,
+      "auth_group": 500,
+      "read": true,
+      "write": true,
+      "menu": 40
+    }
+  },
+  {
     "model": "whereabouts.organization",
     "pk": -1,
     "fields": {
@@ -6851,6 +6953,7 @@
       "infos": {
         "acronym": null,
         "contacts": {},
+        "coworker": [],
         "hostname": "organization.none",
         "settings": {
           "opencc_convert": true,
@@ -6862,7 +6965,6 @@
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
-        "coworker": [],
         "data_admins": [],
         "default_time_zone": "America/Los_Angeles"
       }
@@ -6880,13 +6982,20 @@
       "infos": {
         "acronym": "CFCCH",
         "contacts": {},
+        "coworker": [
+          "children_coworker",
+          "children_organizer",
+          "conference_organizer",
+          "data_counselor",
+          "data_organizer"
+        ],
         "hostname": "192.168.99.100",
         "settings": {
           "opencc_convert": true,
           "default_member_meet": 9,
+          "default_visitor_meet": 0,
           "attendee_to_attending": true,
           "default_directory_meet": 8,
-          "default_visitor_meet": 0,
           "attendingmeet_pdf_export_groups": {
             "d7c8Fd_cfcch_congregation_directory": [
               "data_organizer"
@@ -6902,13 +7011,6 @@
         },
         "counselor": [
           "data_counselor"
-        ],
-        "coworker": [
-          "children_coworker",
-          "children_organizer",
-          "conference_organizer",
-          "data_counselor",
-          "data_organizer"
         ],
         "data_admins": [
           "data_organizer"
@@ -6970,6 +7072,7 @@
       "infos": {
         "acronym": "Kingdom",
         "contacts": {},
+        "coworker": [],
         "hostname": "heaven.heaven",
         "settings": {
           "opencc_convert": true,
@@ -6981,7 +7084,6 @@
           "past_category_to_attendingmeet_meet": {}
         },
         "counselor": [],
-        "coworker": [],
         "data_admins": [],
         "default_time_zone": "UTC"
       }
@@ -6999,7 +7101,6 @@
       "slug": "cfcch_unspecified",
       "audience_auth_group": 0,
       "infos": {
-        "acronym": "u",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7039,7 +7140,6 @@
       "slug": "cfcch_crossing_ministry",
       "audience_auth_group": 0,
       "infos": {
-        "acronym": "e",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7059,7 +7159,6 @@
       "slug": "cfcch_children_ministry",
       "audience_auth_group": 100,
       "infos": {
-        "acronym": "j",
         "show_attendee_infos": {
           "infos-grade": true,
           "infos-insurer": true
@@ -7079,7 +7178,6 @@
       "slug": "ever_worship",
       "audience_auth_group": 0,
       "infos": {
-        "acronym": "f",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7099,7 +7197,6 @@
       "slug": "cfcch_data_management",
       "audience_auth_group": 500,
       "infos": {
-        "acronym": "d",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7119,7 +7216,6 @@
       "slug": "cfcch_special_conference",
       "audience_auth_group": 400,
       "infos": {
-        "acronym": "s",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -9389,12 +9485,12 @@
     "pk": "3833d04e-0897-45da-abf6-7d750f0baee7",
     "fields": {
       "created": "1999-04-11T19:34:37.600Z",
-      "modified": "2021-10-22T15:25:28.948Z",
+      "modified": "2023-05-18T16:50:03.970Z",
       "is_removed": false,
       "division": 2,
       "user": null,
       "first_name": "Abigail",
-      "last_name": "",
+      "last_name": "Abigail last name",
       "first_name2": "亞比該",
       "last_name2": "",
       "gender": "FEMALE",
@@ -9408,10 +9504,10 @@
         },
         "names": {
           "nick": "老姊",
-          "original": "Abigail 亞比該",
-          "simplified": "Abigail 亚比该",
-          "traditional": "Abigail 亞比該",
-          "romanization": "Abigail Ya Bi Gai "
+          "original": "Abigail Abigail last name 亞比該",
+          "simplified": "Abigail Abigail last name 亚比该",
+          "traditional": "Abigail Abigail last name 亞比該",
+          "romanization": "Abigail Abigail last name Ya Bi Gai"
         },
         "contacts": {},
         "schedulers": {},
@@ -9425,14 +9521,14 @@
     "pk": "44e894a1-1190-4916-992a-b5eb41b35b16",
     "fields": {
       "created": "1999-04-11T19:35:12.234Z",
-      "modified": "2021-10-22T15:25:58.218Z",
+      "modified": "2023-05-18T16:49:40.025Z",
       "is_removed": false,
       "division": 1,
       "user": null,
       "first_name": "Deborah",
-      "last_name": "",
-      "first_name2": "底波拉",
-      "last_name2": "",
+      "last_name": "Deborah last name",
+      "first_name2": "波拉",
+      "last_name2": "底",
       "gender": "FEMALE",
       "actual_birthday": null,
       "estimated_birthday": null,
@@ -9444,10 +9540,10 @@
         },
         "names": {
           "nick": "戰神么么",
-          "original": "Deborah 底波拉",
-          "simplified": "Deborah 底波拉",
-          "traditional": "Deborah 底波拉",
-          "romanization": "Deborah Di Bo La "
+          "original": "Deborah Deborah last name 底波拉",
+          "simplified": "Deborah Deborah last name 底波拉",
+          "traditional": "Deborah Deborah last name 底波拉",
+          "romanization": "Deborah Deborah last name Di Bo La"
         },
         "contacts": {},
         "schedulers": {},
@@ -9486,6 +9582,42 @@
         },
         "contacts": {},
         "schedulers": {},
+        "emergency_contacts": {},
+        "updating_attendees": {}
+      }
+    }
+  },
+  {
+    "model": "persons.attendee",
+    "pk": "761d8788-47af-4414-bdc7-ca8ac96f0207",
+    "fields": {
+      "created": "2023-05-17T13:30:25.013Z",
+      "modified": "2023-05-17T13:30:25.013Z",
+      "is_removed": false,
+      "division": 1,
+      "user": null,
+      "first_name": "rr",
+      "last_name": "rrr",
+      "first_name2": "",
+      "last_name2": "",
+      "gender": "MALE",
+      "actual_birthday": null,
+      "estimated_birthday": null,
+      "deathday": null,
+      "photo": "",
+      "infos": {
+        "fixed": {
+          "mobility": 2
+        },
+        "names": {
+          "original": "rr rrr",
+          "simplified": "rr rrr",
+          "traditional": "rr rrr",
+          "romanization": "rr rrr"
+        },
+        "contacts": {},
+        "schedulers": {},
+        "progressions": {},
         "emergency_contacts": {},
         "updating_attendees": {}
       }
@@ -9611,12 +9743,12 @@
     "pk": "97922785-9025-40ad-9a5f-a9545f884644",
     "fields": {
       "created": "1999-05-10T01:00:09.119Z",
-      "modified": "2021-10-22T15:27:39.124Z",
+      "modified": "2023-05-18T16:50:17.428Z",
       "is_removed": false,
       "division": 6,
       "user": null,
       "first_name": "Nabal",
-      "last_name": "",
+      "last_name": "Nabal last name",
       "first_name2": "拿八",
       "last_name2": "",
       "gender": "MALE",
@@ -9629,10 +9761,10 @@
           "mobility": 2
         },
         "names": {
-          "original": "Nabal 拿八",
-          "simplified": "Nabal 拿八",
-          "traditional": "Nabal 拿八",
-          "romanization": "Nabal Na Ba "
+          "original": "Nabal Nabal last name 拿八",
+          "simplified": "Nabal Nabal last name 拿八",
+          "traditional": "Nabal Nabal last name 拿八",
+          "romanization": "Nabal Nabal last name Na Ba"
         },
         "contacts": {},
         "schedulers": {},
@@ -9646,12 +9778,12 @@
     "pk": "a48e4375-1a64-4c4f-beb3-8f088bf77340",
     "fields": {
       "created": "1999-04-11T19:31:50.659Z",
-      "modified": "2021-10-22T15:28:28.385Z",
+      "modified": "2023-05-18T16:49:02.853Z",
       "is_removed": false,
       "division": 1,
       "user": 1,
       "first_name": "superuser",
-      "last_name": "system admin",
+      "last_name": "root last name",
       "first_name2": "管理員",
       "last_name2": "超級使用者",
       "gender": "MALE",
@@ -9667,10 +9799,10 @@
         },
         "names": {
           "nick": "root",
-          "original": "superuser system admin 超級使用者管理員",
-          "simplified": "superuser system admin 超级使用者管理员",
-          "traditional": "superuser system admin 超級使用者管理員",
-          "romanization": "superuser system admin Chao Ji Shi Yong Zhe Guan Li Yuan "
+          "original": "superuser root last name 超級使用者管理員",
+          "simplified": "superuser root last name 超级使用者管理员",
+          "traditional": "superuser root last name 超級使用者管理員",
+          "romanization": "superuser root last name Chao Ji Shi Yong Zhe Guan Li Yuan"
         },
         "contacts": {
           "email1": "5greata@email.com",
@@ -9771,9 +9903,9 @@
       "division": 3,
       "user": null,
       "first_name": "Lydia",
-      "last_name": "",
-      "first_name2": "呂底亞",
-      "last_name2": "",
+      "last_name": "Lydia last name",
+      "first_name2": "底亞",
+      "last_name2": "呂",
       "gender": "FEMALE",
       "actual_birthday": null,
       "estimated_birthday": null,
@@ -9785,10 +9917,10 @@
         },
         "names": {
           "nick": "推雅推喇的呂底亞",
-          "original": "Lydia 呂底亞",
-          "simplified": "Lydia 吕底亚",
-          "traditional": "Lydia 呂底亞",
-          "romanization": "Lydia Lu Di Ya "
+          "original": "Lydia Lydia last name 呂底亞",
+          "simplified": "Lydia Lydia last name 吕底亚",
+          "traditional": "Lydia Lydia last name 呂底亞",
+          "romanization": "Lydia Lydia last name Lu Di Ya"
         },
         "contacts": {},
         "schedulers": {},
@@ -12292,7 +12424,7 @@
       "attending": 14,
       "meet": 8,
       "start": "2020-01-01T18:00:00Z",
-      "finish": "2030-02-17T19:59:59Z",
+      "finish": "2023-05-18T01:57:07.324Z",
       "team": null,
       "character": 23,
       "category": 6,
@@ -15941,25 +16073,25 @@
       "display_name": "慕道友 catechumen",
       "slug": "d7c8Fd_cfcch_congregation_catechumen",
       "infos": {
-      "attendance": {},
-      "allowed_groups": [
-        "data_counselor",
-        "data_organizer",
-        "children_organizer",
-        "children_coworker",
-        "conference_organizer"
-      ],
-      "allowed_models": [
-        "attendingmeet"
-      ],
-      "gathering_infos": {},
-      "default_time_zone": "America/Los_Angeles",
-      "automatic_creation": {
-        "Past": 21,
-        "Gathering": null,
-        "Attendance": null
-      },
-      "default_attendingmeet_in_weeks": 99999
+        "attendance": {},
+        "allowed_groups": [
+          "data_counselor",
+          "data_organizer",
+          "children_organizer",
+          "children_coworker",
+          "conference_organizer"
+        ],
+        "allowed_models": [
+          "attendingmeet"
+        ],
+        "gathering_infos": {},
+        "default_time_zone": "America/Los_Angeles",
+        "automatic_creation": {
+          "Past": 21,
+          "Gathering": null,
+          "Attendance": null
+        },
+        "default_attendingmeet_in_weeks": 99999
       },
       "site_type": 53,
       "site_id": "1"
