@@ -128,20 +128,20 @@ class FolkService:
         return index_list, families
 
     @staticmethod
-    def families_in_participations(meet_id, current_user):
+    def families_in_participations(meet_id, user_organization):
         """
-        Generates printing data for unique attendingmeet of a meet in current user's organization, grouped by families.
+        Generates printing data for unique attendingmeet of a meet limited by user_organization, grouped by families.
         If an Attendee belongs to many families, only 1) lowest display order 2) the last created folkattendee will be
         shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
         It does NOT provide attendee counting, as view/template does https://stackoverflow.com/a/34059709/4257237
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
-        meet = Meet.objects.filter(pk=meet_id, assembly__division__organization=current_user.organization).first()
+        meet = Meet.objects.filter(pk=meet_id, assembly__division__organization=user_organization).first()
         if meet:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
             families_in_directory = Folk.objects.filter(
-                division__organization=current_user.organization,
+                division__organization=user_organization,
             ).prefetch_related('attendees', 'folkattendee_set').annotate(
                 householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
                 householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
@@ -205,7 +205,7 @@ class FolkService:
                 if len(family_attrs.get('families', {})) > 0:
                     families[family.id] = family_attrs
 
-            return families.values()  # is list() necessary?
+        return families.values()  # is list() necessary?
 
     @staticmethod
     def destroy_with_associations(folk, attendee):

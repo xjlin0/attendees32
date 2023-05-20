@@ -1,6 +1,5 @@
 import logging
 from time import sleep
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -9,7 +8,6 @@ from django.views.generic import ListView
 
 from attendees.persons.services import FolkService
 from attendees.users.authorization import RouteGuard
-from attendees.whereabouts.models import Division
 
 logger = logging.getLogger(__name__)
 
@@ -21,24 +19,14 @@ class AttendingmeetReportListView(RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        division_ids = self.request.GET.getlist('divisionSelector', [])
-        index_row_per_page = int(self.request.GET.get("indexRowPerPage", '26'))
-        page_breaks_before_index = int(self.request.GET.get("pageBreaksBeforeIndex", '2'))
-        user_org_settings = self.request.user.organization.infos.get("settings", {})
-        indexes, families = FolkService.families_in_directory(
-            directory_meet_id=user_org_settings.get('default_directory_meet'),
-            member_meet_id=user_org_settings.get('default_member_meet'),
-            row_limit=index_row_per_page,
-            targeting_attendee_id=None,
-            divisions=Division.objects.filter(pk__in=division_ids, organization=self.request.user.organization),
+        families = FolkService.families_in_participations(
+            meet_id=self.request.GET.get("meet_id"),
+            user_organization=self.request.user.organization,
         ) if self.request.user.privileged() else [], []
         context.update({
-            'directory_header': self.request.GET.get('directoryHeader', ''),
-            'index_header': self.request.GET.get('indexHeader', ''),
+            'report_header': self.request.GET.get('reportHeader', ''),
+            'report_date': self.request.GET.get('reportDate', ''),
             'families': families,
-            'indexes': indexes,
-            'index_page_breaks': range(page_breaks_before_index),
-            'empty_image_link': f'{settings.STATIC_URL}images/empty.png'
         })
         return context
 
