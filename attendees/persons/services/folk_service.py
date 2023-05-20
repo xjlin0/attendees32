@@ -128,7 +128,7 @@ class FolkService:
         return index_list, families
 
     @staticmethod
-    def families_in_participations(meet_id, user_organization):
+    def families_in_participations(meet_slug, user_organization):
         """
         Generates printing data for unique attendingmeet of a meet limited by user_organization, grouped by families.
         If an Attendee belongs to many families, only 1) lowest display order 2) the last created folkattendee will be
@@ -137,7 +137,7 @@ class FolkService:
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
-        meet = Meet.objects.filter(pk=meet_id, assembly__division__organization=user_organization).first()
+        meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
             families_in_directory = Folk.objects.filter(

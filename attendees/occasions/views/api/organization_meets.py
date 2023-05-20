@@ -69,11 +69,11 @@ class OrganizationMeetsViewSet(viewsets.ModelViewSet):
                 extra_filter.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
 
             return (
-                Meet.objects.filter(extra_filter)
+                Meet.objects.select_related('assembly').filter(extra_filter)
                 .annotate(
                     assembly_name=F("assembly__display_name"),
                 )
-                .order_by('assembly_name', 'display_name')
+                .order_by('assembly__display_order', 'assembly_name', 'display_name')
             )
 
         else:

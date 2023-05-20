@@ -1,4 +1,3 @@
-import logging
 from time import sleep
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -9,8 +8,6 @@ from django.views.generic import ListView
 from attendees.persons.services import FolkService
 from attendees.users.authorization import RouteGuard
 
-logger = logging.getLogger(__name__)
-
 
 @method_decorator([login_required], name='dispatch')
 class AttendingmeetReportListView(RouteGuard, ListView):
@@ -20,11 +17,11 @@ class AttendingmeetReportListView(RouteGuard, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         families = FolkService.families_in_participations(
-            meet_id=self.request.GET.get("meet_id"),
+            meet_slug=self.request.GET.get("meetSlug"),
             user_organization=self.request.user.organization,
         ) if self.request.user.privileged() else [], []
         context.update({
-            'report_header': self.request.GET.get('reportHeader', ''),
+            'report_title': self.request.GET.get('reportTitle', ''),
             'report_date': self.request.GET.get('reportDate', ''),
             'families': families,
         })
