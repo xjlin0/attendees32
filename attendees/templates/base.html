@@ -91,9 +91,8 @@
 
   </head>
 
-  <body data-user-api-allowed-url-names="{{user_api_allowed_url_name}}"
-        data-user-attendee-id="{{user_attendee_id}}">
-
+  <body data-user-attendee-id="{{user_attendee_id}}">
+  {{ user_api_allowed_url_name|json_script:"user-api-allowed-url-names" }}
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <div class="container-fluid">

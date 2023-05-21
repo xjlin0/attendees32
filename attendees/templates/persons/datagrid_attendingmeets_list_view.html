@@ -49,6 +49,7 @@
 {% block content %}
 <div class="attendingmeet-container">
   {% csrf_token %}
+  {{ grade_converter|json_script:"organization-grade-converter" }}
   <div class="d-flex justify-content-between">
     <div class="d-flex">
       <h3>
@@ -81,7 +82,6 @@
   </div>
 
   <form class="filters-dxform"
-       data-grade-converter="{{grade_converter}}"
        data-characters-endpoint="{{characters_endpoint}}"
        data-attendingmeets-endpoint="{{attendingmeets_endpoint}}"
        data-assemblies-endpoint="{{assemblies_endpoint}}"

@@ -62,7 +62,7 @@
     </div>
 
   </form>
-
+  {{ available_meets_json|json_script:"organization-available-meets" }}
   <div class="dataAttendees"
       data-family-attendances-urn="{{family_attendances_urn}}"
       data-available-meets="{{available_meets_json}}"

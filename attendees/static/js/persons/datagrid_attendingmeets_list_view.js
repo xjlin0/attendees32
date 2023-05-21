@@ -14,7 +14,7 @@ Attendees.attendingmeets = {
     Attendees.attendingmeets.initFilterMeetCheckbox();
     Attendees.attendingmeets.initEditingSwitch();
     Attendees.attendingmeets.initFiltersForm();
-    Attendees.attendingmeets.gradeConverter = JSON.parse(document.querySelector('form.filters-dxform').dataset.gradeConverter);
+    Attendees.attendingmeets.gradeConverter = JSON.parse(document.getElementById('organization-grade-converter').textContent);
   },
 
   initEditingSwitch: () => {

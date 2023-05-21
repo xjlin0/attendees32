@@ -34,8 +34,8 @@
 
   <form id="attendingmeet-print-configuration"
         name="attendingmeetPrintConfigurationForm"
-        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}"
-        data-divisions-endpoint="{{divisions_endpoint}}"
+        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug|safe}}"
+        data-divisions-endpoint="{{divisions_endpoint|safe}}"
         action="{{pdf_url}}">
     <div id="print-configuration-form"></div>
   </form>

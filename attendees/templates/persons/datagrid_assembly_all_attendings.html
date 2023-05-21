@@ -38,7 +38,8 @@
 {% endblock extra_head %}
 
 {% block content %}
-
+{{ available_meets_json|json_script:"organization-available-meets" }}
+<!--{{ available_characters_json|json_script:"organization-available-characters" }}-->
   <h3>
     Attending of people by groups (prefiltered by assembly, but filename/url suggest all assemblies) [This table looks good for browsing but hard for editing UI]
   </h3>
@@ -111,8 +112,6 @@
   </form>
 
   <div class="attendings"
-      data-available-meets="{{available_meets_json}}"
-      data-available-characters="{{available_characters_json}}"
       data-teams-endpoint="{{teams_endpoint}}"
       data-gatherings-endpoint="{{gatherings_endpoint}}"
       data-characters-endpoint="{{characters_endpoint}}"

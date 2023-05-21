@@ -19,7 +19,7 @@ Attendees.utilities = {
 
   init: () => {
     console.log("attendees/static/js/shared/utilities.js");
-    Attendees.utilities.userApiAllowedUrlNames = JSON.parse(document.querySelector('body').dataset.userApiAllowedUrlNames);
+    Attendees.utilities.userApiAllowedUrlNames = JSON.parse(document.getElementById('user-api-allowed-url-names').textContent);
     Attendees.utilities.userAttendeeId = $('body').data('user-attendee-id');
   },
 

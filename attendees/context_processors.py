@@ -3,7 +3,6 @@ from pytz import timezone
 from datetime import datetime
 from django.conf import settings
 from urllib import parse
-import json
 from attendees.users.models import Menu
 
 
@@ -32,7 +31,7 @@ def common_variables(request):  # TODO move organization info to view
         'timezone_name': datetime.now(timezone(parse.unquote(tzname))).tzname(),
         'user_organization_name': user_organization_name,
         'user_organization_name_slug': user_organization_name_slug,
-        'user_api_allowed_url_name': json.dumps({name: True for name in request.user.allowed_url_names()} if hasattr(request.user, 'allowed_url_names') else {}),
+        'user_api_allowed_url_name': {name: True for name in request.user.allowed_url_names()} if hasattr(request.user, 'allowed_url_names') else {},
         'user_attendee_id': user_attendee_id,
         'main_menus': main_menus,
     }

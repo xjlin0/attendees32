@@ -154,8 +154,8 @@ Attendees.datagridUpdate = {
 
   initAttendeeForm: () => {
     Attendees.datagridUpdate.attendeeAttrs = document.querySelector('div.datagrid-attendee-update');
-    Attendees.datagridUpdate.gradeConverter = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.gradeConverter).reduce((all, now, index) =>{all.push({id: index, label: now}); return all}, []);
-    Attendees.datagridUpdate.pastsToAdd = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsToAdd);
+    Attendees.datagridUpdate.gradeConverter = JSON.parse(document.getElementById('organization-grade-converter').textContent).reduce((all, now, index) =>{all.push({id: index, label: now}); return all}, []);  // for dxSelectBox
+    Attendees.datagridUpdate.pastsToAdd = JSON.parse(document.getElementById('organization-pasts-to-add').textContent);
     Attendees.datagridUpdate.pastsCategories = new Set(Object.values(Attendees.datagridUpdate.pastsToAdd));
     Attendees.datagridUpdate.processDivisions();
     Attendees.datagridUpdate.divisionIdNames = Attendees.datagridUpdate.divisions.reduce((obj, item) => ({...obj, [item.id]: item.display_name}) ,{});
@@ -211,7 +211,7 @@ Attendees.datagridUpdate = {
   },
 
   processDivisions: () => {
-    Attendees.datagridUpdate.divisions = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.divisions);
+    Attendees.datagridUpdate.divisions = JSON.parse(document.getElementById('user-organization-divisions').textContent);
     Attendees.datagridUpdate.divisionShowAttendeeInfos = Object.entries(Attendees.datagridUpdate.divisions).reduce((acc, curr) => {
       const [key, value] = curr;
       acc[value.id] = value.infos.show_attendee_infos || {};
@@ -3947,7 +3947,7 @@ Attendees.datagridUpdate = {
         },
       ].filter(item => {
         if ($.isEmptyObject(Attendees.utilities.userApiAllowedUrlNames)) {
-          Attendees.utilities.userApiAllowedUrlNames = JSON.parse(document.querySelector('body').dataset.userApiAllowedUrlNames);
+          Attendees.utilities.userApiAllowedUrlNames = JSON.parse(document.getElementById('user-api-allowed-url-names').textContent);
         }
         return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
       }),

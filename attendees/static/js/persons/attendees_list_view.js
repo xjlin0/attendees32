@@ -7,7 +7,7 @@ Attendees.dataAttendees = {
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
-    const availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets);
+    const availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent);
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
     Attendees.dataAttendees.startMeetSelector();
     Attendees.dataAttendees.setDataAttrs();
@@ -83,7 +83,7 @@ Attendees.dataAttendees = {
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
     Attendees.dataAttendees.meetTagBox = $('div.meet-tag-box').dxTagBox({
       dataSource: new DevExpress.data.DataSource({
-        store: JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets),
+        store: JSON.parse(document.getElementById('organization-available-meets').textContent),
         key: 'id',
         group: 'assembly_name'
       }),
@@ -379,7 +379,7 @@ Attendees.dataAttendees = {
     },
   ],
 
-  setMeetsColumns: (availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets)) => {
+  setMeetsColumns: (availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent)) => {
     const meetColumns=[];
     const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});
     availableMeets.forEach(meet => {
