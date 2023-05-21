@@ -21,8 +21,8 @@ Attendees.attendingmeetPrintConfiguration = {
   },
 
   formConfig: {
-    onContentReady: () => {
-      console.log("hi 25 here is onContentReady!");
+    onContentReady: (e) => {
+      e.component.getEditor('divisions').getDataSource().reload();
     },
     items: [
       {
@@ -120,10 +120,11 @@ Attendees.attendingmeetPrintConfiguration = {
             store: new DevExpress.data.CustomStore({
               key: 'slug',
               loadMode: 'raw',
-              load: () => {
+              load: (e) => {
                 const d = $.Deferred();
                 $.get(document.attendingmeetPrintConfigurationForm.dataset.divisionsEndpoint).done((response) => {
                   d.resolve(response.data);
+                  Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeetPrintConfiguration.form.getEditor('divisions'));
                 });
                 return d.promise();
               },
