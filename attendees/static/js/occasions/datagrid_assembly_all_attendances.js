@@ -209,7 +209,7 @@ Attendees.attendances = {
   }, // Getting html from Django upon user selecting meet(s)
 
   setDefaults: () => {
-    const locale = "en-us"
+    const locale = "en-us";
     const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
     const timeOptions = { hour12: true, hour: '2-digit', minute:'2-digit' };
     const defaultFilterStartDate = new Date();

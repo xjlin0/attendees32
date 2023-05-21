@@ -6,31 +6,50 @@ Attendees.attendingmeetPrintConfiguration = {
   },
 
   submitForm: () => {
-    if (confirm('Do you want to see the directory for print? (This will take 2 minutes.)')){
-      alert('Submitted');
+    const validationResults = Attendees.attendingmeetPrintConfiguration.form.validate();
+    if (validationResults.isValid) {
+      if (confirm('Do you want to see the directory for print? (This will take 2 minutes.)')) {
+        alert('Submitted');
+        const formData = Attendees.attendingmeetPrintConfiguration.form.option('formData');
+        const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
+        const url = `${document.attendingmeetPrintConfigurationForm.action}?${searchParams}`;
+        console.log("url: ", url);
+      }
+    } else {
+      alert('Please check the form again. Something missing!');
     }
   },
 
   formConfig: {
-
-    formData: {
-      reportTitle: "title title title",
-      reportDate: new Date(),
+    onContentReady: () => {
+      console.log("hi 25 here is onContentReady!");
     },
     items: [
       {
         dataField: "reportTitle",
+        value: 'Report Title',
+        editorOptions: {
+          showClearButton: true,
+          buttons: [
+            'clear',
+          ],
+        },
       },
       {
         dataField: "reportDate",
+        value: new Date().toLocaleDateString('en', { day: '2-digit', month: 'long', year: 'numeric' }),
+        editorOptions: {
+          showClearButton: true,
+          buttons: [
+            'clear',
+          ],
+        },
       },
       {
         dataField: 'meet',
-        // helpText: "Can't show schedules when multiple selected. Select single one to view its schedules",
-        // cssClass: 'selected-meets',
+        isRequired: true,
         validationRules: [{type: 'required'}],
         label: {
-          // location: 'top',
           text: 'Select an activity(meet)',
         },
         editorType: 'dxSelectBox',
@@ -55,7 +74,7 @@ Attendees.attendingmeetPrintConfiguration = {
                   params['searchExpr'] = 'display_name';
                 }
 
-                $.get(document.attendingmeetPrintConfiguration.dataset.meetsEndpointBySlug, params)
+                $.get(document.attendingmeetPrintConfigurationForm.dataset.meetsEndpointBySlug, params)
                   .done((result) => {
                     d.resolve(result.data);
                   });
@@ -63,6 +82,52 @@ Attendees.attendingmeetPrintConfiguration = {
               },
             }),
             key: 'slug',
+          }),
+        },
+      },
+      {
+        dataField: 'divisions',
+        editorType: 'dxTagBox',
+        validationRules: [{type: 'required'}],
+        isRequired: true,
+        label: {
+          text: 'divisions selector',
+        },
+        editorOptions: {
+          valueExpr: 'slug',
+          displayExpr: 'display_name',
+          placeholder: 'Select a value...',
+          showClearButton: true,
+          buttons:[
+            'clear',
+            {
+              name: 'selectAll',
+              stylingMode: 'outlined',
+              location: 'after',
+              options: {
+                icon: 'fas fa-solid fa-check-double',
+                type: 'default',
+                elementAttr: {
+                  title: 'select all divisions',
+                },
+                onClick() {
+                  Attendees.utilities.selectAllGroupedTags(Attendees.attendingmeetPrintConfiguration.form.getEditor('divisions'));
+                },
+              },
+            },
+          ],
+          dataSource: new DevExpress.data.DataSource({
+            store: new DevExpress.data.CustomStore({
+              key: 'slug',
+              loadMode: 'raw',
+              load: () => {
+                const d = $.Deferred();
+                $.get(document.attendingmeetPrintConfigurationForm.dataset.divisionsEndpoint).done((response) => {
+                  d.resolve(response.data);
+                });
+                return d.promise();
+              },
+            })
           }),
         },
       },

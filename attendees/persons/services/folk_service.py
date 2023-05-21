@@ -128,11 +128,11 @@ class FolkService:
         return index_list, families
 
     @staticmethod
-    def families_in_participations(meet_slug, user_organization):
+    def families_in_participations(meet_slug, user_organization, division_slugs):
         """
-        Generates printing data for unique attendingmeet of a meet limited by user_organization, grouped by families.
-        If an Attendee belongs to many families, only 1) lowest display order 2) the last created folkattendee will be
-        shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
+        Generates printing data for unique attendingmeet of a meet limited by user_organization and divisions, grouped
+        by families.  If an Attendee belongs to many families, only 1) lowest display order 2) the last created
+        folkattendee will be shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
         It does NOT provide attendee counting, as view/template does https://stackoverflow.com/a/34059709/4257237
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
@@ -149,6 +149,7 @@ class FolkService:
                 category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
                 attendees__in=Attendee.objects.filter(
+                    division__slug__in=division_slugs,
                     attendings__in=meet.attendings.filter(
                         attendingmeet__finish__gte=Utility.now_with_timezone()
                     ),
@@ -159,6 +160,7 @@ class FolkService:
 
             for family in families_in_directory:
                 attendee_candidates = family.attendees.filter(
+                    division__slug__in=division_slugs,
                     deathday=None,
                     attendings__in=meet.attendings.filter(
                         attendingmeet__finish__gte=Utility.now_with_timezone()
