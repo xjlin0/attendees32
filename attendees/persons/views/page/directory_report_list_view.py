@@ -31,7 +31,7 @@ class DirectoryReportListView(RouteGuard, ListView):
             row_limit=index_row_per_page,
             targeting_attendee_id=None,
             divisions=Division.objects.filter(pk__in=division_ids, organization=self.request.user.organization),
-        ) if self.request.user.privileged() else [], []
+        ) if self.request.user.privileged() else ([], [])  # parenthesis are required
         context.update({
             'directory_header': self.request.GET.get('directoryHeader', ''),
             'index_header': self.request.GET.get('indexHeader', ''),

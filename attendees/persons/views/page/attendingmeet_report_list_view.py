@@ -20,7 +20,7 @@ class AttendingmeetReportListView(RouteGuard, ListView):
             meet_slug=self.request.GET.get("meetSlug"),
             user_organization=self.request.user.organization,
             division_slugs=self.request.GET.getlist('division_slugs', []),
-        ) if self.request.user.privileged() else [], []
+        ) if self.request.user.privileged() else []
         context.update({
             'report_title': self.request.GET.get('reportTitle', ''),
             'report_date': self.request.GET.get('reportDate', ''),
