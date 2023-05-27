@@ -42,21 +42,25 @@
       </div>
 
       {% for folk in families %}
-        <div class="folk-container">
-          <div class="family-name">
-            {{ folk.family_name }}
+        {% if folk.families %}
+          <div class="folk-container">
+            <div class="family-name">
+              family_name: {{ folk.family_name }}
+            </div>
+            <div class="members-container">
+
+                {% for member_id, member_attrs in folk.families.items %}
+                  <div class="member">
+                    {{ counter }}
+                    first_name: {{member_attrs.first_name}}
+                    last_name2: {{member_attrs.last_name2}}
+                    first_name2: {{member_attrs.first_name2}}
+                  </div>
+                {% endfor %}
+
+            </div>
           </div>
-          <div class="members-container">
-            {% for member in folk.families %}
-              <div class="member">
-                {{ counter }}
-                {{ member.first_name }}
-                {{ member.last_name2 }}
-                {{ member.first_name2 }}
-              </div>
-            {% endfor %}
-          </div>
-        </div>
+        {% endif %}
       {% endfor %}
     </div>
   </body>

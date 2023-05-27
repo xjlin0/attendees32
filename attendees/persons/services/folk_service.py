@@ -204,10 +204,10 @@ class FolkService:
                     }
 
                     family_attrs['families'][attendee_id] = {
-                        'division': attendee.get('division__infos__acronym'),
                         'first_name': attendee.get('first_name'),
                         'first_name2': attendee.get('first_name2'),
                         'last_name2': attendee.get('last_name2'),
+                        'division': attendee.get('division__infos__acronym'),
                     }
 
                 families[family.id] = family_attrs

@@ -23,12 +23,12 @@ class AttendingmeetReportListView(RouteGuard, ListView):
             user_organization=self.request.user.organization,
             division_slugs=self.request.GET.getlist('divisions', []),
         ) if self.request.user.privileged() else []
-        print("hi 26 here is families: ", families)
+
         context.update({
             'report_title': self.request.GET.get('reportTitle', ''),
             'report_date': self.request.GET.get('reportDate', ''),
             'families': families,
-            'counter': partial(next, count()),
+            'counter': partial(next, count(1)),
         })
         return context
 
