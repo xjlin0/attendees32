@@ -40,49 +40,18 @@
         <div></div>
         <div>{{directory_header}}</div>
       </div>
-      {% include 'persons/_directory_families.html' with link=False %}
-    </div>
 
-    {% for i in index_page_breaks %}
-      <div class="page-break"></div>
-    {% endfor %}
+      {% for folk in families %}
+        <div class="folk-container">
+          <div class="family-name">
+            {{ folk.family_name }}
+          </div>
+          <div class="members-container">
+            {% for member in folk.families %}
 
-    <div class="index-directory-container">
-      <div class="d-flex justify-content-between">
-        <div></div>
-        <div>{{index_header}}</div>
-      </div>
-      <hr>
-      {% for index in indexes %}
-        {% for title, value in index.items %}
-          {% if title == 'BREAKER' %}
-            {% if value == 'PAGE' %}
-              <div class="page-break"></div>
-              <div class="d-flex justify-content-between">
-                <div></div>
-                <div>{{index_header}}</div>
-              </div>
-              <hr>
-            {% else %}
-              <div>
-                <br>
-              </div>
-            {% endif %}
-          {% else %}
-            {% if title == 'TOWN_NAME' %}
-              <div class="d-flex justify-content-between bg-secondary fs-3">
-                <div><strong>{{value}}</strong></div>
-                <div></div>
-              </div>
-            {% else %}
-              <div class="d-flex justify-content-between fs-4">
-                <div>{{title}}</div>
-                <div class="telephone-number">{{value}}</div>
-              </div>
-            </div>
-            {% endif %}
-          {% endif %}
-        {% endfor %}
+            {% endfor %}
+          </div>
+        </div>
       {% endfor %}
     </div>
   </body>

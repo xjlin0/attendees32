@@ -16,6 +16,7 @@ class FolkService:
         An attendee will NOT be unique if it belongs to multiple families.  Folkattendees role of masked won't be shown.
 
         It has no scope checks, so callers need to limit the scope by passing targeting_attendee_id or divisions.
+        Phones/emails will be empty when there's no parents. For kids-only families please assign 'self' role to the first kid to show its phone/email
         """
         families = []
         index = defaultdict(lambda: {})
@@ -55,60 +56,63 @@ class FolkService:
                     folkattendee__role__title="masked",  # for joined attendees not to be shown in certain families
                 ).exclude(
                     folkattendee__finish__lte=datetime.now(timezone.utc)
-                ).order_by('folkattendee__display_order')
-                parents = attendees.filter(
-                    folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife', 'father', 'mother', 'parent']  # no father/mother-in-law
-                )
-                attrs['household_last_name'] = attendees.first().last_name
+                ).distinct().order_by('folkattendee__display_order')
 
-                phone1 = parents.first() and parents.first().infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
-                phone2 = None
-                if phone1:
-                    attrs['phone1'] = Utility.phone_number_formatter(phone1)
-                email1 = parents.first() and parents.first().infos.get('contacts', {}).get('email1')  # only email1 published in directory
-                if email1:
-                    attrs['email1'] = email1
+                if attendees:
+                    parents = attendees.filter(
+                        folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife', 'father', 'mother', 'parent']  # no father/mother-in-law
+                    )
+                    attrs['household_last_name'] = attendees.first().last_name
 
-                is_householder_member = member_meet and AttendingMeet.check_participation_of(attendees.first(), member_meet)
-                householder_title = f'{attendees.first().last_name}, {attendees.first().first_name}{"*" if is_householder_member else ""}'
-                name2_title = f'{attendees.first().name2()}'
-                if len(parents) > 1:
-                    name2_title += f' {parents[1].name2()}'
-                    is_parent1_member = member_meet and AttendingMeet.check_participation_of(parents[1], member_meet)
-                    householder_title += f' & {parents[1].first_name}{"*" if is_parent1_member else ""}'
-                    phone2 = parents[1].infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
-                    if phone2 and phone1 != phone2:
-                        attrs['phone2'] = Utility.phone_number_formatter(phone2)
-                    email2 = parents[1].infos.get('contacts', {}).get('email1')  # only email1 published in directory
-                    if email2 and email1 != email2:
-                        attrs['email2'] = email2
-                attrs['household_title'] = householder_title
+                    if parents:
+                        phone1 = parents.first() and parents.first().infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
+                        phone2 = None
+                        if phone1:
+                            attrs['phone1'] = Utility.phone_number_formatter(phone1)
+                        email1 = parents.first() and parents.first().infos.get('contacts', {}).get('email1')  # only email1 published in directory
+                        if email1:
+                            attrs['email1'] = email1
 
-                family_address = family.places.first() and family.places.first().address  # implicitly ordered by display_order of place
-                if family_address:
-                    address_line1 = f'{family_address.street_number} {family_address.route}'
-                    address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
-                    attrs['address_link'] = f'{address_line1}+{address_line2}'.replace(' ',  '+')
-                    if family_address.extra:
-                        address_line1 += f' {family_address.extra}'
-                    attrs['address_line1'] = address_line1
-                    attrs['address_line2'] = address_line2
+                    is_householder_member = member_meet and AttendingMeet.check_participation_of(attendees.first(), member_meet)
+                    householder_title = f'{attendees.first().last_name}, {attendees.first().first_name}{"*" if is_householder_member else ""}'
+                    name2_title = f'{attendees.first().name2()}'
+                    if len(parents) > 1:
+                        name2_title += f' {parents[1].name2()}'
+                        is_parent1_member = member_meet and AttendingMeet.check_participation_of(parents[1], member_meet)
+                        householder_title += f' & {parents[1].first_name}{"*" if is_parent1_member else ""}'
+                        phone2 = parents[1].infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
+                        if phone2 and phone1 != phone2:
+                            attrs['phone2'] = Utility.phone_number_formatter(phone2)
+                        email2 = parents[1].infos.get('contacts', {}).get('email1')  # only email1 published in directory
+                        if email2 and email1 != email2:
+                            attrs['email2'] = email2
+                    attrs['household_title'] = householder_title
 
-                    index[family_address.locality.name][f'{householder_title} {name2_title}'.strip()] = Utility.phone_number_formatter(phone1 or phone2)
+                    family_address = family.places.first() and family.places.first().address  # implicitly ordered by display_order of place
+                    if family_address:
+                        address_line1 = f'{family_address.street_number} {family_address.route}'
+                        address_line2 = f'{family_address.locality.name}, {family_address.locality.state.code} {family_address.locality.postal_code}'
+                        attrs['address_link'] = f'{address_line1}+{address_line2}'.replace(' ',  '+')
+                        if family_address.extra:
+                            address_line1 += f' {family_address.extra}'
+                        attrs['address_line1'] = address_line1
+                        attrs['address_line2'] = address_line2
 
-                attendees_attr = []
-                for attendee in attendees:
-                    is_attendee_member = member_meet and AttendingMeet.check_participation_of(attendee, member_meet)
-                    attendees_attr.append({
-                        'id': attendee.id,
-                        'first_name': f'{attendee.first_name}{"*" if is_attendee_member else ""}',
-                        'name2': attendee.name2(),
-                        'photo_url': attendee.photo and attendee.photo.url,
-                        'is_member': member_meet and AttendingMeet.check_participation_of(attendee, member_meet),
-                    })
-                attrs['attendees'] = attendees_attr
+                        index[family_address.locality.name][f'{householder_title} {name2_title}'.strip()] = Utility.phone_number_formatter(phone1 or phone2)
 
-                families.append(attrs)
+                    attendees_attr = []
+                    for attendee in attendees:
+                        is_attendee_member = member_meet and AttendingMeet.check_participation_of(attendee, member_meet)
+                        attendees_attr.append({
+                            'id': attendee.id,
+                            'first_name': f'{attendee.first_name}{"*" if is_attendee_member else ""}',
+                            'name2': attendee.name2(),
+                            'photo_url': attendee.photo and attendee.photo.url,
+                            'is_member': member_meet and AttendingMeet.check_participation_of(attendee, member_meet),
+                        })
+                    attrs['attendees'] = attendees_attr
+
+                    families.append(attrs)
 
             if targeting_attendee_id is None:
                 for town_name, family_rows in sorted(index.items()):

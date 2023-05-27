@@ -1,3 +1,5 @@
+from functools import partial
+from itertools import count
 from time import sleep
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -23,8 +25,10 @@ class AttendingmeetReportListView(RouteGuard, ListView):
         ) if self.request.user.privileged() else []
         context.update({
             'report_title': self.request.GET.get('reportTitle', ''),
+            'meetSlug': self.request.GET.get("meetSlug", ''),
             'report_date': self.request.GET.get('reportDate', ''),
             'families': families,
+            'counter': partial(next, count()),
         })
         return context
 
