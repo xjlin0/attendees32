@@ -137,6 +137,7 @@ class FolkService:
         Generates printing data for unique attendingmeet of a meet limited by user_organization and divisions, grouped
         by families.  If an Attendee belongs to many families, only 1) lowest display order 2) the last created
         folkattendee will be shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
+        For cache computation final results intentionally contains empty families so template need to filter them out.
         It does NOT provide attendee counting, as view/template does https://stackoverflow.com/a/34059709/4257237
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
@@ -173,7 +174,7 @@ class FolkService:
                     folkattendee__role__title=Attendee.PAUSED_CATEGORY,  # for joined attendees not to be shown temporarily
                 ).exclude(
                     folkattendee__finish__lte=datetime.now(timezone.utc)
-                ).order_by('folkattendee__display_order').values(
+                ).distinct().order_by('folkattendee__display_order').values(
                     'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created', 'division__infos__acronym'
                 )
 
@@ -190,15 +191,16 @@ class FolkService:
                         last_rank = attendee_last_record.get('rank')
                         current_created = attendee.get('created')
                         last_created = attendee_last_record.get('created')
-
+                        last_family = attendee_last_record.get('family_id')
                         if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
                             continue  # unique by 1) lowest display order 2) the last created folkattendee
                         else:  # current one will replace last one
-                            del families[family.id]['families'][attendee_id]
+                            del families[last_family]['families'][attendee_id]
 
                     attendees_cache[attendee_id] = {
                         'rank': attendee.get('folkattendee__display_order'),
                         'created': attendee.get('created'),
+                        'family_id': family.id,
                     }
 
                     family_attrs['families'][attendee_id] = {
@@ -208,8 +210,7 @@ class FolkService:
                         'last_name2': attendee.get('last_name2'),
                     }
 
-                if len(family_attrs.get('families', {})) > 0:
-                    families[family.id] = family_attrs
+                families[family.id] = family_attrs
 
         return families.values()  # is list() necessary?
 

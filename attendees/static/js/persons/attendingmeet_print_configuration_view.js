@@ -11,6 +11,8 @@ Attendees.attendingmeetPrintConfiguration = {
       if (confirm('Do you want to see the directory for print? (This will take 2 minutes.)')) {
         const formData = Attendees.attendingmeetPrintConfiguration.form.option('formData');
         const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
+        searchParams.delete("divisions")
+        Attendees.attendingmeetPrintConfiguration.form.option('formData').divisions.forEach(d => searchParams.append('divisions', d));
         location.href = `${document.attendingmeetPrintConfigurationForm.action}?${searchParams}`;
       }
     } else {
