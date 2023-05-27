@@ -47,8 +47,8 @@
             <div class="family-name">
               family_name: {{ folk.family_name }}
             </div>
-            <div class="members-container">
-
+            <div class="members-area">
+              <div class="members-container">
                 {% for member_id, member_attrs in folk.families.items %}
                   <div class="member">
                     {{ counter }}
@@ -57,7 +57,7 @@
                     first_name2: {{member_attrs.first_name2}}
                   </div>
                 {% endfor %}
-
+              </div>
             </div>
           </div>
         {% endif %}

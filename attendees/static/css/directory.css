@@ -75,10 +75,23 @@ div.attendees-container a.link-as-text {
   color: inherit;
 }
 
-folk-container {
+.folk-container {
   display: flex;
 }
 
-members-container {
+.family-name {
+  flex-basis: 20%
+}
+
+.members-area {
+  flex-basis: 80%
+}
+
+.members-container {
   display: flex;
+  flex-wrap: wrap;
+}
+
+.member {
+  flex-basis: 50%
 }
