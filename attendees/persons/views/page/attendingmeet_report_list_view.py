@@ -27,6 +27,7 @@ class AttendingmeetReportListView(RouteGuard, ListView):
         context.update({
             'report_title': self.request.GET.get('reportTitle', ''),
             'report_date': self.request.GET.get('reportDate', ''),
+            'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
             'counter': partial(next, count(1)),
         })
