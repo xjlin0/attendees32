@@ -51,7 +51,7 @@ div.index-container {
   display: flex;
 }
 
-div.telephone-number {
+div.telephone-number, span.mono-space {
   font-family: monospace;
 }
 
@@ -75,16 +75,22 @@ div.attendees-container a.link-as-text {
   color: inherit;
 }
 
+div.border-bottom {
+  border-bottom: 1px solid;
+  /* border-top: solid; */
+}
+
 .folk-container {
   display: flex;
 }
 
 .family-name {
-  flex-basis: 20%
+  flex-basis: 20%;
+  padding: 8px;
 }
 
 .members-area {
-  flex-basis: 80%
+  flex-basis: 80%;
 }
 
 .members-container {
@@ -93,5 +99,7 @@ div.attendees-container a.link-as-text {
 }
 
 .member {
-  flex-basis: 50%
+  flex-basis: 50%;
+  padding: 8px;
+  margin-bottom: -1px;
 }

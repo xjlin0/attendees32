@@ -36,25 +36,22 @@
   <body>
     <div class="attendingmeet-report-container">
       <h1 class="text-center">{{report_title}}</h1>
-      <div class="d-flex justify-content-between">
+      <div class="d-flex justify-content-between border-bottom">
         <div></div>
         <div>{{report_date}}</div>
       </div>
 
       {% for folk in families %}
         {% if folk.families %}
-          <div class="folk-container">
+          <div class="folk-container border-bottom">
             <div class="family-name">
-              family_name: {{ folk.family_name }}
+              {{ folk.family_name }}
             </div>
             <div class="members-area">
               <div class="members-container">
                 {% for member_id, member_attrs in folk.families.items %}
-                  <div class="member">
-                    {{ counter }}
-                    first_name: {{member_attrs.first_name}}
-                    last_name2: {{member_attrs.last_name2}}
-                    first_name2: {{member_attrs.first_name2}}
+                  <div class="member border-bottom">
+                    <span class="mono-space">{{ counter|stringformat:"03d" }}{{member_attrs.division|default_if_none:" "}}</span>&nbsp;{{member_attrs.first_name}}&nbsp;&nbsp;{{member_attrs.last_name2}}{{member_attrs.first_name2}}
                   </div>
                 {% endfor %}
               </div>
