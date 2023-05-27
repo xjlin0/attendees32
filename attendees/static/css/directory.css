@@ -88,12 +88,12 @@ div.border-left {
 }
 
 .family-name {
-  flex-basis: 20%;
+  flex-basis: 15%;
   padding: 8px;
 }
 
 .members-area {
-  flex-basis: 80%;
+  flex-basis: 85%;
 }
 
 .members-container {
