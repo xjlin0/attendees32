@@ -9,11 +9,9 @@ Attendees.attendingmeetPrintConfiguration = {
     const validationResults = Attendees.attendingmeetPrintConfiguration.form.validate();
     if (validationResults.isValid) {
       if (confirm('Do you want to see the directory for print? (This will take 2 minutes.)')) {
-        alert('Submitted');
         const formData = Attendees.attendingmeetPrintConfiguration.form.option('formData');
         const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
-        const url = `${document.attendingmeetPrintConfigurationForm.action}?${searchParams}`;
-        console.log("url: ", url);
+        location.href = `${document.attendingmeetPrintConfigurationForm.action}?${searchParams}`;
       }
     } else {
       alert('Please check the form again. Something missing!');
@@ -27,8 +25,8 @@ Attendees.attendingmeetPrintConfiguration = {
     items: [
       {
         dataField: "reportTitle",
-        value: 'Report Title',
         editorOptions: {
+          value: 'Report Title',
           showClearButton: true,
           buttons: [
             'clear',
@@ -37,8 +35,8 @@ Attendees.attendingmeetPrintConfiguration = {
       },
       {
         dataField: "reportDate",
-        value: new Date().toLocaleDateString('en', { day: '2-digit', month: 'long', year: 'numeric' }),
         editorOptions: {
+          value: new Date().toLocaleDateString('en', { day: '2-digit', month: 'long', year: 'numeric' }),
           showClearButton: true,
           buttons: [
             'clear',
@@ -58,9 +56,6 @@ Attendees.attendingmeetPrintConfiguration = {
           displayExpr: 'display_name',
           searchEnabled: true,
           grouped: true,  // need to send params['grouping'] = 'assembly_name';
-          onValueChanged: (e)=> {
-            console.log(" value changed! ");
-          },
           dataSource: new DevExpress.data.DataSource({
             store: new DevExpress.data.CustomStore({
               key: 'slug',

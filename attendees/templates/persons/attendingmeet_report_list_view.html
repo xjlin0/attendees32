@@ -35,10 +35,10 @@
 
   <body>
     <div class="attendingmeet-report-container">
-      <h1>{{directory_header}}</h1>
+      <h1>{{report_title}}</h1>
       <div class="d-flex justify-content-between">
         <div></div>
-        <div>{{directory_header}}</div>
+        <div>{{report_date}}</div>
       </div>
 
       {% for folk in families %}
@@ -48,7 +48,12 @@
           </div>
           <div class="members-container">
             {% for member in folk.families %}
-
+              <div class="member">
+                {{ counter }}
+                {{ member.first_name }}
+                {{ member.last_name2 }}
+                {{ member.first_name2 }}
+              </div>
             {% endfor %}
           </div>
         </div>

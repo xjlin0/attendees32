@@ -19,13 +19,13 @@ class AttendingmeetReportListView(RouteGuard, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         families = FolkService.families_in_participations(
-            meet_slug=self.request.GET.get("meetSlug"),
+            meet_slug=self.request.GET.get("meet"),
             user_organization=self.request.user.organization,
-            division_slugs=self.request.GET.getlist('division_slugs', []),
+            division_slugs=self.request.GET.getlist('divisions', []),
         ) if self.request.user.privileged() else []
+        print("hi 26 here is families: ", families)
         context.update({
             'report_title': self.request.GET.get('reportTitle', ''),
-            'meetSlug': self.request.GET.get("meetSlug", ''),
             'report_date': self.request.GET.get('reportDate', ''),
             'families': families,
             'counter': partial(next, count()),

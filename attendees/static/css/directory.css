@@ -74,3 +74,11 @@ div.attendees-container a.link-as-text {
   text-decoration: none;
   color: inherit;
 }
+
+folk-container {
+  display: flex;
+}
+
+members-container {
+  display: flex;
+}
