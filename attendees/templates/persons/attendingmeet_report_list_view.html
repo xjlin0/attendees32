@@ -50,7 +50,7 @@
             <div class="members-area">
               <div class="members-container">
                 {% for member_id, member_attrs in folk.families.items %}
-                  <div class="member border-bottom">
+                  <div class="member border-bottom border-left">
                     <span class="mono-space">{{ counter|stringformat:"03d" }}{{member_attrs.division|default_if_none:" "}}</span>&nbsp;{{member_attrs.first_name}}&nbsp;&nbsp;{{member_attrs.last_name2}}{{member_attrs.first_name2}}
                   </div>
                 {% endfor %}

@@ -77,7 +77,10 @@ div.attendees-container a.link-as-text {
 
 div.border-bottom {
   border-bottom: 1px solid;
-  /* border-top: solid; */
+}
+
+div.border-left {
+  border-left: 1px solid;
 }
 
 .folk-container {
