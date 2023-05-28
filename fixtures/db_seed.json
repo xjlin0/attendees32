@@ -7140,6 +7140,7 @@
       "slug": "cfcch_unspecified",
       "audience_auth_group": 0,
       "infos": {
+        "acronym": "u",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7179,6 +7180,7 @@
       "slug": "cfcch_crossing_ministry",
       "audience_auth_group": 0,
       "infos": {
+        "acronym": "e",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7198,6 +7200,7 @@
       "slug": "cfcch_children_ministry",
       "audience_auth_group": 100,
       "infos": {
+        "acronym": "j",
         "show_attendee_infos": {
           "infos-grade": true,
           "infos-insurer": true
@@ -7217,6 +7220,7 @@
       "slug": "ever_worship",
       "audience_auth_group": 0,
       "infos": {
+        "acronym": "f",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7236,6 +7240,7 @@
       "slug": "cfcch_data_management",
       "audience_auth_group": 500,
       "infos": {
+        "acronym": "d",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
@@ -7255,6 +7260,7 @@
       "slug": "cfcch_special_conference",
       "audience_auth_group": 400,
       "infos": {
+        "acronym": "s",
         "show_attendee_infos": {
           "infos-grade": false,
           "infos-insurer": false
