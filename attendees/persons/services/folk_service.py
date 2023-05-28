@@ -26,7 +26,7 @@ class FolkService:
         targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks if targeting_attendee_id else Folk.objects.filter(division__in=divisions).prefetch_related('attendees', 'folkattendee_set')
 
         if directory_meet:
-            attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
+            attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk')).order_by('folkattendee__display_order')
             families_in_directory = targeting_families.annotate(
                 householder_name=Concat(
                     Subquery(attendee_subquery.values_list('last_name')[:1]),
@@ -144,12 +144,14 @@ class FolkService:
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
-            attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk'))  # implicitly ordered at FolkAttendee model
+            attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk')).order_by('folkattendee__display_order')
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
             ).prefetch_related('attendees', 'folkattendee_set').annotate(
-                householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
-                householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
+                householder_name=Concat(
+                    Subquery(attendee_subquery.values_list('last_name')[:1]),
+                    Subquery(attendee_subquery.values_list('first_name')[:1]),
+                )
             ).filter(
                 category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
@@ -161,7 +163,7 @@ class FolkService:
                     deathday=None,
                     is_removed=False,
                 ),
-            ).distinct().order_by('householder_last_name', 'householder_first_name')
+            ).distinct().order_by('householder_name')
 
             for family in families_in_directory:
                 attendee_candidates = family.attendees.filter(
