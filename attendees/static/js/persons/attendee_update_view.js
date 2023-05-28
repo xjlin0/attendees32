@@ -1328,7 +1328,7 @@ Attendees.datagridUpdate = {
           {
             type: 'pattern',
             pattern: /^(\+\d{1,3})(\(\d{0,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
-            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678",
+            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678, for HK enter +852()1234-5678",
           },
         ],
       },
@@ -1357,7 +1357,7 @@ Attendees.datagridUpdate = {
           {
             type: 'pattern',
             pattern: /^(\+\d{1,3})(\(\d{0,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
-            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678",
+            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678, for HK enter +852()1234-5678",
           },
         ],
       },

@@ -59,7 +59,7 @@ def post_save_handler_for_past_to_create_attendingmeet(sender, **kwargs):
                             "meet": meet,
                             "attending": first_attending,
                             "is_removed": False,
-                            "category_id": 6,  # Active
+                            # "category_id": 6,  # Causing duplicates
                         },
                         defaults=defaults,
                     )
