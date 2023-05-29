@@ -46,7 +46,7 @@
 
       {% for folk in families %}
         {% if folk.families %}
-          <div class="folk-container border-bottom">
+          <div class="folk-container border-bottom {% cycle 'dark-background' '' %}">
             <div class="family-name">
               {{ folk.family_name }}
             </div>

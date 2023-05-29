@@ -106,3 +106,7 @@ div.border-left {
   padding: 8px;
   margin-bottom: -1px;
 }
+
+div.dark-background {
+  background-color: #E5E4E2;
+}

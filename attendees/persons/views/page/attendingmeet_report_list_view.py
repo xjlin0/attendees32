@@ -21,6 +21,7 @@ class AttendingmeetReportListView(RouteGuard, ListView):
         families = FolkService.families_in_participations(
             meet_slug=self.request.GET.get("meet"),
             user_organization=self.request.user.organization,
+            skip_paused=self.request.GET.get("skip_paused"),
             division_slugs=self.request.GET.getlist('divisions', []),
         ) if self.request.user.privileged() else []
 

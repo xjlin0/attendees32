@@ -132,7 +132,7 @@ class FolkService:
         return index_list, families
 
     @staticmethod
-    def families_in_participations(meet_slug, user_organization, division_slugs):
+    def families_in_participations(meet_slug, user_organization, skip_paused, division_slugs):
         """
         Generates printing data for unique attendingmeet of a meet limited by user_organization and divisions, grouped
         by families.  If an Attendee belongs to many families, only 1) lowest display order 2) the last created
@@ -147,7 +147,7 @@ class FolkService:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk')).order_by('folkattendee__display_order')
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
-            ).prefetch_related('attendees', 'folkattendee_set').annotate(
+            ).prefetch_related('folkattendee_set', 'attendees').annotate(
                 householder_name=Concat(
                     Subquery(attendee_subquery.values_list('last_name')[:1]),
                     Subquery(attendee_subquery.values_list('first_name')[:1]),
@@ -166,17 +166,22 @@ class FolkService:
             ).distinct().order_by('householder_name')
 
             for family in families_in_directory:
-                attendee_candidates = family.attendees.filter(
+                candidates_qs = family.attendees.select_related('division', 'attendings').filter(
                     division__slug__in=division_slugs,
                     deathday=None,
                     attendings__in=meet.attendings.filter(
                         attendingmeet__finish__gte=Utility.now_with_timezone()
                     ),  # only for attendees join the meet
                 ).exclude(
-                    folkattendee__role__title=Attendee.PAUSED_CATEGORY,  # for joined attendees not to be shown temporarily
-                ).exclude(
                     folkattendee__finish__lte=datetime.now(timezone.utc)
-                ).distinct().order_by('folkattendee__display_order').values(
+                )
+
+                if skip_paused:
+                    candidates_qs = candidates_qs.exclude(
+                        folkattendee__role__title=Attendee.PAUSED_CATEGORY,
+                    )  # for joined attendees not to be shown temporarily
+
+                attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
                     'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created', 'division__infos__acronym'
                 )
 
@@ -210,7 +215,7 @@ class FolkService:
                         'first_name2': attendee.get('first_name2'),
                         'last_name2': attendee.get('last_name2'),
                         'division': attendee.get('division__infos__acronym'),
-                    }
+                    }  # Todo 20230528 Hi Jack do we need attendingmeet__category?
 
                 families[family.id] = family_attrs
 

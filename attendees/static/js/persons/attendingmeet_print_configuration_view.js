@@ -8,7 +8,7 @@ Attendees.attendingmeetPrintConfiguration = {
   submitForm: () => {
     const validationResults = Attendees.attendingmeetPrintConfiguration.form.validate();
     if (validationResults.isValid) {
-      if (confirm('Do you want to see the directory for print? (This will take 2 minutes.)')) {
+      if (confirm('Do you want to see the directory for print? (This will take 20 secs.)')) {
         const formData = Attendees.attendingmeetPrintConfiguration.form.option('formData');
         const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
         searchParams.delete("divisions")
