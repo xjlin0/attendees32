@@ -27,8 +27,8 @@ div.family-container {
 }
 
 div.family-title-container {
-  border-top: 1px solid;
-  border-bottom: 1px solid;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
   display: flex;
 }
 
@@ -75,12 +75,34 @@ div.attendees-container a.link-as-text {
   color: inherit;
 }
 
+h1.text-center {
+  width: 100%;
+  text-align: center;
+  font-size: calc(1.375rem + 1.5vw);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+div.flex-justify-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+div.attendingmeet-report-container {
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
 div.border-bottom {
-  border-bottom: 1px solid;
+  border-bottom: 1px solid black;
 }
 
 div.border-left {
-  border-left: 1px solid;
+  border-left: 1px solid black;
 }
 
 .folk-container {

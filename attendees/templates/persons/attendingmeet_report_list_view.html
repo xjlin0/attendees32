@@ -13,20 +13,8 @@
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
 
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer" />
-
-    <link rel="stylesheet"
           href="{% static 'css/directory.css' %}">
 
-<!--      <link rel="preload"-->
-<!--            as="style"-->
-<!--            href="{% static 'bootstrap/bootstrap.min.css' %}"-->
-<!--            onload="this.rel='stylesheet'">-->
-
-<!--      </script> -->
     <script defer
             src="https://unpkg.com/pagedjs/dist/paged.polyfill.js">
     </script>
@@ -39,7 +27,7 @@
           title="{{meet_slug}}">
         {{report_title}}
       </h1>
-      <div class="d-flex justify-content-between border-bottom">
+      <div class="flex-justify-between border-bottom">
         <div></div>
         <div>{{report_date}}</div>
       </div>
