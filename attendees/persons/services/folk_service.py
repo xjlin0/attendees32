@@ -134,11 +134,11 @@ class FolkService:
     @staticmethod
     def families_in_participations(meet_slug, user_organization, division_slugs):
         """
-        Generates printing data for unique attendingmeet of a meet limited by user_organization and divisions, grouped
-        by families.  If an Attendee belongs to many families, only 1) lowest display order 2) the last created
+        Returns a list of not-paused unique attendingmeet of a meet limited by user_organization and divisions, grouped
+        by families for print. If an Attendee belongs to many families, only 1) lowest display order 2) the last created
         folkattendee will be shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
-        For cache computation final results intentionally contains empty families so template need to filter them out.
-        It does NOT provide attendee counting, as view/template does https://stackoverflow.com/a/34059709/4257237
+        For cache computation final results may contain empty families so template need to filter them out. It does
+        NOT provide attendee counting, as view/template does css-counter or https://stackoverflow.com/a/34059709/4257237
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
@@ -189,37 +189,41 @@ class FolkService:
                     family_attrs['family_name'] = attendee_candidates[0].get('last_name') or attendee_candidates[0].get('last_name2')
 
                 for attendee in attendee_candidates:
-                    attendee_id = attendee.get('id')
-                    attendee_last_record = attendees_cache.get(attendee_id)
-                    if attendee_last_record:
-                        current_rank = attendee.get('folkattendee__display_order')
-                        last_rank = attendee_last_record.get('rank')
-                        current_created = attendee.get('created')
-                        last_created = attendee_last_record.get('created')
-                        last_family = attendee_last_record.get('family_id')
-                        if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
-                            continue  # unique by 1) lowest display order 2) the last created folkattendee
-                        else:  # current one will replace last one
-                            del families[last_family]['families'][attendee_id]
+                    if Attendee.PAUSED_CATEGORY != attendee.get('attendingmeet_category'):
+                        attendee_id = attendee.get('id')
+                        attendee_last_record = attendees_cache.get(attendee_id)
+                        if attendee_last_record:
+                            current_rank = attendee.get('folkattendee__display_order')
+                            last_rank = attendee_last_record.get('rank')
+                            current_created = attendee.get('created')
+                            last_created = attendee_last_record.get('created')
+                            last_family = attendee_last_record.get('family_id')
+                            if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
+                                continue  # unique by 1) lowest display order 2) the last created folkattendee
+                            else:  # current one will replace last one
+                                del families[last_family]['families'][attendee_id]
+                                if len(families[last_family]['families']) < 1:
+                                    del families[last_family]
 
-                    attendees_cache[attendee_id] = {
-                        'rank': attendee.get('folkattendee__display_order'),
-                        'created': attendee.get('created'),
-                        'family_id': family.id,
-                    }
+                        attendees_cache[attendee_id] = {
+                            'rank': attendee.get('folkattendee__display_order'),
+                            'created': attendee.get('created'),
+                            'family_id': family.id,
+                        }
 
-                    family_attrs['families'][attendee_id] = {
-                        'first_name': attendee.get('first_name'),
-                        'first_name2': attendee.get('first_name2'),
-                        'last_name2': attendee.get('last_name2'),
-                        'division': attendee.get('division__infos__acronym'),
-                        'attendingmeet_id': attendee.get('attendingmeet_id'),
-                        'attendingmeet_category': attendee.get('attendingmeet_category'),
-                    }
+                        family_attrs['families'][attendee_id] = {
+                            'first_name': attendee.get('first_name'),
+                            'first_name2': attendee.get('first_name2'),
+                            'last_name2': attendee.get('last_name2'),
+                            'division': attendee.get('division__infos__acronym'),
+                            'attendingmeet_id': attendee.get('attendingmeet_id'),
+                            'attendingmeet_category': attendee.get('attendingmeet_category'),
+                        }
 
-                families[family.id] = family_attrs
+                if len(family_attrs['families']) > 0:
+                    families[family.id] = family_attrs
 
-        return families.values()  # is list() necessary?
+        return families.values()
 
     @staticmethod
     def destroy_with_associations(folk, attendee):
