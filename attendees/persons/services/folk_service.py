@@ -144,6 +144,11 @@ class FolkService:
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
+            meets_attendings = meet.attendings.filter(
+                                        attendingmeet__finish__gte=Utility.now_with_timezone(),
+                                    ).exclude(
+                                        attendingmeet__category=Attendee.PAUSED_CATEGORY,
+                                    )
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk')).order_by('folkattendee__display_order')
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
@@ -157,9 +162,7 @@ class FolkService:
                 is_removed=False,
                 attendees__in=Attendee.objects.filter(
                     division__slug__in=division_slugs,
-                    attendings__in=meet.attendings.filter(
-                        attendingmeet__finish__gte=Utility.now_with_timezone()
-                    ),
+                    attendings__in=meets_attendings,
                     deathday=None,
                     is_removed=False,
                 ),
@@ -169,9 +172,7 @@ class FolkService:
                 candidates_qs = family.attendees.select_related('division', 'attendings').filter(
                     division__slug__in=division_slugs,
                     deathday=None,
-                    attendings__in=meet.attendings.filter(
-                        attendingmeet__finish__gte=Utility.now_with_timezone()
-                    ),  # only for attendees join the meet
+                    attendings__in=meets_attendings,
                 ).exclude(
                     folkattendee__finish__lte=datetime.now(timezone.utc)
                 )
@@ -189,36 +190,35 @@ class FolkService:
                     family_attrs['family_name'] = attendee_candidates[0].get('last_name') or attendee_candidates[0].get('last_name2')
 
                 for attendee in attendee_candidates:
-                    if Attendee.PAUSED_CATEGORY != attendee.get('attendingmeet_category'):
-                        attendee_id = attendee.get('id')
-                        attendee_last_record = attendees_cache.get(attendee_id)
-                        if attendee_last_record:
-                            current_rank = attendee.get('folkattendee__display_order')
-                            last_rank = attendee_last_record.get('rank')
-                            current_created = attendee.get('created')
-                            last_created = attendee_last_record.get('created')
-                            last_family = attendee_last_record.get('family_id')
-                            if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
-                                continue  # unique by 1) lowest display order 2) the last created folkattendee
-                            else:  # current one will replace last one
-                                del families[last_family]['families'][attendee_id]
-                                if len(families[last_family]['families']) < 1:
-                                    del families[last_family]
+                    attendee_id = attendee.get('id')
+                    attendee_last_record = attendees_cache.get(attendee_id)
+                    if attendee_last_record:
+                        current_rank = attendee.get('folkattendee__display_order')
+                        last_rank = attendee_last_record.get('rank')
+                        current_created = attendee.get('created')
+                        last_created = attendee_last_record.get('created')
+                        last_family = attendee_last_record.get('family_id')
+                        if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
+                            continue  # unique by 1) lowest display order 2) the last created folkattendee
+                        else:  # current one will replace last one
+                            del families[last_family]['families'][attendee_id]
+                            if len(families[last_family]['families']) < 1:
+                                del families[last_family]
 
-                        attendees_cache[attendee_id] = {
-                            'rank': attendee.get('folkattendee__display_order'),
-                            'created': attendee.get('created'),
-                            'family_id': family.id,
-                        }
+                    attendees_cache[attendee_id] = {
+                        'rank': attendee.get('folkattendee__display_order'),
+                        'created': attendee.get('created'),
+                        'family_id': family.id,
+                    }
 
-                        family_attrs['families'][attendee_id] = {
-                            'first_name': attendee.get('first_name'),
-                            'first_name2': attendee.get('first_name2'),
-                            'last_name2': attendee.get('last_name2'),
-                            'division': attendee.get('division__infos__acronym'),
-                            'attendingmeet_id': attendee.get('attendingmeet_id'),
-                            'attendingmeet_category': attendee.get('attendingmeet_category'),
-                        }
+                    family_attrs['families'][attendee_id] = {
+                        'first_name': attendee.get('first_name'),
+                        'first_name2': attendee.get('first_name2'),
+                        'last_name2': attendee.get('last_name2'),
+                        'division': attendee.get('division__infos__acronym'),
+                        'attendingmeet_id': attendee.get('attendingmeet_id'),
+                        'attendingmeet_category': attendee.get('attendingmeet_category'),
+                    }
 
                 if len(family_attrs['families']) > 0:
                     families[family.id] = family_attrs
