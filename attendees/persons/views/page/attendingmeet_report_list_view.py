@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
+from attendees.persons.models import Attendee
 from attendees.persons.services import FolkService
 from attendees.users.authorization import RouteGuard
 
@@ -21,7 +22,6 @@ class AttendingmeetReportListView(RouteGuard, ListView):
         families = FolkService.families_in_participations(
             meet_slug=self.request.GET.get("meet"),
             user_organization=self.request.user.organization,
-            skip_paused=self.request.GET.get("skip_paused"),
             division_slugs=self.request.GET.getlist('divisions', []),
         ) if self.request.user.privileged() else []
 
@@ -31,6 +31,7 @@ class AttendingmeetReportListView(RouteGuard, ListView):
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
             'counter': partial(next, count(1)),
+            'paused_category': Attendee.PAUSED_CATEGORY,
         })
         return context
 

@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timezone
-from django.db.models import OuterRef, Subquery
+from django.db.models import Max, OuterRef, Q, Subquery
 from django.db.models.functions import Concat
 
 from attendees.occasions.models import Meet
@@ -132,7 +132,7 @@ class FolkService:
         return index_list, families
 
     @staticmethod
-    def families_in_participations(meet_slug, user_organization, skip_paused, division_slugs):
+    def families_in_participations(meet_slug, user_organization, division_slugs):
         """
         Generates printing data for unique attendingmeet of a meet limited by user_organization and divisions, grouped
         by families.  If an Attendee belongs to many families, only 1) lowest display order 2) the last created
@@ -176,13 +176,11 @@ class FolkService:
                     folkattendee__finish__lte=datetime.now(timezone.utc)
                 )
 
-                if skip_paused:
-                    candidates_qs = candidates_qs.exclude(
-                        folkattendee__role__title=Attendee.PAUSED_CATEGORY,
-                    )  # for joined attendees not to be shown temporarily
-
                 attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
                     'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created', 'division__infos__acronym'
+                ).annotate(
+                    attendingmeet_id=Max('attendings__attendingmeet__id', filter=Q(attendings__attendingmeet__meet=meet)),
+                    attendingmeet_category=Max('attendings__attendingmeet__category', filter=Q(attendings__attendingmeet__meet=meet)),
                 )
 
                 family_attrs = {"families": {}, 'family_name': 'no last names!'}
@@ -215,7 +213,9 @@ class FolkService:
                         'first_name2': attendee.get('first_name2'),
                         'last_name2': attendee.get('last_name2'),
                         'division': attendee.get('division__infos__acronym'),
-                    }  # Todo 20230528 Hi Jack do we need attendingmeet__category?
+                        'attendingmeet_id': attendee.get('attendingmeet_id'),
+                        'attendingmeet_category': attendee.get('attendingmeet_category'),
+                    }
 
                 families[family.id] = family_attrs
 
