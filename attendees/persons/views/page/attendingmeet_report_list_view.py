@@ -1,5 +1,3 @@
-from functools import partial
-from itertools import count
 from time import sleep
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -30,7 +28,6 @@ class AttendingmeetReportListView(RouteGuard, ListView):
             'report_date': self.request.GET.get('reportDate', ''),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
-            'counter': partial(next, count(1)),
             'paused_category': Attendee.PAUSED_CATEGORY,
         })
         return context

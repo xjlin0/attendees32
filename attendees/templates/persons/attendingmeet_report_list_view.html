@@ -48,7 +48,7 @@
                 {% for member_id, member_attrs in folk.families.items %}
                   <div id="{{member_attrs.attendingmeet_id}}"
                        class="member border-bottom border-left">
-                    <span class="mono-space">{{ counter|stringformat:"03d" }}{{member_attrs.division|default_if_none:" "}}</span>&nbsp;
+                    <span class="mono-space">{{member_attrs.division|default_if_none:" "}}</span>&nbsp;
                     {{member_attrs.first_name|default_if_none:""}}
                     {{member_attrs.last_name2|default_if_none:""}}{{member_attrs.first_name2|default_if_none:""}}
                   </div>

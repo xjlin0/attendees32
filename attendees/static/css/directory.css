@@ -53,6 +53,7 @@ div.index-container {
 
 div.telephone-number, span.mono-space {
   font-family: monospace;
+  counter-increment: member;
 }
 
 hr {
@@ -95,6 +96,14 @@ div.attendingmeet-report-container {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.6;
+  counter-reset: member;
+}
+
+span.mono-space::before {
+  content: counter(member);
+  width: 2em;
+  display: inline-block;
+  text-align: right;
 }
 
 div.border-bottom {
