@@ -27,7 +27,9 @@
   </head>
 
   <body>
-    <div class="attendingmeet-report-container">
+    {% csrf_token %}
+    <div class="attendingmeet-report-container"
+         data-url="{{attendingmeet_url}}">
       <h1 class="text-center"
           title="{{meet_slug}}">
         {{report_title}}
@@ -47,8 +49,10 @@
               <div class="members-container">
                 {% for member_id, member_attrs in folk.families.items %}
                   <div id="{{member_attrs.attendingmeet_id}}"
-                       class="member border-bottom border-left">
-                    <span class="mono-space">{{member_attrs.division|default_if_none:" "}}</span>&nbsp;
+                       class="member border-bottom border-left"
+                       data-attendee-id="{{member_id}}"
+                       data-category="{{member_attrs.attendingmeet_category}}">
+                    <span class="count mono-space">{{member_attrs.division|default_if_none:" "}}</span>&nbsp;
                     {{member_attrs.first_name|default_if_none:""}}
                     {{member_attrs.last_name2|default_if_none:""}}{{member_attrs.first_name2|default_if_none:""}}
                   </div>

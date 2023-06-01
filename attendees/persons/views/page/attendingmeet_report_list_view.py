@@ -28,6 +28,7 @@ class AttendingmeetReportListView(RouteGuard, ListView):
             'report_date': self.request.GET.get('reportDate', ''),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
+            'attendingmeet_url': '/persons/api/datagrid_data_attendingmeet/',
             'paused_category': Attendee.PAUSED_CATEGORY,
         })
         return context

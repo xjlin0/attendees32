@@ -51,8 +51,15 @@ div.index-container {
   display: flex;
 }
 
-div.telephone-number, span.mono-space {
+div.telephone-number {
   font-family: monospace;
+}
+
+span.mono-space {
+  font-family: monospace;
+}
+
+span.count {
   counter-increment: member;
 }
 
@@ -99,7 +106,7 @@ div.attendingmeet-report-container {
   counter-reset: member;
 }
 
-span.mono-space::before {
+span.count::before {
   content: counter(member);
   width: 2em;
   display: inline-block;
