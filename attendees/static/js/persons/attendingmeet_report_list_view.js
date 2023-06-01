@@ -16,6 +16,7 @@ window.Attendees = {
       if (mainDiv) {
         mainDiv.addEventListener('click', (event) => {
         const target = event.target;
+        target.style.backgroundColor = 'Green';
           if (target && target.matches('div.member') && target.id) {
             const url =  mainDiv.dataset.url + target.id + '/';
             const currentCategory = target.dataset.category;
@@ -38,8 +39,12 @@ window.Attendees = {
                 target.style['text-decoration'] = Attendees.attendingmeetReportListView.textStyleFlipper[target.style['text-decoration']];
                 target.style.color = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'SlateGrey' : 'black';
                 target.firstChild.style.display = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'None' : 'inline';
+                target.style.backgroundColor = null;
               })
-              .catch(err => console.log(err));
+              .catch(err => {
+                console.log(err);
+                target.style.backgroundColor = 'Red';
+              });
           }
         }, false);
       } else {
