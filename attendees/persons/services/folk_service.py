@@ -116,8 +116,9 @@ class FolkService:
                     families.append(attrs)
 
             if targeting_attendee_id is None:
-                for town_name, family_rows in sorted(index.items()):
-                    index_list.append({'BREAKER': 'LINE'})
+                for i, (town_name, family_rows) in enumerate(sorted(index.items())):
+                    if i > 0:
+                        index_list.append({'BREAKER': 'LINE'})
                     if len(index_list) % row_limit < 1:
                         index_list.append({'BREAKER': 'PAGE'})
 
