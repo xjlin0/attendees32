@@ -83,6 +83,14 @@ Attendees.attendingmeetPrintConfiguration = {
         },
       },
       {
+        dataField: 'showPaused',
+        label: {
+          text: 'Show paused participations?',
+        },
+        dataType: 'boolean',
+        editorType: 'dxCheckBox',
+      },
+      {
         dataField: 'divisions',
         editorType: 'dxTagBox',
         validationRules: [{type: 'required'}],

@@ -17,9 +17,11 @@ class AttendingmeetReportListView(RouteGuard, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        show_paused = self.request.GET.get("showPaused")
         families = FolkService.families_in_participations(
             meet_slug=self.request.GET.get("meet"),
             user_organization=self.request.user.organization,
+            show_paused=show_paused,
             division_slugs=self.request.GET.getlist('divisions', []),
         ) if self.request.user.privileged() else []
 
@@ -28,8 +30,9 @@ class AttendingmeetReportListView(RouteGuard, ListView):
             'report_date': self.request.GET.get('reportDate', ''),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
+            'show_paused': show_paused,
             'attendingmeet_url': '/persons/api/datagrid_data_attendingmeet/',
-            'paused_category': Attendee.PAUSED_CATEGORY,
+            'scheduled_category': Attendee.SCHEDULED_CATEGORY,
         })
         return context
 

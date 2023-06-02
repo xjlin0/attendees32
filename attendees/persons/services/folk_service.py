@@ -117,7 +117,7 @@ class FolkService:
 
             if targeting_attendee_id is None:
                 for i, (town_name, family_rows) in enumerate(sorted(index.items())):
-                    if i > 0:
+                    if i > 0:  # No line breaks before the first town
                         index_list.append({'BREAKER': 'LINE'})
                     if len(index_list) % row_limit < 1:
                         index_list.append({'BREAKER': 'PAGE'})
@@ -134,7 +134,7 @@ class FolkService:
         return index_list, families
 
     @staticmethod
-    def families_in_participations(meet_slug, user_organization, division_slugs):
+    def families_in_participations(meet_slug, user_organization, show_paused, division_slugs):
         """
         Returns a list of not-paused unique attendingmeet of a meet limited by user_organization and divisions, grouped
         by families for print. If an Attendee belongs to many families, only 1) lowest display order 2) the last created
@@ -146,9 +146,10 @@ class FolkService:
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
-            meets_attendings = meet.attendings.filter(
+            original_meets_attendings = meet.attendings.filter(
                                         attendingmeet__finish__gte=Utility.now_with_timezone(),
-                                    ).exclude(
+                                    )
+            meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
                                         attendingmeet__category=Attendee.PAUSED_CATEGORY,
                                     )
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk')).order_by('folkattendee__display_order')
@@ -224,6 +225,7 @@ class FolkService:
                         'attendingmeet_id': attendee.get('attendingmeet_id'),
                         'attendingmeet_category': attendee.get('attendingmeet_category'),
                         'attendingmeet_note': ''.join(attendee.get('attendingmeet_note')),
+                        'paused': attendee.get('attendingmeet_category') == Attendee.PAUSED_CATEGORY,
                     }
 
                 if len(family_attrs['families']) > 0:

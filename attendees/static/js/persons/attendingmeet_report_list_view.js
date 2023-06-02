@@ -67,13 +67,20 @@ window.Attendees = {
             target.dataset.previousCategory = currentCategory;
             target.dataset.category = result.category;
             target.title = result.infos.note || '';
-            target.style['text-decoration'] = Attendees.attendingmeetReportListView.textStyleFlipper[target.style['text-decoration']];
-            target.style.color = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'SlateGrey' : 'black';
-            target.firstChild.style.display = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'None' : 'inline';
+//            target.style['text-decoration'] = Attendees.attendingmeetReportListView.textStyleFlipper[target.style['text-decoration']];
+//            target.style.color = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'SlateGrey' : 'black';
+//            target.firstChild.style.display = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'None' : 'inline';
+            if (target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory) {
+              target.firstChild.style.display = 'None';
+              target.classList.add('paused');
+            } else {
+              target.firstChild.style.display = 'inline';
+              target.classList.remove('paused');
+            }
             target.style.backgroundColor = null;
           })
           .catch(err => {
-            console.log(err);
+            alert(`Updating AttendingMeet ${target.id} error: `, err);
             target.style.backgroundColor = 'Red';
           });
       }

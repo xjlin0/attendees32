@@ -18,7 +18,12 @@
   /*}*/
 }
 
-span.mono-space {
+.paused {
+  text-decoration: line-through;
+  color: SlateGrey;
+}
+
+.mono-space {
   font-family: monospace;
 }
 
