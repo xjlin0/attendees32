@@ -12,7 +12,7 @@ window.Attendees = {
     },
 
     startListener: () => {
-      const mainDiv = document.querySelector('div.attendingmeet-report-container');
+      const mainDiv = document.querySelector('body');
       let timer;
       if (mainDiv) {
         mainDiv.addEventListener('click', (event) => {
