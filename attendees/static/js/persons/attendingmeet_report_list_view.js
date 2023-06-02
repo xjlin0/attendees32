@@ -13,42 +13,69 @@ window.Attendees = {
 
     startListener: () => {
       const mainDiv = document.querySelector('div.attendingmeet-report-container');
+      let timer;
       if (mainDiv) {
         mainDiv.addEventListener('click', (event) => {
-        const target = event.target;
-        target.style.backgroundColor = 'Green';
-          if (target && target.matches('div.member') && target.id) {
-            const url =  mainDiv.dataset.url + target.id + '/';
-            const currentCategory = target.dataset.category;
-            const nextCategory = currentCategory === Attendees.attendingmeetReportListView.PausedCategory ? target.dataset.previousCategory : Attendees.attendingmeetReportListView.PausedCategory;
-            const params = {
-              method: 'PATCH',
-              body: JSON.stringify({category: nextCategory}),
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Target-Attendee-Id': target.dataset.attendeeId,
-                'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
-              },
-            };
-
-            fetch(url, params)
-              .then(response => response.json())
-              .then(result => {
-                target.dataset.previousCategory = currentCategory;
-                target.dataset.category = result.category;
-                target.style['text-decoration'] = Attendees.attendingmeetReportListView.textStyleFlipper[target.style['text-decoration']];
-                target.style.color = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'SlateGrey' : 'black';
-                target.firstChild.style.display = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'None' : 'inline';
-                target.style.backgroundColor = null;
-              })
-              .catch(err => {
-                console.log(err);
-                target.style.backgroundColor = 'Red';
-              });
+          if (event.detail < 2) {
+            timer = setTimeout(() => {
+              Attendees.attendingmeetReportListView.patchMember(event.target, mainDiv.dataset.url, false);
+            }, 400)
           }
         }, false);
+
+        mainDiv.addEventListener('dblclick', (event) => {
+          clearTimeout(timer);
+          Attendees.attendingmeetReportListView.patchMember(event.target, mainDiv.dataset.url, true);
+        }, false);
+
       } else {
-        console.log('report does not exits yet! ');
+        console.log('The report does not rendered yet! ');
+      }
+    },
+
+    patchMember: (target, endpoint, note) => {
+      if (target && target.matches('div.member') && target.id) {
+        target.style.backgroundColor = 'Green';
+        let message = null;
+        if (note){
+          const action = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'unpausing' : 'pausing';
+          message = prompt(`Please enter the optional participation note for ${action}, click cancel to abort changing.`, target.title);
+          if (message === null) {
+            target.style.backgroundColor = null;
+            return;
+          }
+        }
+
+        const url =  endpoint + target.id + '/';
+        const currentCategory = target.dataset.category;
+        const nextCategory = currentCategory === Attendees.attendingmeetReportListView.PausedCategory ? target.dataset.previousCategory : Attendees.attendingmeetReportListView.PausedCategory;
+        const body = {category: nextCategory};
+        if (message) body.infos = {note: message};
+        const params = {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Target-Attendee-Id': target.dataset.attendeeId,
+            'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+          },
+        };
+
+        fetch(url, params)
+          .then(response => response.json())
+          .then(result => {
+            target.dataset.previousCategory = currentCategory;
+            target.dataset.category = result.category;
+            target.title = result.infos.note || '';
+            target.style['text-decoration'] = Attendees.attendingmeetReportListView.textStyleFlipper[target.style['text-decoration']];
+            target.style.color = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'SlateGrey' : 'black';
+            target.firstChild.style.display = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'None' : 'inline';
+            target.style.backgroundColor = null;
+          })
+          .catch(err => {
+            console.log(err);
+            target.style.backgroundColor = 'Red';
+          });
       }
     },
 

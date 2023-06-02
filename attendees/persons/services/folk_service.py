@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timezone
+from django.contrib.postgres.aggregates.general import  ArrayAgg
 from django.db.models import Max, OuterRef, Q, Subquery
 from django.db.models.functions import Concat
 
@@ -182,6 +183,9 @@ class FolkService:
                 ).annotate(
                     attendingmeet_id=Max('attendings__attendingmeet__id', filter=Q(attendings__attendingmeet__meet=meet)),
                     attendingmeet_category=Max('attendings__attendingmeet__category', filter=Q(attendings__attendingmeet__meet=meet)),
+                    attendingmeet_note=ArrayAgg('attendings__attendingmeet__infos__note',
+                                                 filter=(Q(attendings__attendingmeet__meet=meet) & Q(attendings__attendingmeet__infos__note__isnull=False)),
+                                                 distinct=True),
                 )
 
                 family_attrs = {"families": {}, 'family_name': 'no last names!'}
@@ -218,6 +222,7 @@ class FolkService:
                         'division': attendee.get('division__infos__acronym'),
                         'attendingmeet_id': attendee.get('attendingmeet_id'),
                         'attendingmeet_category': attendee.get('attendingmeet_category'),
+                        'attendingmeet_note': ''.join(attendee.get('attendingmeet_note')),
                     }
 
                 if len(family_attrs['families']) > 0:

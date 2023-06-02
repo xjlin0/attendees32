@@ -29,6 +29,7 @@
   <body>
     {% csrf_token %}
     <div class="attendingmeet-report-container"
+         title="click to pause/unpause participations, double click to edit more"
          data-url="{{attendingmeet_url}}">
       <h1 class="text-center"
           title="{{meet_slug}}">
@@ -50,6 +51,7 @@
                 {% for member_id, member_attrs in folk.families.items %}
                   <div id="{{member_attrs.attendingmeet_id}}"
                        class="member border-bottom border-left"
+                       title="{{member_attrs.attendingmeet_note}}"
                        data-attendee-id="{{member_id}}"
                        data-category="{{member_attrs.attendingmeet_category}}">
                     <span class="count mono-space"></span>

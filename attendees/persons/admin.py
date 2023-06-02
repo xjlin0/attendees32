@@ -325,6 +325,7 @@ class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
     }
     list_display_links = ("attending",)
     autocomplete_fields = ('attending',)
+    search_fields = ('infos',)
     readonly_fields = ["id", "created", "modified"]
     list_display = (
         "id",
