@@ -55,14 +55,6 @@ div.telephone-number {
   font-family: monospace;
 }
 
-span.mono-space {
-  font-family: monospace;
-}
-
-span.count {
-  counter-increment: member;
-}
-
 hr {
   margin-top: 0;
 }
@@ -81,76 +73,4 @@ div.contacts-container a.link-as-text,
 div.attendees-container a.link-as-text {
   text-decoration: none;
   color: inherit;
-}
-
-h1.text-center {
-  width: 100%;
-  text-align: center;
-  font-size: calc(1.375rem + 1.5vw);
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-div.flex-justify-between {
-  display: flex;
-  justify-content: space-between;
-}
-
-div.attendingmeet-report-container {
-  font-family: Arial, sans-serif;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.6;
-  counter-reset: member;
-}
-
-span.count::before {
-  content: counter(member);
-  width: 2em;
-  display: inline-block;
-  text-align: right;
-}
-
-div.border-bottom {
-  border-bottom: 1px solid black;
-}
-
-div.border-left {
-  border-left: 1px solid black;
-}
-
-.folk-container {
-  display: flex;
-}
-
-.family-name {
-  flex-basis: 15%;
-  padding: 8px;
-}
-
-.members-area {
-  flex-basis: 85%;
-}
-
-.members-container {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-div.member {
-  flex-basis: 50%;
-  padding: 8px;
-  margin-bottom: -1px;
-}
-
-div.member:hover {
-  background: LightSkyBlue;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-div.dark-background {
-  background-color: #E5E4E2;
 }
