@@ -2192,10 +2192,10 @@ Attendees.datagridUpdate = {
 
                     if (addressMaybeEdited) {  // no address id means user creating new address
                       const newAddressExtra = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.extra").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.extra").option('value').trim();
-                      const newStreetNumber = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value').trim();
-                      const newRoute = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value').trim();
-                      const newCity = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value').trim();
-                      const newZIP = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value').trim();
+                      const newStreetNumber = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value').trim() || '';
+                      const newRoute = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value').trim() || '';
+                      const newCity = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value').trim();
+                      const newZIP = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value').trim();
                       const newStateAttrs = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.state_id").option('selectedItem');
                       const newAddressWithoutZip = [newStreetNumber, newRoute, newAddressExtra, newCity, newStateAttrs.code].filter(item => !!item).join(', ');
                       const newAddressText = newAddressWithoutZip + (newZIP ? ', ' + newZIP + ', ' : ', ' ) + newStateAttrs.country_name;
@@ -2211,7 +2211,7 @@ Attendees.datagridUpdate = {
                             street_number: newStreetNumber,
                             route: newRoute,
                             locality: newCity,
-                            post_code: newZIP,
+                            postal_code: newZIP,
                             state: newStateAttrs.name,
                             state_code: newStateAttrs.code,
                             country: newStateAttrs.country_name,
@@ -2286,7 +2286,7 @@ Attendees.datagridUpdate = {
               itemType: 'button',
               horizontalAlignment: 'left',
               name: 'editAddressButton',
-              visible: !!placeButton.dataset.addressRaw,
+              visible: !!placeButton.value,
               buttonOptions: {
                 elementAttr: {
                   class: 'attendee-form-submits',    // for toggling editing mode
@@ -2354,7 +2354,7 @@ Attendees.datagridUpdate = {
                 type: 'danger',
                 useSubmitBehavior: false,
                 onClick: (clickEvent) => {
-                  if (confirm('Are you sure to delete the place? Instead, setting "move out" date is usually enough!')) {
+                  if (confirm('Are you sure to delete the place? Instead, setting "move out" date or "Add new address" is usually enough!')) {
                     $.ajax({
                       url: ajaxUrl,
                       method: 'DELETE',
