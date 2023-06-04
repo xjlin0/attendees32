@@ -190,7 +190,7 @@ class AttendeeService:
                                         filter=Q(attendings__attendingmeet__finish__gte=now),
                                         distinct=True),
                 folkcities=StringAgg('folks__places__address__locality__name',
-                                     filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)),
+                                     filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)) & Q(folks__places__is_removed=False),
                                      delimiter=", ",
                                      distinct=True,
                                      default=None),
