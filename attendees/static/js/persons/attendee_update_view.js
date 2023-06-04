@@ -2286,7 +2286,7 @@ Attendees.datagridUpdate = {
               itemType: 'button',
               horizontalAlignment: 'left',
               name: 'editAddressButton',
-              visible: true,
+              visible: !!placeButton.dataset.addressRaw,
               buttonOptions: {
                 elementAttr: {
                   class: 'attendee-form-submits',    // for toggling editing mode
@@ -2330,7 +2330,7 @@ Attendees.datagridUpdate = {
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.id').option('visible', false);
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.id').option('disable', true);
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('newAddressButton').option('visible', false);
-                    Attendees.datagridUpdate.placePopupDxForm.getEditor('editAddressButton').option('visible', false);
+                    Attendees.datagridUpdate.placePopupDxForm.getEditor('editAddressButton') && Attendees.datagridUpdate.placePopupDxForm.getEditor('editAddressButton').option('visible', false);
                     Attendees.datagridUpdate.placePopup.option('title', 'Creating Address');
                     Attendees.datagridUpdate.placePopupDxForm.option('formData').address.id = null;
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.state_id').option('value', 6);  // CA
