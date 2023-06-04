@@ -1311,13 +1311,13 @@ Attendees.datagridUpdate = {
           text: 'phone1',
         },
         editorOptions: {
-          placeholder: '+1(000)000-0000',
           attr: { 'autocomplete': false },
         },
         template: (data, itemElement) => {
           const options = {
             readOnly: !Attendees.utilities.editingEnabled,
             value: Attendees.utilities.phoneNumberFormatter(data.editorOptions.value),
+            placeholder: '+1(510)000-0000',
             onValueChanged: (e) => data.component.updateData(data.dataField, e.value.replace(/[-()]/g, '')),
           };
           const phoneEditor = $("<div id='attendee-mainform-phone1'>").dxTextBox(options);
@@ -1340,13 +1340,13 @@ Attendees.datagridUpdate = {
           text: 'phone2',
         },
         editorOptions: {
-          placeholder: '+1(000)000-0000',
           attr: { 'autocomplete': false },
         },
         template: (data, itemElement) => {
           const options = {
             readOnly: !Attendees.utilities.editingEnabled,
             value: Attendees.utilities.phoneNumberFormatter(data.editorOptions.value),
+            placeholder: '+1(510)000-0000',
             onValueChanged: (e) => data.component.updateData(data.dataField, e.value.replace(/[-()]/g, '')),
           };
           const phoneEditor = $("<div id='attendee-mainform-phone2'>").dxTextBox(options);
