@@ -234,6 +234,99 @@ class FolkService:
         return families.values()
 
     @staticmethod
+    def folk_address_in_participations(meet_slug, user_organization, show_paused, division_slugs):
+        """
+
+        Because attendee may be in multiple families and envelopes only needs the lowest display order ones, iteration
+        of attendee is required.
+        It's mostly copy from families_in_participations.
+        """
+        families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
+        attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
+        meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
+        if meet:
+            original_meets_attendings = meet.attendings.filter(
+                                        attendingmeet__finish__gte=Utility.now_with_timezone(),
+                                    )
+            meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
+                                        attendingmeet__category=Attendee.PAUSED_CATEGORY,
+                                    )
+            attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk')).order_by('folkattendee__display_order')
+            families_in_directory = Folk.objects.filter(
+                division__organization=user_organization,
+            ).prefetch_related('folkattendee_set', 'attendees').annotate(
+                householder_name=Concat(
+                    Subquery(attendee_subquery.values_list('last_name')[:1]),
+                    Subquery(attendee_subquery.values_list('first_name')[:1]),
+                )
+            ).filter(
+                category=Attendee.FAMILY_CATEGORY,
+                is_removed=False,
+                attendees__in=Attendee.objects.filter(
+                    division__slug__in=division_slugs,
+                    attendings__in=meets_attendings,
+                    deathday=None,
+                    is_removed=False,
+                ),
+            ).distinct().order_by('householder_name')
+
+            for family in families_in_directory:
+                candidates_qs = family.attendees.select_related('division', 'attendings').filter(
+                    division__slug__in=division_slugs,
+                    deathday=None,
+                    attendings__in=meets_attendings,
+                ).exclude(
+                    folkattendee__finish__lte=datetime.now(timezone.utc)
+                )
+
+                attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
+                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created', 'infos__names__original'
+                )
+
+                family_attrs = {"families": {}}
+
+                # if attendee_candidates[0]:
+                #     family_attrs['family_name'] = attendee_candidates[0].get('last_name') or attendee_candidates[0].get('last_name2')
+
+                for attendee in attendee_candidates:
+                    attendee_id = attendee.get('id')
+                    attendee_last_record = attendees_cache.get(attendee_id)
+                    if attendee_last_record:
+                        current_rank = attendee.get('folkattendee__display_order')
+                        last_rank = attendee_last_record.get('rank')
+                        current_created = attendee.get('created')
+                        last_created = attendee_last_record.get('created')
+                        last_family = attendee_last_record.get('family_id')
+                        if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
+                            continue  # unique by 1) lowest display order 2) the last created folkattendee
+                        else:  # current one will replace last one
+                            del families[last_family]['families'][attendee_id]
+                            if len(families[last_family]['families']) < 1:
+                                del families[last_family]
+
+                    attendees_cache[attendee_id] = {
+                        'rank': attendee.get('folkattendee__display_order'),
+                        'created': attendee.get('created'),
+                        'family_id': family.id,
+                    }
+
+                    family_attrs['families'][attendee_id] = True
+
+                if len(family_attrs['families']) > 0:
+                    folk_place = family.places.first()
+                    if folk_place:
+                        address = family.places.first().address
+                        if address:
+                            home_helder = attendee_candidates[0]
+                            family_attrs['recipient_name'] =  home_helder.get('infos__names__original', '')
+                            family_attrs['recipient_attendee_id'] = str(home_helder.get('id', ''))
+                            family_attrs['address_line1'] = f"{address.street_number} {address.route} {address.extra or ''}".strip()
+                            family_attrs['address_line2'] = f"{address.locality.name}, {address.locality.state.code} {address.locality.postal_code or ''}".strip()
+                            families[family.id] = family_attrs
+
+        return families.values()
+
+    @staticmethod
     def destroy_with_associations(folk, attendee):
         """
         No permission check.
