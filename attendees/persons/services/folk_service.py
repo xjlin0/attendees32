@@ -172,7 +172,7 @@ class FolkService:
             ).distinct().order_by('householder_name')
 
             for family in families_in_directory:
-                candidates_qs = family.attendees.select_related('division', 'attendings').filter(
+                candidates_qs = family.attendees.select_related('division', 'attendings', 'folkattendee_set').filter(
                     division__slug__in=division_slugs,
                     deathday=None,
                     attendings__in=meets_attendings,
@@ -254,7 +254,7 @@ class FolkService:
             attendee_subquery = Attendee.objects.filter(folks=OuterRef('pk')).order_by('folkattendee__display_order')
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
-            ).prefetch_related('folkattendee_set', 'attendees').annotate(
+            ).prefetch_related('folkattendee_set', 'attendees', 'places').annotate(
                 householder_name=Concat(
                     Subquery(attendee_subquery.values_list('last_name')[:1]),
                     Subquery(attendee_subquery.values_list('first_name')[:1]),
@@ -271,7 +271,7 @@ class FolkService:
             ).distinct().order_by('householder_name')
 
             for family in families_in_directory:
-                candidates_qs = family.attendees.select_related('division', 'attendings').filter(
+                candidates_qs = family.attendees.select_related('division', 'attendings', 'folkattendee_set').filter(
                     division__slug__in=division_slugs,
                     deathday=None,
                     attendings__in=meets_attendings,
@@ -280,13 +280,10 @@ class FolkService:
                 )
 
                 attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
-                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created', 'infos__names__original'
+                    'id', 'folkattendee__display_order', 'created', 'infos__names__original'
                 )
 
                 family_attrs = {"families": {}}
-
-                # if attendee_candidates[0]:
-                #     family_attrs['family_name'] = attendee_candidates[0].get('last_name') or attendee_candidates[0].get('last_name2')
 
                 for attendee in attendee_candidates:
                     attendee_id = attendee.get('id')

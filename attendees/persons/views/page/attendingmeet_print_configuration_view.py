@@ -17,6 +17,7 @@ class AttendingmeetPrintConfigurationView(RouteGuard, ListView):
         context = super().get_context_data(**kwargs)
         context.update({
             'pdf_url': '/persons/attendingmeet_report/',
+            'envelope_url': '/persons/attendingmeet_envelops/',
             "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
             "divisions_endpoint": "/whereabouts/api/user_divisions/",
         })

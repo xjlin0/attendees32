@@ -4519,7 +4519,7 @@
         "data-bs-toggle": "dropdown"
       },
       "lft": 1,
-      "rght": 20,
+      "rght": 22,
       "tree_id": 14,
       "level": 0
     }
@@ -5271,6 +5271,31 @@
       },
       "lft": 18,
       "rght": 19,
+      "tree_id": 14,
+      "level": 1
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 41,
+    "fields": {
+      "created": "2023-06-06T13:22:46.272Z",
+      "modified": "2023-06-06T13:22:46.272Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "sublink",
+      "parent": 4,
+      "html_type": "a",
+      "urn": "/persons/attendingmeet_envelopes/",
+      "url_name": "attendingmeet_envelopes_list_view",
+      "display_name": "參加信封列印 participation envelopes",
+      "display_order": 2960,
+      "infos": {
+        "class": "dropdown-item",
+        "title": "attendingmeet envelopes"
+      },
+      "lft": 20,
+      "rght": 21,
       "tree_id": 14,
       "level": 1
     }
@@ -6950,6 +6975,19 @@
       "read": true,
       "write": true,
       "menu": 40
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 152,
+    "fields": {
+      "created": "2023-06-06T13:22:46.285Z",
+      "modified": "2023-06-06T13:22:46.285Z",
+      "is_removed": false,
+      "auth_group": 500,
+      "read": true,
+      "write": true,
+      "menu": 41
     }
   },
   {
