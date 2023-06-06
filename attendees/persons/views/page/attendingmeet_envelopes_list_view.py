@@ -5,7 +5,6 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
-from attendees.persons.models import Attendee
 from attendees.persons.services import FolkService
 from attendees.users.authorization import RouteGuard
 
@@ -18,7 +17,7 @@ class AttendingmeetEnvelopesListView(RouteGuard, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         show_paused = self.request.GET.get("showPaused")
-        families = FolkService.families_in_participations(
+        families = FolkService.folk_addresses_in_participations(
             meet_slug=self.request.GET.get("meet"),
             user_organization=self.request.user.organization,
             show_paused=show_paused,
@@ -26,13 +25,11 @@ class AttendingmeetEnvelopesListView(RouteGuard, ListView):
         ) if self.request.user.privileged() else []
 
         context.update({
-            'report_title': self.request.GET.get('reportTitle', ''),
-            'report_date': self.request.GET.get('reportDate', ''),
+            'report_titles': self.request.GET.get('reportTitle', '').split('\n'),
+            'report_dates': self.request.GET.get('reportDate', '').split('\n'),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
-            'show_paused': show_paused,
-            'attendingmeet_url': '/persons/api/datagrid_data_attendingmeet/',
-            'scheduled_category': Attendee.SCHEDULED_CATEGORY,
+            'attendee_url': '/persons/attendee/',
         })
         return context
 

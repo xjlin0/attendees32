@@ -234,7 +234,7 @@ class FolkService:
         return families.values()
 
     @staticmethod
-    def folk_address_in_participations(meet_slug, user_organization, show_paused, division_slugs):
+    def folk_addresses_in_participations(meet_slug, user_organization, show_paused, division_slugs):
         """
 
         Because attendee may be in multiple families and envelopes only needs the lowest display order ones, iteration
@@ -283,7 +283,7 @@ class FolkService:
                     'id', 'folkattendee__display_order', 'created', 'infos__names__original'
                 )
 
-                family_attrs = {"families": {}}
+                family_attrs = {"families": {}, 'family_name': 'no last names!', 'attrs': {}}
 
                 for attendee in attendee_candidates:
                     attendee_id = attendee.get('id')

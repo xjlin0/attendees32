@@ -1,0 +1,70 @@
+{% load static i18n %}
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{{report_title|default:"Envelopes"}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Activities/Attendees Management">
+    <meta name="author" content="Jack Jack">
+
+    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet"
+          href="{% static 'css/attendingmeet_envelopes_list_view.css' %}">
+
+    <script defer
+            src="https://unpkg.com/pagedjs/dist/paged.polyfill.js">
+    </script>
+
+  </head>
+
+  <body data-url="{{attendee_url}}">
+    {% csrf_token %}
+    <div class="attendingmeet-envelope-container"
+         title="click to see/edit the main attendee's details">
+
+      {% for folk in families %}
+        {% if folk.families and folk.families|length > 0 %}
+          <div class="d-flex">
+            <div class="sender">
+              <h6 class="center-text">
+                {% for report_title in report_titles %}
+                  {{ report_title }}
+                  <br>
+                {% endfor %}
+                {% for report_date in report_dates %}
+                  {{ report_date }}
+                  <br>
+                {% endfor %}
+              </h6>
+            </div>
+            <div class="recipient">
+              <a class="link-as-text"
+                 href="{{attendee_url}}{{folk.recipient_attendee_id}}">
+                <br>
+                <br>
+                {{folk.recipient_name}}
+                <br>
+                {{folk.address_line1}}
+                <br>
+                {{folk.address_line2}}
+              </a>
+            </div>
+          </div>
+          <div class="page-break"></div>
+        {% endif %}
+      {% endfor %}
+
+    </div>
+  </body>
+</html>
+

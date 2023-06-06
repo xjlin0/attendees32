@@ -28,10 +28,12 @@ Attendees.attendingmeetPrintConfiguration = {
     items: [
       {
         dataField: "reportTitle",
+        editorType: 'dxTextArea',
         label: {
           text: 'Text 1',
         },
         editorOptions: {
+          autoResizeEnabled: true,
           value: 'Sample title',
           showClearButton: true,
           buttons: [
@@ -41,10 +43,12 @@ Attendees.attendingmeetPrintConfiguration = {
       },
       {
         dataField: "reportDate",
+        editorType: 'dxTextArea',
         label: {
           text: 'Text 2',
         },
         editorOptions: {
+          autoResizeEnabled: true,
           value: new Date().toLocaleDateString('en', { day: '2-digit', month: 'long', year: 'numeric' }),
           showClearButton: true,
           buttons: [
@@ -151,7 +155,7 @@ Attendees.attendingmeetPrintConfiguration = {
           {
             itemType: 'button',
             horizontalAlignment: 'left',
-            colSpan: 3,
+            colSpan: 4,
             buttonOptions: {
               text: "Generate report for print",
               hint: 'Generate attendingmeet report page for printing',
@@ -164,7 +168,7 @@ Attendees.attendingmeetPrintConfiguration = {
           {
             itemType: 'button',
             horizontalAlignment: 'left',
-            colSpan: 3,
+            colSpan: 4,
             buttonOptions: {
               text: "Generate envelopes for print",
               hint: 'Generate attendingmeet envelopes for printing',
