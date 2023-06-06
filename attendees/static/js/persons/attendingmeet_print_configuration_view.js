@@ -5,30 +5,34 @@ Attendees.attendingmeetPrintConfiguration = {
     Attendees.attendingmeetPrintConfiguration.form = $("form#attendingmeet-print-configuration").dxForm(Attendees.attendingmeetPrintConfiguration.formConfig).dxForm('instance');
   },
 
-  submitForm: () => {
+  submitForm: (confirmMessage, url) => {
     const validationResults = Attendees.attendingmeetPrintConfiguration.form.validate();
     if (validationResults.isValid) {
-      if (confirm('Do you want to see the directory for print? (This will take 20 secs.)')) {
+      if (confirm(confirmMessage)) {
         const formData = Attendees.attendingmeetPrintConfiguration.form.option('formData');
         const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
         searchParams.delete("divisions")
         Attendees.attendingmeetPrintConfiguration.form.option('formData').divisions.forEach(d => searchParams.append('divisions', d));
-        location.href = `${document.attendingmeetPrintConfigurationForm.action}?${searchParams}`;
+        location.href = `${url}?${searchParams}`;
       }
     } else {
       alert('Please check the form again. Something missing!');
-    }
+    }  // console.log("24 generateEnvelopes");
   },
 
   formConfig: {
     onContentReady: (e) => {
       e.component.getEditor('divisions').getDataSource().reload();
+      e.component.getEditor('meet').getDataSource().reload();
     },
     items: [
       {
         dataField: "reportTitle",
+        label: {
+          text: 'Text 1',
+        },
         editorOptions: {
-          value: 'Report Title',
+          value: 'Sample title',
           showClearButton: true,
           buttons: [
             'clear',
@@ -37,6 +41,9 @@ Attendees.attendingmeetPrintConfiguration = {
       },
       {
         dataField: "reportDate",
+        label: {
+          text: 'Text 2',
+        },
         editorOptions: {
           value: new Date().toLocaleDateString('en', { day: '2-digit', month: 'long', year: 'numeric' }),
           showClearButton: true,
@@ -138,16 +145,36 @@ Attendees.attendingmeetPrintConfiguration = {
         },
       },
       {
-        itemType: "button",
-        horizontalAlignment: 'left',
-        buttonOptions: {
-          text: "Generate report for print",
-          hint: 'Generate attendingmeet report page for printing pdf',
-          type: 'default',
-          icon: 'print',
-          useSubmitBehavior: false,
-          onClick: () => Attendees.attendingmeetPrintConfiguration.submitForm(),
-        },
+        colCount: 12,
+        itemType: 'group',
+        items: [
+          {
+            itemType: 'button',
+            horizontalAlignment: 'left',
+            colSpan: 3,
+            buttonOptions: {
+              text: "Generate report for print",
+              hint: 'Generate attendingmeet report page for printing',
+              type: 'default',
+              icon: 'print',
+              useSubmitBehavior: false,
+              onClick: () => Attendees.attendingmeetPrintConfiguration.submitForm('Do you want to see the participations for print? (This will take 20 secs.)', document.attendingmeetPrintConfigurationForm.action),
+            },
+          },
+          {
+            itemType: 'button',
+            horizontalAlignment: 'left',
+            colSpan: 3,
+            buttonOptions: {
+              text: "Generate envelopes for print",
+              hint: 'Generate attendingmeet envelopes for printing',
+              type: 'success',
+              icon: 'message',
+              useSubmitBehavior: false,
+              onClick: () => Attendees.attendingmeetPrintConfiguration.submitForm('Do you want to see the envelopes for print? (This will take 10 secs.)', document.attendingmeetPrintConfigurationForm.dataset.envelopesUrl),
+            },
+          },
+        ],
       },
     ]
   },

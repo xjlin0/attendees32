@@ -35,11 +35,15 @@
   <h4>
     After clicking "Generate report for print" button, you can click members for pausing participations and print.
   </h4>
+  <h4>
+    After clicking "Generate envelopes for print" button, you can click members links or print.
+  </h4>
 
   <form id="attendingmeet-print-configuration"
         name="attendingmeetPrintConfigurationForm"
         data-meets-endpoint-by-slug="{{meets_endpoint_by_slug|safe}}"
         data-divisions-endpoint="{{divisions_endpoint|safe}}"
+        data-envelopes-url="{{envelopes_url}}"
         action="{{pdf_url}}">
     <div id="print-configuration-form"></div>
   </form>
