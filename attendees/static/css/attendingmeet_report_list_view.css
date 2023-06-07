@@ -95,7 +95,6 @@ div.member {
 
 div.member:hover {
   background: LightSkyBlue;
-  text-decoration: underline;
   cursor: pointer;
 }
 

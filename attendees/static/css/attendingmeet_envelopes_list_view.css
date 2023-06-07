@@ -34,7 +34,6 @@ h6.center-text {
 
 div.recipient:hover {
   background: LightSkyBlue;
-  text-decoration: underline;
   cursor: pointer;
 }
 
