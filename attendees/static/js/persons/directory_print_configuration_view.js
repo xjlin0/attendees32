@@ -15,6 +15,7 @@ Attendees.directoryPrintConfiguration = {
     if (confirm('Do you want to see the directory for print? (This will take 2 minutes.)')) {
       const formData = new FormData(event.target);
       const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
+      event.target.querySelector('button[type=submit]').disabled = true;
       location.href = `${document.directoryPrintConfiguration.action}?${searchParams}`;
     }
   },

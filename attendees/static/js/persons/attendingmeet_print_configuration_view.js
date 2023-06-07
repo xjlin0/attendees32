@@ -3,6 +3,8 @@ Attendees.attendingmeetPrintConfiguration = {
   init: () => {
     console.log('static/js/persons/attendingmeet_print_configuration_view.js');
     Attendees.attendingmeetPrintConfiguration.form = $("form#attendingmeet-print-configuration").dxForm(Attendees.attendingmeetPrintConfiguration.formConfig).dxForm('instance');
+    Attendees.attendingmeetPrintConfiguration.form.getButton('report').option('disabled', false);
+    Attendees.attendingmeetPrintConfiguration.form.getButton('envelopes').option('disabled', false);
   },
 
   submitForm: (confirmMessage, url) => {
@@ -13,6 +15,8 @@ Attendees.attendingmeetPrintConfiguration = {
         const searchParams = new URLSearchParams(formData);  // encodeURI break UTF8?
         searchParams.delete("divisions")
         Attendees.attendingmeetPrintConfiguration.form.option('formData').divisions.forEach(d => searchParams.append('divisions', d));
+        Attendees.attendingmeetPrintConfiguration.form.getButton('report').option('disabled', true);
+        Attendees.attendingmeetPrintConfiguration.form.getButton('envelopes').option('disabled', true);
         location.href = `${url}?${searchParams}`;
       }
     } else {
@@ -169,6 +173,7 @@ Attendees.attendingmeetPrintConfiguration = {
         items: [
           {
             itemType: 'button',
+            name: 'report',
             horizontalAlignment: 'left',
             colSpan: 4,
             buttonOptions: {
@@ -182,6 +187,7 @@ Attendees.attendingmeetPrintConfiguration = {
           },
           {
             itemType: 'button',
+            name: 'envelopes',
             horizontalAlignment: 'left',
             colSpan: 4,
             buttonOptions: {
