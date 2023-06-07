@@ -43,7 +43,11 @@
         {% if folk.families %}
           <div class="folk-container border-bottom {% cycle 'dark-background' '' %}">
             <div class="family-name">
-              {{ folk.family_name }}
+              <a class="link-as-text"
+                 title="click to show/edit the first attendee"
+                 href="{{attendee_url}}{{folk.first_attendee_id}}">
+                {{ folk.family_name }}
+              </a>
             </div>
             <div class="members-area">
               <div class="members-container">

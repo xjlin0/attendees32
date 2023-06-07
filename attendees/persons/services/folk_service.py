@@ -26,7 +26,15 @@ class FolkService:
         targeting_families = Attendee.objects.get(pk=targeting_attendee_id).folks if targeting_attendee_id else Folk.objects.filter(division__in=divisions).prefetch_related('attendees', 'folkattendee_set')
 
         if directory_meet:
-            attendee_subquery = Attendee.objects.filter(deathday=None, folks=OuterRef('pk')).order_by('folkattendee__display_order')
+            attendee_subquery = Attendee.objects.filter(
+                attendings__attendingmeet__is_removed=False,
+                attendings__attendingmeet__meet=directory_meet,
+                attendings__attendingmeet__finish__gte=Utility.now_with_timezone(),
+                folks=OuterRef('pk'),
+                deathday=None,
+                is_removed=False,
+            ).order_by('folkattendee__display_order')
+
             families_in_directory = targeting_families.annotate(
                 householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
                 householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
@@ -36,6 +44,7 @@ class FolkService:
                 infos__print_directory=True,
                 attendees__in=Attendee.objects.filter(
                     attendings__in=directory_meet.attendings.filter(
+                        attendingmeet__is_removed=False,
                         attendingmeet__finish__gte=Utility.now_with_timezone()
                     ),
                     deathday=None,
@@ -48,6 +57,7 @@ class FolkService:
                 attendees = family.attendees.filter(
                     deathday=None,
                     attendings__in=directory_meet.attendings.filter(
+                        attendingmeet__is_removed=False,
                         attendingmeet__finish__gte=Utility.now_with_timezone()
                     ),  # only for attendees join the meet
                 ).exclude(
@@ -144,16 +154,19 @@ class FolkService:
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
             original_meets_attendings = meet.attendings.filter(
+                                        attendingmeet__is_removed=False,
                                         attendingmeet__finish__gte=Utility.now_with_timezone(),
                                     )
             meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
                                         attendingmeet__category=Attendee.PAUSED_CATEGORY,
                                     )
             attendee_subquery = Attendee.objects.filter(
+                attendings__attendingmeet__is_removed=False,
                 attendings__attendingmeet__meet=meet,
                 attendings__attendingmeet__finish__gte=Utility.now_with_timezone(),
                 folks=OuterRef('pk'),
                 deathday=None,
+                is_removed=False,
             ).order_by('folkattendee__display_order')
 
             families_in_directory = Folk.objects.filter(
@@ -211,6 +224,9 @@ class FolkService:
                             del families[last_family]['families'][attendee_id]
                             if len(families[last_family]['families']) < 1:
                                 del families[last_family]
+                            elif str(attendee_id) == families[last_family].get('first_attendee_id'):
+                                first_attendee = next(iter(families[last_family]['families'].items()))[1]
+                                families[last_family]['first_attendee_id'] = str(first_attendee.get('id', ''))
 
                     attendees_cache[attendee_id] = {
                         'rank': attendee.get('folkattendee__display_order'),
@@ -219,6 +235,7 @@ class FolkService:
                     }
 
                     family_attrs['families'][attendee_id] = {
+                        'id': attendee.get('id'),
                         'first_name': attendee.get('first_name'),
                         'first_name2': attendee.get('first_name2'),
                         'last_name2': attendee.get('last_name2'),
@@ -230,6 +247,8 @@ class FolkService:
                     }
 
                 if len(family_attrs['families']) > 0:
+                    first_attendee = next(iter(family_attrs['families'].items()))[1]
+                    family_attrs['first_attendee_id'] = str(first_attendee.get('id', ''))
                     families[family.id] = family_attrs
 
         return families.values()
@@ -247,15 +266,18 @@ class FolkService:
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
             original_meets_attendings = meet.attendings.filter(
+                                        attendingmeet__is_removed=False,
                                         attendingmeet__finish__gte=Utility.now_with_timezone(),
                                     )
             meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
                                         attendingmeet__category=Attendee.PAUSED_CATEGORY,
                                     )
             attendee_subquery = Attendee.objects.filter(
+                attendings__attendingmeet__is_removed=False,
                 attendings__attendingmeet__meet=meet,
                 attendings__attendingmeet__finish__gte=Utility.now_with_timezone(),
                 folks=OuterRef('pk'),
+                is_removed=False,
                 deathday=None,
             ).order_by('folkattendee__display_order')
 

@@ -23,6 +23,11 @@
   color: SlateGrey;
 }
 
+div.folk-container a.link-as-text {
+  text-decoration: none;
+  color: inherit;
+}
+
 .mono-space {
   font-family: monospace;
 }
