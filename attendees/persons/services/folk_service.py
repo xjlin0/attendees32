@@ -2,7 +2,6 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from django.contrib.postgres.aggregates.general import  ArrayAgg
 from django.db.models import Max, OuterRef, Q, Subquery
-from django.db.models.functions import Concat
 
 from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
@@ -150,7 +149,13 @@ class FolkService:
             meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
                                         attendingmeet__category=Attendee.PAUSED_CATEGORY,
                                     )
-            attendee_subquery = Attendee.objects.filter(deathday=None, folks=OuterRef('pk')).order_by('folkattendee__display_order')
+            attendee_subquery = Attendee.objects.filter(
+                attendings__attendingmeet__meet=meet,
+                attendings__attendingmeet__finish__gte=Utility.now_with_timezone(),
+                folks=OuterRef('pk'),
+                deathday=None,
+            ).order_by('folkattendee__display_order')
+
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
             ).prefetch_related('folkattendee_set', 'attendees').annotate(
@@ -247,7 +252,13 @@ class FolkService:
             meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
                                         attendingmeet__category=Attendee.PAUSED_CATEGORY,
                                     )
-            attendee_subquery = Attendee.objects.filter(deathday=None, folks=OuterRef('pk')).order_by('folkattendee__display_order')
+            attendee_subquery = Attendee.objects.filter(
+                attendings__attendingmeet__meet=meet,
+                attendings__attendingmeet__finish__gte=Utility.now_with_timezone(),
+                folks=OuterRef('pk'),
+                deathday=None,
+            ).order_by('folkattendee__display_order')
+
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
             ).prefetch_related('folkattendee_set', 'attendees', 'places').annotate(
