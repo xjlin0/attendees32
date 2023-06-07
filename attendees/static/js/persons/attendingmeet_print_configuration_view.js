@@ -95,11 +95,26 @@ Attendees.attendingmeetPrintConfiguration = {
       },
       {
         dataField: 'showPaused',
+        helpText: 'show paused participations in report',
         label: {
           text: 'Show paused participations?',
         },
         dataType: 'boolean',
         editorType: 'dxCheckBox',
+      },
+      {
+        dataField: 'newLines',
+        helpText: 'Number of new lines above the recipient label on envelopes',
+        label: {
+          text: '# of new lines above recipient',
+        },
+        dataType: 'number',
+        editorType: 'dxNumberBox',
+        editorOptions: {
+          value: 2,
+          showSpinButtons: true,
+          showClearButton: true,
+        },
       },
       {
         dataField: 'divisions',

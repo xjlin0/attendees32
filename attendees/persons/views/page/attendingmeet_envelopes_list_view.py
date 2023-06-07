@@ -29,6 +29,7 @@ class AttendingmeetEnvelopesListView(RouteGuard, ListView):
             'report_dates': self.request.GET.get('reportDate', '').split('\n'),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
+            'newLines': range(int(self.request.GET.get('newLines', '2'))),
             'attendee_url': '/persons/attendee/',
         })
         return context

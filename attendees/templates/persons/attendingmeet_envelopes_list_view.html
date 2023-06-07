@@ -50,8 +50,9 @@
             <div class="recipient">
               <a class="link-as-text"
                  href="{{attendee_url}}{{folk.recipient_attendee_id}}">
-                <br>
-                <br>
+                {% for n in newLines %}
+                  <br>
+                {% endfor %}
                 {{folk.recipient_name}}
                 <br>
                 {{folk.address_line1}}
@@ -60,7 +61,9 @@
               </a>
             </div>
           </div>
-          <div class="page-break"></div>
+          {% if not forloop.last %}
+            <div class="page-break"></div>
+          {% endif %}
         {% endif %}
       {% endfor %}
 
