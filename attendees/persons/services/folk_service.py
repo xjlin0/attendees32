@@ -281,9 +281,11 @@ class FolkService:
 
                 attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
                     'id', 'folkattendee__display_order', 'created', 'infos__names__original'
+                ).annotate(
+                    attendingmeet_category=Max('attendings__attendingmeet__category', filter=Q(attendings__attendingmeet__meet=meet)),
                 )
 
-                family_attrs = {"families": {}, 'family_name': 'no last names!', 'attrs': {}}
+                family_attrs = {'families': {}}
 
                 for attendee in attendee_candidates:
                     attendee_id = attendee.get('id')
@@ -310,16 +312,18 @@ class FolkService:
                     family_attrs['families'][attendee_id] = True
 
                 if len(family_attrs['families']) > 0:
+                    home_head = attendee_candidates[0]
+                    family_attrs['recipient_name'] = home_head.get('infos__names__original', '')
+                    family_attrs['recipient_attendee_id'] = str(home_head.get('id', ''))
+                    family_attrs['recipient_paused'] = home_head.get('attendingmeet_category') == Attendee.PAUSED_CATEGORY
                     folk_place = family.places.first()
                     if folk_place:
                         address = family.places.first().address
                         if address:
-                            home_helder = attendee_candidates[0]
-                            family_attrs['recipient_name'] =  home_helder.get('infos__names__original', '')
-                            family_attrs['recipient_attendee_id'] = str(home_helder.get('id', ''))
                             family_attrs['address_line1'] = f"{address.street_number} {address.route} {address.extra or ''}".strip()
                             family_attrs['address_line2'] = f"{address.locality.name}, {address.locality.state.code} {address.locality.postal_code or ''}".strip()
-                            families[family.id] = family_attrs
+
+                    families[family.id] = family_attrs
 
         return families.values()
 

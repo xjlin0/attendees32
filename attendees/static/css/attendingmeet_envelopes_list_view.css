@@ -5,7 +5,7 @@
   }
 }
 
-.paused {
+span.paused {
   text-decoration: line-through;
   color: SlateGrey;
 }

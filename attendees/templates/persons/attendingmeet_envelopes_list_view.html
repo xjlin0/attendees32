@@ -53,7 +53,9 @@
                 {% for n in newLines %}
                   <br>
                 {% endfor %}
-                {{folk.recipient_name}}
+                <span class="{{folk.recipient_paused|yesno:'paused,'}}">
+                  {{folk.recipient_name}}
+                </span>
                 <br>
                 {{folk.address_line1}}
                 <br>
