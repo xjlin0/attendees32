@@ -38,6 +38,7 @@ class FolkService:
             families_in_directory = targeting_families.annotate(
                 householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
                 householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
+                householder_first_name2=Subquery(attendee_subquery.values_list('first_name2')[:1]),
             ).filter(
                 category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
@@ -50,7 +51,7 @@ class FolkService:
                     deathday=None,
                     is_removed=False,
                 ),
-            ).distinct().order_by('householder_last_name', 'householder_first_name')
+            ).distinct().order_by('householder_last_name', 'householder_first_name', 'householder_first_name2')
 
             for family in families_in_directory:
                 attrs = {}
@@ -178,6 +179,7 @@ class FolkService:
             ).prefetch_related('folkattendee_set', 'attendees').annotate(
                 householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
                 householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
+                householder_first_name2=Subquery(attendee_subquery.values_list('first_name2')[:1]),
             ).filter(
                 category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
@@ -187,7 +189,7 @@ class FolkService:
                     deathday=None,
                     is_removed=False,
                 ),
-            ).distinct().order_by('householder_last_name', 'householder_first_name')
+            ).distinct().order_by('householder_last_name', 'householder_first_name', 'householder_first_name2')
 
             for family in families_in_directory:
                 candidates_qs = family.attendees.select_related('division', 'attendings', 'folkattendee_set').filter(
@@ -294,6 +296,7 @@ class FolkService:
             ).prefetch_related('folkattendee_set', 'attendees', 'places').annotate(
                 householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
                 householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
+                householder_first_name2=Subquery(attendee_subquery.values_list('first_name2')[:1]),
             ).filter(
                 category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
@@ -303,7 +306,7 @@ class FolkService:
                     deathday=None,
                     is_removed=False,
                 ),
-            ).distinct().order_by('householder_last_name', 'householder_first_name')
+            ).distinct().order_by('householder_last_name', 'householder_first_name', 'householder_first_name2')
 
             for family in families_in_directory:
                 candidates_qs = family.attendees.select_related('division', 'attendings', 'folkattendee_set').filter(
