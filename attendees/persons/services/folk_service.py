@@ -160,7 +160,7 @@ class FolkService:
             meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
                                         attendingmeet__category=Attendee.PAUSED_CATEGORY,
                                     )
-            attendee_subquery = Attendee.objects.filter(
+            original_attendee_subquery = Attendee.objects.filter(
                 attendings__attendingmeet__is_removed=False,
                 attendings__attendingmeet__meet=meet,
                 attendings__attendingmeet__finish__gte=Utility.now_with_timezone(),
@@ -168,6 +168,10 @@ class FolkService:
                 deathday=None,
                 is_removed=False,
             ).order_by('folkattendee__display_order')
+
+            attendee_subquery = original_attendee_subquery if show_paused else original_attendee_subquery.exclude(
+                attendings__attendingmeet__category=Attendee.PAUSED_CATEGORY,
+            )
 
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
@@ -272,7 +276,7 @@ class FolkService:
             meets_attendings = original_meets_attendings if show_paused else original_meets_attendings.exclude(
                                         attendingmeet__category=Attendee.PAUSED_CATEGORY,
                                     )
-            attendee_subquery = Attendee.objects.filter(
+            original_attendee_subquery = Attendee.objects.filter(
                 attendings__attendingmeet__is_removed=False,
                 attendings__attendingmeet__meet=meet,
                 attendings__attendingmeet__finish__gte=Utility.now_with_timezone(),
@@ -280,6 +284,10 @@ class FolkService:
                 is_removed=False,
                 deathday=None,
             ).order_by('folkattendee__display_order')
+
+            attendee_subquery = original_attendee_subquery if show_paused else original_attendee_subquery.exclude(
+                attendings__attendingmeet__category=Attendee.PAUSED_CATEGORY,
+            )
 
             families_in_directory = Folk.objects.filter(
                 division__organization=user_organization,
