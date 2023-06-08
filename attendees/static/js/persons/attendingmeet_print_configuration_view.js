@@ -3,8 +3,15 @@ Attendees.attendingmeetPrintConfiguration = {
   init: () => {
     console.log('static/js/persons/attendingmeet_print_configuration_view.js');
     Attendees.attendingmeetPrintConfiguration.form = $("form#attendingmeet-print-configuration").dxForm(Attendees.attendingmeetPrintConfiguration.formConfig).dxForm('instance');
-    Attendees.attendingmeetPrintConfiguration.form.getButton('report').option('disabled', false);
-    Attendees.attendingmeetPrintConfiguration.form.getButton('envelopes').option('disabled', false);
+
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted || performance.getEntriesByType("navigation")[0].type === 'back_forward') {
+        console.log('Re-enabling buttons after back ...');
+        document.querySelector('div.spinner-border').classList.add('d-none');
+        Attendees.attendingmeetPrintConfiguration.form.getButton('report').option('disabled', false);
+        Attendees.attendingmeetPrintConfiguration.form.getButton('envelopes').option('disabled', false);
+      }
+    });
   },
 
   submitForm: (confirmMessage, url) => {
@@ -17,11 +24,12 @@ Attendees.attendingmeetPrintConfiguration = {
         Attendees.attendingmeetPrintConfiguration.form.option('formData').divisions.forEach(d => searchParams.append('divisions', d));
         Attendees.attendingmeetPrintConfiguration.form.getButton('report').option('disabled', true);
         Attendees.attendingmeetPrintConfiguration.form.getButton('envelopes').option('disabled', true);
+        document.querySelector('div.spinner-border').classList.remove('d-none');
         location.href = `${url}?${searchParams}`;
       }
     } else {
       alert('Please check the form again. Something missing!');
-    }  // console.log("24 generateEnvelopes");
+    }
   },
 
   formConfig: {
