@@ -388,6 +388,7 @@ Attendees.dataAttendees = {
         caption: meet.display_name,
         dataField: meet.slug,
         allowHeaderFiltering: false,
+        dataType: 'string',
         cellTemplate: (container, rowData) => {
           if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
             const preview_url = previews[meet.slug];
