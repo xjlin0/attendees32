@@ -17,6 +17,10 @@
   /*}*/
 }
 
+div.dx-list-select-all {
+  display: none;
+}
+
 .page-break {
   display: block;
   page-break-before: always;

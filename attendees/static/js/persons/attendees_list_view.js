@@ -387,7 +387,19 @@ Attendees.dataAttendees = {
         // visible: meet.id > 0,
         caption: meet.display_name,
         dataField: meet.slug,
-        allowHeaderFiltering: false,
+        allowSorting: false,
+        headerFilter: {
+          dataSource: [
+            {
+              text: meet.display_name,
+              value: ['attendings__meets__slug', '=', meet.slug],
+            },
+            {
+              text: "< Not Working 🐞 >",
+              value: ['attendings__meets__slug__isnull', '=', true],
+            },
+          ],
+        },
         dataType: 'string',
         cellTemplate: (container, rowData) => {
           if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
