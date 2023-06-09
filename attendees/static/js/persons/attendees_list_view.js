@@ -384,19 +384,25 @@ Attendees.dataAttendees = {
     const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});
     availableMeets.forEach(meet => {
       meetColumns.push({
-        // visible: meet.id > 0,
         caption: meet.display_name,
         dataField: meet.slug,
         allowSorting: false,
         headerFilter: {
           dataSource: [
             {
-              text: meet.display_name,
-              value: ['attendings__meets__slug', '=', meet.slug],
+              text: "for-hide",
+              value: [],
+              template: (data) => '<span class="for-hide">' + data.text + '</span>',
             },
             {
-              text: "< Not Working 🐞 >",
-              value: ['attendings__meets__slug__isnull', '=', true],
+              text: meet.display_name,
+              value: ['attendings__meets__slug', '=', meet.slug],
+              template: (data) => '<span title="Select all will NOT work">' + data.text + '</span>',
+            },
+            {
+              text: "- Not attending",
+              value: ['attendings__meets__slug', '<>', meet.slug],
+              template: (data) => '<span title="Select all will NOT work">' + data.text + '</span>',
             },
           ],
         },
