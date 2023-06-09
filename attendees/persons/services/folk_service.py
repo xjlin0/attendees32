@@ -318,7 +318,7 @@ class FolkService:
                 )
 
                 attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
-                    'id', 'folkattendee__display_order', 'created', 'infos__names__original'
+                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created',
                 ).annotate(
                     attendingmeet_category=Max('attendings__attendingmeet__category', filter=Q(attendings__attendingmeet__meet=meet)),
                 )
@@ -338,8 +338,15 @@ class FolkService:
                             continue  # unique by 1) lowest display order 2) the last created folkattendee
                         else:  # current one will replace last one
                             del families[last_family]['families'][attendee_id]
-                            if len(families[last_family]['families']) < 1:
+                            families_count = len(families[last_family]['families'])
+                            if families_count < 1:
                                 del families[last_family]
+                            else:
+                                families_iter = iter(families[last_family]['families'].items())
+                                home_head = next(families_iter)[1]
+                                families[last_family]['recipient_attendee_id'] = str(home_head.get('id', ''))
+                                families[last_family]['recipient_paused'] = home_head.get('paused')
+                                families[last_family]['recipient_name'] = FolkService.get_recipient(home_head, None if families_count < 2 else next(families_iter)[1])
 
                     attendees_cache[attendee_id] = {
                         'rank': attendee.get('folkattendee__display_order'),
@@ -347,14 +354,26 @@ class FolkService:
                         'family_id': family.id,
                     }
 
-                    family_attrs['families'][attendee_id] = True
+                    family_attrs['families'][attendee_id] = {
+                        'id': attendee.get('id'),
+                        'first_name': attendee.get('first_name') or '',
+                        'first_name2': attendee.get('first_name2') or '',
+                        'last_name': attendee.get('last_name') or '',
+                        'last_name2': attendee.get('last_name2') or '',
+                        'paused': attendee.get('attendingmeet_category') == Attendee.PAUSED_CATEGORY,
+                    }
 
                 if len(family_attrs['families']) > 0:
-                    home_head = attendee_candidates[0]
-                    family_attrs['recipient_name'] = home_head.get('infos__names__original', '')
+                    families_iter = iter(family_attrs['families'].items())
+                    home_head = next(families_iter)[1]
+
+                    family_attrs['recipient_name'] = FolkService.get_recipient(home_head, None)
                     family_attrs['recipient_attendee_id'] = str(home_head.get('id', ''))
-                    family_attrs['recipient_paused'] = home_head.get('attendingmeet_category') == Attendee.PAUSED_CATEGORY
+                    family_attrs['recipient_paused'] = home_head.get('paused')
                     folk_place = family.places.first()
+
+                    if len(family_attrs['families']) > 1:
+                        family_attrs['recipient_name'] = FolkService.get_recipient(home_head, next(families_iter)[1])
                     if folk_place:
                         address = family.places.first().address
                         if address:
@@ -364,6 +383,18 @@ class FolkService:
                     families[family.id] = family_attrs
 
         return families.values()
+
+    @staticmethod
+    def get_recipient(home_head, spouse):
+        home_head_name2 = f"{home_head.get('last_name2', '')}{home_head.get('first_name2', '')}".strip()
+        if spouse:
+            spouse_name2 = f"{spouse.get('last_name2', '')}{spouse.get('first_name2', '')}".strip()
+            both_name = f"{' & '.join([i for i in [home_head.get('first_name', ''), spouse.get('first_name', '')] if i != ''])} {home_head.get('last_name', '')}"
+            both_name2 = f"{home_head_name2} {spouse_name2}".strip()
+            return f"{both_name} {both_name2}".strip()
+        else:
+            home_head_name = f"{home_head.get('first_name', '')} {home_head.get('last_name', '')}".strip()
+            return f"{home_head_name} {home_head_name2}".strip()
 
     @staticmethod
     def destroy_with_associations(folk, attendee):
