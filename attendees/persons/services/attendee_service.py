@@ -4,7 +4,7 @@ from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
 from django.db.models import Case, F, Func, Q, When, CharField
-from django.db.models.functions import Cast, Substr
+from django.db.models.functions import Cast, Substr, Coalesce
 from django.db.models.expressions import OrderBy
 from django.http import Http404
 from rest_framework.utils import json
@@ -186,9 +186,9 @@ class AttendeeService:
             qs.select_related()
             .prefetch_related()
             .annotate(
-                attendingmeets=ArrayAgg('attendings__meets__slug',
+                attendingmeets=Coalesce(ArrayAgg('attendings__meets__slug',
                                         filter=Q(attendings__attendingmeet__finish__gte=now),
-                                        distinct=True),
+                                        distinct=True), []),
                 folkcities=StringAgg('folks__places__address__locality__name',
                                      filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)) & Q(folks__places__is_removed=False),
                                      delimiter=", ",
@@ -202,7 +202,7 @@ class AttendeeService:
             )
             .filter(final_query)
             .order_by(*orderby_list)
-        ).distinct()  # when meets present duplicates appear
+        )
 
     @staticmethod
     def orderby_parser(orderby_string, meets, current_user):

@@ -386,7 +386,7 @@ Attendees.dataAttendees = {
       meetColumns.push({
         caption: meet.display_name,
         dataField: meet.slug,
-        allowSorting: false,
+        allowSorting: true,
         headerFilter: {
           dataSource: [
             {
