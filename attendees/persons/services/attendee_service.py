@@ -188,7 +188,7 @@ class AttendeeService:
             .annotate(
                 attendingmeets=Coalesce(ArrayAgg('attendings__meets__slug',
                                         filter=Q(attendings__attendingmeet__finish__gte=now),
-                                        distinct=True), []),
+                                        distinct=True), []),  # Prevents attendees without attendingmeets getting NULL and ruin order
                 folkcities=StringAgg('folks__places__address__locality__name',
                                      filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)) & Q(folks__places__is_removed=False),
                                      delimiter=", ",
@@ -199,8 +199,7 @@ class AttendeeService:
                                         delimiter=", ",
                                         distinct=True,
                                         default=None),
-            )
-            .filter(final_query)
+            ).filter(final_query)
             .order_by(*orderby_list)
         )
 
