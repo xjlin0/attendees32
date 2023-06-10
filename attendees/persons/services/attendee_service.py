@@ -199,7 +199,7 @@ class AttendeeService:
                                         delimiter=", ",
                                         distinct=True,
                                         default=None),
-            ).filter(final_query)
+            ).filter(final_query).distinct()
             .order_by(*orderby_list)
         )
 
