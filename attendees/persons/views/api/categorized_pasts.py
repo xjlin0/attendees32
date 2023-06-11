@@ -78,10 +78,20 @@ class ApiCategorizedPastsViewSet(SpyGuard, viewsets.ModelViewSet):
         else:  # public
             return qs.exclude(category__display_name__in=[Past.COUNSELING, Past.COWORKER])
 
+    def perform_destroy(self, instance):
+        subject = instance.subject
+        instance.delete()
+        subject.save(update_fields=['modified'])
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.subject.save(update_fields=['modified'])
+
     def perform_create(
         self, serializer
     ):  # SpyGuard ensured requester & target_attendee belongs to the same org.
-        serializer.save(organization=self.request.user.organization)
+        instance = serializer.save(organization=self.request.user.organization)
+        instance.subject.save(update_fields=['modified'])
 
 
 api_categorized_pasts_viewset = ApiCategorizedPastsViewSet

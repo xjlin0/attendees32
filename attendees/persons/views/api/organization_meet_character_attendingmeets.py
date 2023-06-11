@@ -104,6 +104,14 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                 detail="Have you registered any events of the organization?"
             )
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        instance.attending.attendee.save(update_fields=['modified'])
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.attending.attendee.save(update_fields=['modified'])
+
     def perform_destroy(self, instance):
         allowed_groups = [group for group in instance.meet.infos.get('allowed_groups', []) if group != "organization_participant"]  # intentionally forbid user to delete him/herself
         if self.request.user.belongs_to_groups_of(allowed_groups):
@@ -112,7 +120,10 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                 gathering__start__gte=Utility.now_with_timezone(),
                 attending=instance.attending
             ).delete()  # delete only future attendance
+            target_attendee = instance.attending.attendee
             instance.delete()
+            target_attendee.save(update_fields=['modified'])
+
         else:
             time.sleep(2)
             raise PermissionDenied(

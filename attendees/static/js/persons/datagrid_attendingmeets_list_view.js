@@ -29,7 +29,6 @@ Attendees.attendingmeets = {
         height: '110%',
         onValueChanged: (e) => {  // not reconfirm, it's already after change
           Attendees.utilities.editingEnabled = e.value;
-          console.log("hi 32 initEditingSwitch onValueChanged here is e.value: ", e.value);
           Attendees.attendingmeets.toggleEditing(e.value);
         },
       })
@@ -71,7 +70,6 @@ Attendees.attendingmeets = {
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.allowDeleting', enabled);
       Attendees.attendingmeets.attendingmeetsDatagrid.option('editing.popup.onContentReady', e => e.component.option('toolbarItems[0].visible', enabled));
     }
-    console.log("hi 73 here is enabled: ", enabled);
     if (enabled) {
       Attendees.attendingmeets.setNewAttendeeLink(Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['datagridAttendingmeetsListViewOpts'], 'selectedMeetSlugs'));
     } else {

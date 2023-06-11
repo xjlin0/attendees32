@@ -74,6 +74,10 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
 
     def perform_update(self, serializer):  # Todo 20220706 respond for joining and families count
         instance = serializer.save()
+        target_attendee = get_object_or_404(
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        )
+        target_attendee.save(update_fields=['modified'])
         Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
         print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
@@ -81,6 +85,10 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
 
     def perform_create(self, serializer):
         instance = serializer.save()
+        target_attendee = get_object_or_404(
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        )
+        target_attendee.save(update_fields=['modified'])
         Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
         print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
@@ -88,7 +96,11 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
 
     def perform_destroy(self, instance):  # Todo 20221203 should it flip_attendingmeet_by_existing_attending?
         Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
+        target_attendee = get_object_or_404(
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        )
         instance.delete()
+        target_attendee.save(update_fields=['modified'])
 
 
 api_datagrid_data_folkattendees_viewset = ApiDatagridDataFolkAttendeesViewsSet

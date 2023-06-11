@@ -206,7 +206,7 @@ Attendees.dataAttendees = {
     pager: {
         visible: true,
         showPageSizeSelector: true,
-        allowedPageSizes: [10, 25, 100, 7000],
+        allowedPageSizes: [10, 25, 100, 9999],
     },
     stateStoring: {
       enabled: true,
