@@ -25,7 +25,7 @@ class ApiDatagridDataAttendeesViewSet(ModelViewSet):  # from GenericAPIView
         :return: queryset ordered by query params from DataGrid
         """
         orderby_string = self.request.query_params.get(
-            "sort", '[{"selector":"modified","desc":true}]'
+            "sort", '[{"selector":"created","desc":true}]'
         )  # default order
         meets_string = self.request.query_params.get("meets", "[]")
         filters_list_string = self.request.query_params.get("filter", "[]")
