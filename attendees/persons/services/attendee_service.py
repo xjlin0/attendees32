@@ -237,7 +237,8 @@ class AttendeeService:
     @staticmethod
     def filter_parser(filters_list, meets, current_user):
         """
-        A recursive method return Q function based on multi-level filter conditions
+        A recursive method return Q function based on multi-level filter conditions. When filtering
+        for attendingmeet, it adds extra filters on attendingmeet__finish gte conditions.
         :param filters_list: a string of multi-level list of filter conditions
         :param meets: assembly ids
         :param current_user:
@@ -276,13 +277,15 @@ class AttendeeService:
                     )
                 return or_query
             elif filters_list[1] == "=":
-                return Q(
-                    **{
-                        AttendeeService.field_convert(
-                            filters_list[0], meets, current_user
-                        ): filters_list[2]
-                    }
-                )
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    ): filters_list[2],
+                }
+                if filters_list[0] == 'attendings__meets__slug':
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+
+                return Q(**condition)
             elif filters_list[1] == "startswith":
                 return Q(
                     **{
