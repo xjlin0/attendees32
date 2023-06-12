@@ -377,6 +377,16 @@ Attendees.dataAttendees = {
         }
       },
     },
+    {
+      dataField: "created",
+      visible: false,
+      dataType: "datetime",
+    },
+    {
+      dataField: "modified",
+      visible: false,
+      dataType: "datetime",
+    },
   ],
 
   setMeetsColumns: (availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent)) => {

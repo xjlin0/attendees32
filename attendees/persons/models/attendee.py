@@ -214,6 +214,13 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
             ).exists()
         return False
 
+    def can_be_scheduled_by(self, other_attendee_id):
+        if str(self.id) == other_attendee_id:
+            return True
+        return Attendee.objects.filter(
+            pk=self.id, infos__schedulers__contains={other_attendee_id: True}
+        ).exists()
+
     def can_schedule_attendee(self, other_attendee_id):
         if str(self.id) == other_attendee_id:
             return True

@@ -78,6 +78,7 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         target_attendee.save(update_fields=['modified'])
+        instance.folk.save(update_fields=['modified'])
         Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
         print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
@@ -89,6 +90,7 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         target_attendee.save(update_fields=['modified'])
+        instance.folk.save(update_fields=['modified'])
         Utility.add_update_attendee_in_infos(instance, self.request.user.attendee_uuid_str())
         print_directory = instance.folk.infos.get('print_directory') and instance.folk.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
@@ -99,8 +101,10 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
         target_attendee = get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
+        folk = instance.folk
         instance.delete()
         target_attendee.save(update_fields=['modified'])
+        folk.save(update_fields=['modified'])
 
 
 api_datagrid_data_folkattendees_viewset = ApiDatagridDataFolkAttendeesViewsSet

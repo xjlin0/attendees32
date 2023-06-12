@@ -65,14 +65,27 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
             time.sleep(2)
             raise PermissionDenied(detail="Are you data admin or counselor?")
 
+    def perform_update(self, serializer):
+        target_attendee = get_object_or_404(
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        )
+        if self.request.user.privileged_to_edit(target_attendee.id):
+            serializer.save()
+            target_attendee.save(update_fields=['modified'])
+
+        else:
+            time.sleep(2)
+            raise PermissionDenied(
+                detail="Can't create attending across different organization"
+            )
+
     def perform_create(self, serializer):
         target_attendee = get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
-        if target_attendee.under_same_org_with(
-            self.request.user.attendee and self.request.user.attendee.id
-        ):
+        if self.request.user.privileged_to_edit(target_attendee.id):
             serializer.save(attendee=target_attendee)
+            target_attendee.save(update_fields=['modified'])
 
         else:
             time.sleep(2)
@@ -86,6 +99,7 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
         )
         if self.request.user.privileged_to_edit(target_attendee.id):
             AttendingService.destroy_with_associations(instance)
+            target_attendee.save(update_fields=['modified'])
 
         else:
             time.sleep(2)

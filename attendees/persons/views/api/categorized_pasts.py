@@ -79,19 +79,37 @@ class ApiCategorizedPastsViewSet(SpyGuard, viewsets.ModelViewSet):
             return qs.exclude(category__display_name__in=[Past.COUNSELING, Past.COWORKER])
 
     def perform_destroy(self, instance):
-        subject = instance.subject
-        instance.delete()
-        subject.save(update_fields=['modified'])
+        if self.request.user.privileged_to_edit(self.request.META.get('HTTP_X_TARGET_ATTENDEE_ID')):  # checked same org
+            subject = instance.subject
+            instance.delete()
+            subject.save(update_fields=['modified'])  # Assuming subject is the Attendee only
+        else:
+            time.sleep(2)
+            raise PermissionDenied(
+                detail=f"Not allowed to delete {Past.__name__}"
+            )
 
     def perform_update(self, serializer):
-        instance = serializer.save()
-        instance.subject.save(update_fields=['modified'])
+        if self.request.user.privileged_to_edit(self.request.META.get('HTTP_X_TARGET_ATTENDEE_ID')):  # checked same org
+            instance = serializer.save()
+            instance.subject.save(update_fields=['modified'])  # Assuming subject is the Attendee only
+        else:
+            time.sleep(2)
+            raise PermissionDenied(
+                detail=f"Not allowed to update {Past.__name__}"
+            )
 
     def perform_create(
         self, serializer
-    ):  # SpyGuard ensured requester & target_attendee belongs to the same org.
-        instance = serializer.save(organization=self.request.user.organization)
-        instance.subject.save(update_fields=['modified'])
+    ):  # API can't rely on SpyGuard checking requester & target_attendee belongs to the same org.
+        if self.request.user.privileged_to_edit(self.request.META.get('HTTP_X_TARGET_ATTENDEE_ID')):  # checked same org
+            instance = serializer.save(organization=self.request.user.organization)
+            instance.subject.save(update_fields=['modified'])  # Assuming subject is the Attendee only
+        else:
+            time.sleep(2)
+            raise PermissionDenied(
+                detail=f"Not allowed to create {Past.__name__}"
+            )
 
 
 api_categorized_pasts_viewset = ApiCategorizedPastsViewSet
