@@ -252,6 +252,12 @@ class AttendeeService:
                 raise Exception(
                     "Can't process both 'or'/'and' at the same level! please wrap them in separated lists."
                 )
+            elif ('!' in filters_list and and_string in filters_list) or ('!' in filters_list and or_string in filters_list):
+                raise Exception(
+                    "Can't process 'or'/'and' with Unary filter(!) at the same level, please wrap them in separated lists."
+                )
+            elif '!' == filters_list[0]:   # currently only support one element for unary filter
+                return ~AttendeeService.filter_parser(filters_list[1], meets, current_user)
             elif filters_list[1] == and_string:
                 and_list = [
                     element for element in filters_list if element != and_string

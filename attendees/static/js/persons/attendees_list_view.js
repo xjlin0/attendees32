@@ -400,11 +400,6 @@ Attendees.dataAttendees = {
         headerFilter: {
           dataSource: [
             {
-              text: "for-hide",
-              value: [],
-              template: (data) => '<span class="for-hide">' + data.text + '</span>',
-            },
-            {
               text: meet.display_name,
               value: ['attendings__meets__slug', '=', meet.slug],
               template: (data) => '<span title="Select all will NOT work">' + data.text + '</span>',

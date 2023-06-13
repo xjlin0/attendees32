@@ -17,10 +17,6 @@
   /*}*/
 }
 
-div.dx-list-select-all, div.dx-list-item:has(span.for-hide) {
-  display: none;
-}  /* Prevent DevExtreme header filter from generating Unary conditions */
-
 .page-break {
   display: block;
   page-break-before: always;
