@@ -288,37 +288,40 @@ class AttendeeService:
                         filters_list[0], meets, current_user
                     ): filters_list[2],
                 }
-                if filters_list[0] == 'attendings__meets__slug':
+                if filters_list[0] == 'attendings__meets__slug' or Meet.objects.filter(id__in=meets, slug=filters_list[0]).exists():
                     condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
 
                 return Q(**condition)
             elif filters_list[1] == "startswith":
-                return Q(
-                    **{
-                        AttendeeService.field_convert(
-                            filters_list[0], meets, current_user
-                        )
-                        + "__istartswith": filters_list[2]
-                    }
-                )
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    )
+                    + "__istartswith": filters_list[2]
+                }
+                if Meet.objects.filter(id__in=meets, slug=filters_list[0]).exists():
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+                return Q(**condition)
             elif filters_list[1] == "endswith":
-                return Q(
-                    **{
-                        AttendeeService.field_convert(
-                            filters_list[0], meets, current_user
-                        )
-                        + "__iendswith": filters_list[2]
-                    }
-                )
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    )
+                    + "__iendswith": filters_list[2]
+                }
+                if Meet.objects.filter(id__in=meets, slug=filters_list[0]).exists():
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+                return Q(**condition)
             elif filters_list[1] == "contains":
-                return Q(
-                    **{
-                        AttendeeService.field_convert(
-                            filters_list[0], meets, current_user
-                        )
-                        + "__icontains": filters_list[2]
-                    }
-                )
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    )
+                    + "__icontains": filters_list[2]
+                }
+                if Meet.objects.filter(id__in=meets, slug=filters_list[0]).exists():
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+                return Q(**condition)
             elif filters_list[1] == "notcontains":
                 return ~Q(
                     **{
