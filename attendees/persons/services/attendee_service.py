@@ -240,7 +240,7 @@ class AttendeeService:
         A recursive method return Q function based on multi-level filter conditions. When filtering
         for attendingmeet, it adds extra filters on attendingmeet__finish gte conditions.
         :param filters_list: a string of multi-level list of filter conditions
-        :param meets: assembly ids
+        :param meets: meet ids
         :param current_user:
         :return: Q function, could be an empty Q()
         """
@@ -312,6 +312,15 @@ class AttendeeService:
                 )
             elif filters_list[1] == "contains":
                 return Q(
+                    **{
+                        AttendeeService.field_convert(
+                            filters_list[0], meets, current_user
+                        )
+                        + "__icontains": filters_list[2]
+                    }
+                )
+            elif filters_list[1] == "notcontains":
+                return ~Q(
                     **{
                         AttendeeService.field_convert(
                             filters_list[0], meets, current_user
