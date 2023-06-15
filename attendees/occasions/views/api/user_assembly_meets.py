@@ -24,6 +24,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
         """
         Todo: this endpoint is used by datagrid_attendee_update_view page (with params).
               Do check if the editor and the editing target relations and permissions
+        ps. Generally speaking meets canNOT be filtered by start/finish since users may want to see future/past ones.
         :return:
         """
         current_user = self.request.user
