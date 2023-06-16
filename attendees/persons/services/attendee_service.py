@@ -240,7 +240,7 @@ class AttendeeService:
         A recursive method return Q function based on multi-level filter conditions. When filtering
         for attendingmeet, it adds extra filters on attendingmeet__finish gte conditions.
         :param filters_list: a string of multi-level list of filter conditions
-        :param meets: meet ids
+        :param meets: optional meet ids
         :param current_user:
         :return: Q function, could be an empty Q()
         """
@@ -288,7 +288,7 @@ class AttendeeService:
                         filters_list[0], meets, current_user
                     ): filters_list[2],
                 }
-                if filters_list[0] == 'attendings__meets__slug' or Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
+                if filters_list[0] == 'attendings__meets__slug' or (meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists()):
                     condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
 
                 return Q(**condition)
@@ -299,7 +299,7 @@ class AttendeeService:
                     )
                     + "__istartswith": filters_list[2]
                 }
-                if Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
+                if meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
                     condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
                 return Q(**condition)
             elif filters_list[1] == "endswith":
@@ -309,7 +309,7 @@ class AttendeeService:
                     )
                     + "__iendswith": filters_list[2]
                 }
-                if Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
+                if meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
                     condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
                 return Q(**condition)
             elif filters_list[1] == "contains":
@@ -319,7 +319,7 @@ class AttendeeService:
                     )
                     + "__icontains": filters_list[2]
                 }
-                if Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
+                if meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
                     condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
                 return Q(**condition)
             elif filters_list[1] == "notcontains":
