@@ -2871,6 +2871,7 @@ Attendees.datagridUpdate = {
         dataType: 'date',
         editorOptions: {
           dateSerializationFormat: 'yyyy-MM-dd',
+          showClearButton: true,
         },
       },
       {
@@ -2878,6 +2879,7 @@ Attendees.datagridUpdate = {
         dataType: 'date',
         editorOptions: {
           dateSerializationFormat: 'yyyy-MM-dd',
+          showClearButton: true,
         },
       },
       {
@@ -2965,7 +2967,7 @@ Attendees.datagridUpdate = {
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
                 if (formKey !== 'file') {
-                  folkAttendeeFormData.append(formKey, ['start', 'finish'].includes(formKey) ? formValue : JSON.stringify(formValue));
+                  folkAttendeeFormData.append(formKey, ['start', 'finish'].includes(formKey) ? (formValue === null ? '' : formValue) : JSON.stringify(formValue));
                 }
               }
             }
