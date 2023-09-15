@@ -1111,6 +1111,9 @@ Attendees.datagridUpdate = {
         } else if (attending.attending_label) {
           label = attending.attending_label.replace(/\s+/g, ' ');  // replace multiple space
           title = label;
+        } else if (!attending.registrant) {
+            label = 'Self'
+            title = label;
         }
         $('<button>', {
           text: label,

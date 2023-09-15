@@ -385,7 +385,7 @@ EMAIL_HOST=sendgrid
 * backup current db to container `docker-compose -f local.yml exec postgres backup`
 * list backup files in container `docker-compose -f local.yml exec postgres backups`
 * copy all backup files from container to dev local computer `docker cp $(docker-compose -f local.yml ps -q postgres):/backups ./backups`
-* copy all backup files from dev local computer to container `docker cp ./backups/* $(docker-compose -f local.yml ps -q postgres):/backups/`
+* copy a backup file from dev local computer to container `docker cp ./backups/<filename> $(docker-compose -f local.yml ps -q postgres):/backups/`
 * restore a backup from a backup file in container `docker-compose -f local.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
 * print INSERT commands for a table `docker-compose -f local.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>` 
 

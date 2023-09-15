@@ -48,14 +48,23 @@ class AttendingMinimalSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """
         Update and return an existing `Attending` instance, given the validated data.
-
         """
+
         if "registration" in validated_data:
             registration_data = validated_data.pop("registration")
-            registration, created = Registration.objects.update_or_create(
-                id=instance.registration.id if instance.registration else None,
-                defaults=registration_data,
-            )
+            assembly = registration_data.get('assembly')
+            registrant = registration_data.get('registrant')
+            filters = {
+                'defaults': registration_data,
+            }
+            if instance.registration:
+                filters['id'] = instance.registration.id
+            if assembly:
+                filters['assembly'] = assembly
+            if registrant:
+                filters['registrant'] = registrant
+
+            registration, created = Registration.objects.update_or_create(**filters)
             validated_data["registration"] = registration
 
         obj, created = Attending.objects.update_or_create(
