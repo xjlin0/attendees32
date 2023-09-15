@@ -1099,15 +1099,18 @@ Attendees.datagridUpdate = {
 
     attendings.forEach(attending => {
       if (attending && attending.attending_id) {
-        let label, title;
-        if (attending.attending_label){
-          const originalLabel = (attending.attending_label).match(/\(([^)]+)\)/).pop();  // get substring between parentheses
+        let label, title, text_between_parentheses = attending.attending_label && (attending.attending_label).match(/\(([^)]+)\)/);  // get substring between parentheses
+        if (attending.attending_label && text_between_parentheses){
+          const originalLabel = text_between_parentheses.pop();
           label = originalLabel.replace(Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original, 'Self');
           title = label;
-        } else {
+        } else if (attending.registrant) {  // registrant is nullable
           const registrant_name = attending.registrant.replace(Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original, 'Self');
           label = attending.registration_assembly ? registrant_name + ' ' + attending.registration_assembly : registrant_name + ' Generic';
           title = attending.registrant;
+        } else if (attending.attending_label) {
+          label = attending.attending_label.replace(/\s+/g, ' ');  // replace multiple space
+          title = label;
         }
         $('<button>', {
           text: label,
@@ -1840,9 +1843,9 @@ Attendees.datagridUpdate = {
     if (!Attendees.utilities.editingEnabled) {
       d.resolve();
     }else {
-      $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.registrationsEndpoint, {
-        assembly: registration.assembly,
-        registrant: registration.registrant,
+      $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendingsEndpoint, {
+        registration__assembly: registration.assembly,
+        registration__registrant: registration.registrant,
       }).done((response) => {
         const registrations = response && response.data || [];
         if (registrations.length < 1){

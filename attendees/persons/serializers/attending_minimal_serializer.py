@@ -27,10 +27,17 @@ class AttendingMinimalSerializer(serializers.ModelSerializer):
 
         if "registration" in validated_data:
             registration_data = validated_data.pop("registration")
-            registration, created = Registration.objects.update_or_create(
-                id=None,
-                defaults=registration_data,
-            )
+            filters = {
+                'defaults': registration_data,
+            }
+            assembly = registration_data.get('assembly')
+            registrant = registration_data.get('registrant')
+
+            if assembly:
+                filters['assembly'] = assembly
+            if registrant:
+                filters['registrant'] = registrant
+            registration, created = Registration.objects.update_or_create(**filters)
             validated_data["registration"] = registration
         obj, created = Attending.objects.update_or_create(
             id=None,

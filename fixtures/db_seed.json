@@ -11900,6 +11900,40 @@
     }
   },
   {
+    "model": "persons.relation",
+    "pk": 39,
+    "fields": {
+      "created": "1999-04-30T15:18:03.143Z",
+      "modified": "2020-04-30T15:31:56.243Z",
+      "is_removed": false,
+      "gender": "MALE",
+      "reciprocal_ids": "[]",
+      "title": "grand son",
+      "display_order": 90,
+      "emergency_contact": true,
+      "scheduler": false,
+      "relative": true,
+      "consanguinity": true
+    }
+  },
+  {
+    "model": "persons.relation",
+    "pk": 40,
+    "fields": {
+      "created": "1999-04-30T15:18:03.143Z",
+      "modified": "2020-04-30T15:31:56.243Z",
+      "is_removed": false,
+      "gender": "FEMALE",
+      "reciprocal_ids": "[]",
+      "title": "grand daughter",
+      "display_order": 91,
+      "emergency_contact": true,
+      "scheduler": false,
+      "relative": true,
+      "consanguinity": true
+    }
+  },
+  {
     "model": "persons.registration",
     "pk": 1,
     "fields": {

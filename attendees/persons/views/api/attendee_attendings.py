@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from django.conf import settings
-from attendees.persons.models import Attendee, Attending
+from attendees.persons.models import Attendee, Attending, Utility
 from attendees.persons.serializers.attending_minimal_serializer import (
     AttendingMinimalSerializer,
 )
@@ -40,10 +40,18 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
             or self.request.user.attendee.can_schedule_attendee(target_attendee.id)
         ):
             attending_id = self.kwargs.get("pk")
-            qs = Attending.objects.filter(
-                attendee=target_attendee,
-                attendee__division__organization=current_user_organization,
-            )  # With correct data this query will only work if current user's org is the same as targeting attendee's
+            filters = {
+                'attendee': target_attendee,
+                'attendee__division__organization': current_user_organization,
+            }  # With correct data this query will only work if current user's org is the same as targeting attendee's
+
+            registration__assembly = Utility.presence(self.request.query_params.get("registration__assembly"))
+            registration__registrant = Utility.presence(self.request.query_params.get("registration__registrant"))
+            if registration__assembly:
+                filters['registration__assembly'] = registration__assembly
+            if registration__registrant:
+                filters['registration__registrant'] = registration__registrant
+            qs = Attending.objects.filter(**filters)
 
             if attending_id:
                 return qs.filter(pk=attending_id)
