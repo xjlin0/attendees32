@@ -92,7 +92,7 @@ class Attending(TimeStampedModel, SoftDeletableModel, Utility):
         return ",".join([d.display_name for d in self.meets.all()])
 
     @property
-    def attending_label(self):  # parentheses is no longer used since sorting by attendee name is needed.
+    def attending_label(self):  # parentheses are no longer used since sorting by attendee name is needed.
         return f"{self.attendee.display_label} by {self.registration}" if self.registration else self.attendee.display_label
 
     @cached_property

@@ -1850,11 +1850,11 @@ Attendees.datagridUpdate = {
         registration__assembly: registration.assembly,
         registration__registrant: registration.registrant,
       }).done((response) => {
-        const registrations = response && response.data || [];
-        if (registrations.length < 1){
+        const attendings = response && response.data || [];
+        if (attendings.length < 1) {
           d.resolve();
-        } else if(registrations.length < 2){
-          registrations[0].id === registration.id ? d.resolve() : d.reject();
+        } else if(attendings.length < 2) {
+          (attendings[0].registration && attendings[0].registration.id) === registration.id ? d.resolve() : d.reject();
         }
         d.reject();
       });

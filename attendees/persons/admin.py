@@ -228,6 +228,7 @@ class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
         models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = (
+        "id",
         "attendee__first_name",
         "attendee__last_name",
         "attendee__first_name2",
