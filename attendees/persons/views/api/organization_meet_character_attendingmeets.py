@@ -31,12 +31,19 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
         search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
+        start = self.request.query_params.get("start")
+        finish = self.request.query_params.get("finish")
 
         if page is not None:
             if group_column:
                 filters = Q(meet__slug__in=request.query_params.getlist("meets[]", [])).add(
                     Q(character__slug__in=request.query_params.getlist("characters[]", [])), Q.AND).add(
                     Q(meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                if start:
+                    filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
+                if finish:
+                    filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
 
                 if search_value:
                     filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
