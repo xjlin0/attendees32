@@ -42,6 +42,7 @@
 {% block content %}
 <div class="roster-container">
   {% csrf_token %}
+  {{ grade_converter|json_script:"organization-grade-converter" }}
   <div class="d-flex justify-content-between">
     <div class="d-flex">
       <h3>

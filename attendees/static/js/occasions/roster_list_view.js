@@ -15,6 +15,7 @@ Attendees.roster = {
     console.log('static/js/occasions/roster_list_view.js');
     Attendees.roster.initFiltersForm();
     Attendees.roster.initCheckOutPopup();
+    Attendees.roster.gradeConverter = JSON.parse(document.getElementById('organization-grade-converter').textContent);
   },
 
   updateAttendance: (event) => {
@@ -1025,6 +1026,27 @@ Attendees.roster = {
             $('<img>', { src: options.value })
               .appendTo(container);
           }
+        },
+      },
+      {
+        dataField: 'attending__attendee__infos__fixed__grade',
+        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
+        caption: 'Grade',
+        visible: false,
+        cellTemplate: (cellElement, cellInfo) => {
+          if (cellInfo.displayValue) {
+            cellElement.append ('<span>' + Attendees.roster.gradeConverter[parseInt(cellInfo.displayValue)] + '<span>');
+          }
+        }
+      },
+      {
+        dataField: 'attending__attendee__infos__fixed__food_pref',
+        allowGrouping: false,
+        visible: false,
+        caption: 'Food pref',
+        dataType: 'string',
+        editorOptions: {
+          autoResizeEnabled: true,
         },
       },
       {

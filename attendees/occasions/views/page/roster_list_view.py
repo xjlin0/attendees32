@@ -19,7 +19,7 @@ class RosterListView(RouteGuard, ListView):
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 # "content_type_models_endpoint": "/whereabouts/api/content_type_models/",
                 "series_gatherings_endpoint": "/occasions/api/series_gatherings/",
-                # "meets_endpoint_by_id": "/occasions/api/user_assembly_meets/",
+                "grade_converter": self.request.user.organization.infos.get('grade_converter', []) if self.request.user.organization else [],
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "categories_endpoint": "/persons/api/all_categories/",
                 "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",

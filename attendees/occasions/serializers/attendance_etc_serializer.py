@@ -12,6 +12,8 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
     registrant_attendee_id = serializers.CharField(read_only=True)
     attending__attendee__infos__names__original = serializers.CharField(read_only=True, source='attending_name')
     photo = serializers.CharField(read_only=True)
+    attending__attendee__infos__fixed__grade = serializers.CharField(read_only=True)
+    attending__attendee__infos__fixed__food_pref = serializers.CharField(read_only=True)
     # file = serializers.FileField(use_url=True, allow_empty_file=True, allow_null=True)  # cause 400 or with local domain name
     file_path = serializers.SerializerMethodField(required=False, read_only=True)
     encoded_file = serializers.CharField(required=False)
