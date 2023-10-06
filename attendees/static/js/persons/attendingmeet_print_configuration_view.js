@@ -190,7 +190,7 @@ Attendees.attendingmeetPrintConfiguration = {
               type: 'default',
               icon: 'print',
               useSubmitBehavior: false,
-              onClick: () => Attendees.attendingmeetPrintConfiguration.submitForm('Do you want to see the participations for print? (This will take 20 secs.)', document.attendingmeetPrintConfigurationForm.action),
+              onClick: () => Attendees.attendingmeetPrintConfiguration.submitForm('Do you want to see the participations for print? (This will take 20 secs. After pages show up, please press Ctrl-P or Cmd-P to print)', document.attendingmeetPrintConfigurationForm.action),
             },
           },
           {
@@ -204,7 +204,7 @@ Attendees.attendingmeetPrintConfiguration = {
               type: 'success',
               icon: 'message',
               useSubmitBehavior: false,
-              onClick: () => Attendees.attendingmeetPrintConfiguration.submitForm('Do you want to see the envelopes for print? (This will take 10 secs.)', document.attendingmeetPrintConfigurationForm.dataset.envelopesUrl),
+              onClick: () => Attendees.attendingmeetPrintConfiguration.submitForm('Do you want to see the envelopes for print? (This will take 10 secs. After pages show up, please press Ctrl-P or Cmd-P to print) ', document.attendingmeetPrintConfigurationForm.dataset.envelopesUrl),
             },
           },
         ],
