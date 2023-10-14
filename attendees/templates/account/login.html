@@ -47,12 +47,14 @@
 {% endif %}
 
 <form class="login" method="POST" action="{% url 'account_login' %}">
-  {% csrf_token %}
   {{ form|crispy }}
+  {% if not "Too many failed login attempts. Try again later." in form.non_field_errors %}
+  {% csrf_token %}
   {% if redirect_field_value %}
   <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
   {% endif %}
   <button class="primaryAction btn btn-primary" type="submit">{% translate "Sign In" %}</button>
+  {% endif %}
   <a class="button secondaryAction btn btn-outline-warning" href="{% url 'account_reset_password' %}">{% translate "Forgot Password?" %}</a>
 </form>
 
