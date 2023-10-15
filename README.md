@@ -250,6 +250,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * if using proxy on apache, please set `ProxyPreserveHost on` to pass host header in requests, so that the email links will have the correct domain name.
 * For keeping the site surviving reboot, add starting of the Django upon system reboot, such as `sudo su user_name sh -c 'sleep 99 && cd ~user_name/repo_dir && docker-compose -f production.yml up -d' >> /tmp/attendee_startup.log` (need work)
 </details>
+* enter Redis-CLI by `docker exec -it redis redis-cli`
 
 ## DB SQL Backup & Restore process (with production.yml)
 <details>
@@ -326,6 +327,7 @@ Please add your IP to ALLOWED_HOSTS in config/settings/local.py
 * Enter Django console by `docker-compose -f local.yml run django python manage.py shell_plus`
 * remote debug in PyCharm for docker, please check [django cookie doc](https://github.com/pydanny/cookiecutter-django/blob/master/{{cookiecutter.project_slug}}/docs/pycharm/configuration.rst).
 </details>
+* enter Redis-CLI by `docker exec -it redis redis-cli`
 
 ## How to start dev env on macOS with VirtualBox and docker-machine
 <details>
@@ -379,6 +381,7 @@ EMAIL_HOST=sendgrid
 * Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/settings/mac/#file-sharing).
 * build and start the CentOS based local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
 * to see django log: `docker-compose -f local.yml logs django`
+* enter Redis-CLI by `docker exec -it redis redis-cli`
 
 
 ## DB SQL Backup & Restore process (with local.yml)
