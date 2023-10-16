@@ -5,6 +5,7 @@ from attendees.persons.models import AttendingMeet
 
 class AttendingMeetEtcSerializer(serializers.ModelSerializer):
     meet__assembly = serializers.IntegerField(read_only=True, source='assembly')  # field name conversion for UI to group directly later
+    meet__assembly__display_order = serializers.IntegerField(read_only=True)
     registrant_attendee_id = serializers.CharField(read_only=True)
     attendee_id = serializers.CharField(read_only=True)
     attending__registration__registrant__infos__names__original = serializers.CharField(read_only=True, source='register_name')

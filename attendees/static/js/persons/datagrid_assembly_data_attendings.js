@@ -30,7 +30,7 @@ Attendees.attendings = {
     const meets = $meetsSelectBox.val() || [];
     const characters = $charactersSelectBox.val() || [];
     const $attendingDatagrid = $("div.attendings").dxDataGrid("instance");
-    const availableMeets = JSON.parse(document.querySelector('div.attendings').dataset.availableMeets);
+    // const availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent);;
 
     if (meets.length && characters.length) {
       const url = $('div.attendings').data('attendings-endpoint');
@@ -95,8 +95,8 @@ Attendees.attendings = {
   setAttendingsFormatsColumns: () => {
 
     const meetColumns=[];
-    const availableMeets = JSON.parse(document.querySelector('div.attendings').dataset.availableMeets); // $('div.attendings').data('available-meets');
-    // const availableCharacters = JSON.parse(document.querySelector('div.attendings').dataset.availableCharacters);
+    const availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent); // $('div.attendings').data('available-meets');
+    // const availableCharacters = JSON.parse(document.getElementById('organization-available-characters').textContent);
 
     availableMeets.forEach(meet => {
       meetColumns.push({

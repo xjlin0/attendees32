@@ -1,4 +1,3 @@
-from json import dumps
 from time import sleep
 
 from django.conf import settings
@@ -42,7 +41,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
         important_meets = {v: int(k) for k, v in important_pasts.items()}
         context.update(
             {
-                "pasts_to_add": dumps({meet.display_name: important_meets.get(meet.id) for meet in Meet.objects.filter(pk__in=important_meets.keys()).order_by('created')}),
+                "pasts_to_add": {meet.display_name: important_meets.get(meet.id) for meet in Meet.objects.filter(pk__in=important_meets.keys()).order_by('created')},
                 "attendee_contenttype_id": ContentType.objects.get_for_model(Attendee).id,
                 'user_organization_directory_meet': self.request.user.organization.infos.get('settings', {}).get('default_directory_meet'),
                 "teams_endpoint": "/occasions/api/organization_meet_teams/",
@@ -68,13 +67,11 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 "family_attendees_endpoint": "/persons/api/datagrid_data_familyattendees/",
                 "family_category_id": Attendee.FAMILY_CATEGORY,
                 "targeting_attendee_id": targeting_attendee_id,
-                "grade_converter": dumps(self.request.user.organization.infos.get('grade_converter', []) if self.request.user.organization else []),
-                "divisions": dumps(
-                    list(
-                        Division.objects.filter(
-                            organization=self.request.user.attendee.division.organization if hasattr(self.request.user, 'attendee') else self.request.user.organization,
-                        ).values("id", "display_name", "infos")
-                    )
+                "grade_converter": self.request.user.organization.infos.get('grade_converter', []) if self.request.user.organization else [],
+                "divisions": list(
+                    Division.objects.filter(
+                        organization=self.request.user.attendee.division.organization if hasattr(self.request.user, 'attendee') else self.request.user.organization,
+                    ).values("id", "display_name", "infos")
                 ),  # to avoid simultaneous AJAX calls
                 "attendee_search": "/persons/api/datagrid_data_attendees/",
                 "attendee_urn": "/persons/attendee/",

@@ -109,10 +109,9 @@
     </div>
 
   </form>
-
+{{ available_meets_json|json_script:"organization-available-meets" }}
+<!--{{ available_characters_json|json_script:"organization-available-characters" }}-->
   <div class="attendings"
-      data-available-meets="{{available_meets_json}}"
-      data-available-characters="{{available_characters_json}}"
       data-divisions-endpoint="{{divisions_endpoint}}"
       data-teams-endpoint="{{teams_endpoint}}"
       data-gatherings-endpoint="{{gatherings_endpoint}}"

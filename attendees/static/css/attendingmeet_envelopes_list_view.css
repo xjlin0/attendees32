@@ -1,0 +1,47 @@
+@media print {
+  @page {
+    margin: 0.4in;
+    size: 9.5in 4.12in;  /* COM 10 envelope landscape */
+  }
+}
+
+span.paused {
+  text-decoration: line-through;
+  color: SlateGrey;
+}
+
+div.mono-space {
+  font-family: monospace;
+}
+
+div.page-break {
+  display: block;
+  page-break-before: always;
+}
+
+div.d-flex {
+  display: flex;
+}
+
+div.sender {
+  flex-basis: 25rem;
+}
+
+h6.center-text {
+  text-align: center;
+  width: 22rem;
+}
+
+div.recipient:hover {
+  background: LightSkyBlue;
+  cursor: pointer;
+}
+
+div.dark-background {
+  background-color: #E5E4E2;
+}
+
+div.attendingmeet-envelope-container a.link-as-text {
+  text-decoration: none;
+  color: inherit;
+}

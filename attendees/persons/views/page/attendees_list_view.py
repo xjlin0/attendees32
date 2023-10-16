@@ -1,5 +1,3 @@
-from json import dumps
-
 from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q
 from django.shortcuts import render
@@ -38,7 +36,7 @@ class AttendeesListView(RouteGuard, ListView):
             .annotate(
                 assembly_name=F("assembly__display_name"),
             )
-            .order_by("assembly_name")
+            .order_by("assembly__display_order", "assembly_name")
             .values("id", "slug", "display_name", "assembly_name", "infos__preview_url")
         )  # Todo 20210711 only coworkers can see all Meet, general users should only see what they attended
         allowed_to_create_attendee = Menu.user_can_create_attendee(self.request.user)
@@ -47,7 +45,7 @@ class AttendeesListView(RouteGuard, ListView):
                 "family_attendances_urn": family_attendances_menu.urn
                 if family_attendances_menu
                 else None,
-                "available_meets_json": dumps(list(available_meets)),
+                "available_meets_json": list(available_meets),
                 "allowed_to_create_attendee": allowed_to_create_attendee,
                 "create_attendee_urn": "/persons/attendee/new",
             }

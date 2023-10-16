@@ -228,6 +228,7 @@ class AttendingAdmin(PgHistoryPage, admin.ModelAdmin):
         models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = (
+        "id",
         "attendee__first_name",
         "attendee__last_name",
         "attendee__first_name2",
@@ -325,6 +326,7 @@ class AttendingMeetAdmin(PgHistoryPage, admin.ModelAdmin):
     }
     list_display_links = ("attending",)
     autocomplete_fields = ('attending',)
+    search_fields = ('infos', 'attending__attendee__infos',)
     readonly_fields = ["id", "created", "modified"]
     list_display = (
         "id",

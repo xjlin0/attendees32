@@ -1,0 +1,79 @@
+{% load static i18n %}
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{{directory_header}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Activities/Attendees Management">
+    <meta name="author" content="Jack Jack">
+
+    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/attendingmeet_report_list_view.css' %}">
+
+    <script defer
+            src="https://unpkg.com/pagedjs/dist/paged.polyfill.js">
+    </script>
+
+    <script defer
+            type="text/javascript"
+            src="{% static 'js/persons/attendingmeet_report_list_view.js' %}">
+    </script>
+
+  </head>
+
+  <body data-url="{{attendingmeet_url}}">
+    {% csrf_token %}
+    <div class="attendingmeet-report-container"
+         title="click to pause/unpause participations, double click to edit more">
+      <h1 class="text-center"
+          title="{{meet_slug}}">
+        {{report_title}}
+      </h1>
+      <div class="flex-justify-between border-bottom">
+        <div></div>
+        <div>{{report_date}}</div>
+      </div>
+
+      {% for folk in families %}
+        {% if folk.families %}
+          <div class="folk-container border-bottom {% cycle 'dark-background' '' %}">
+            <div class="family-name">
+              <a class="link-as-text"
+                 title="click to show/edit the first attendee"
+                 href="{{attendee_url}}{{folk.first_attendee_id}}">
+                {{ folk.family_name }}
+              </a>
+            </div>
+            <div class="members-area">
+              <div class="members-container">
+                {% for member_id, member_attrs in folk.families.items %}
+                  <div id="{{member_attrs.attendingmeet_id}}"
+                       class="member border-bottom border-left {{member_attrs.paused|yesno:'paused,'}}"
+                       title="{{member_attrs.attendingmeet_note}}"
+                       data-attendee-id="{{member_id}}"
+                       {% if member_attrs.paused %}
+                         data-previous-category="{{scheduled_category}}"
+                       {% endif %}
+                       data-category="{{member_attrs.attendingmeet_category}}">
+                    <span class="count mono-space"
+                          style="display: {{member_attrs.paused|yesno:'None,inline'}}">
+                    </span>
+                    <span class="mono-space">{{member_attrs.division|default_if_none:" "}}</span>&nbsp;
+                    {{member_attrs.first_name|default_if_none:""}}
+                    {{member_attrs.last_name2|default_if_none:""}}{{member_attrs.first_name2|default_if_none:""}}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </body>
+</html>
+

@@ -29,7 +29,7 @@ Attendees.datagridUpdate = {
     // assembly: parseInt(document.querySelector('div.datagrid-attendee-update').dataset.currentAssemblyId),
     category: 1,  // scheduled
     start: new Date().toISOString(),
-    finish: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), // 1 years from now
+    finish: new Date(new Date().setFullYear(new Date().getFullYear() + 20)).toISOString(), // 20 years from now
   },
   // addressId: '', // for sending address data by AJAX
   divisionShowAttendeeInfos: {},
@@ -154,8 +154,8 @@ Attendees.datagridUpdate = {
 
   initAttendeeForm: () => {
     Attendees.datagridUpdate.attendeeAttrs = document.querySelector('div.datagrid-attendee-update');
-    Attendees.datagridUpdate.gradeConverter = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.gradeConverter).reduce((all, now, index) =>{all.push({id: index, label: now}); return all}, []);
-    Attendees.datagridUpdate.pastsToAdd = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.pastsToAdd);
+    Attendees.datagridUpdate.gradeConverter = JSON.parse(document.getElementById('organization-grade-converter').textContent).reduce((all, now, index) =>{all.push({id: index, label: now}); return all}, []);  // for dxSelectBox
+    Attendees.datagridUpdate.pastsToAdd = JSON.parse(document.getElementById('organization-pasts-to-add').textContent);
     Attendees.datagridUpdate.pastsCategories = new Set(Object.values(Attendees.datagridUpdate.pastsToAdd));
     Attendees.datagridUpdate.processDivisions();
     Attendees.datagridUpdate.divisionIdNames = Attendees.datagridUpdate.divisions.reduce((obj, item) => ({...obj, [item.id]: item.display_name}) ,{});
@@ -211,7 +211,7 @@ Attendees.datagridUpdate = {
   },
 
   processDivisions: () => {
-    Attendees.datagridUpdate.divisions = JSON.parse(Attendees.datagridUpdate.attendeeAttrs.dataset.divisions);
+    Attendees.datagridUpdate.divisions = JSON.parse(document.getElementById('user-organization-divisions').textContent);
     Attendees.datagridUpdate.divisionShowAttendeeInfos = Object.entries(Attendees.datagridUpdate.divisions).reduce((acc, curr) => {
       const [key, value] = curr;
       acc[value.id] = value.infos.show_attendee_infos || {};
@@ -1099,15 +1099,21 @@ Attendees.datagridUpdate = {
 
     attendings.forEach(attending => {
       if (attending && attending.attending_id) {
-        let label, title;
-        if (attending.attending_label){
-          const originalLabel = (attending.attending_label).match(/\(([^)]+)\)/).pop();  // get substring between parentheses
+        let label, title, text_between_parentheses = attending.attending_label && (attending.attending_label).match(/\(([^)]+)\)/);  // get substring between parentheses
+        if (attending.attending_label && text_between_parentheses){
+          const originalLabel = text_between_parentheses.pop();
           label = originalLabel.replace(Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original, 'Self');
           title = label;
-        } else {
+        } else if (attending.registrant) {  // registrant is nullable
           const registrant_name = attending.registrant.replace(Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original, 'Self');
           label = attending.registration_assembly ? registrant_name + ' ' + attending.registration_assembly : registrant_name + ' Generic';
           title = attending.registrant;
+        } else if (attending.attending_label) {
+          label = attending.attending_label.replace(/\s+/g, ' ');  // replace multiple space
+          title = label;
+        } else if (!attending.registrant) {
+            label = 'Self'
+            title = label;
         }
         $('<button>', {
           text: label,
@@ -1311,13 +1317,13 @@ Attendees.datagridUpdate = {
           text: 'phone1',
         },
         editorOptions: {
-          placeholder: '+1(000)000-0000',
           attr: { 'autocomplete': false },
         },
         template: (data, itemElement) => {
           const options = {
             readOnly: !Attendees.utilities.editingEnabled,
             value: Attendees.utilities.phoneNumberFormatter(data.editorOptions.value),
+            placeholder: '+1(510)000-0000',
             onValueChanged: (e) => data.component.updateData(data.dataField, e.value.replace(/[-()]/g, '')),
           };
           const phoneEditor = $("<div id='attendee-mainform-phone1'>").dxTextBox(options);
@@ -1328,7 +1334,7 @@ Attendees.datagridUpdate = {
           {
             type: 'pattern',
             pattern: /^(\+\d{1,3})(\(\d{0,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
-            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678",
+            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678, for HK enter +852()1234-5678",
           },
         ],
       },
@@ -1340,13 +1346,13 @@ Attendees.datagridUpdate = {
           text: 'phone2',
         },
         editorOptions: {
-          placeholder: '+1(000)000-0000',
           attr: { 'autocomplete': false },
         },
         template: (data, itemElement) => {
           const options = {
             readOnly: !Attendees.utilities.editingEnabled,
             value: Attendees.utilities.phoneNumberFormatter(data.editorOptions.value),
+            placeholder: '+1(510)000-0000',
             onValueChanged: (e) => data.component.updateData(data.dataField, e.value.replace(/[-()]/g, '')),
           };
           const phoneEditor = $("<div id='attendee-mainform-phone2'>").dxTextBox(options);
@@ -1357,7 +1363,7 @@ Attendees.datagridUpdate = {
           {
             type: 'pattern',
             pattern: /^(\+\d{1,3})(\(\d{0,3}\))([0-9a-zA-Z]{2,6})-([,0-9a-zA-Z]{3,10})$/,
-            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678",
+            message: "Must be '+' national&area code like +1(510)123-4567,890 Comma for extension, for Singapore enter +65()1234-5678, for HK enter +852()1234-5678",
           },
         ],
       },
@@ -1840,15 +1846,15 @@ Attendees.datagridUpdate = {
     if (!Attendees.utilities.editingEnabled) {
       d.resolve();
     }else {
-      $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.registrationsEndpoint, {
-        assembly: registration.assembly,
-        registrant: registration.registrant,
+      $.get(Attendees.datagridUpdate.attendeeAttrs.dataset.attendingsEndpoint, {
+        registration__assembly: registration.assembly,
+        registration__registrant: registration.registrant,
       }).done((response) => {
-        const registrations = response && response.data || [];
-        if (registrations.length < 1){
+        const attendings = response && response.data || [];
+        if (attendings.length < 1) {
           d.resolve();
-        } else if(registrations.length < 2){
-          registrations[0].id === registration.id ? d.resolve() : d.reject();
+        } else if(attendings.length < 2) {
+          (attendings[0].registration && attendings[0].registration.id) === registration.id ? d.resolve() : d.reject();
         }
         d.reject();
       });
@@ -2192,10 +2198,10 @@ Attendees.datagridUpdate = {
 
                     if (addressMaybeEdited) {  // no address id means user creating new address
                       const newAddressExtra = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.extra").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.extra").option('value').trim();
-                      const newStreetNumber = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value').trim();
-                      const newRoute = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value').trim();
-                      const newCity = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value').trim();
-                      const newZIP = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value').trim();
+                      const newStreetNumber = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.street_number").option('value').trim() || '';
+                      const newRoute = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.route").option('value').trim() || '';
+                      const newCity = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.city").option('value').trim();
+                      const newZIP = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value') && Attendees.datagridUpdate.placePopupDxForm.getEditor("address.postal_code").option('value').trim();
                       const newStateAttrs = Attendees.datagridUpdate.placePopupDxForm.getEditor("address.state_id").option('selectedItem');
                       const newAddressWithoutZip = [newStreetNumber, newRoute, newAddressExtra, newCity, newStateAttrs.code].filter(item => !!item).join(', ');
                       const newAddressText = newAddressWithoutZip + (newZIP ? ', ' + newZIP + ', ' : ', ' ) + newStateAttrs.country_name;
@@ -2211,7 +2217,7 @@ Attendees.datagridUpdate = {
                             street_number: newStreetNumber,
                             route: newRoute,
                             locality: newCity,
-                            post_code: newZIP,
+                            postal_code: newZIP,
                             state: newStateAttrs.name,
                             state_code: newStateAttrs.code,
                             country: newStateAttrs.country_name,
@@ -2286,7 +2292,7 @@ Attendees.datagridUpdate = {
               itemType: 'button',
               horizontalAlignment: 'left',
               name: 'editAddressButton',
-              visible: true,
+              visible: !!placeButton.value,
               buttonOptions: {
                 elementAttr: {
                   class: 'attendee-form-submits',    // for toggling editing mode
@@ -2330,7 +2336,7 @@ Attendees.datagridUpdate = {
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.id').option('visible', false);
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.id').option('disable', true);
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('newAddressButton').option('visible', false);
-                    Attendees.datagridUpdate.placePopupDxForm.getEditor('editAddressButton').option('visible', false);
+                    Attendees.datagridUpdate.placePopupDxForm.getEditor('editAddressButton') && Attendees.datagridUpdate.placePopupDxForm.getEditor('editAddressButton').option('visible', false);
                     Attendees.datagridUpdate.placePopup.option('title', 'Creating Address');
                     Attendees.datagridUpdate.placePopupDxForm.option('formData').address.id = null;
                     Attendees.datagridUpdate.placePopupDxForm.getEditor('address.state_id').option('value', 6);  // CA
@@ -2354,7 +2360,7 @@ Attendees.datagridUpdate = {
                 type: 'danger',
                 useSubmitBehavior: false,
                 onClick: (clickEvent) => {
-                  if (confirm('Are you sure to delete the place? Instead, setting "move out" date is usually enough!')) {
+                  if (confirm('Are you sure to delete the place? Instead, setting "move out" date or "Add new address" is usually enough!')) {
                     $.ajax({
                       url: ajaxUrl,
                       method: 'DELETE',
@@ -2792,12 +2798,14 @@ Attendees.datagridUpdate = {
         },
       },
       {
+        dataHtmlTitle: 'parents: 0~9, kids: 10~99',
         dataField: 'display_order',
         caption: 'Rank',
         dataType: 'number',
       },
       {
         apiUrlName: 'api_attendee_folkattendee_scheduler_column',
+        dataHtmlTitle: "Who can see/update main attendee's activities",
         dataField: 'schedulers',
         caption: 'Scheduler',
         calculateCellValue: (rowData) => {
@@ -2812,6 +2820,7 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'emergency_contacts',
+        dataHtmlTitle: 'Who should be notified if main attendee is in emergency',
         caption: 'Emergency contact',
         calculateCellValue: (rowData) => {
           const attendeeData = Attendees.datagridUpdate.attendeeFormConfigs && Attendees.datagridUpdate.attendeeFormConfigs.formData;
@@ -2825,6 +2834,7 @@ Attendees.datagridUpdate = {
       },
       {
         apiUrlName: 'api_attendee_folkattendee_secret_column',
+        dataHtmlTitle: 'Only you, not other users, can see this relationship',
         caption: 'Secret?',
         dataType: 'boolean',
         dataField: 'infos.show_secret',
@@ -2867,6 +2877,7 @@ Attendees.datagridUpdate = {
         dataType: 'date',
         editorOptions: {
           dateSerializationFormat: 'yyyy-MM-dd',
+          showClearButton: true,
         },
       },
       {
@@ -2874,6 +2885,7 @@ Attendees.datagridUpdate = {
         dataType: 'date',
         editorOptions: {
           dateSerializationFormat: 'yyyy-MM-dd',
+          showClearButton: true,
         },
       },
       {
@@ -2961,7 +2973,7 @@ Attendees.datagridUpdate = {
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
                 if (formKey !== 'file') {
-                  folkAttendeeFormData.append(formKey, JSON.stringify(formValue));
+                  folkAttendeeFormData.append(formKey, ['start', 'finish'].includes(formKey) ? (formValue === null ? '' : formValue) : JSON.stringify(formValue));
                 }
               }
             }
@@ -3120,6 +3132,7 @@ Attendees.datagridUpdate = {
       grouping: {
         autoExpandAll: true,
       },
+      onCellPrepared: e => e.column.dataHtmlTitle && e.cellElement.attr("title", e.column.dataHtmlTitle),
       onEditingStart: (e) => {
         const grid = e.component;
         grid.beginUpdate();
@@ -3202,7 +3215,7 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'display_order',
-        helpText: 'For sorting display',
+        helpText: 'For sorting display, parents: 0~9, kids: 10~99',
       },
       {
         dataField: 'schedulers',
@@ -3211,12 +3224,12 @@ Attendees.datagridUpdate = {
       },
       {
         dataField: 'emergency_contacts',
-        helpText: "Is subject emergency_contacts of main attendee?",
+        helpText: "If the main attendee is in emergency, should the subject be notified?",
       },
       {
         dataField: 'infos.show_secret',
         apiUrlName: 'api_attendee_folkattendee_secret_column',
-        helpText: 'Is this secret? Others cannot see if checked',
+        helpText: 'Is this secret between you and the main attendee? Others cannot see if checked',
       },
       {
         dataField: 'start',
@@ -3941,6 +3954,9 @@ Attendees.datagridUpdate = {
           }
         },
       ].filter(item => {
+        if ($.isEmptyObject(Attendees.utilities.userApiAllowedUrlNames)) {
+          Attendees.utilities.userApiAllowedUrlNames = JSON.parse(document.getElementById('user-api-allowed-url-names').textContent);
+        }
         return item.apiUrlName ? item.apiUrlName in Attendees.utilities.userApiAllowedUrlNames : true;
       }),
     },
@@ -4056,6 +4072,27 @@ Attendees.datagridUpdate = {
     grouping: {
       autoExpandAll: true,
     },
+    summary: {
+      groupItems: [{
+          name: 'meet__assembly__display_order',
+          column: 'meet__assembly__display_order',
+          displayFormat: 'rank: {0}',
+          summaryType: 'custom',
+      }],
+      calculateCustomSummary: (options) => {
+        if (options.name === "meet__assembly__display_order") {
+          if (options.summaryProcess === "start") {
+              options.totalValue = 0;
+          }
+          if (options.summaryProcess === "calculate") {
+            options.totalValue = options.value;
+          }
+        }
+      },
+    },
+    sortByGroupSummaryInfo: [{
+      summaryItem: 'meet__assembly__display_order',
+    }],
     columns: [
       {
         dataField: 'attending',

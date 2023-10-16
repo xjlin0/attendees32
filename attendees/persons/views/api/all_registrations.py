@@ -19,12 +19,12 @@ class ApiAllRegistrationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
         if registration_id:
             return Registration.objects.filter(pk=registration_id)
         else:
+            assembly = Utility.presence(self.request.query_params.get("assembly"))
             filters = {
-                "assembly": Utility.presence(self.request.query_params.get("assembly")),
-                "registrant": Utility.presence(
-                    self.request.query_params.get("registrant")
-                ),
+                'registrant': Utility.presence(self.request.query_params.get("registrant")),
             }  # None is a valid value since it's null=True
+            if assembly:
+                filters['assembly'] = assembly
             return Registration.objects.filter(**filters)
 
 

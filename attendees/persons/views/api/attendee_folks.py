@@ -54,11 +54,24 @@ class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
         else:
             return attendee.folks.filter(extra_filter)
 
+    def perform_create(
+        self, serializer
+    ):  # SpyGuard ensured requester & target_attendee belongs to the same org.
+        serializer.save()
+        target_attendee = get_object_or_404(
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        )
+        target_attendee.save(update_fields=['modified'])
+
     def perform_update(self, serializer):  # Todo 20220706 respond for joining and families count
         instance = serializer.save()
+        target_attendee = get_object_or_404(
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        )
         print_directory = self.request.META.get("HTTP_X_PRINT_DIRECTORY") and instance.category_id == 0  # family
         directory_meet_id = self.request.user.organization.infos.get('settings', {}).get('default_directory_meet')
         AttendingMeetService.flip_attendingmeet_by_existing_attending(self.request.user, instance.attendees.all(), directory_meet_id, print_directory)
+        target_attendee.save(update_fields=['modified'])
 
     def perform_destroy(self, instance):
         target_attendee = get_object_or_404(
@@ -66,6 +79,7 @@ class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
         )
         if self.request.user.privileged_to_edit(target_attendee.id):
             FolkService.destroy_with_associations(instance, target_attendee)
+            target_attendee.save(update_fields=['modified'])
 
         else:
             time.sleep(2)

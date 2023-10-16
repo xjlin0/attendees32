@@ -225,6 +225,8 @@ class AttendanceService:
                 ),
                 output_field=CharField()
             )
+            annotations['attending__attendee__infos__fixed__grade'] = F("attending__attendee__infos__fixed__grade")
+            annotations['attending__attendee__infos__fixed__food_pref'] = F("attending__attendee__infos__fixed__food_pref")
         else:
             if not attendee:
                 annotations['attending__attendee__first_name'] = F("attending__attendee__first_name")

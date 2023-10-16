@@ -114,7 +114,7 @@ class AssemblyAdmin(PgHistoryPage, admin.ModelAdmin):
     prepopulated_fields = {"slug": ("display_name",)}
     # inlines = (AssemblyContactInline,)
     list_display_links = ("display_name",)
-    list_display = ("id", "division", "display_name", "slug", "get_addresses")
+    list_display = ("id", "division", "display_name", "display_order", "slug", "get_addresses")
     readonly_fields = ["id", "created", "modified"]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):

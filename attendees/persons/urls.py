@@ -28,7 +28,10 @@ from attendees.persons.views import (  # api_attendee_relationships_viewset,
     api_user_meet_attendings_viewset,
     api_family_organization_attendings_viewset,
     directory_report_list_view,
+    attendingmeet_report_list_view,
+    attendingmeet_envelopes_list_view,
     directory_print_configuration_view,
+    attendingmeet_print_configuration_view,
     person_directory_preview,
 )
 
@@ -180,9 +183,24 @@ urlpatterns = [
         name="directory_print_configuration_view",
     ),
     path(
+        "attendingmeet_print_configuration/",
+        view=attendingmeet_print_configuration_view,
+        name="attendingmeet_print_configuration_view",
+    ),
+    path(
         "directory_report/",
         view=directory_report_list_view,
         name="directory_report_list_view",
+    ),
+    path(
+        "attendingmeet_report/",
+        view=attendingmeet_report_list_view,
+        name="attendingmeet_report_list_view",
+    ),
+    path(
+        "attendingmeet_envelopes/",
+        view=attendingmeet_envelopes_list_view,
+        name="attendingmeet_envelopes_list_view",
     ),
     path(
         "directory_preview/<str:attendee_id>",

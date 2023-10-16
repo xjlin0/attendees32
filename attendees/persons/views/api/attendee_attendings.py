@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from django.conf import settings
-from attendees.persons.models import Attendee, Attending
+from attendees.persons.models import Attendee, Attending, Utility
 from attendees.persons.serializers.attending_minimal_serializer import (
     AttendingMinimalSerializer,
 )
@@ -40,10 +40,18 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
             or self.request.user.attendee.can_schedule_attendee(target_attendee.id)
         ):
             attending_id = self.kwargs.get("pk")
-            qs = Attending.objects.filter(
-                attendee=target_attendee,
-                attendee__division__organization=current_user_organization,
-            )  # With correct data this query will only work if current user's org is the same as targeting attendee's
+            filters = {
+                'attendee': target_attendee,
+                'attendee__division__organization': current_user_organization,
+            }  # With correct data this query will only work if current user's org is the same as targeting attendee's
+
+            registration__assembly = Utility.presence(self.request.query_params.get("registration__assembly"))
+            registration__registrant = Utility.presence(self.request.query_params.get("registration__registrant"))
+            if registration__assembly:
+                filters['registration__assembly'] = registration__assembly
+            if registration__registrant:
+                filters['registration__registrant'] = registration__registrant
+            qs = Attending.objects.filter(**filters)
 
             if attending_id:
                 return qs.filter(pk=attending_id)
@@ -65,14 +73,27 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
             time.sleep(2)
             raise PermissionDenied(detail="Are you data admin or counselor?")
 
+    def perform_update(self, serializer):
+        target_attendee = get_object_or_404(
+            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+        )
+        if self.request.user.privileged_to_edit(target_attendee.id):
+            serializer.save()
+            target_attendee.save(update_fields=['modified'])
+
+        else:
+            time.sleep(2)
+            raise PermissionDenied(
+                detail="Can't create attending across different organization"
+            )
+
     def perform_create(self, serializer):
         target_attendee = get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
-        if target_attendee.under_same_org_with(
-            self.request.user.attendee and self.request.user.attendee.id
-        ):
+        if self.request.user.privileged_to_edit(target_attendee.id):
             serializer.save(attendee=target_attendee)
+            target_attendee.save(update_fields=['modified'])
 
         else:
             time.sleep(2)
@@ -86,6 +107,7 @@ class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
         )
         if self.request.user.privileged_to_edit(target_attendee.id):
             AttendingService.destroy_with_associations(instance)
+            target_attendee.save(update_fields=['modified'])
 
         else:
             time.sleep(2)

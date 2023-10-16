@@ -250,6 +250,7 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * if using proxy on apache, please set `ProxyPreserveHost on` to pass host header in requests, so that the email links will have the correct domain name.
 * For keeping the site surviving reboot, add starting of the Django upon system reboot, such as `sudo su user_name sh -c 'sleep 99 && cd ~user_name/repo_dir && docker-compose -f production.yml up -d' >> /tmp/attendee_startup.log` (need work)
 </details>
+* enter Redis-CLI by `docker exec -it redis redis-cli`
 
 ## DB SQL Backup & Restore process (with production.yml)
 <details>
@@ -293,7 +294,7 @@ DJANGO_SECRET_KEY=your_django_secret_key
   docker-compose -f local.yml run django python manage.py dumpdata -e users.user -e admin.logentry -e sessions.session -e contenttypes.contenttype -e sites.site -e account.emailaddress -e account.emailconfirmation -e socialaccount.socialtoken -e auth.permission -e pghistory.context -e pghistory.aggregateevent -e users.userhistory -e users.menushistory -e users.menuauthgroupshistory -e users.groupshistory -e users.grouppermissionshistory -e users.usergroupshistory -e users.userpermissionshistory -e users.emailaddresshistory -e users.emailconfirmationhistory -e whereabouts.organizationshistory -e whereabouts.divisionshistory -e whereabouts.placeshistory -e whereabouts.campuseshistory -e whereabouts.propertieshistory -e whereabouts.suiteshistory -e whereabouts.roomshistory -e whereabouts.countryhistory -e whereabouts.statehistory -e whereabouts.localityhistory -e whereabouts.addresshistory -e persons.categorieshistory -e persons.noteshistory -e persons.pastshistory -e persons.folkshistory -e persons.attendeeshistory -e persons.folkattendeeshistory -e persons.relationshistory -e persons.registrationshistory -e persons.attendingshistory -e persons.attendingmeetshistory -e occasions.assemblieshistory -e occasions.attendanceshistory -e occasions.charactershistory -e occasions.gatheringshistory -e occasions.meetshistory -e occasions.messagetemplateshistory -e occasions.priceshistory -e occasions.teamshistory -e occasions.calendarhistory -e occasions.calendarrelationhistory -e occasions.eventhistory -e occasions.eventrelationhistory -e occasions.occurrencehistory -e occasions.rulehistory -e occasions.periodictaskhistory -e occasions.crontabschedulehistory -e occasions.intervalschedulehistory -e users.permissionshistory -e users.GroupPermissionProxy -e users.UserGroupProxy -e users.UserPermissionProxy --indent 2 > fixtures/db_seed2.json
   ```
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://<<your domain name>>:8008/admin/users/user/
-* to see django log: `docker-compose -f production.yml logs django`
+* to see django log: `docker-compose -f local.yml logs django`
 </details>
 
 ## [How to start dev env on Windows](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
@@ -326,6 +327,7 @@ Please add your IP to ALLOWED_HOSTS in config/settings/local.py
 * Enter Django console by `docker-compose -f local.yml run django python manage.py shell_plus`
 * remote debug in PyCharm for docker, please check [django cookie doc](https://github.com/pydanny/cookiecutter-django/blob/master/{{cookiecutter.project_slug}}/docs/pycharm/configuration.rst).
 </details>
+* enter Redis-CLI by `docker exec -it redis redis-cli`
 
 ## How to start dev env on macOS with VirtualBox and docker-machine
 <details>
@@ -370,16 +372,23 @@ All libraries are included to facilitate offline development, it will take port 
 * check local python version, Django coockie cutter is developed with Python 3
 * Install pre-commit for python, such as `pip3 install pre-commit` (pre-commit settings are at .git/hooks/pre-commit).
 * There is no need to have local docker machine, Django or Postgres running.
-* Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/mac/#file-sharing).
+* Add .envs/.local/.sendgrid.env
+```commandline
+SENDGRID_API_KEY=<<your sendgrid api key>>
+DJANGO_DEFAULT_FROM_EMAIL=<<your email>>
+EMAIL_HOST=sendgrid
+```
+* Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/settings/mac/#file-sharing).
 * build and start the CentOS based local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
 * to see django log: `docker-compose -f local.yml logs django`
+* enter Redis-CLI by `docker exec -it redis redis-cli`
 
 
 ## DB SQL Backup & Restore process (with local.yml)
 * backup current db to container `docker-compose -f local.yml exec postgres backup`
 * list backup files in container `docker-compose -f local.yml exec postgres backups`
 * copy all backup files from container to dev local computer `docker cp $(docker-compose -f local.yml ps -q postgres):/backups ./backups`
-* copy all backup files from dev local computer to container `docker cp ./backups/* $(docker-compose -f local.yml ps -q postgres):/backups/`
+* copy a backup file from dev local computer to container `docker cp ./backups/<filename> $(docker-compose -f local.yml ps -q postgres):/backups/`
 * restore a backup from a backup file in container `docker-compose -f local.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
 * print INSERT commands for a table `docker-compose -f local.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>` 
 

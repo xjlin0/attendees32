@@ -27,8 +27,8 @@ div.family-container {
 }
 
 div.family-title-container {
-  border-top: 1px solid;
-  border-bottom: 1px solid;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
   display: flex;
 }
 

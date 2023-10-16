@@ -80,9 +80,11 @@
            name="attendee-id"
            value="{{ targeting_attendee_id}}">
     {% csrf_token %}
+    {{ divisions|json_script:"user-organization-divisions" }}
+    {{ pasts_to_add|json_script:"organization-pasts-to-add" }}
+    {{ grade_converter|json_script:"organization-grade-converter" }}
     <div class="datagrid-attendee-update"
          data-teams-endpoint="{{teams_endpoint}}"
-         data-pasts-to-add="{{pasts_to_add}}"
          data-user-organization-directory-meet="{{user_organization_directory_meet|default_if_none:''}}"
          data-attendee-contenttype-id="{{attendee_contenttype_id}}"
          data-family-contenttype-id="{{folk_contenttype_id}}"
@@ -106,10 +108,8 @@
          data-attendee-endpoint="{{attendee_endpoint}}"
          data-family-attendees-endpoint="{{family_attendees_endpoint}}"
          data-family-category-id="{{family_category_id}}"
-         data-divisions="{{divisions}}"
          data-attendee-search="{{attendee_search}}"
          data-attendee-urn="{{attendee_urn}}"
-         data-grade-converter="{{grade_converter}}"
          >
     </div>
   </form>

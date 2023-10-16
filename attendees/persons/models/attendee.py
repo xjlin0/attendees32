@@ -26,6 +26,8 @@ from . import GenderEnum, Note, Utility
 class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
     FAMILY_CATEGORY = 0
     NON_FAMILY_CATEGORY = 25
+    PAUSED_CATEGORY = 27
+    SCHEDULED_CATEGORY = 1
     HIDDEN_ROLE = 0
     # RELATIVES_KEYWORDS = ['parent', 'mother', 'guardian', 'father', 'caregiver']
     # to find attendee's parents/caregiver in cowokers view of all activities
@@ -211,6 +213,13 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
                 pk=other_attendee_id, division__organization=self.division.organization
             ).exists()
         return False
+
+    def can_be_scheduled_by(self, other_attendee_id):
+        if str(self.id) == other_attendee_id:
+            return True
+        return Attendee.objects.filter(
+            pk=self.id, infos__schedulers__contains={other_attendee_id: True}
+        ).exists()
 
     def can_schedule_attendee(self, other_attendee_id):
         if str(self.id) == other_attendee_id:

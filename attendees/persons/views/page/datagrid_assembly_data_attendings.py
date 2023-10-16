@@ -1,6 +1,5 @@
 import logging
-import time
-from json import dumps
+from time import sleep
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -39,19 +38,15 @@ class DatagridAssemblyDataAttendingsListView(RouteGuard, ListView):
                 "current_division_slug": current_division_slug,
                 "current_assembly_slug": current_assembly_slug,
                 "available_meets": available_meets,
-                "available_meets_json": dumps(
-                    [
-                        model_to_dict(m, fields=("slug", "display_name"))
-                        for m in available_meets
-                    ]
-                ),
+                "available_meets_json": [
+                    model_to_dict(m, fields=("slug", "display_name"))
+                    for m in available_meets
+                ],
                 "available_characters": available_characters,
-                "available_characters_json": dumps(
-                    [
-                        model_to_dict(c, fields=("slug", "display_name"))
-                        for c in available_characters
-                    ]
-                ),
+                "available_characters_json": [
+                    model_to_dict(c, fields=("slug", "display_name"))
+                    for c in available_characters
+                ],
             }
         )
         return context
@@ -119,7 +114,7 @@ class DatagridAssemblyDataAttendingsListView(RouteGuard, ListView):
                 )
                 return render(self.request, self.get_template_names()[0], context)
         else:
-            time.sleep(2)
+            sleep(2)
             raise Http404("Have you registered any events of the organization?")
 
     # def get_attendances(self, args):

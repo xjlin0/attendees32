@@ -46,14 +46,25 @@ class ApiDatagridDataAttendingMeetViewSet(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         querying_attendingmeet_id = self.kwargs.get("pk")
-        qs = AttendingMeet.objects.annotate(assembly=F("meet__assembly"),).filter(
-            attending__attendee=target_attendee,
+        filters = {"attending__attendee": target_attendee}
+        if querying_attendingmeet_id:
+            filters['pk'] = querying_attendingmeet_id
+        qs = AttendingMeet.objects.annotate(
+            assembly=F("meet__assembly"),
+            meet__assembly__display_order=F('meet__assembly__display_order'),
+        ).filter(**filters)
+
+        return qs.order_by(
+            'meet__assembly__display_order',
         )
 
-        if querying_attendingmeet_id:
-            return qs.filter(pk=querying_attendingmeet_id)
-        else:
-            return qs
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        instance.attending.attendee.save(update_fields=['modified'])
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.attending.attendee.save(update_fields=['modified'])
 
     def perform_destroy(self, instance):
         target_attendee = get_object_or_404(
@@ -68,6 +79,7 @@ class ApiDatagridDataAttendingMeetViewSet(
                 attending=instance.attending
             ).delete()  # delete only future attendance
             instance.delete()
+            target_attendee.save(update_fields=['modified'])
         else:
             time.sleep(2)
             raise PermissionDenied(

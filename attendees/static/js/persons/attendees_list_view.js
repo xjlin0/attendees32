@@ -7,7 +7,7 @@ Attendees.dataAttendees = {
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
-    const availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets);
+    const availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent);
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
     Attendees.dataAttendees.startMeetSelector();
     Attendees.dataAttendees.setDataAttrs();
@@ -83,7 +83,7 @@ Attendees.dataAttendees = {
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
     Attendees.dataAttendees.meetTagBox = $('div.meet-tag-box').dxTagBox({
       dataSource: new DevExpress.data.DataSource({
-        store: JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets),
+        store: JSON.parse(document.getElementById('organization-available-meets').textContent),
         key: 'id',
         group: 'assembly_name'
       }),
@@ -206,7 +206,7 @@ Attendees.dataAttendees = {
     pager: {
         visible: true,
         showPageSizeSelector: true,
-        allowedPageSizes: [10, 30, 5000]
+        allowedPageSizes: [10, 25, 100, 9999],
     },
     stateStoring: {
       enabled: true,
@@ -377,17 +377,41 @@ Attendees.dataAttendees = {
         }
       },
     },
+    {
+      dataField: "created",
+      visible: false,
+      dataType: "datetime",
+    },
+    {
+      dataField: "modified",
+      visible: false,
+      dataType: "datetime",
+    },
   ],
 
-  setMeetsColumns: (availableMeets = JSON.parse(document.querySelector('div.dataAttendees').dataset.availableMeets)) => {
+  setMeetsColumns: (availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent)) => {
     const meetColumns=[];
     const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});
     availableMeets.forEach(meet => {
       meetColumns.push({
-        // visible: meet.id > 0,
         caption: meet.display_name,
         dataField: meet.slug,
-        allowHeaderFiltering: false,
+        allowSorting: true,
+        headerFilter: {
+          dataSource: [
+            {
+              text: meet.display_name,
+              value: ['attendings__meets__slug', '=', meet.slug],
+              template: (data) => '<span title="Select all will NOT work">' + data.text + '</span>',
+            },
+            {
+              text: "- Not attending",
+              value: ['attendings__meets__slug', '<>', meet.slug],
+              template: (data) => '<span title="Select all will NOT work">' + data.text + '</span>',
+            },
+          ],
+        },
+        dataType: 'string',
         cellTemplate: (container, rowData) => {
           if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
             const preview_url = previews[meet.slug];

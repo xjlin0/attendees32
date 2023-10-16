@@ -90,7 +90,7 @@ class PlaceSerializer(serializers.ModelSerializer):
             new_city = address_data.get("city")
             new_zip = address_data.get("postal_code")
             new_state = State.objects.filter(pk=address_data.get("state_id")).first()
-            print("hi 101 in PlaceSerializer processing state/locality")
+
             if new_state:
                 locality, locality_created = Locality.objects.update_or_create(
                     name=new_city,

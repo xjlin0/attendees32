@@ -31,12 +31,19 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
         search_value = json.loads(self.request.query_params.get("filter", "[[null]]"))[0][-1]
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
+        start = self.request.query_params.get("start")
+        finish = self.request.query_params.get("finish")
 
         if page is not None:
             if group_column:
                 filters = Q(meet__slug__in=request.query_params.getlist("meets[]", [])).add(
                     Q(character__slug__in=request.query_params.getlist("characters[]", [])), Q.AND).add(
                     Q(meet__assembly__division__organization=request.user.organization), Q.AND)
+
+                if start:
+                    filters.add((Q(finish__isnull=True) | Q(finish__gte=start)), Q.AND)
+                if finish:
+                    filters.add((Q(start__isnull=True) | Q(start__lte=finish)), Q.AND)
 
                 if search_value:
                     filters.add((Q(attending__registration__registrant__infos__icontains=search_value)
@@ -104,6 +111,14 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                 detail="Have you registered any events of the organization?"
             )
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        instance.attending.attendee.save(update_fields=['modified'])
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        instance.attending.attendee.save(update_fields=['modified'])
+
     def perform_destroy(self, instance):
         allowed_groups = [group for group in instance.meet.infos.get('allowed_groups', []) if group != "organization_participant"]  # intentionally forbid user to delete him/herself
         if self.request.user.belongs_to_groups_of(allowed_groups):
@@ -112,7 +127,10 @@ class ApiOrganizationMeetCharacterAttendingMeetsViewSet(LoginRequiredMixin, view
                 gathering__start__gte=Utility.now_with_timezone(),
                 attending=instance.attending
             ).delete()  # delete only future attendance
+            target_attendee = instance.attending.attendee
             instance.delete()
+            target_attendee.save(update_fields=['modified'])
+
         else:
             time.sleep(2)
             raise PermissionDenied(

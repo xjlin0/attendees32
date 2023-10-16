@@ -4,7 +4,7 @@ from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
 from django.db.models import Case, F, Func, Q, When, CharField
-from django.db.models.functions import Cast, Substr
+from django.db.models.functions import Cast, Substr, Coalesce
 from django.db.models.expressions import OrderBy
 from django.http import Http404
 from rest_framework.utils import json
@@ -186,11 +186,11 @@ class AttendeeService:
             qs.select_related()
             .prefetch_related()
             .annotate(
-                attendingmeets=ArrayAgg('attendings__meets__slug',
+                attendingmeets=Coalesce(ArrayAgg('attendings__meets__slug',
                                         filter=Q(attendings__attendingmeet__finish__gte=now),
-                                        distinct=True),
+                                        distinct=True), []),  # Prevents attendees without attendingmeets getting NULL and ruin order
                 folkcities=StringAgg('folks__places__address__locality__name',
-                                     filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)),
+                                     filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)) & Q(folks__places__is_removed=False),
                                      delimiter=", ",
                                      distinct=True,
                                      default=None),
@@ -199,10 +199,9 @@ class AttendeeService:
                                         delimiter=", ",
                                         distinct=True,
                                         default=None),
-            )
-            .filter(final_query)
+            ).filter(final_query).distinct()
             .order_by(*orderby_list)
-        ).distinct()  # when meets present duplicates appear
+        )
 
     @staticmethod
     def orderby_parser(orderby_string, meets, current_user):
@@ -238,9 +237,10 @@ class AttendeeService:
     @staticmethod
     def filter_parser(filters_list, meets, current_user):
         """
-        A recursive method return Q function based on multi-level filter conditions
+        A recursive method return Q function based on multi-level filter conditions. When filtering
+        for attendingmeet, it adds extra filters on attendingmeet__finish gte conditions.
         :param filters_list: a string of multi-level list of filter conditions
-        :param meets: assembly ids
+        :param meets: optional meet ids
         :param current_user:
         :return: Q function, could be an empty Q()
         """
@@ -252,6 +252,12 @@ class AttendeeService:
                 raise Exception(
                     "Can't process both 'or'/'and' at the same level! please wrap them in separated lists."
                 )
+            elif ('!' in filters_list and and_string in filters_list) or ('!' in filters_list and or_string in filters_list):
+                raise Exception(
+                    "Can't process 'or'/'and' with Unary filter(!) at the same level, please wrap them in separated lists."
+                )
+            elif '!' == filters_list[0]:   # currently only support one element for unary filter
+                return ~AttendeeService.filter_parser(filters_list[1], meets, current_user)
             elif filters_list[1] == and_string:
                 and_list = [
                     element for element in filters_list if element != and_string
@@ -277,33 +283,47 @@ class AttendeeService:
                     )
                 return or_query
             elif filters_list[1] == "=":
-                return Q(
-                    **{
-                        AttendeeService.field_convert(
-                            filters_list[0], meets, current_user
-                        ): filters_list[2]
-                    }
-                )
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    ): filters_list[2],
+                }
+                if filters_list[0] == 'attendings__meets__slug' or (meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists()):
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+
+                return Q(**condition)
             elif filters_list[1] == "startswith":
-                return Q(
-                    **{
-                        AttendeeService.field_convert(
-                            filters_list[0], meets, current_user
-                        )
-                        + "__istartswith": filters_list[2]
-                    }
-                )
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    )
+                    + "__istartswith": filters_list[2]
+                }
+                if meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+                return Q(**condition)
             elif filters_list[1] == "endswith":
-                return Q(
-                    **{
-                        AttendeeService.field_convert(
-                            filters_list[0], meets, current_user
-                        )
-                        + "__iendswith": filters_list[2]
-                    }
-                )
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    )
+                    + "__iendswith": filters_list[2]
+                }
+                if meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+                return Q(**condition)
             elif filters_list[1] == "contains":
-                return Q(
+                condition = {
+                    AttendeeService.field_convert(
+                        filters_list[0], meets, current_user
+                    )
+                    + "__icontains": filters_list[2]
+                }
+                if meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists():
+                    condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+                return Q(**condition)
+            elif filters_list[1] == "notcontains":
+                return ~Q(
                     **{
                         AttendeeService.field_convert(
                             filters_list[0], meets, current_user
@@ -333,7 +353,7 @@ class AttendeeService:
         }
         if meets:
             for meet in Meet.objects.filter(
-                id__in=meets, assembly__division__organization=current_user.organization
+                id__in=meets, assembly__division__organization=current_user.organization,
             ):
                 field_converter[meet.slug] = "attendings__meets__display_name"
 

@@ -1,4 +1,4 @@
-import logging, json
+import logging
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
@@ -20,7 +20,7 @@ class DatagridAttendingMeetListView(RouteGuard, ListView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "grade_converter": json.dumps(self.request.user.organization.infos.get('grade_converter', []) if self.request.user.organization else []),
+                "grade_converter": self.request.user.organization.infos.get('grade_converter', []) if self.request.user.organization else [],
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "attendingmeets_endpoint": "/persons/api/organization_meet_character_attendingmeets/",

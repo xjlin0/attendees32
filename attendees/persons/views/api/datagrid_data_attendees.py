@@ -1,4 +1,4 @@
-import ast
+import json
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -32,9 +32,9 @@ class ApiDatagridDataAttendeesViewSet(ModelViewSet):  # from GenericAPIView
         include_dead = self.request.query_params.get("include_dead")
         return AttendeeService.by_datagrid_params(
             current_user=self.request.user,
-            meets=ast.literal_eval(meets_string),
+            meets=json.loads(meets_string),
             orderby_string=orderby_string,
-            filters_list=ast.literal_eval(filters_list_string),
+            filters_list=json.loads(filters_list_string),
             include_dead=include_dead,
         )  # Datagrid can't send array in standard url params since filters can be dynamic nested arrays
 
