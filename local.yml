@@ -5,14 +5,15 @@ volumes:
   local_postgres_data_backups: {}
 
 services:
-  django: &django
+  django_local: &django_local
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
     image: attendees_local_django
-    container_name: django
+    container_name: django_local
     depends_on:
-      - postgres
+      - postgres_local
       - redis
       - mailhog
     volumes:
@@ -22,15 +23,18 @@ services:
       - ./.envs/.local/.postgres
       - ./.envs/.local/.sendgrid.env
     ports:
-      - "8008:8000"
+      - "8000:8000"
     command: /start
 
-  postgres:
+  postgres_local:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: attendees_production_postgres
-    container_name: postgres
+    image: attendees_local_postgres
+    container_name: postgres_local
+    ports:
+      - "5433:5432"  # for local and production run simultaneously
     volumes:
       - local_postgres_data:/var/lib/postgresql/data:Z
       - local_postgres_data_backups:/backups:z
@@ -38,6 +42,7 @@ services:
       - ./.envs/.local/.postgres
 
   docs:
+    platform: linux/amd64
     image: attendees_local_docs
     container_name: docs
     build:
@@ -54,6 +59,7 @@ services:
     command: /start-docs
 
   mailhog:
+    platform: linux/amd64
     image: mailhog/mailhog:v1.0.0
     container_name: mailhog
     ports:
@@ -63,32 +69,32 @@ services:
     image: redis:6
     container_name: redis
 
-  celeryworker:
-    <<: *django
+  celeryworker_local:
+    <<: *django_local
     image: attendees_local_celeryworker
-    container_name: celeryworker
+    container_name: celeryworker_local
     depends_on:
       - redis
-      - postgres
+      - postgres_local
       - mailhog
     ports: []
     command: /start-celeryworker
 
-  celerybeat:
-    <<: *django
+  celerybeat_local:
+    <<: *django_local
     image: attendees_local_celerybeat
-    container_name: celerybeat
+    container_name: celerybeat_local
     depends_on:
       - redis
-      - postgres
+      - postgres_local
       - mailhog
     ports: []
     command: /start-celerybeat
 
-  flower:
-    <<: *django
+  flower_local:
+    <<: *django_local
     image: attendees_local_flower
-    container_name: flower
+    container_name: flower_local
     ports:
       - "5555:5555"
     command: /start-flower

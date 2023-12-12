@@ -23,6 +23,10 @@ Attendees.utilities = {
     Attendees.utilities.userAttendeeId = $('body').data('user-attendee-id');
   },
 
+  hi: () => {
+    console.log("hi 27!");
+  },
+
   deleteAllDevextremeSettings: () => {
     Object.values(Attendees.utilities.datagridStorageKeys).forEach(key => window.sessionStorage.removeItem(key));
     const alert = document.getElementById('alertId');

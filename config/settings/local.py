@@ -14,6 +14,10 @@ SECRET_KEY = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "192.168.1.116"]
 SHELL_PLUS_PRINT_SQL_TRUNCATE = None
+
+# DATABASES
+# DATABASES["default"]["PORT"] = 5433  # so production and local can run simultaneously
+
 # CACHES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches
@@ -29,6 +33,7 @@ else:
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": env("REDIS_URL"),
+            "KEY_PREFIX": 'local',
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
                 # Mimicing memcache behavior.

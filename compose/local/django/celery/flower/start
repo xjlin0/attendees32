@@ -3,6 +3,8 @@
 set -o errexit
 set -o nounset
 
+echo "hi jack 6"
+echo "${CELERY_FLOWER_USER}:${CELERY_FLOWER_PASSWORD}"
 
 celery \
     -A config.celery_app \

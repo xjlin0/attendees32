@@ -1,7 +1,7 @@
 # PostgreSQL
 # ------------------------------------------------------------------------------
-POSTGRES_HOST=postgres
+POSTGRES_HOST=postgres_local
 POSTGRES_PORT=5432
-POSTGRES_DB=attendees
-POSTGRES_USER=hLOpXaFWuJbmBLTsqxKQPLZxorHBCewR
+POSTGRES_DB=attendees_local
+POSTGRES_USER=FiVMssLdyGNaMwTCfRuYmLQIjOiAhFvP
 POSTGRES_PASSWORD=NgW7v6ckbCZ4KiEUAkLjFdCUlHwZ0jOt5lgBiBpHqrIZdVCmMZu1EnCybyW6E4CR

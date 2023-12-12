@@ -19,5 +19,5 @@ DJANGO_DEFAULT_FROM_EMAIL=your@mail.com
 # ------------------------------------------------------------------------------
 
 # Flower
-CELERY_FLOWER_USER=GrjfDfEopVwYcBIznaeltTgVTdYNbrkY
+CELERY_FLOWER_USER=fuAfmdlQGkvlcBYjKvPWmcJhmMrKRJyU
 CELERY_FLOWER_PASSWORD=2oQlnK0wnBIAui2a3jSXmmnkAtCFcqCl3SppCy9W6Gm0FyMF5JiThZn1N4M41Jhs

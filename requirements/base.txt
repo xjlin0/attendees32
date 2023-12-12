@@ -20,6 +20,7 @@ opencc==1.1.3  ## https://github.com/BYVoid/OpenCC
 
 # django-summernote==0.8.20.0 # https://github.com/summernote/django-summernote
 # -e git+https://github.com/llazzaro/django-scheduler.git@develop#egg=django-scheduler
+# django-schedule@https://github.com/llazzaro/django-scheduler/archive/develop.tar.gz  #https://github.com/cookiecutter/cookiecutter-django/issues/3661
 django-scheduler==0.10.0  # https://github.com/llazzaro/django-scheduler
 django-mptt==0.13.4 # https://github.com/django-mptt/django-mptt
 django-json-widget==1.1.1  # https://github.com/jmrivas86/django-json-widget
