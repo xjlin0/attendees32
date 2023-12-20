@@ -65,6 +65,8 @@ def post_save_handler_for_past_to_create_attendingmeet(sender, **kwargs):
                     )
 
 
+# Todo 20231220: add post_save_handler_for_attendingmeet_to_modify_folk to automatically enable directory
+
 @receiver(post_save, sender=AttendingMeet)
 def post_save_handler_for_attendingmeet_to_create_past(sender, **kwargs):
     """

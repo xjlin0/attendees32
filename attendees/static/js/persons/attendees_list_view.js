@@ -391,7 +391,7 @@ Attendees.dataAttendees = {
 
   setMeetsColumns: (availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent)) => {
     const meetColumns=[];
-    const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});
+    const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});  // Todo 20231220: switch attendingmeet by checkbox
     availableMeets.forEach(meet => {
       meetColumns.push({
         caption: meet.display_name,
@@ -423,12 +423,12 @@ Attendees.dataAttendees = {
               attr['role'] = 'button';
               attr['data-url'] = preview_url + rowData.data.id;
               attr['title'] = `click to see ${rowData.data.infos.names.original} in directory preview.`;
-              $($('<u>', attr)).appendTo(container);
+              $($('<u>', attr)).appendTo(container);          // Todo 20231220: switch attendingmeet by checkbox
             } else {
               $($('<span>', attr)).appendTo(container);
             }
           }else{
-            $($('<span>', {text: '-'})).appendTo(container);
+            $($('<span>', {text: '-'})).appendTo(container);  // Todo 20231220: switch attendingmeet by checkbox
           }
         },
       })
