@@ -1,34 +1,28 @@
-import time, pytz
+import time, ast
 
 from django.contrib.auth.decorators import login_required
-# from django.db.models.aggregates import Count
 from django.db.models import Q, Count
 from django.contrib.postgres.aggregates.general import StringAgg
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.response import Response
-from rest_framework.utils import json
 
 from attendees.occasions.models import Attendance
 from attendees.occasions.serializers import AttendanceStatsSerializer
-from attendees.occasions.services import AttendanceService
-from attendees.persons.models import Utility
 
 
 @method_decorator([login_required], name="dispatch")
 class ApiOrganizationMeetCharacterAttendanceStatsViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows Stats of Attendance to be returned
+    API endpoint that allows Stats of Attendance to be returned, currently not support sorting
+    and search only support attendee's names
     """
 
     serializer_class = AttendanceStatsSerializer
 
     def get_queryset(self):
         if self.request.user.organization:
-            # search_value = self.request.query_params.get("searchValue")
-            # search_expression = self.request.query_params.get("searchExpr")
-            # search_operation = self.request.query_params.get("searchOperation")
+            name_search = ast.literal_eval(self.request.query_params.get("filter", "[[None]]"))
             start = self.request.query_params.get("start")
             finish = self.request.query_params.get("finish")
             characters = self.request.query_params.getlist("characters[]", [])
@@ -37,9 +31,13 @@ class ApiOrganizationMeetCharacterAttendanceStatsViewSet(viewsets.ModelViewSet):
             filters = Q(gathering__meet__slug__in=self.request.query_params.getlist("meets[]", [])).add(
                     Q(gathering__meet__assembly__division__organization=self.request.user.organization), Q.AND).add(
                     Q(category__in=self.request.query_params.getlist("categories[]", [])), Q.AND)
-            # if search_value and search_expression == 'display_name' and search_operation == 'contains':
-            #     extra_filter.add(Q(display_name__icontains=search_value), Q.AND)
-
+            if name_search[-1][-1]:
+                filters.add(Q(Q(attending__attendee__infos__names__original__icontains=name_search[-1][-1])
+                              |
+                              Q(attending__attendee__infos__names__traditional__icontains=name_search[-1][-1])
+                              |
+                              Q(attending__attendee__infos__names__simplified__icontains=name_search[-1][-1])), Q.AND)
+            print("hi jack 47 here is name_search: ", name_search)
             if start:
                 filters.add((Q(gathering__finish__gte=start)), Q.AND)
             if finish:

@@ -567,7 +567,7 @@ Attendees.attendanceStatistics = {
     searchPanel: {
       visible: true,
       width: 150,
-      placeholder: 'search name or activities ...',
+      placeholder: 'search name...',
     },
     allowColumnReordering: true,
     columnAutoWidth: true,
