@@ -218,7 +218,7 @@ Attendees.attendances = {
         }],
         label: {
           location: 'top',
-          text: 'Till(exclude)',
+          text: 'Till(excluded)',
         },
         editorType: 'dxDateBox',
         editorOptions: {

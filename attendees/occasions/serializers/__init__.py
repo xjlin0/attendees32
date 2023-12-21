@@ -5,6 +5,7 @@ from .character_assembly_serializer import CharacterAssemblySerializer
 from .gathering import GatheringSerializer
 from .team import TeamSerializer
 from .attendance_etc_serializer import AttendanceEtcSerializer
+from .attendance_stats_serializer import AttendanceStatsSerializer
 from .batch_gatherings_serializer import BatchGatheringsSerializer
 from .batch_attendances_serializer import BatchAttendancesSerializer
 from .calendar_serializer import CalendarSerializer
