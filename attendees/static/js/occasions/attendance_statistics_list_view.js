@@ -45,7 +45,7 @@ Attendees.attendanceStatistics = {
         colSpan: 3,
         cssClass: 'filter-from',
         dataField: 'filter-from',
-        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} time`,
+        helpText: `Gathering from mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} time`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
@@ -86,7 +86,7 @@ Attendees.attendanceStatistics = {
         colSpan: 3,
         cssClass: 'filter-till',
         dataField: 'filter-till',
-        helpText: `mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} time`,
+        helpText: `Gathering till mm/dd/yyyy in ${Intl.DateTimeFormat().resolvedOptions().timeZone} time`,
         validationRules: [{
           reevaluate: true,
           type: 'custom',
