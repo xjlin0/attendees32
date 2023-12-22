@@ -1,7 +1,8 @@
 import time, ast
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Count
+from django.db.models import F, Q, CharField, Value, When, Case, Count
+from django.db.models.functions import Concat, Trim
 from django.contrib.postgres.aggregates.general import StringAgg
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
@@ -37,7 +38,7 @@ class ApiOrganizationMeetCharacterAttendanceStatsViewSet(viewsets.ModelViewSet):
                               Q(attending__attendee__infos__names__traditional__icontains=name_search[-1][-1])
                               |
                               Q(attending__attendee__infos__names__simplified__icontains=name_search[-1][-1])), Q.AND)
-            print("hi jack 47 here is name_search: ", name_search)
+
             if start:
                 filters.add((Q(gathering__finish__gte=start)), Q.AND)
             if finish:
@@ -47,6 +48,28 @@ class ApiOrganizationMeetCharacterAttendanceStatsViewSet(viewsets.ModelViewSet):
             if teams:
                 filters.add(Q(team__in=teams), Q.AND)
 
+            attendee_name = Trim(
+                Concat(
+                    Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
+                                output_field=CharField())),
+                    Value(' '),
+                    Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
+                                output_field=CharField())),
+                    output_field=CharField()
+                )
+            )
+
+            register_name = Trim(
+                Concat(
+                    Trim(Concat("attending__registration__registrant__first_name", Value(' '),
+                                "attending__registration__registrant__last_name", output_field=CharField())),
+                    Value(' '),
+                    Trim(Concat("attending__registration__registrant__last_name2",
+                                "attending__registration__registrant__first_name2", output_field=CharField())),
+                    output_field=CharField()
+                )
+            )
+
             return Attendance.objects.select_related(
                 "character",
                 "team",
@@ -55,11 +78,23 @@ class ApiOrganizationMeetCharacterAttendanceStatsViewSet(viewsets.ModelViewSet):
                 "attending__attendee",
             ).filter(filters).values(
                 'attending__attendee',
-                'attending__attendee__infos__names__original',
+                'attending__attendee__infos__names__original'
+                'attending__registration__registrant_id',
             ).annotate(
               count=Count('attending__attendee'),
               characters=StringAgg('character__display_name',delimiter=", ", distinct=True, default=None),
               teams=StringAgg('team__display_name', delimiter=", ", distinct=True, default=None),
+              attending_name=Case(
+                  When(attending__registration__isnull=True, then=attendee_name),
+                  When(attending__attendee=F('attending__registration__registrant'), then=attendee_name),
+                  default=Concat(
+                      attendee_name,
+                      Value(' by '),
+                      register_name,
+                      output_field=CharField()
+                  ),
+                  output_field=CharField()
+                ),
             ).order_by('-count', 'attending__attendee__infos__names__original')
 
         else:

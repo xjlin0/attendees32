@@ -286,8 +286,8 @@ Attendees.attendanceStatistics = {
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendanceStatisticsListViewOpts'], 'selectedCategoryIds', e.value);
             Attendees.attendanceStatistics.filtersForm.validate();
             const meets = $('div.selected-meets select').val();
-            if (meets.length && e.value && e.value.length > 0 && Attendees.attendances.attendancesDatagrid) {
-              Attendees.attendances.attendancesDatagrid.refresh();
+            if (meets.length && e.value && e.value.length > 0 && Attendees.attendanceStatistics.attendancesDatagrid) {
+              Attendees.attendanceStatistics.attendancesDatagrid.refresh();
             }
           },
         },
@@ -625,7 +625,7 @@ Attendees.attendanceStatistics = {
               window.sessionStorage.removeItem('attendanceStatisticsListViewOpts');
               Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('characters'), []);
               Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('category'), [9]);
-              Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('teams'), []);
+              Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('team'), []);
               Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('meets'), []);
               Attendees.attendanceStatistics.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
               Attendees.attendanceStatistics.filtersForm.getEditor('filter-till').option('value', new Date(new Date().setMonth(new Date().getMonth() + 1)));
@@ -728,11 +728,11 @@ Attendees.attendanceStatistics = {
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         width: '30%',
 //        validationRules: [{type: 'required'}],
-        calculateDisplayValue: 'attending__attendee__infos__names__original',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
+        calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
-          let template = `<a title="Click to open a new page of the attendee info" target="_blank" href="/persons/attendee/${cellInfo.data.attendee_id}">(Info)</a> <u title="click to see the attendance details" role="button">${cellInfo['displayValue']}</u>`;
-          if (cellInfo.data.attending__attendee__infos__names__original.includes(' by ')) {  // has registrant
-            template += ` <a title="Click to open a new page of the registrant info" target="_blank" href="/persons/attendee/${cellInfo.data.registrant_attendee_id}">(Info)</a>`;
+          let template = `<a title="Click to open a new page of the attendee info" target="_blank" href="/persons/attendee/${cellInfo.data.attending__attendee}">(Info)</a>${cellInfo['displayValue']}`;
+          if (cellInfo.data.attending_name.includes(' by ')) {  // has registrant
+            template += ` <a title="Click to open a new page of the registrant info" target="_blank" href="/persons/attendee/${cellInfo.data.attending__registration__registrant_id}">(Info)</a>`;
           }
           cellElement.append(template);
         },
@@ -1046,17 +1046,17 @@ Attendees.attendanceStatistics = {
         dataType: 'number',
       },
       {
-        dataField: 'teams',
-//        width: '10%',
-        allowGrouping: false,
-        caption: 'Teams',
-        dataType: 'string',
-      },
-      {
         dataField: 'characters',
 //        width: '10%',
         allowGrouping: false,
         caption: 'Characters',
+        dataType: 'string',
+      },
+      {
+        dataField: 'teams',
+//        width: '10%',
+        allowGrouping: false,
+        caption: 'Teams',
         dataType: 'string',
       },
 //      {
