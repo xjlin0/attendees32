@@ -130,6 +130,13 @@ Attendees.utilities = {
       });
   },
 
+  areTwoArraysTheSame: (array1, array2) => {
+    if (Array.isArray(array1) && Array.isArray(array2)) {
+      return JSON.stringify(array1.sort()) === JSON.stringify(array2.sort());
+    }
+    return undefined;
+  },
+
   trimBothKeyAndValueButKeepBasicContacts: (obj, keepEmpties=false) => {
     return Object.entries(obj).reduce((acc, curr) => {
       const [key, value] = curr;

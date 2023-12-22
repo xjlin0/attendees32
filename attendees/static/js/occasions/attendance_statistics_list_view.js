@@ -110,7 +110,6 @@ Attendees.attendanceStatistics = {
               new Date().setMonth(new Date().getMonth() + 1)
           ),
           onValueChanged: (e) => {
-//            Attendees.attendanceStatistics.generateGatheringsButton.option('disabled', !Attendees.attendanceStatistics.readyToGenerate());
             const filterTillString = e.value ? e.value.toJSON() : null;  // it can be null to get all rows
             Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'filterTillString', filterTillString);
             if (Attendees.attendanceStatistics.filterMeetCheckbox.option('value')) {
@@ -164,17 +163,12 @@ Attendees.attendanceStatistics = {
             Attendees.attendanceStatistics.filtersForm.validate();
             const defaultHelpText = "Can't show schedules when multiple selected. Select single one to view its schedules. Please notice that certain ones have NO attendances purposely";
             const $meetHelpText = Attendees.attendanceStatistics.filtersForm.getEditor('meets').element().parent().parent().find(".dx-field-item-help-text");
-//            const $durationField = Attendees.attendanceStatistics.filtersForm.getEditor('duration').element().parent().parent();
             Attendees.attendanceStatistics.selectedMeetHasRule = 0;
-//            Attendees.attendanceStatistics.generateGatheringsButton.option('disabled', true);
             $meetHelpText.text(defaultHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
-              // if (Attendees.attendanceStatistics.attendancesDatagrid.totalCount() > 0) {
                 Attendees.attendanceStatistics.filtersForm.getEditor('characters').option('value', []);
                 Attendees.attendanceStatistics.filtersForm.getEditor('characters').getDataSource().reload();
-              // }
               const categories = $('div.selected-categories select').val();
-//              const characters = $('div.selected-characters select').val();
               if (categories && categories.length) {
                 Attendees.attendanceStatistics.attendancesDatagrid.refresh();
               }
@@ -203,15 +197,10 @@ Attendees.attendanceStatistics = {
                     }
                   });
                   finalHelpText = newHelpTexts.join(', ') + ' from ' + meetStart + ' to ' + meetFinish;
-//                  if (Attendees.attendanceStatistics.selectedMeetHasRule && Attendees.attendanceStatistics.editSwitcher.option('value') && lastDuration > 0) {
-//                    Attendees.attendanceStatistics.generateGatheringsButton.option('disabled', false);
-//                  }
                 } else {
                   finalHelpText = noRuleText;
                 }
                 Attendees.attendanceStatistics.filtersForm.updateData("duration", lastDuration);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
-//                $durationField.find("div.dx-field-item-content").toggle(Attendees.attendanceStatistics.selectedMeetHasRule < 2);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
-//                $durationField.find('div.dx-field-item-help-text').text(Attendees.attendanceStatistics.selectedMeetHasRule > 1 ? "Disabled for multiple events" : "minutes");  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
                 $meetHelpText.text(finalHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
               }
             }
@@ -241,7 +230,7 @@ Attendees.attendanceStatistics = {
                         })
                       }); // schedule rules needed for display
                     }
-                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs') || [];
+                    const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendanceStatisticsListViewOpts'], 'selectedMeetSlugs') || [];
                     Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('meets'), selectedMeetSlugs);
                   });
                 return d.promise();
@@ -295,7 +284,7 @@ Attendees.attendanceStatistics = {
       {
         dataField: 'characters',
         colSpan: 8,
-        helpText: 'Select one or more characters to filter results',
+//        helpText: 'Select one or more characters to filter results',
         cssClass: 'selected-characters',
         label: {
           location: 'top',
@@ -331,7 +320,7 @@ Attendees.attendanceStatistics = {
             Attendees.attendanceStatistics.filtersForm.validate();
             const meets = $('div.selected-meets select').val();
             const categories = $('div.selected-categories select').val();
-            if (meets && meets.length && categories && categories.length && Attendees.attendanceStatistics.attendancesDatagrid) {
+            if (!Attendees.utilities.areTwoArraysTheSame(e.value, e.previousValue) &&  meets && meets.length && categories && categories.length && Attendees.attendanceStatistics.attendancesDatagrid) {
               Attendees.attendanceStatistics.attendancesDatagrid.refresh();
             }
           },
@@ -365,7 +354,7 @@ Attendees.attendanceStatistics = {
         dataField: 'team',
         cssClass: 'selected-teams',
         editorType: 'dxTagBox',
-//        helpText: '(minutes)',
+//        helpText: 'Select one or more teams to filter results',
         label: {
           location: 'top',
           text: 'Select teams',
@@ -437,6 +426,7 @@ Attendees.attendanceStatistics = {
             const args = {
               "meets[]": meets,
               "categories[]": categories,
+              take: 9999,
               start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
               finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
             };
@@ -449,9 +439,9 @@ Attendees.attendanceStatistics = {
               args['teams[]'] = teams;
             }
 
-            if (Attendees.attendanceStatistics.attendancesDatagrid) {
-              args['take'] = Attendees.attendanceStatistics.attendancesDatagrid.pageSize();
-            }
+//            if (Attendees.attendanceStatistics.attendancesDatagrid) {
+//              args['take'] = Attendees.attendanceStatistics.attendancesDatagrid.pageSize();
+//            }
 
             [
               'skip',
@@ -480,7 +470,7 @@ Attendees.attendanceStatistics = {
                 });
               },
               error: () => {
-                deferred.reject("Data Loading Error for attendances datagrid, probably time out?");
+                deferred.reject("Data Loading Error for attendance stats datagrid, probably time out?");
               },
               timeout: 60000,
             });
@@ -489,71 +479,6 @@ Attendees.attendanceStatistics = {
           }
           return deferred.promise();
         },
-//        byKey: (key) => {
-//          const d = new $.Deferred();
-//          $.get($('form.filters-dxform').data('attendances-endpoint') + key + '/')
-//            .done((result) => {
-//              d.resolve(result.data);
-//            });
-//          return d.promise();
-//        },
-//        update: (key, values) => {
-//          return $.ajax({
-//            url: $('form.filters-dxform').data('attendances-endpoint') + key + '/',
-//            method: 'PATCH',
-//            dataType: 'json',
-//            contentType: 'application/json; charset=utf-8',
-//            data: JSON.stringify(values),
-//            success: (result) => {
-//              DevExpress.ui.notify(
-//                {
-//                  message: 'update attendance success',
-//                  position: {
-//                    my: 'center',
-//                    at: 'center',
-//                    of: window,
-//                  },
-//                }, 'success', 2000);
-//            },
-//          });
-//        },
-//        insert: (values) => {
-//          return $.ajax({
-//            url: $('form.filters-dxform').data('attendances-endpoint'),
-//            method: 'POST',
-//            dataType: 'json',
-//            contentType: 'application/json; charset=utf-8',
-//            data: JSON.stringify(values),  // ...subject}),
-//            success: (result) => {
-//              DevExpress.ui.notify(
-//                {
-//                  message: 'Create attendance success',
-//                  position: {
-//                    my: 'center',
-//                    at: 'center',
-//                    of: window,
-//                  },
-//                }, 'success', 2000);
-//            },
-//          });
-//        },
-//        remove: (key) => {
-//          return $.ajax({
-//            url: $('form.filters-dxform').data('attendances-endpoint') + key + '/' ,
-//            method: 'DELETE',
-//            success: (result) => {
-//              DevExpress.ui.notify(
-//                {
-//                  message: 'removed attendance success',
-//                  position: {
-//                    my: 'center',
-//                    at: 'center',
-//                    of: window,
-//                  },
-//                }, 'info', 2000);
-//            },
-//          });
-//        },
       }),
     },
     export: {
@@ -576,17 +501,17 @@ Attendees.attendanceStatistics = {
     // cellHintEnabled: true,
     hoverStateEnabled: true,
     rowAlternationEnabled: true,
-    remoteOperations: {groupPaging: true},
-    paging: {
-      pageSize: 20,
-    },
-    pager: {
-      visible: true,
-      allowedPageSizes: [20, 100, 9999],
-      showPageSizeSelector: true,
-      showInfo: true,
-      showNavigationButtons: true,
-    },
+    remoteOperations: true,
+//    paging: {
+//      pageSize: 20,
+//    },
+//    pager: {
+//      visible: true,
+//      allowedPageSizes: [30, 150, 9999],
+//      showPageSizeSelector: true,
+//      showInfo: true,
+//      showNavigationButtons: true,
+//    },
     stateStoring: {
       enabled: true,
       type: 'sessionStorage',
@@ -601,12 +526,12 @@ Attendees.attendanceStatistics = {
     },
     wordWrapEnabled: false,
     width: '100%',
-    grouping: {
-      autoExpandAll: true,
-    },
-    groupPanel: {
-      visible: true,
-    },
+//    grouping: {
+//      autoExpandAll: true,
+//    },
+//    groupPanel: {
+//      visible: true,
+//    },
     columnChooser: {
       enabled: true,
       mode: 'select',
@@ -634,100 +559,14 @@ Attendees.attendanceStatistics = {
         },
       });
     },
-//    editing: {
-//      allowUpdating: false,
-//      allowAdding: false,
-//      allowDeleting: false,
-//      texts: {
-//        confirmDeleteMessage: 'Are you sure to delete it and all its future attendances? Instead, setting the "finish" date is usually enough!',
-//      },
-//      mode: 'popup',
-//      popup: {
-//        showTitle: true,
-//        title: 'attendanceEditingArgs',
-//        onContentReady: e => e.component.option('toolbarItems[0].visible', false),  // assembly
-//      },
-//      form: {
-//        colCount: 2,
-////        customizeItem: function(item) {
-////          if (item.dataField === "attending") {
-////            item.disabled = !Attendees.attendances.allowEditingAttending;
-////          }  // prevent users from changing attending to avoid data chaos
-////        },
-//        items: [
-//          {
-//            dataField: 'gathering',
-//            helpText: "What's the activity?",
-//          },
-//          {
-//            dataField: 'attending',
-//            helpText: "who?",
-//          },
-//          {
-//            dataField: 'character',
-//            helpText: 'define participation role',
-//          },
-//          {
-//            dataField: 'team',
-//            helpText: '(Optional) joining team',
-//          },
-//          {
-//            dataField: 'category',
-//            helpText: 'What type of participation?',
-//          },
-//          {
-//            dataField: 'start',
-//            helpText: '(Optional)participation start time in browser timezone',
-//          },
-//          {
-//            dataField: 'finish',
-//            helpText: '(Optional)participation end time in browser timezone',
-//          },
-//          {
-//            dataField: 'infos.note',
-//            helpText: '(Optional)special memo',
-//            editorType: 'dxTextArea',
-////            colSpan: 2,
-//            editorOptions: {
-//              autoResizeEnabled: true,
-//            },
-//          },
-//        ],
-//      },
-//    },
-//    onCellClick: (e) => {
-//      if (e.rowType === 'data' && e.column.dataField === 'attending' && e.event.target.nodeName === 'U') {
-//        e.component.editRow(e.row.rowIndex);
-//      }
-//    },
-//    onInitNewRow: (e) => {
-//      e.data.category = 1;
-//      Attendees.attendances.attendancesDatagrid.option('editing.popup.title', 'Adding Attendance');
-////      Attendees.attendances.allowEditingAttending = true;
-//    },
-//    onEditingStart: (e) => {
-//      const grid = e.component;
-//      grid.beginUpdate();
-//      if (e.data && typeof e.data === 'object') {
-//        const editingTitle = 'Editing attendance: ' + e.data.attending__attendee__infos__names__original || '';
-//        const readingTitle = 'Read only Info: ' + (e.data.attending__attendee__infos__names__original || '') + ' (enable editing for modifications)';
-//        const title = Attendees.utilities.editingEnabled ? editingTitle : readingTitle;
-//        grid.option('editing.popup.title', title);
-//      }
-////      Attendees.attendances.allowEditingAttending = false;
-//      grid.option("columns").forEach(column => {
-//        grid.columnOption(column.dataField, "allowEditing", Attendees.utilities.editingEnabled);
-//      });
-//      grid.endUpdate();
-//    },
     onCellPrepared: e => e.rowType === "header" && e.column.dataHtmlTitle && e.cellElement.attr("title", e.column.dataHtmlTitle),
     columns: [
       {
-        dataField: 'attending',
+        dataField: 'attendee',
+        sortIndex: 1,
         sortOrder: 'asc',
         dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
         width: '30%',
-//        validationRules: [{type: 'required'}],
         calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
           let template = `<a title="Click to open a new page of the attendee info" target="_blank" href="/persons/attendee/${cellInfo.data.attending__attendee}">(Info)</a>${cellInfo['displayValue']}`;
@@ -740,306 +579,11 @@ Attendees.attendanceStatistics = {
         editorOptions: {
            noDataText: "Nothing! Ever enrolled?",
         },
-        lookup: {
-          valueExpr: 'id',
-          displayExpr: 'attending_label',
-          dataSource: {
-            store: new DevExpress.data.CustomStore({
-              key: 'id',
-              load: (loadOptions) => {
-                const meets = $('div.selected-meets select').val();
-                const characters = $('div.selected-characters select').val();
-                const deferred = $.Deferred();
-                loadOptions['sort'] = Attendees.attendanceStatistics.attendancesDatagrid && Attendees.attendanceStatistics.attendancesDatagrid.getDataSource().loadOptions().group;
-                const args = {
-                  meets: meets,
-                  characters: characters,
-                  searchOperation: loadOptions['searchOperation'],
-                  searchValue: loadOptions['searchValue'],
-                  searchExpr: loadOptions['searchExpr'],
-                  start: $('div.filter-from input')[1].value ? new Date($('div.filter-from input')[1].value).toISOString() : null,
-                  finish: $('div.filter-till input')[1].value ? new Date($('div.filter-till input')[1].value).toISOString() : null,
-                };
-
-                [
-                  'skip',
-                  'take',
-                  'requireTotalCount',
-                  'requireGroupCount',
-                  'sort',
-                  'filter',
-                  'totalSummary',
-                  // 'group',
-                  // 'groupSummary',
-                ].forEach((i) => {
-                  if (i in loadOptions && Attendees.utilities.isNotEmpty(loadOptions[i]))
-                    args[i] = JSON.stringify(loadOptions[i]);
-                });
-
-                $.ajax({
-                  url: $('form.filters-dxform').data('attendings-endpoint'),
-                  dataType: "json",
-                  data: args,
-                  success: (result) => {
-                    deferred.resolve(result.data, {
-                      totalCount: result.totalCount,
-                      summary:    result.summary,
-                      groupCount: result.groupCount,
-                    });
-                  },
-                  error: () => {
-                    deferred.reject("Data Loading Error for attending lookup, probably time out?");
-                  },
-                  timeout: 10000,
-                });
-
-                return deferred.promise();
-              },
-              byKey: (key) => {
-                if (key) {
-                  const d = $.Deferred();
-                  $.get($('form.filters-dxform').data('attendings-endpoint') + key + '/').done((response) => {
-                    d.resolve(response);
-                  });
-                  return d.promise();
-                }
-              },
-            }),
-          },
-        },
       },
-//      {
-//        dataField: 'character',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        validationRules: [{type: 'required'}],
-//        setCellValue: (newData, value, currentData) => {
-//          if (value) {
-//            newData.character = value;
-//          }  // for preventing gathering default character overwriting
-//        },
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: (options) => {
-//            return {
-//              // filter: options.data ? {'assemblies[]': options.data.gathering__meet__assembly} : null,
-//              store: new DevExpress.data.CustomStore({
-//                key: 'id',
-//                load: (searchOpts) => {
-//                  searchOpts['take'] = 9999;
-//                  if (options.data && options.data.gathering__meet__assembly) {
-//                    searchOpts['assemblies[]'] = options.data.gathering__meet__assembly;
-//                  } else {
-//                    const meets = $('div.selected-meets select').val() || Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendancesListViewOpts'], 'selectedMeetSlugs');
-//                    const assemblies = meets && meets.reduce((all, now) => {const meet = Attendees.attendances.meetScheduleRules[now]; if(meet){all.add(meet.assembly)}; return all}, new Set());
-//                    if (assemblies && assemblies.size){
-//                      searchOpts['assemblies[]'] = Array.from(assemblies);
-//                    }
-//                  }
-//                  return $.getJSON($('form.filters-dxform').data('characters-endpoint'), searchOpts);
-//                },
-//                byKey: (key) => {
-//                  const d = new $.Deferred();
-//                  $.get($('form.filters-dxform').data('characters-endpoint') + key + '/')
-//                    .done((result) => {
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                },
-//              }),
-//            };
-//          }
-//        },
-//      },
-//      {
-//        dataField: 'gathering',
-//        sortOrder: 'asc',
-//        width: '20%',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        validationRules: [{type: 'required'}],
-//        caption: 'Gathering in Meet',
-//        placeholder: "Select or search...",
-//        calculateDisplayValue: 'gathering__display_name',  // can't use function for remote operations https://supportcenter.devexpress.com/ticket/details/t897726
-//        setCellValue: (newData, value, currentData) => {
-//          if (value) {
-//            newData.gathering = value;
-//            const gatheringsMeet = Attendees.attendances.gatheringMeet[value];
-//            if (gatheringsMeet && !currentData.character) {
-//              const [meetEnd, majorCharacter] = Attendees.attendances.meetData[gatheringsMeet];
-//              newData.character = majorCharacter;
-//            }  // when no character's define, set default character for user.
-//          }
-//        },
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'gathering_label',
-//          dataSource: (options) => {
-//            return {
-//              // filter: options.data ? {'meets[]': [options.data.meet]} : null,
-//              store: new DevExpress.data.CustomStore({
-//                key: 'id',
-//                load: (searchOpts) => {
-//                  if (options.data && options.data.meet) {
-//                    searchOpts['meets[]'] = options.data.meet;
-//                  } else {
-//                    searchOpts['meets[]'] = $('div.selected-meets select').val();
-//                  }
-//                  const d = new $.Deferred();
-//                  $.get($('form.filters-dxform').data('gatherings-endpoint'), searchOpts)
-//                    .done((result) => {
-//                      result && result.data && result.data.forEach( gathering => {
-//                        Attendees.attendances.gatheringMeet[gathering.id] = gathering.meet;
-//                      })
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                },
-//                byKey: (key) => {
-//                  const d = new $.Deferred();
-//                  $.get($('form.filters-dxform').data('gatherings-endpoint') + key + '/')
-//                    .done((result) => {
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                },
-//              }),
-//            };
-//          }
-//        },
-//      },
-//      {
-//        dataField: 'gathering__meet__assembly',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        groupIndex: 0,
-//        validationRules: [{type: 'required'}],
-//        caption: 'Group (Assembly)',
-//        setCellValue: (newData, value, currentData) => {
-//          newData.assembly = value;
-//          newData.meet = null;
-//          newData.character = null;
-//          newData.team = null;
-//        },
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: {
-//            store: new DevExpress.data.CustomStore({
-//              key: 'id',
-//              load: () => $.getJSON($('form.filters-dxform').data('assemblies-endpoint')),
-//              byKey: (key) => {
-//                if (key) {
-//                  const d = $.Deferred();
-//                  $.get($('form.filters-dxform').data('assemblies-endpoint') + key + '/').done((response) => {
-//                    d.resolve(response);
-//                  });
-//                  return d.promise();
-//                }
-//              },
-//            }),
-//          },
-//        },
-//      },
-//      {
-//        dataField: 'gathering__meet',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        visible: false,
-//        validationRules: [{type: 'required'}],
-//        caption: 'Meet',
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: {
-//            store: new DevExpress.data.CustomStore({
-//              key: 'id',
-//              load: () => $.getJSON($('form.filters-dxform').data('meets-endpoint-by-id'), {take: 9999}),
-//              byKey: (key) => {
-//                if (key) {
-//                  const d = $.Deferred();
-//                  $.get($('form.filters-dxform').data('meets-endpoint-by-id') + key + '/').done((response) => {
-//                    d.resolve(response);
-//                  });
-//                  return d.promise();
-//                }
-//              },
-//            }),
-//          },
-//        },
-//      },
-//      {
-//        dataField: 'category',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        validationRules: [{type: 'required'}],
-//        editorOptions: {
-//          showClearButton: true,
-//        },
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: (options) => {
-//            return {
-//              store: new DevExpress.data.CustomStore({
-//                key: 'id',
-//                load: (searchOpts) => {
-//                  searchOpts['type'] = 'attendance';
-//                  searchOpts['take'] = 9999;
-//                  return $.getJSON($('form.filters-dxform').data('categories-endpoint'), searchOpts);
-//                },
-//                byKey: (key) => {
-//                  const d = new $.Deferred();
-//                  $.get($('form.filters-dxform').data('categories-endpoint') + key + '/')
-//                    .done((result) => {
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                },
-//              }),
-//            };
-//          }
-//        },
-//      },
-//      {
-//        dataField: 'team',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        visible: false,
-//        editorOptions: {
-//          showClearButton: true,
-//        },
-//        lookup: {
-//          valueExpr: 'id',
-//          displayExpr: 'display_name',
-//          dataSource: (options) => {
-//            return {
-//              // filter: options.data ? {gathering: options.data.gathering} : null,
-//              store: new DevExpress.data.CustomStore({
-//                key: 'id',
-//                load: (searchOpts) => {
-//                  searchOpts['take'] = 9999;
-//                  if (options.data && options.data.gathering) {  // for popup editor drop down limiting by chosen meet
-//                    searchOpts['gathering'] = options.data.gathering;
-//                  } else {  // for datagrid column lookup limiting by meet
-//                    const meetSlugs = $('div.selected-meets select').val();
-//                    const meets = meetSlugs && meetSlugs.length ? meetSlugs : Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendanceStatisticsListViewOpts'], 'selectedMeetSlugs');
-//                    if (meets && meets.length) {
-//                      searchOpts['meets[]'] = meets;
-//                    }
-//                  }
-//                  return $.getJSON($('form.filters-dxform').data('teams-endpoint'), searchOpts);
-//                },
-//                byKey: (key) => {
-//                  const d = new $.Deferred();
-//                  $.get($('form.filters-dxform').data('teams-endpoint') + key + '/')
-//                    .done((result) => {
-//                      d.resolve(result);
-//                    });
-//                  return d.promise();
-//                },
-//              }),
-//            };
-//          }
-//        },
-//      },
       {
         dataField: 'count',
+        sortIndex: 0,
+        sortOrder: 'desc',
 //        width: '10%',
         allowGrouping: false,
         caption: 'Attendance Count',
@@ -1059,75 +603,6 @@ Attendees.attendanceStatistics = {
         caption: 'Teams',
         dataType: 'string',
       },
-//      {
-//        dataField: 'start',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        caption: 'Time in',
-//        visible: false,
-//        dataType: 'datetime',
-//        editorOptions: {
-//          type: 'datetime',
-//          showClearButton: true,
-//          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-//        },
-//      },
-//      {
-//        dataField: 'finish',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        caption: 'Time out',
-//        visible: false,
-//        dataType: 'datetime',
-//        editorOptions: {
-//          type: 'datetime',
-//          dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss',
-//        },
-//      },
-//      {
-//        dataField: 'file_path',
-//        visible: false,
-//        caption: 'check out signature',
-//        width: 100,
-//        allowFiltering: false,
-//        allowSorting: false,
-//        allowGrouping: false,
-//        cellTemplate: (container, options) => {
-//          if (options.value){
-//            $('<img>', { src: options.value })
-//              .appendTo(container);
-//          }
-//        },
-//      },
-//      {
-//        dataField: 'infos.note',
-//        width: '10%',
-//        allowGrouping: false,
-//        caption: 'Note',
-//        dataType: 'string',
-//      },
-//      {
-//        dataField: 'attending__attendee__first_name',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        caption: 'first name',
-//        visible: false,
-//      },
-//      {
-//        dataField: 'attending__attendee__last_name',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        caption: 'last name',
-//        visible: false,
-//      },
-//      {
-//        dataField: 'attending__attendee__first_name2',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        caption: 'first name 2',
-//        visible: false,
-//      },
-//      {
-//        dataField: 'attending__attendee__last_name2',
-//        dataHtmlTitle: 'hold the "Shift" key and click to apply sorting, hold the "Ctrl" key and click to cancel sorting.',
-//        caption: 'last name 2',
-//        visible: false,
-//      },
     ],
   },
 };
