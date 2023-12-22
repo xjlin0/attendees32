@@ -15,6 +15,32 @@ Attendees.attendanceStatistics = {
     Attendees.attendanceStatistics.initFiltersForm();
   },
 
+  updateGatheringCountAndDatagrid: () => {
+    const d = new $.Deferred();
+    const filterFrom = Attendees.attendanceStatistics.filtersForm.getEditor('filter-from').option('value');
+    const filterTill = Attendees.attendanceStatistics.filtersForm.getEditor('filter-till').option('value');
+    const meets = Attendees.attendanceStatistics.filtersForm.getEditor('meets').option('value');
+
+    if (Array.isArray(meets) && meets.length) {
+      const params = {
+        take: 9999,
+        meets: meets,
+        start: filterFrom.toISOString(),
+        finish: filterTill.toISOString(),
+      };
+
+      $.get($('form.filters-dxform').data('gatherings-endpoint'), params)
+        .done((result) => {
+          const gatheringCounter = document.querySelector('span#gathering-count');
+          if (gatheringCounter) {
+            gatheringCounter.textContent = result.totalCount;
+          }
+          Attendees.attendanceStatistics.attendancesDatagrid.refresh();
+          d.resolve(result.data);
+        });
+    }
+  },
+
   initFilterMeetCheckbox: () => {
     Attendees.attendanceStatistics.filterMeetCheckbox = $('div#custom-control-filter-meets-checkbox').dxCheckBox({
       value: true,
@@ -76,7 +102,7 @@ Attendees.attendanceStatistics = {
             const meets = $('div.selected-meets select').val();
             const characters = $('div.selected-characters select').val();
             if (meets.length && characters.length) {
-              Attendees.attendanceStatistics.attendancesDatagrid.refresh();
+              Attendees.attendanceStatistics.updateGatheringCountAndDatagrid();
             }
           },
         },
@@ -117,7 +143,7 @@ Attendees.attendanceStatistics = {
             const meets = $('div.selected-meets select').val();
             const characters = $('div.selected-characters select').val();
             if (meets.length && characters.length) {
-              Attendees.attendanceStatistics.attendancesDatagrid.refresh();
+              Attendees.attendanceStatistics.updateGatheringCountAndDatagrid();
             }
           },
         },
@@ -165,11 +191,11 @@ Attendees.attendanceStatistics = {
             Attendees.attendanceStatistics.selectedMeetHasRule = 0;
             $meetHelpText.text(defaultHelpText);  // don't use itemOption!! https://supportcenter.devexpress.com/ticket/details/t531683
             if (e.value && e.value.length > 0) {
-                Attendees.attendanceStatistics.filtersForm.getEditor('characters').option('value', []);
-                Attendees.attendanceStatistics.filtersForm.getEditor('characters').getDataSource().reload();
+              Attendees.attendanceStatistics.filtersForm.getEditor('characters').option('value', []);
+              Attendees.attendanceStatistics.filtersForm.getEditor('characters').getDataSource().reload();
               const categories = $('div.selected-categories select').val();
               if (categories && categories.length) {
-                Attendees.attendanceStatistics.attendancesDatagrid.refresh();
+                Attendees.attendanceStatistics.updateGatheringCountAndDatagrid();
               }
               if (e.value.length < 2) {
                 const newHelpTexts = [];
@@ -275,7 +301,7 @@ Attendees.attendanceStatistics = {
             Attendees.attendanceStatistics.filtersForm.validate();
             const meets = $('div.selected-meets select').val();
             if (meets.length && e.value && e.value.length > 0 && Attendees.attendanceStatistics.attendancesDatagrid) {
-              Attendees.attendanceStatistics.attendancesDatagrid.refresh();
+              Attendees.attendanceStatistics.updateGatheringCountAndDatagrid();
             }
           },
         },
@@ -320,7 +346,7 @@ Attendees.attendanceStatistics = {
             const meets = $('div.selected-meets select').val();
             const categories = $('div.selected-categories select').val();
             if (!Attendees.utilities.areTwoArraysTheSame(e.value, e.previousValue) &&  meets && meets.length && categories && categories.length && Attendees.attendanceStatistics.attendancesDatagrid) {
-              Attendees.attendanceStatistics.attendancesDatagrid.refresh();
+              Attendees.attendanceStatistics.updateGatheringCountAndDatagrid();
             }
           },
           dataSource: new DevExpress.data.DataSource({
@@ -383,7 +409,7 @@ Attendees.attendanceStatistics = {
             const meets = $('div.selected-meets select').val();
             const categories = $('div.selected-categories select').val();
             if (meets && meets.length && categories && categories.length && Attendees.attendanceStatistics.attendancesDatagrid) {
-              Attendees.attendanceStatistics.attendancesDatagrid.refresh();
+              Attendees.attendanceStatistics.updateGatheringCountAndDatagrid();
             }
           },
         },

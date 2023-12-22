@@ -18,7 +18,7 @@ class AttendanceStatisticsListView(RouteGuard, ListView):
             {
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "categories_endpoint": "/persons/api/all_categories/",
-                # "attendances_endpoint": "/occasions/api/organization_meet_character_attendances/",
+                "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
                 "attendance_stats_endpoint": "/occasions/api/organization_meet_character_attendance_stats/",
                 "attendings_endpoint": "/persons/api/organization_meet_character_attendings_for_attendance/",
                 "characters_endpoint": "/occasions/api/organization_characters/",
