@@ -4,7 +4,6 @@ Attendees.attendanceStatistics = {
   selectedMeetHasRule: false,
   allowEditingAttending: false,
   filterMeetCheckbox: null,
-  loadOptions: null,
   selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
   meetData: {},
@@ -242,7 +241,7 @@ Attendees.attendanceStatistics = {
       },
       {
         colSpan: 2,
-        dataField: 'category',
+        dataField: 'categories',
         cssClass: 'selected-categories',
         editorType: 'dxTagBox',
         validationRules: [{type: 'required'}],
@@ -351,7 +350,7 @@ Attendees.attendanceStatistics = {
       },
       {
         colSpan: 4,
-        dataField: 'team',
+        dataField: 'teams',
         cssClass: 'selected-teams',
         editorType: 'dxTagBox',
 //        helpText: 'Select one or more teams to filter results',
@@ -415,7 +414,6 @@ Attendees.attendanceStatistics = {
       store: new DevExpress.data.CustomStore({
         key: 'attending__attendee',
         load: (loadOptions) => {
-          Attendees.attendanceStatistics.loadOptions = loadOptions;
           const meets = $('div.selected-meets select').val();
           const characters = $('div.selected-characters select').val();
           const categories = $('div.selected-categories select').val();
@@ -438,10 +436,6 @@ Attendees.attendanceStatistics = {
             if (teams && teams.length > 0) {
               args['teams[]'] = teams;
             }
-
-//            if (Attendees.attendanceStatistics.attendancesDatagrid) {
-//              args['take'] = Attendees.attendanceStatistics.attendancesDatagrid.pageSize();
-//            }
 
             [
               'skip',
@@ -502,16 +496,6 @@ Attendees.attendanceStatistics = {
     hoverStateEnabled: true,
     rowAlternationEnabled: true,
     remoteOperations: true,
-//    paging: {
-//      pageSize: 20,
-//    },
-//    pager: {
-//      visible: true,
-//      allowedPageSizes: [30, 150, 9999],
-//      showPageSizeSelector: true,
-//      showInfo: true,
-//      showNavigationButtons: true,
-//    },
     stateStoring: {
       enabled: true,
       type: 'sessionStorage',
@@ -526,12 +510,6 @@ Attendees.attendanceStatistics = {
     },
     wordWrapEnabled: false,
     width: '100%',
-//    grouping: {
-//      autoExpandAll: true,
-//    },
-//    groupPanel: {
-//      visible: true,
-//    },
     columnChooser: {
       enabled: true,
       mode: 'select',
@@ -549,8 +527,8 @@ Attendees.attendanceStatistics = {
               Attendees.attendanceStatistics.attendancesDatagrid.state(null);
               window.sessionStorage.removeItem('attendanceStatisticsListViewOpts');
               Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('characters'), []);
-              Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('category'), [9]);
-              Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('team'), []);
+              Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('categories'), [9]);
+              Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('teams'), []);
               Attendees.utilities.selectAllGroupedTags(Attendees.attendanceStatistics.filtersForm.getEditor('meets'), []);
               Attendees.attendanceStatistics.filtersForm.getEditor('filter-from').option('value', new Date(new Date().setHours(new Date().getHours() - 1)));
               Attendees.attendanceStatistics.filtersForm.getEditor('filter-till').option('value', new Date(new Date().setMonth(new Date().getMonth() + 1)));

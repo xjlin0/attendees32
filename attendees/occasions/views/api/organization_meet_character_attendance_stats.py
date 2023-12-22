@@ -1,15 +1,11 @@
 import time, ast
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import F, Q, CharField, Value, When, Case, Count
-from django.db.models.functions import Concat, Trim
-from django.contrib.postgres.aggregates.general import StringAgg
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.utils import json
 
-from attendees.occasions.models import Attendance
 from attendees.occasions.serializers import AttendanceStatsSerializer
 from attendees.occasions.services import AttendanceService
 
