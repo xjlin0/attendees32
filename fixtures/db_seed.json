@@ -15933,6 +15933,9 @@
           "Gathering": false,
           "Attendance": false
         },
+        "automatic_modification": {
+          "Folk": true
+        },
         "default_attendingmeet_in_weeks": 60
       },
       "site_type": 53,
