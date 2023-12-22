@@ -80,9 +80,9 @@ def post_save_handler_for_attendingmeet_to_modify_folk(sender, **kwargs):
         "created"  # only when creating new, not for update
     ):
         created_attendingmeet = kwargs.get("instance")
-        whatever = created_attendingmeet.meet.infos.get("automatic_modification", {}).get("Folk")
+        enabled = created_attendingmeet.meet.infos.get("automatic_modification", {}).get("Folk")
         if (
-            whatever and created_attendingmeet.category_id != -1
+            enabled and created_attendingmeet.category_id != -1
         ):  # skip for access importer since special start date processing needed there
             target_attendee = created_attendingmeet.attending.attendee
             target_family = target_attendee.families.order_by('created').last()
