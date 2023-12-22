@@ -569,7 +569,7 @@ Attendees.attendanceStatistics = {
         width: '30%',
         calculateDisplayValue: 'attending_name',  // can't use function when remoteOperations https://supportcenter.devexpress.com/ticket/details/t897726
         cellTemplate: (cellElement, cellInfo) => {
-          let template = `<a title="Click to open a new page of the attendee info" target="_blank" href="/persons/attendee/${cellInfo.data.attending__attendee}">(Info)</a>${cellInfo['displayValue']}`;
+          let template = `<a title="Click to open a new page of the attendee info" target="_blank" href="/persons/attendee/${cellInfo.data.attending__attendee}">(Info)</a> <span>${cellInfo['displayValue']}</span>`;  // <span> required for filter highlight search text
           if (cellInfo.data.attending_name.includes(' by ')) {  // has registrant
             template += ` <a title="Click to open a new page of the registrant info" target="_blank" href="/persons/attendee/${cellInfo.data.attending__registration__registrant_id}">(Info)</a>`;
           }
@@ -579,6 +579,7 @@ Attendees.attendanceStatistics = {
         editorOptions: {
            noDataText: "Nothing! Ever enrolled?",
         },
+        lookup: {},  // required for filter highlight search text
       },
       {
         dataField: 'count',
