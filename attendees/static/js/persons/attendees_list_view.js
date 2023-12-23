@@ -4,6 +4,7 @@ Attendees.dataAttendees = {
   attendeeUrn: null,
   familyAttendancesUrn: null,
   attendeesEndpoint: null,
+  attendingmeetsEndpoint: null,
   directoryPreviewPopup: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
@@ -32,6 +33,7 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.familyAttendancesUrn = $AttendeeAttrs.familyAttendancesUrn;
     Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
     Attendees.dataAttendees.attendeesEndpoint = $AttendeeAttrs.attendeesEndpoint;
+    Attendees.dataAttendees.attendingmeetsEndpoint = $AttendeeAttrs.attendingmeetsEndpoint;
   },
 
   initDirectoryPreview: () => {
@@ -55,15 +57,35 @@ Attendees.dataAttendees = {
   },
 
   toggleAttendingMeet: (e) => {
-    const meetSlug = e.currentTarget.value;
+    e.preventDefault();
+    const deferred = $.Deferred();
     const attendeeId = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').attr('href').split("/").pop();
-    console.log("hi 60 here is meetSlug: ", meetSlug);
-    console.log("hi 61 here is attendeeId: ", attendeeId);
-    // headers: {
-    //   'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
-    //   'X-Target-Attendee-Id': attendeeId,
-    // }
-  },
+    console.log("hi 63 here is meetSlug: ", e.currentTarget.value);
+    console.log("hi 64 here is attendeeId: ", attendeeId);
+    console.log("hi 65 here is action: ", e.currentTarget.checked ? 'join' : 'leave')
+    $.ajax({
+      url: Attendees.dataAttendees.attendingmeetsEndpoint,
+      dataType: 'json',
+      method: 'PUT',
+      data: {
+        meet: e.currentTarget.value,
+        action: e.currentTarget.checked ? 'join' : 'leave',
+      },
+      headers: {
+        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+        'X-Target-Attendee-Id': attendeeId,
+      },
+      timeout: 10000,
+      success: (result) => {
+        console.log('ajax success! here is result: ', result);
+        deferred.resolve();
+      },
+      error: (e) => {
+        console.log('loading directory preview error, here is error: ', e);
+        deferred.reject('Data Loading Error, probably time out?');
+      },
+    });
+  },  //Attendees.dataAttendees.attendeeDatagrid
 
   loadDirectoryPreview: (e) => {
     const deferred = $.Deferred();

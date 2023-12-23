@@ -6,15 +6,18 @@ from attendees.persons.models import AttendingMeet
 class AttendingmeetDefaultSerializer(serializers.ModelSerializer):
     # meet__assembly = serializers.IntegerField(read_only=True, source='assembly')  # field name conversion for UI to group directly later
     # meet__assembly__display_order = serializers.IntegerField(read_only=True)
-    # registrant_attendee_id = serializers.CharField(read_only=True)
-    # attendee_id = serializers.CharField(read_only=True)
+    meet = serializers.CharField(read_only=True)
+    action = serializers.CharField(read_only=True)
     # attending__registration__registrant__infos__names__original = serializers.CharField(read_only=True, source='register_name')
     # attending__attendee = serializers.CharField(read_only=True, source='attendee_name')
     # attending__attendee__infos__fixed__grade = serializers.CharField(read_only=True, source='attendee_grade')
 
     class Meta:
         model = AttendingMeet
-        fields = "__all__"
+        fields = '__all__'  # +  [
+        #     'meet',
+        #     'action'
+        # ]
 
     def create(self, validated_data):
         """

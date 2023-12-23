@@ -1,14 +1,16 @@
 import time
-
+from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.db.models.expressions import F
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
+from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from attendees.occasions.models import Attendance
-from attendees.persons.models import Attendee, AttendingMeet, Utility
+from attendees.occasions.models import Attendance, Meet
+from attendees.persons.models import Attendee, AttendingMeet, Utility, Attending
 from attendees.persons.serializers import AttendingmeetDefaultSerializer
 from attendees.users.authorization.route_guard import SpyGuard
 
@@ -16,39 +18,74 @@ from attendees.users.authorization.route_guard import SpyGuard
 @method_decorator([login_required], name='dispatch')
 class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAPIView
     """
-    API endpoint that allows AttendingMeet to be created/modified by the default character and attending
+    API endpoint that allows AttendingMeet to be created/modified by the default character and attending https://stackoverflow.com/a/70128273/4257237
     """
 
     serializer_class = AttendingmeetDefaultSerializer
 
-    def get_queryset(self):
-        """
-        Return AttendingMeet of the target attendee sent in header, can be further specified by pk in url param
-        """
-        target_attendee = get_object_or_404(
-            Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
-        )
-        print("hi 31 ApiDefaultAttendingMeetViewSet#get_queryset, self.request.query_params", self.request.query_params)
-        querying_attendingmeet_id = self.kwargs.get("pk")
-        filters = {"attending__attendee": target_attendee}
-        if querying_attendingmeet_id:
-            filters['pk'] = querying_attendingmeet_id
-        qs = AttendingMeet.objects.annotate(
-            assembly=F("meet__assembly"),
-            meet__assembly__display_order=F('meet__assembly__display_order'),
-        ).filter(**filters)
+    def put(self, request, *args, **kwargs):
+        print("hi 27 here is ApiDefaultAttendingmeetsViewSet#put, request.data: ", request.data)  #  <QueryDict: {'meet': ['d7c8Fd_cfcch_congregation_directory'], 'action': ['leave']}>
+        print("hi 28 here is ApiDefaultAttendingmeetsViewSet#put, request.META: ", request.META)
+        meet = get_object_or_404(Meet, slug=request.data.get("meet"))
+        first_attending = Attending.objects.filter(
+            attendee=request.META.get("HTTP_X_TARGET_ATTENDEE_ID"),
+            price__isnull=True,
+        ).order_by('created').first()
+        print("hi 34 here is first_attending: ", first_attending)
+        if first_attending and meet.major_character:
+            filters = {
+                "meet": meet,
+                "attending": first_attending,
+                "is_removed": False,
+            }
+            print("hi 41 here is meet.major_character: ", meet.major_character)
+            if request.data.get('action') == 'join':
+                filters['character'] = meet.major_character
+                filters['finish'] = Utility.now_with_timezone(timedelta(weeks=1040))
+            else:  # leave
+                filters['finish'] = Utility.now_with_timezone()
+            print("hi 47 here is filters: ", filters)
+            created, attendingmeet = Utility.update_or_create_last(
+                AttendingMeet,
+                update=True,
+                filters=filters,
+                order_key='created',
+                defaults=filters,
+            )
+            print("hi 47 here is attendingmeet: ", attendingmeet)
+            if attendingmeet:
+                return Response(attendingmeet, status=status.HTTP_204_NO_CONTENT)
+        print("hi 58 here is rejecting 400 ")
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        return qs.order_by(
-            'meet__assembly__display_order',
-        )
+    # def get_queryset(self):
+    #     """
+    #     Return AttendingMeet of the target attendee sent in header, can be further specified by pk in url param
+    #     """
+    #     target_attendee = get_object_or_404(
+    #         Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
+    #     )
+    #     print("hi 43 ApiDefaultAttendingMeetViewSet#get_queryset, self.request.query_params", self.request.query_params)
+    #     querying_attendingmeet_id = self.kwargs.get("pk")
+    #     filters = {"attending__attendee": target_attendee}
+    #     if querying_attendingmeet_id:
+    #         filters['pk'] = querying_attendingmeet_id
+    #     qs = AttendingMeet.objects.annotate(
+    #         assembly=F("meet__assembly"),
+    #         meet__assembly__display_order=F('meet__assembly__display_order'),
+    #     ).filter(**filters)
+    #
+    #     return qs.order_by(
+    #         'meet__assembly__display_order',
+    #     )
 
     def perform_create(self, serializer):
-        print("hi 46 ApiDefaultAttendingMeetViewSet#perform_create, serializer", serializer)
+        print("hi 83 ApiDefaultAttendingMeetViewSet#perform_create, serializer", serializer)
         instance = serializer.save()
         instance.attending.attendee.save(update_fields=['modified'])
 
     def perform_update(self, serializer):
-        print("hi 51 ApiDefaultAttendingMeetViewSet#perform_update, serializer", serializer)
+        print("hi 88 ApiDefaultAttendingMeetViewSet#perform_update, serializer", serializer)
         instance = serializer.save()
         instance.attending.attendee.save(update_fields=['modified'])
 
