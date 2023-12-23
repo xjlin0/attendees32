@@ -10,6 +10,7 @@ from .api.attendee_attendings import api_attendee_attendings_viewset
 from .api.datagrid_data_attendees import api_datagrid_data_attendees_viewset
 from .api.related_attendees import api_related_attendees_viewset
 from .api.datagrid_data_attendingmeet import api_datagrid_data_attendingmeet_viewset
+from .api.default_attendingmeet import api_default_attendingmeets_viewset
 from .api.datagrid_data_attendee import api_datagrid_data_attendee_viewset
 from .api.datagrid_data_folkattendees import api_datagrid_data_folkattendees_viewset
 from .api.assembly_meet_attendees import api_assembly_meet_attendees_viewset

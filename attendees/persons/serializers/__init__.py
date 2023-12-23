@@ -11,3 +11,4 @@ from .attendee_minimal_serializer import AttendeeMinimalSerializer
 from .attending_attendee_serializer import AttendingAttendeeSerializer
 from .registration_serializer import RegistrationSerializer
 from .attendingmeet_etc_serializer import AttendingMeetEtcSerializer
+from .attendingmeet_default_serializer import AttendingmeetDefaultSerializer

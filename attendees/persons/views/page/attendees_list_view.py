@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q
 from django.shortcuts import render
@@ -26,18 +27,25 @@ class AttendeesListView(RouteGuard, ListView):
         family_attendances_menu = Menu.objects.filter(
             url_name="datagrid_user_organization_attendances"
         ).first()
+
+        filters = Q(assembly__division__organization=self.request.user.organization).add(
+            Q(infos__allowed_models__regex='attendingmeet'), Q.AND).add(
+            Q(infos__allowed_groups__regex=fr"({'|'.join([name for name in user_groups])})"), Q.AND)
+
+        filters.add((Q(finish__isnull=True)
+                     |
+                     Q(finish__gt=Utility.now_with_timezone(timedelta(weeks=5)))), Q.AND)
+
+        if not self.request.user.can_see_all_organizational_meets_attendees():
+            filters.add(Q(shown_audience=True), Q.AND)
+
         available_meets = (
-            Meet.objects.filter(
-                (Q(finish__isnull=True) | Q(finish__gt=Utility.now_with_timezone())),
-                assembly__division__organization=self.request.user.organization,
-                infos__allowed_models__regex='attendingmeet',
-                infos__allowed_groups__regex=fr"({'|'.join([name for name in user_groups])})",
-            )   # Todo 20221018: restrict infos__preview_url to only allowed group in meet.infos
+            Meet.objects.filter(filters)   # Todo 20221018: restrict infos__preview_url to only allowed group in meet.infos
             .annotate(
                 assembly_name=F("assembly__display_name"),
             )
             .order_by("assembly__display_order", "assembly_name")
-            .values("id", "slug", "display_name", "assembly_name", "infos__preview_url")
+            .values("id", "slug", "display_name", "assembly_name", "major_character", "audience_editable", "infos__preview_url")
         )  # Todo 20210711 only coworkers can see all Meet, general users should only see what they attended
         allowed_to_create_attendee = Menu.user_can_create_attendee(self.request.user)
         context.update(
@@ -48,6 +56,8 @@ class AttendeesListView(RouteGuard, ListView):
                 "available_meets_json": list(available_meets),
                 "allowed_to_create_attendee": allowed_to_create_attendee,
                 "create_attendee_urn": "/persons/attendee/new",
+                "attendees_endpoint": "/persons/api/datagrid_data_attendees/",
+                "attendingmeets_endpoint": "/persons/api/default_attendingmeets/",
             }
         )
         return context

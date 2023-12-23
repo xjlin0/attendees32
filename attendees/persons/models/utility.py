@@ -196,7 +196,7 @@ class Utility:
         return datetime.now(timezone.utc) + timedelta(weeks=99999)
 
     @staticmethod
-    def now_with_timezone(delta=timedelta(weeks=0)):  # 1923 years from now
+    def now_with_timezone(delta=timedelta(weeks=0)):
         return datetime.now(timezone.utc) + delta
 
     @staticmethod

@@ -3,6 +3,7 @@ Attendees.dataAttendees = {
   attendeeDatagrid: null,
   attendeeUrn: null,
   familyAttendancesUrn: null,
+  attendeesEndpoint: null,
   directoryPreviewPopup: null,
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
@@ -16,16 +17,21 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.initDirectoryPreview();
   },
 
-  reloadPreviewLinks: () => {
+  reloadCheckboxesAndPreviewLinks: () => {
     $('div.dataAttendees')
       .off('click', 'u.directory-preview')  // in case of datagrid data change
       .on('click','u.directory-preview', Attendees.dataAttendees.loadDirectoryPreview);
+
+    $('div.dataAttendees')
+      .off('change', 'input[type="checkbox"]')  // in case of datagrid data change
+      .on('change','input[type="checkbox"]', Attendees.dataAttendees.toggleAttendingMeet);
   },
 
   setDataAttrs: () => {
     const $AttendeeAttrs = document.querySelector('div.dataAttendees').dataset;
     Attendees.dataAttendees.familyAttendancesUrn = $AttendeeAttrs.familyAttendancesUrn;
     Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
+    Attendees.dataAttendees.attendeesEndpoint = $AttendeeAttrs.attendeesEndpoint;
   },
 
   initDirectoryPreview: () => {
@@ -46,6 +52,17 @@ Attendees.dataAttendees = {
       at: 'center',
       my: 'center',
     },
+  },
+
+  toggleAttendingMeet: (e) => {
+    const meetSlug = e.currentTarget.value;
+    const attendeeId = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').attr('href').split("/").pop();
+    console.log("hi 60 here is meetSlug: ", meetSlug);
+    console.log("hi 61 here is attendeeId: ", attendeeId);
+    // headers: {
+    //   'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+    //   'X-Target-Attendee-Id': attendeeId,
+    // }
   },
 
   loadDirectoryPreview: (e) => {
@@ -130,7 +147,7 @@ Attendees.dataAttendees = {
       });
 
       $.ajax({
-        url: "/persons/api/datagrid_data_attendees/",
+        url: Attendees.dataAttendees.attendeesEndpoint,
         dataType: "json",
         data: args,
         success: (result) => {
@@ -140,7 +157,7 @@ Attendees.dataAttendees = {
             groupCount: result.groupCount
           });
           if (result.totalCount > 0) {
-            Attendees.dataAttendees.reloadPreviewLinks();
+            Attendees.dataAttendees.reloadCheckboxesAndPreviewLinks();
           }
         },
         error: (e) => {
@@ -154,7 +171,7 @@ Attendees.dataAttendees = {
     },
     byKey: (key) => {
       const d = new $.Deferred();
-      $.get(`/persons/api/datagrid_data_attendees/${key}/`)
+      $.get(`${Attendees.dataAttendees.attendeesEndpoint}${key}/`)
         .done((result) => {
           d.resolve(result);
         });
@@ -246,6 +263,8 @@ Attendees.dataAttendees = {
       dataField: "infos.names",
       name: 'infos.names.original',
       dataType: "string",
+      fixed: true,
+      fixedPosition: "left",
       allowHeaderFiltering: false,
       cellTemplate: (container, rowData) => {
         const attrs = {
@@ -391,7 +410,7 @@ Attendees.dataAttendees = {
 
   setMeetsColumns: (availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent)) => {
     const meetColumns=[];
-    const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});  // Todo 20231220: switch attendingmeet by checkbox
+    const previews = availableMeets.reduce((all, now) => {if (now.infos__preview_url){all[now.slug]=now.infos__preview_url}; return all;}, {});
     availableMeets.forEach(meet => {
       meetColumns.push({
         caption: meet.display_name,
@@ -416,19 +435,25 @@ Attendees.dataAttendees = {
           if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
             const preview_url = previews[meet.slug];
             const attr = {
-              text: meet.display_name
+              text: " " + meet.display_name
             };
+            if (meet.major_character && meet.audience_editable) {
+              $('<input>', {type: 'checkbox', value: meet.slug, checked: 'checked'}).appendTo(container);
+            }
             if (preview_url) {
               attr['class'] = 'text-info directory-preview';
               attr['role'] = 'button';
               attr['data-url'] = preview_url + rowData.data.id;
               attr['title'] = `click to see ${rowData.data.infos.names.original} in directory preview.`;
-              $($('<u>', attr)).appendTo(container);          // Todo 20231220: switch attendingmeet by checkbox
+              $('<u>', attr).appendTo(container);
             } else {
-              $($('<span>', attr)).appendTo(container);
+              $('<span>', attr).appendTo(container);
             }
           }else{
-            $($('<span>', {text: '-'})).appendTo(container);  // Todo 20231220: switch attendingmeet by checkbox
+            if (meet.major_character && meet.audience_editable) {
+                $('<input>', {type: 'checkbox', value: meet.slug}).appendTo(container);
+            }
+            $('<span>', {text: ' -'}).appendTo(container);
           }
         },
       })
