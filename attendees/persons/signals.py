@@ -81,8 +81,9 @@ def post_save_handler_for_attendingmeet_to_modify_folk(sender, **kwargs):
     ):
         created_attendingmeet = kwargs.get("instance")
         enabled = created_attendingmeet.meet.infos.get("automatic_modification", {}).get("Folk")
+        created_from_folkattendee = "flip_attendingmeet_by_existing_attending" in created_attendingmeet.infos.get("created_reason", "")  # Some attendingmeet were auto created from new FolkAttendee whose Family already joined print directory
         if (
-            enabled and created_attendingmeet.category_id != -1
+            enabled and created_attendingmeet.category_id != -1 and not created_from_folkattendee
         ):  # skip for access importer since special start date processing needed there
             target_attendee = created_attendingmeet.attending.attendee
             target_family = target_attendee.families.order_by('created').last()

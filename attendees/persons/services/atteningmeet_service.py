@@ -48,6 +48,9 @@ class AttendingMeetService:
                             'attending': attending,
                             'meet': meet,
                             'character': meet.major_character,
+                            'infos': {
+                                'created_reason': 'auto-created by flip_attendingmeet_by_existing_attending',
+                            }
                         }
 
                         attendingmeet, attendingmeet_created = Utility.update_or_create_last(
