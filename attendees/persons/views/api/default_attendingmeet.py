@@ -1,7 +1,8 @@
 import time
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
-from django.db.models.expressions import F
+from django.forms import model_to_dict
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework import status
@@ -24,38 +25,35 @@ class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAP
     serializer_class = AttendingmeetDefaultSerializer
 
     def put(self, request, *args, **kwargs):
-        print("hi 27 here is ApiDefaultAttendingmeetsViewSet#put, request.data: ", request.data)  #  <QueryDict: {'meet': ['d7c8Fd_cfcch_congregation_directory'], 'action': ['leave']}>
-        print("hi 28 here is ApiDefaultAttendingmeetsViewSet#put, request.META: ", request.META)
+        is_join = request.data.get('action') == 'join'
         meet = get_object_or_404(Meet, slug=request.data.get("meet"))
         first_attending = Attending.objects.filter(
             attendee=request.META.get("HTTP_X_TARGET_ATTENDEE_ID"),
             price__isnull=True,
         ).order_by('created').first()
-        print("hi 34 here is first_attending: ", first_attending)
+
         if first_attending and meet.major_character:
             filters = {
                 "meet": meet,
                 "attending": first_attending,
                 "is_removed": False,
             }
-            print("hi 41 here is meet.major_character: ", meet.major_character)
-            if request.data.get('action') == 'join':
+
+            if is_join:
                 filters['character'] = meet.major_character
                 filters['finish'] = Utility.now_with_timezone(timedelta(weeks=1040))
-            else:  # leave
-                filters['finish'] = Utility.now_with_timezone()
-            print("hi 47 here is filters: ", filters)
-            created, attendingmeet = Utility.update_or_create_last(
+
+            attendingmeet, created = Utility.update_or_create_last(
                 AttendingMeet,
                 update=True,
                 filters=filters,
                 order_key='created',
-                defaults=filters,
+                defaults=filters if is_join else {**filters, 'finish': Utility.now_with_timezone()},
             )
-            print("hi 47 here is attendingmeet: ", attendingmeet)
+
             if attendingmeet:
-                return Response(attendingmeet, status=status.HTTP_204_NO_CONTENT)
-        print("hi 58 here is rejecting 400 ")
+                return JsonResponse(model_to_dict(attendingmeet), status=status.HTTP_200_OK)
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     # def get_queryset(self):

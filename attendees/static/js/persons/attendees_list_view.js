@@ -57,12 +57,13 @@ Attendees.dataAttendees = {
   },
 
   toggleAttendingMeet: (e) => {
-    e.preventDefault();
+    const checkBox = e.currentTarget;
+    checkBox.disabled = true;  // prevent double-clicking
     const deferred = $.Deferred();
     const attendeeId = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').attr('href').split("/").pop();
-    console.log("hi 63 here is meetSlug: ", e.currentTarget.value);
-    console.log("hi 64 here is attendeeId: ", attendeeId);
-    console.log("hi 65 here is action: ", e.currentTarget.checked ? 'join' : 'leave')
+    console.log("hi 64 here is meetSlug: ", checkBox.value);
+    console.log("hi 65 here is attendeeId: ", attendeeId);
+    console.log("hi 66 here is action: ", checkBox.checked ? 'join' : 'leave')
     $.ajax({
       url: Attendees.dataAttendees.attendingmeetsEndpoint,
       dataType: 'json',
@@ -82,10 +83,14 @@ Attendees.dataAttendees = {
       },
       error: (e) => {
         console.log('loading directory preview error, here is error: ', e);
+        checkBox.checked = !checkBox.checked;
         deferred.reject('Data Loading Error, probably time out?');
       },
+      complete: () => {
+        checkBox.disabled = false;
+      },
     });
-  },  //Attendees.dataAttendees.attendeeDatagrid
+  },
 
   loadDirectoryPreview: (e) => {
     const deferred = $.Deferred();
