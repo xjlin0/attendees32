@@ -20,8 +20,8 @@ Attendees.dataAttendees = {
 
   reloadCheckboxesAndPreviewLinks: () => {
     $('div.dataAttendees')
-      .off('click', 'u.directory-preview')  // in case of datagrid data change
-      .on('click','u.directory-preview', Attendees.dataAttendees.loadDirectoryPreview);
+      .off('click', 'span.directory-preview')  // in case of datagrid data change
+      .on('click','span.directory-preview', Attendees.dataAttendees.loadDirectoryPreview);
 
     $('div.dataAttendees')
       .off('change', 'input[type="checkbox"]')  // in case of datagrid data change
@@ -59,18 +59,17 @@ Attendees.dataAttendees = {
   toggleAttendingMeet: (e) => {
     const checkBox = e.currentTarget;
     checkBox.disabled = true;  // prevent double-clicking
+    const action = checkBox.checked ? 'join' : 'leave';
     const deferred = $.Deferred();
     const attendeeId = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').attr('href').split("/").pop();
-    console.log("hi 64 here is meetSlug: ", checkBox.value);
-    console.log("hi 65 here is attendeeId: ", attendeeId);
-    console.log("hi 66 here is action: ", checkBox.checked ? 'join' : 'leave')
+debugger;
     $.ajax({
       url: Attendees.dataAttendees.attendingmeetsEndpoint,
       dataType: 'json',
       method: 'PUT',
       data: {
         meet: e.currentTarget.value,
-        action: e.currentTarget.checked ? 'join' : 'leave',
+        action: action,
       },
       headers: {
         'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
@@ -78,12 +77,27 @@ Attendees.dataAttendees = {
       },
       timeout: 10000,
       success: (result) => {
-        console.log('ajax success! here is result: ', result);
+        DevExpress.ui.notify(
+          {
+            message: `${action} ${result.meet__display_name} successfully.`,
+            position: {
+              my: 'center',
+              at: 'center',
+              of: window,
+            },
+          }, 'success', 2000);
         deferred.resolve();
       },
       error: (e) => {
-        console.log('loading directory preview error, here is error: ', e);
         checkBox.checked = !checkBox.checked;
+        DevExpress.ui.notify({
+          message: `${action} meet failed: ${e}`,
+          position: {
+            my: 'center',
+            at: 'center',
+            of: window,
+          },
+        }, 'error', 3000);
         deferred.reject('Data Loading Error, probably time out?');
       },
       complete: () => {
@@ -468,11 +482,11 @@ Attendees.dataAttendees = {
               $('<input>', {type: 'checkbox', value: meet.slug, checked: 'checked'}).appendTo(container);
             }
             if (preview_url) {
-              attr['class'] = 'text-info directory-preview';
+              attr['class'] = 'text-info directory-preview text-decoration-underline';
               attr['role'] = 'button';
               attr['data-url'] = preview_url + rowData.data.id;
               attr['title'] = `click to see ${rowData.data.infos.names.original} in directory preview.`;
-              $('<u>', attr).appendTo(container);
+              $('<span>', attr).appendTo(container);
             } else {
               $('<span>', attr).appendTo(container);
             }

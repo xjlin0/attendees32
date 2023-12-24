@@ -1,13 +1,11 @@
 import time
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
-from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from attendees.occasions.models import Attendance, Meet
@@ -52,30 +50,16 @@ class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAP
             )
 
             if attendingmeet:
-                return JsonResponse(model_to_dict(attendingmeet), status=status.HTTP_200_OK)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    # def get_queryset(self):
-    #     """
-    #     Return AttendingMeet of the target attendee sent in header, can be further specified by pk in url param
-    #     """
-    #     target_attendee = get_object_or_404(
-    #         Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
-    #     )
-    #     print("hi 43 ApiDefaultAttendingMeetViewSet#get_queryset, self.request.query_params", self.request.query_params)
-    #     querying_attendingmeet_id = self.kwargs.get("pk")
-    #     filters = {"attending__attendee": target_attendee}
-    #     if querying_attendingmeet_id:
-    #         filters['pk'] = querying_attendingmeet_id
-    #     qs = AttendingMeet.objects.annotate(
-    #         assembly=F("meet__assembly"),
-    #         meet__assembly__display_order=F('meet__assembly__display_order'),
-    #     ).filter(**filters)
-    #
-    #     return qs.order_by(
-    #         'meet__assembly__display_order',
-    #     )
+                return JsonResponse(
+                    {'meet__display_name': meet.display_name},
+                    status=status.HTTP_200_OK,
+                    safe=False,
+                    json_dumps_params={'ensure_ascii': False},
+                )
+        return JsonResponse(
+            {"error": "Can't find attending or meet's major character!"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def perform_create(self, serializer):
         print("hi 83 ApiDefaultAttendingMeetViewSet#perform_create, serializer", serializer)
