@@ -6,6 +6,12 @@ Attendees.dataAttendees = {
   attendeesEndpoint: null,
   attendingmeetsEndpoint: null,
   directoryPreviewPopup: null,
+  previewAttr: {
+    class: 'text-info directory-preview text-decoration-underline',
+    role: 'button',
+    title: 'click to see the directory preview of ',
+  },
+
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
@@ -16,6 +22,15 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.setMeetsColumns(availableMeets.filter(meet => selectedMeetSlugs.includes(meet.id)));
     Attendees.dataAttendees.startDataGrid();
     Attendees.dataAttendees.initDirectoryPreview();
+  },
+
+  previewAttrs: (previewUrl, attendeeName) => {
+    return {
+      class: 'text-info directory-preview text-decoration-underline',
+      role: 'button',
+      title: `click to see ${attendeeName} in directory preview.`,
+      'data-url': previewUrl,
+    };
   },
 
   reloadCheckboxesAndPreviewLinks: () => {
@@ -61,8 +76,9 @@ Attendees.dataAttendees = {
     checkBox.disabled = true;  // prevent double-clicking
     const action = checkBox.checked ? 'join' : 'leave';
     const deferred = $.Deferred();
-    const attendeeId = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info').attr('href').split("/").pop();
-debugger;
+    const $attendeeNodes = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info');
+    const attendeeId = $attendeeNodes.attr('href').split("/").pop();
+
     $.ajax({
       url: Attendees.dataAttendees.attendingmeetsEndpoint,
       dataType: 'json',
@@ -77,6 +93,24 @@ debugger;
       },
       timeout: 10000,
       success: (result) => {
+        const label = checkBox.nextElementSibling;
+        if (action === 'join') {
+          label.textContent = ' ' + result.meet__display_name;
+          if (result.preview_url) {
+            const fullName = $attendeeNodes.first().text();
+            const attrs = Attendees.dataAttendees.previewAttrs(result.preview_url + attendeeId, fullName);
+            label.classList = attrs.class;
+            label.title = attrs.title;
+            label.role = attrs.role;
+            label.dataset.url = attrs['data-url'];
+          }
+        } else {
+          label.textContent = ' -';
+          label.removeAttribute('class');
+          label.removeAttribute('role');
+          label.removeAttribute('title');
+        }
+
         DevExpress.ui.notify(
           {
             message: `${action} ${result.meet__display_name} successfully.`,
@@ -474,18 +508,15 @@ debugger;
         dataType: 'string',
         cellTemplate: (container, rowData) => {
           if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
-            const preview_url = previews[meet.slug];
-            const attr = {
+            const previewUrl = previews[meet.slug];
+            let attr = {
               text: " " + meet.display_name
             };
             if (meet.major_character && meet.audience_editable) {
               $('<input>', {type: 'checkbox', value: meet.slug, checked: 'checked'}).appendTo(container);
             }
-            if (preview_url) {
-              attr['class'] = 'text-info directory-preview text-decoration-underline';
-              attr['role'] = 'button';
-              attr['data-url'] = preview_url + rowData.data.id;
-              attr['title'] = `click to see ${rowData.data.infos.names.original} in directory preview.`;
+            if (previewUrl) {
+              attr = {...Attendees.dataAttendees.previewAttrs(previewUrl + rowData.data.id, rowData.data.infos.names.original), ...attr}
               $('<span>', attr).appendTo(container);
             } else {
               $('<span>', attr).appendTo(container);

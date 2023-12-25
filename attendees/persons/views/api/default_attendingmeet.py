@@ -50,8 +50,13 @@ class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAP
             )
 
             if attendingmeet:
+                preview_url = meet.infos.get("preview_url")
+                message = {'meet__display_name': meet.display_name}
+                if preview_url:
+                    message['preview_url'] = preview_url
+
                 return JsonResponse(
-                    {'meet__display_name': meet.display_name},
+                    message,
                     status=status.HTTP_200_OK,
                     safe=False,
                     json_dumps_params={'ensure_ascii': False},
