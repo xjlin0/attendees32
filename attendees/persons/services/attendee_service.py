@@ -187,7 +187,7 @@ class AttendeeService:
             .prefetch_related()
             .annotate(
                 attendingmeets=Coalesce(ArrayAgg('attendings__meets__slug',
-                                        filter=Q(attendings__attendingmeet__finish__gte=now),
+                                        filter=Q(attendings__attendingmeet__finish__gte=now, attendings__attendingmeet__is_removed=False),
                                         distinct=True), []),  # Prevents attendees without attendingmeets getting NULL and ruin order
                 folkcities=StringAgg('folks__places__address__locality__name',
                                      filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)) & Q(folks__places__is_removed=False),

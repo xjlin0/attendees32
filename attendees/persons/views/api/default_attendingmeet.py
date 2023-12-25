@@ -39,21 +39,23 @@ class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAP
 
             if is_join:
                 filters['character'] = meet.major_character
-                filters['finish'] = Utility.now_with_timezone(timedelta(weeks=1040))
 
             attendingmeet, created = Utility.update_or_create_last(
                 AttendingMeet,
                 update=True,
                 filters=filters,
                 order_key='created',
-                defaults=filters if is_join else {**filters, 'finish': Utility.now_with_timezone()},
+                defaults={**filters, 'finish': Utility.now_with_timezone(timedelta(weeks=1040))} if is_join else {**filters, 'finish': Utility.now_with_timezone()},
             )
 
             if attendingmeet:
                 preview_url = meet.infos.get("preview_url")
                 message = {'meet__display_name': meet.display_name}
+
                 if preview_url:
                     message['preview_url'] = preview_url
+
+                attendingmeet.attending.attendee.save(update_fields=['modified'])
 
                 return JsonResponse(
                     message,
