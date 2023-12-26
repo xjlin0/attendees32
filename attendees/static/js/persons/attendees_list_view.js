@@ -6,6 +6,7 @@ Attendees.dataAttendees = {
   attendeesEndpoint: null,
   attendingmeetsEndpoint: null,
   directoryPreviewPopup: null,
+  pausedCategory: null,
   previewAttr: {
     class: 'text-info directory-preview text-decoration-underline',
     role: 'button',
@@ -49,6 +50,7 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
     Attendees.dataAttendees.attendeesEndpoint = $AttendeeAttrs.attendeesEndpoint;
     Attendees.dataAttendees.attendingmeetsEndpoint = $AttendeeAttrs.attendingmeetsEndpoint;
+    Attendees.dataAttendees.pausedCategory = parseInt($AttendeeAttrs.pausedCategory);
   },
 
   initDirectoryPreview: () => {
@@ -73,71 +75,74 @@ Attendees.dataAttendees = {
 
   toggleAttendingMeet: (e) => {
     const checkBox = e.currentTarget;
-    checkBox.disabled = true;  // prevent double-clicking
     const action = checkBox.checked ? 'join' : 'leave';
-    const deferred = $.Deferred();
     const $attendeeNodes = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info');
+    const fullName = $attendeeNodes.first().text();
     const attendeeId = $attendeeNodes.attr('href').split("/").pop();
-
-    $.ajax({
-      url: Attendees.dataAttendees.attendingmeetsEndpoint,
-      dataType: 'json',
-      method: 'PUT',
-      data: {
-        meet: e.currentTarget.value,
-        action: action,
-      },
-      headers: {
-        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
-        'X-Target-Attendee-Id': attendeeId,
-      },
-      timeout: 10000,
-      success: (result) => {
-        const label = checkBox.nextElementSibling;
-        if (action === 'join') {
-          label.textContent = ' ' + result.meet__display_name;
-          if (result.preview_url) {
-            const fullName = $attendeeNodes.first().text();
-            const attrs = Attendees.dataAttendees.previewAttrs(result.preview_url + attendeeId, fullName);
-            label.classList = attrs.class;
-            label.title = attrs.title;
-            label.role = attrs.role;
-            label.dataset.url = attrs['data-url'];
+    if (confirm(`Are you sure to let ${fullName} ${action} the activity?`)) {
+      checkBox.disabled = true;
+      const deferred = $.Deferred();
+      $.ajax({
+        url: Attendees.dataAttendees.attendingmeetsEndpoint,
+        dataType: 'json',
+        method: 'PUT',
+        data: {
+          meet: e.currentTarget.value,
+          action: action,
+        },
+        headers: {
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+          'X-Target-Attendee-Id': attendeeId,
+        },
+        timeout: 10000,
+        success: (result) => {
+          const label = checkBox.nextElementSibling;
+          if (action === 'join') {
+            label.textContent = ' ' + result.meet__display_name;
+            if (result.preview_url) {
+              const attrs = Attendees.dataAttendees.previewAttrs(result.preview_url + attendeeId, fullName);
+              label.classList = attrs.class;
+              label.title = attrs.title;
+              label.role = attrs.role;
+              label.dataset.url = attrs['data-url'];
+            } else if (result.infos__note) {
+              label.title = result.infos__note;
+            }
+          } else {
+            label.textContent = ' -';
+            label.removeAttribute('class');
+            label.removeAttribute('role');
+            label.removeAttribute('title');
           }
-        } else {
-          label.textContent = ' -';
-          label.removeAttribute('class');
-          label.removeAttribute('role');
-          label.removeAttribute('title');
-        }
 
-        DevExpress.ui.notify(
-          {
-            message: `${action} ${result.meet__display_name} successfully.`,
+          DevExpress.ui.notify(
+            {
+              message: `${action} ${result.meet__display_name} successfully.`,
+              position: {
+                my: 'center',
+                at: 'center',
+                of: window,
+              },
+            }, 'success', 2000);
+          deferred.resolve();
+        },
+        error: (e) => {
+          checkBox.checked = !checkBox.checked;
+          DevExpress.ui.notify({
+            message: `${action} meet failed: ${e}`,
             position: {
               my: 'center',
               at: 'center',
               of: window,
             },
-          }, 'success', 2000);
-        deferred.resolve();
-      },
-      error: (e) => {
-        checkBox.checked = !checkBox.checked;
-        DevExpress.ui.notify({
-          message: `${action} meet failed: ${e}`,
-          position: {
-            my: 'center',
-            at: 'center',
-            of: window,
-          },
-        }, 'error', 3000);
-        deferred.reject('Data Loading Error, probably time out?');
-      },
-      complete: () => {
-        checkBox.disabled = false;
-      },
-    });
+          }, 'error', 3000);
+          deferred.reject('Data Loading Error, probably time out?');
+        },
+        complete: () => {
+          checkBox.disabled = false;
+        },
+      });
+    }
   },
 
   loadDirectoryPreview: (e) => {
@@ -507,23 +512,30 @@ Attendees.dataAttendees = {
         },
         dataType: 'string',
         cellTemplate: (container, rowData) => {
-          if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
+          const matchedAttendingmeet = rowData.data.attendingmeets && rowData.data.attendingmeets.find(am => am.meet_slug === meet.slug);
+          if (matchedAttendingmeet) {
             const previewUrl = previews[meet.slug];
             let attr = {
               text: " " + meet.display_name
             };
             if (meet.major_character && meet.audience_editable) {
-              $('<input>', {type: 'checkbox', value: meet.slug, checked: 'checked'}).appendTo(container);
+              $('<input>', {type: 'checkbox', value: meet.slug, title: 'click to join/leave', checked: 'checked'}).appendTo(container);
             }
             if (previewUrl) {
               attr = {...Attendees.dataAttendees.previewAttrs(previewUrl + rowData.data.id, rowData.data.infos.names.original), ...attr}
               $('<span>', attr).appendTo(container);
             } else {
+              if (matchedAttendingmeet.attendingmeet_category === Attendees.dataAttendees.pausedCategory) {
+                attr['class'] = 'text-decoration-line-through';
+                attr['title'] = `${meet.display_name} is PAUSED for ${rowData.data.infos.names.original} ${matchedAttendingmeet.attendingmeet_note || ''}`;
+              } else if (matchedAttendingmeet.attendingmeet_note) {
+                attr['title'] = matchedAttendingmeet.attendingmeet_note;
+              }
               $('<span>', attr).appendTo(container);
             }
           }else{
             if (meet.major_character && meet.audience_editable) {
-                $('<input>', {type: 'checkbox', value: meet.slug}).appendTo(container);
+                $('<input>', {type: 'checkbox', title: 'click to join/leave', value: meet.slug}).appendTo(container);
             }
             $('<span>', {text: ' -'}).appendTo(container);
           }

@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
 from attendees.occasions.models import Meet
-from attendees.persons.models import Utility
+from attendees.persons.models import Utility, Attendee
 from attendees.users.authorization import RouteGuard
 from attendees.users.models import Menu
 
@@ -58,6 +58,7 @@ class AttendeesListView(RouteGuard, ListView):
                 "create_attendee_urn": "/persons/attendee/new",
                 "attendees_endpoint": "/persons/api/datagrid_data_attendees/",
                 "attendingmeets_endpoint": "/persons/api/default_attendingmeets/",
+                "paused_category": Attendee.PAUSED_CATEGORY,
             }
         )
         return context

@@ -48,6 +48,9 @@ class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAP
                 preview_url = meet.infos.get("preview_url")
                 message = {'meet__display_name': meet.display_name}
 
+                if attendingmeet.infos.get('note'):
+                    message['infos__note'] = attendingmeet.infos.get('note')
+
                 if preview_url:
                     message['preview_url'] = preview_url
 

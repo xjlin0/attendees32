@@ -2,10 +2,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
+from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg, JSONBAgg
 from django.db.models import Case, F, Func, Q, When, CharField
-from django.db.models.functions import Cast, Substr, Coalesce
-from django.db.models.expressions import OrderBy
+from django.db.models.functions import Cast, Substr, Coalesce, JSONObject
+from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
 from rest_framework.utils import json
 
@@ -186,9 +186,17 @@ class AttendeeService:
             qs.select_related()
             .prefetch_related()
             .annotate(
-                attendingmeets=Coalesce(ArrayAgg('attendings__meets__slug',
-                                        filter=Q(attendings__attendingmeet__finish__gte=now, attendings__attendingmeet__is_removed=False),
-                                        distinct=True), []),  # Prevents attendees without attendingmeets getting NULL and ruin order
+                attendingmeets=JSONBAgg(
+                    Func(
+                        Value('meet_slug'), 'attendings__meets__slug',
+                        Value('attendingmeet_note'), 'attendings__attendingmeet__infos__note',
+                        Value('attendingmeet_category'), 'attendings__attendingmeet__category',
+                        function='jsonb_build_object',
+                    ),
+                    filter=Q(attendings__attendingmeet__finish__gte=now, attendings__attendingmeet__is_removed=False),
+                    distinct=True,
+                    default=[],
+                ),
                 folkcities=StringAgg('folks__places__address__locality__name',
                                      filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)) & Q(folks__places__is_removed=False),
                                      delimiter=", ",
