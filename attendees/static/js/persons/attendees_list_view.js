@@ -4,7 +4,8 @@ Attendees.dataAttendees = {
   attendeeUrn: null,
   familyAttendancesUrn: null,
   attendeesEndpoint: null,
-  attendingmeetsEndpoint: null,
+  attendingmeetsDefaultEndpoint: null,
+  attendingmeetsUrl: null,
   directoryPreviewPopup: null,
   pausedCategory: null,
   previewAttr: {
@@ -41,7 +42,7 @@ Attendees.dataAttendees = {
 
     $('div.dataAttendees')
       .off('change', 'input[type="checkbox"]')  // in case of datagrid data change
-      .on('change','input[type="checkbox"]', Attendees.dataAttendees.toggleAttendingMeet);
+      .on('change','input[type="checkbox"]', Attendees.dataAttendees.joinAndLeaveAttendingmeet);
   },
 
   setDataAttrs: () => {
@@ -49,7 +50,8 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.familyAttendancesUrn = $AttendeeAttrs.familyAttendancesUrn;
     Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
     Attendees.dataAttendees.attendeesEndpoint = $AttendeeAttrs.attendeesEndpoint;
-    Attendees.dataAttendees.attendingmeetsEndpoint = $AttendeeAttrs.attendingmeetsEndpoint;
+    Attendees.dataAttendees.attendingmeetsDefaultEndpoint = $AttendeeAttrs.attendingmeetsDefaultEndpoint;
+    Attendees.dataAttendees.attendingmeetsUrl= $AttendeeAttrs.attendingmeetsUrl;
     Attendees.dataAttendees.pausedCategory = parseInt($AttendeeAttrs.pausedCategory);
   },
 
@@ -73,7 +75,7 @@ Attendees.dataAttendees = {
     },
   },
 
-  toggleAttendingMeet: (e) => {
+  joinAndLeaveAttendingmeet: (e) => {
     const checkBox = e.currentTarget;
     const action = checkBox.checked ? 'join' : 'leave';
     const $attendeeNodes = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info');
@@ -83,7 +85,7 @@ Attendees.dataAttendees = {
       checkBox.disabled = true;
       const deferred = $.Deferred();
       $.ajax({
-        url: Attendees.dataAttendees.attendingmeetsEndpoint,
+        url: Attendees.dataAttendees.attendingmeetsDefaultEndpoint,
         dataType: 'json',
         method: 'PUT',
         data: {
@@ -117,7 +119,7 @@ Attendees.dataAttendees = {
 
           DevExpress.ui.notify(
             {
-              message: `${action} ${result.meet__display_name} successfully.`,
+              message: `${fullName} ${action} ${result.meet__display_name} successfully.`,
               position: {
                 my: 'center',
                 at: 'center',
@@ -129,7 +131,7 @@ Attendees.dataAttendees = {
         error: (e) => {
           checkBox.checked = !checkBox.checked;
           DevExpress.ui.notify({
-            message: `${action} meet failed: ${e}`,
+            message: `${fullName} ${action} meet failed: ${e}`,
             position: {
               my: 'center',
               at: 'center',
@@ -142,8 +144,15 @@ Attendees.dataAttendees = {
           checkBox.disabled = false;
         },
       });
+    } else {
+      checkBox.checked = !checkBox.checked;
     }
   },
+
+  pauseAndResumeAttendingmeet: () => {
+
+  },
+
 
   loadDirectoryPreview: (e) => {
     const deferred = $.Deferred();
@@ -526,10 +535,13 @@ Attendees.dataAttendees = {
               $('<span>', attr).appendTo(container);
             } else {
               if (matchedAttendingmeet.attendingmeet_category === Attendees.dataAttendees.pausedCategory) {
-                attr['class'] = 'text-decoration-line-through';
+                attr['class'] = 'text-decoration-line-through for-pausing';
                 attr['title'] = `${meet.display_name} is PAUSED for ${rowData.data.infos.names.original} ${matchedAttendingmeet.attendingmeet_note || ''}`;
               } else if (matchedAttendingmeet.attendingmeet_note) {
+                attr['class'] = 'for-pausing';
                 attr['title'] = matchedAttendingmeet.attendingmeet_note;
+              } else {
+                attr['class'] = 'for-pausing';
               }
               $('<span>', attr).appendTo(container);
             }

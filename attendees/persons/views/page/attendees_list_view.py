@@ -57,7 +57,8 @@ class AttendeesListView(RouteGuard, ListView):
                 "allowed_to_create_attendee": allowed_to_create_attendee,
                 "create_attendee_urn": "/persons/attendee/new",
                 "attendees_endpoint": "/persons/api/datagrid_data_attendees/",
-                "attendingmeets_endpoint": "/persons/api/default_attendingmeets/",
+                "attendingmeets_default_endpoint": "/persons/api/default_attendingmeets/",
+                'attendingmeet_url': '/persons/api/datagrid_data_attendingmeet/',
                 "paused_category": Attendee.PAUSED_CATEGORY,
             }
         )
