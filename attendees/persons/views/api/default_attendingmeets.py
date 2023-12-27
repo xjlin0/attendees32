@@ -1,4 +1,3 @@
-import time
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -8,7 +7,7 @@ from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 
 from attendees.occasions.models import Meet
-from attendees.persons.models import AttendingMeet, Utility, Attending, Attendee
+from attendees.persons.models import AttendingMeet, Utility, Attending, Attendee, Category
 from attendees.users.authorization.route_guard import SpyGuard
 
 
@@ -39,8 +38,7 @@ class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAP
             defaults = {**filters}
             if is_join:
                 defaults['finish'] = Utility.now_with_timezone(timedelta(weeks=1040))
-                defaults['category__id'] = request.data.get('category') or meet.infos.get('active_category') or Attendee.SCHEDULED_CATEGORY
-
+                defaults['category'] = Category.objects.get(pk=(request.data.get('category') or meet.infos.get('active_category') or Attendee.SCHEDULED_CATEGORY))
             else:
                 defaults['finish'] = Utility.now_with_timezone()
 

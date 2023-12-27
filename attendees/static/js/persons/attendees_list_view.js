@@ -177,7 +177,7 @@ Attendees.dataAttendees = {
         nextData.infos = {note: message};
       }
 
-      const params = {
+      fetch(`${Attendees.dataAttendees.attendingmeetsUrl + e.currentTarget.id}/`, {
         method: 'PATCH',
         body: JSON.stringify(nextData),
         headers: {
@@ -185,39 +185,69 @@ Attendees.dataAttendees = {
           'X-Target-Attendee-Id': attendeeId,
           'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
         },
-      };
-
-      fetch(`${Attendees.dataAttendees.attendingmeetsUrl + e.currentTarget.id}/`, params)
-        .then(response => response.json())
-        .then(result => {
-          target.dataset.previousCategory = currentCategory;
-          target.dataset.category = result.category;
-          let notification = `${target.textContent} is resumed for ${fullName}`;
-          if (result.category === Attendees.dataAttendees.pausedCategory) {
-            target.classList.add('text-decoration-line-through');
-            notification = `${target.textContent} is PAUSED for ${fullName} ${result.infos.note || ''}`.trim();
-            target.title = notification;
-          } else {
-            target.classList.remove('text-decoration-line-through');
-            if (result.infos.note) {
-              target.title = result.infos.note;
+      }).then((response) => {
+        return new Promise((resolve) => response.json()
+          .then((json) => resolve({
+            status: response.status,
+            ok: response.ok,
+            json,
+          })));
+      }).then(({ status, json, ok }) => {
+        switch (status) {  // https://stackoverflow.com/a/60348315/4257237
+          case 200:
+            target.dataset.previousCategory = currentCategory;
+            target.dataset.category = json.category;
+            let notification = `${target.textContent} is resumed for ${fullName}`;
+            if (json.category === Attendees.dataAttendees.pausedCategory) {
+              target.classList.add('text-decoration-line-through');
+              notification = `${target.textContent} is PAUSED for ${fullName} ${json.infos.note || ''}`.trim();
+              target.title = notification;
+            } else {
+              target.classList.remove('text-decoration-line-through');
+              if (json.infos.note) {
+                target.title = json.infos.note;
+              }
             }
-          }
-          target.style.backgroundColor = null;
-          DevExpress.ui.notify(
-            {
-              message: notification,
+            target.style.backgroundColor = null;
+            DevExpress.ui.notify(
+              {
+                message: notification,
+                position: {
+                  my: 'center',
+                  at: 'center',
+                  of: window,
+                },
+              }, 'success', 2000);
+            break;
+          // case 400:
+          //   break;
+          // case 500:
+          //   break;
+          default:
+            console.log(`Updating AttendingMeet ${target.id} ${status} error: `, json);
+            target.style.backgroundColor = 'Red';
+            DevExpress.ui.notify({
+              message: `Updating ${fullName} attendingmeet failed with ${status} error: ${json}`,
               position: {
                 my: 'center',
                 at: 'center',
                 of: window,
               },
-            }, 'success', 2000);
-        })
-        .catch(err => {
-          alert(`Updating AttendingMeet ${target.id} error: `, err);
-          target.style.backgroundColor = 'Red';
-        });
+            }, 'error', 3000);
+        }
+      })
+      .catch(err => {
+        console.log(`Updating AttendingMeet ${target.id} error: `, err);
+        target.style.backgroundColor = 'Red';
+        DevExpress.ui.notify({
+          message: `Updating ${fullName} attendingmeet failed with error: ${err}`,
+          position: {
+            my: 'center',
+            at: 'center',
+            of: window,
+          },
+        }, 'error', 3000);
+      });
     } else {
       target.style.backgroundColor = null;
     }
