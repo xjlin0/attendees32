@@ -45,7 +45,7 @@ class AttendeesListView(RouteGuard, ListView):
                 assembly_name=F("assembly__display_name"),
             )
             .order_by("assembly__display_order", "assembly_name")
-            .values("id", "slug", "display_name", "assembly_name", "major_character", "audience_editable", "infos__preview_url")
+            .values("id", "slug", "display_name", "assembly_name", "major_character", "audience_editable", "infos__preview_url", "infos__active_category")
         )  # Todo 20210711 only coworkers can see all Meet, general users should only see what they attended
         allowed_to_create_attendee = Menu.user_can_create_attendee(self.request.user)
         context.update(
@@ -59,7 +59,8 @@ class AttendeesListView(RouteGuard, ListView):
                 "attendees_endpoint": "/persons/api/datagrid_data_attendees/",
                 "attendingmeets_default_endpoint": "/persons/api/default_attendingmeets/",
                 'attendingmeet_url': '/persons/api/datagrid_data_attendingmeet/',
-                "paused_category": Attendee.PAUSED_CATEGORY,
+                'scheduled_category': Attendee.SCHEDULED_CATEGORY,
+                'paused_category': Attendee.PAUSED_CATEGORY,
             }
         )
         return context

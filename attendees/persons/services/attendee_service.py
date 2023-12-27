@@ -188,6 +188,7 @@ class AttendeeService:
             .annotate(
                 attendingmeets=JSONBAgg(
                     Func(
+                        Value('attendingmeet_id'), 'attendings__attendingmeet',
                         Value('meet_slug'), 'attendings__meets__slug',
                         Value('attendingmeet_note'), 'attendings__attendingmeet__infos__note',
                         Value('attendingmeet_category'), 'attendings__attendingmeet__category',

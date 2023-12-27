@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 
 from attendees.occasions.models import Meet
-from attendees.persons.models import AttendingMeet, Utility, Attending
+from attendees.persons.models import AttendingMeet, Utility, Attending, Attendee
 from attendees.users.authorization.route_guard import SpyGuard
 
 
@@ -36,17 +36,25 @@ class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAP
             if is_join:
                 filters['character'] = meet.major_character
 
+            defaults = {**filters}
+            if is_join:
+                defaults['finish'] = Utility.now_with_timezone(timedelta(weeks=1040))
+                defaults['category__id'] = request.data.get('category') or meet.infos.get('active_category') or Attendee.SCHEDULED_CATEGORY
+
+            else:
+                defaults['finish'] = Utility.now_with_timezone()
+
             attendingmeet, created = Utility.update_or_create_last(
                 AttendingMeet,
                 update=True,
                 filters=filters,
                 order_key='created',
-                defaults={**filters, 'finish': Utility.now_with_timezone(timedelta(weeks=1040))} if is_join else {**filters, 'finish': Utility.now_with_timezone()},
+                defaults=defaults,
             )
 
             if attendingmeet:
                 preview_url = meet.infos.get("preview_url")
-                message = {'meet__display_name': meet.display_name}
+                message = {'meet__display_name': meet.display_name, 'id': attendingmeet.id, 'category': attendingmeet.category.id}
 
                 if attendingmeet.infos.get('note'):
                     message['infos__note'] = attendingmeet.infos.get('note')

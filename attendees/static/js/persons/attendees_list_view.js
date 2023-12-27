@@ -8,6 +8,7 @@ Attendees.dataAttendees = {
   attendingmeetsUrl: null,
   directoryPreviewPopup: null,
   pausedCategory: null,
+  scheduledCategory: null,
   previewAttr: {
     class: 'text-info directory-preview text-decoration-underline',
     role: 'button',
@@ -43,16 +44,21 @@ Attendees.dataAttendees = {
     $('div.dataAttendees')
       .off('change', 'input[type="checkbox"]')  // in case of datagrid data change
       .on('change','input[type="checkbox"]', Attendees.dataAttendees.joinAndLeaveAttendingmeet);
+
+    $('div.dataAttendees')
+      .off('dblclick', 'span[id]')  // in case of datagrid data change
+      .on('dblclick','span[id]', Attendees.dataAttendees.pauseAndResumeAttendingmeet);
   },
 
   setDataAttrs: () => {
-    const $AttendeeAttrs = document.querySelector('div.dataAttendees').dataset;
-    Attendees.dataAttendees.familyAttendancesUrn = $AttendeeAttrs.familyAttendancesUrn;
-    Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
-    Attendees.dataAttendees.attendeesEndpoint = $AttendeeAttrs.attendeesEndpoint;
-    Attendees.dataAttendees.attendingmeetsDefaultEndpoint = $AttendeeAttrs.attendingmeetsDefaultEndpoint;
-    Attendees.dataAttendees.attendingmeetsUrl= $AttendeeAttrs.attendingmeetsUrl;
-    Attendees.dataAttendees.pausedCategory = parseInt($AttendeeAttrs.pausedCategory);
+    const attendeeAttrs = document.querySelector('div.dataAttendees').dataset;
+    Attendees.dataAttendees.familyAttendancesUrn = attendeeAttrs.familyAttendancesUrn;
+    Attendees.dataAttendees.attendeeUrn = attendeeAttrs.attendeeUrn;
+    Attendees.dataAttendees.attendeesEndpoint = attendeeAttrs.attendeesEndpoint;
+    Attendees.dataAttendees.attendingmeetsDefaultEndpoint = attendeeAttrs.attendingmeetsDefaultEndpoint;
+    Attendees.dataAttendees.attendingmeetsUrl= attendeeAttrs.attendingmeetsUrl;
+    Attendees.dataAttendees.scheduledCategory = parseInt(attendeeAttrs.scheduledCategory);
+    Attendees.dataAttendees.pausedCategory = parseInt(attendeeAttrs.pausedCategory);
   },
 
   initDirectoryPreview: () => {
@@ -99,24 +105,30 @@ Attendees.dataAttendees = {
         timeout: 10000,
         success: (result) => {
           const label = checkBox.nextElementSibling;
+          label.style.backgroundColor = null;
           if (action === 'join') {
             label.textContent = ' ' + result.meet__display_name;
+            const attrs = Attendees.dataAttendees.previewAttrs(result.preview_url + attendeeId, fullName);
             if (result.preview_url) {
-              const attrs = Attendees.dataAttendees.previewAttrs(result.preview_url + attendeeId, fullName);
               label.classList = attrs.class;
               label.title = attrs.title;
               label.role = attrs.role;
               label.dataset.url = attrs['data-url'];
-            } else if (result.infos__note) {
-              label.title = result.infos__note;
+            } else {
+              if (result.infos__note) {
+                label.title = result.infos__note;
+                label.role = attrs.role;
+                label.dataset.category = result.category;
+              }
+              label.id = result.id;
             }
           } else {
             label.textContent = ' -';
             label.removeAttribute('class');
             label.removeAttribute('role');
             label.removeAttribute('title');
+            label.removeAttribute('id');
           }
-
           DevExpress.ui.notify(
             {
               message: `${fullName} ${action} ${result.meet__display_name} successfully.`,
@@ -149,10 +161,67 @@ Attendees.dataAttendees = {
     }
   },
 
-  pauseAndResumeAttendingmeet: () => {
+  pauseAndResumeAttendingmeet: (e) => {
+    const target = e.currentTarget;
+    target.style.backgroundColor = 'Green';
+    const $attendeeNodes = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info');
+    const fullName = $attendeeNodes.first().text();
+    const attendeeId = $attendeeNodes.attr('href').split("/").pop();
+    const note = e.currentTarget.title ? e.currentTarget.title.split(fullName).pop().trim() : '';
+    const message = prompt(`Pause/Resume the activity for ${fullName} ? Add optional note:`, note);
+    if (e.currentTarget.dataset.category && message !== null) {  // if user click ok without adding note, it will be empty string ''
+      const currentCategory = parseInt(target.dataset.category);
+      const nextCategory = currentCategory === Attendees.dataAttendees.pausedCategory ? parseInt(target.dataset.previousCategory) : Attendees.dataAttendees.pausedCategory;
+      const nextData = {category: nextCategory};
+      if (message) {
+        nextData.infos = {note: message};
+      }
 
+      const params = {
+        method: 'PATCH',
+        body: JSON.stringify(nextData),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Target-Attendee-Id': attendeeId,
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+        },
+      };
+
+      fetch(`${Attendees.dataAttendees.attendingmeetsUrl + e.currentTarget.id}/`, params)
+        .then(response => response.json())
+        .then(result => {
+          target.dataset.previousCategory = currentCategory;
+          target.dataset.category = result.category;
+          let notification = `${target.textContent} is resumed for ${fullName}`;
+          if (result.category === Attendees.dataAttendees.pausedCategory) {
+            target.classList.add('text-decoration-line-through');
+            notification = `${target.textContent} is PAUSED for ${fullName} ${result.infos.note || ''}`.trim();
+            target.title = notification;
+          } else {
+            target.classList.remove('text-decoration-line-through');
+            if (result.infos.note) {
+              target.title = result.infos.note;
+            }
+          }
+          target.style.backgroundColor = null;
+          DevExpress.ui.notify(
+            {
+              message: notification,
+              position: {
+                my: 'center',
+                at: 'center',
+                of: window,
+              },
+            }, 'success', 2000);
+        })
+        .catch(err => {
+          alert(`Updating AttendingMeet ${target.id} error: `, err);
+          target.style.backgroundColor = 'Red';
+        });
+    } else {
+      target.style.backgroundColor = null;
+    }
   },
-
 
   loadDirectoryPreview: (e) => {
     const deferred = $.Deferred();
@@ -534,14 +603,17 @@ Attendees.dataAttendees = {
               attr = {...Attendees.dataAttendees.previewAttrs(previewUrl + rowData.data.id, rowData.data.infos.names.original), ...attr}
               $('<span>', attr).appendTo(container);
             } else {
+              attr['id'] = matchedAttendingmeet.attendingmeet_id;
+              attr['data-category'] = matchedAttendingmeet.attendingmeet_category;
+              attr['role'] = 'button';
               if (matchedAttendingmeet.attendingmeet_category === Attendees.dataAttendees.pausedCategory) {
-                attr['class'] = 'text-decoration-line-through for-pausing';
-                attr['title'] = `${meet.display_name} is PAUSED for ${rowData.data.infos.names.original} ${matchedAttendingmeet.attendingmeet_note || ''}`;
-              } else if (matchedAttendingmeet.attendingmeet_note) {
-                attr['class'] = 'for-pausing';
-                attr['title'] = matchedAttendingmeet.attendingmeet_note;
+                attr['data-previous-category'] = meet.infos__active_category ? meet.infos__active_category : Attendees.dataAttendees.scheduledCategory;
+                attr['class'] = 'text-decoration-line-through';
+                attr['title'] = `${meet.display_name} is PAUSED for ${rowData.data.infos.names.original} ${matchedAttendingmeet.attendingmeet_note || ''}`.trim();
               } else {
-                attr['class'] = 'for-pausing';
+                if (matchedAttendingmeet.attendingmeet_note) {
+                  attr['title'] = matchedAttendingmeet.attendingmeet_note;
+                }
               }
               $('<span>', attr).appendTo(container);
             }

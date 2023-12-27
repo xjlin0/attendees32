@@ -15958,6 +15958,7 @@
       "display_name": "會員 member",
       "slug": "d7c8Fd_cfcch_congregation_member",
       "infos": {
+        "active_category": 6,
         "attendance": {},
         "allowed_groups": [
           "data_counselor",

@@ -21,23 +21,6 @@ class ApiDatagridDataAttendingMeetViewSet(
 
     serializer_class = AttendingMeetEtcSerializer
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     attendingmeet_id = self.kwargs.get('pk')
-    #     print("hi 23 hre is attendingmeet_id: ")
-    #     print(attendingmeet_id)
-    #     attendee = AttendingMeet.objects.annotate(
-    #         assembly=F('meet__assembly'),
-    #         attendingmeets=JSONBAgg(
-    #             Func(
-    #                 Value('slug'), 'attending__meets__slug',
-    #                 Value('display_name'), 'attending__meets__display_name',
-    #                 function='jsonb_build_object'
-    #             ),
-    #         )
-    #                ).filter(pk=attendingmeet_id).first()
-    #     serializer = AttendingMeetEtcSerializer(attendee)
-    #     return Response(serializer.data)
-
     def get_queryset(self):
         """
         Return AttendingMeet of the target attendee sent in header, can be further specified by pk in url param
@@ -46,7 +29,10 @@ class ApiDatagridDataAttendingMeetViewSet(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
         )
         querying_attendingmeet_id = self.kwargs.get("pk")
-        filters = {"attending__attendee": target_attendee}
+        filters = {
+            'attending__attendee': target_attendee,
+            'meet__assembly__division__organization': self.request.user.organization,
+        }
         if querying_attendingmeet_id:
             filters['pk'] = querying_attendingmeet_id
         qs = AttendingMeet.objects.annotate(
