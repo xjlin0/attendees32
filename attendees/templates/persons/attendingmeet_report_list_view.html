@@ -44,7 +44,7 @@
           <div class="folk-container border-bottom {% cycle 'dark-background' '' %}">
             <div class="family-name">
               <a class="link-as-text"
-                 title="click to show/edit the first attendee"
+                 title="(Family#{{ forloop.counter }}) click to show/edit the first attendee"
                  href="{{attendee_url}}{{folk.first_attendee_id}}">
                 {{ folk.family_name }}
               </a>

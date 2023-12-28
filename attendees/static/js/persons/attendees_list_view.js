@@ -109,17 +109,16 @@ Attendees.dataAttendees = {
           if (action === 'join') {
             label.textContent = ' ' + result.meet__display_name;
             const attrs = Attendees.dataAttendees.previewAttrs(result.preview_url + attendeeId, fullName);
+            label.role = attrs.role;
             if (result.preview_url) {
               label.classList = attrs.class;
               label.title = attrs.title;
-              label.role = attrs.role;
               label.dataset.url = attrs['data-url'];
             } else {
               if (result.infos__note) {
                 label.title = result.infos__note;
-                label.role = attrs.role;
-                label.dataset.category = result.category;
               }
+              label.dataset.category = result.category;
               label.id = result.id;
             }
           } else {
