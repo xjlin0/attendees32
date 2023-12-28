@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
+from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee
 from attendees.persons.services import FolkService
 from attendees.users.authorization import RouteGuard
@@ -18,6 +19,7 @@ class AttendingmeetReportListView(RouteGuard, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         show_paused = self.request.GET.get("showPaused")
+        meet = Meet.objects.get(slug=self.request.GET.get("meet"))
         families = FolkService.families_in_participations(
             meet_slug=self.request.GET.get("meet"),
             user_organization=self.request.user.organization,
@@ -33,7 +35,7 @@ class AttendingmeetReportListView(RouteGuard, ListView):
             'show_paused': show_paused,
             'attendee_url': '/persons/attendee/',
             'attendingmeet_url': '/persons/api/datagrid_data_attendingmeet/',
-            'scheduled_category': Attendee.SCHEDULED_CATEGORY,
+            'default_category': meet.infos.get('active_category') or Attendee.SCHEDULED_CATEGORY,
         })
         return context
 
