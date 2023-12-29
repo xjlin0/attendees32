@@ -299,6 +299,7 @@ class AttendeeService:
                 }
                 if filters_list[0] == 'attendings__meets__slug' or (meets and Meet.objects.filter(id__in=meets, slug=filters_list[0], assembly__division__organization=current_user.organization).exists()):
                     condition['attendings__attendingmeet__finish__gte'] = datetime.now(timezone.utc)
+                    condition['attendings__attendingmeet__is_removed'] = False
 
                 return Q(**condition)
             elif filters_list[1] == "startswith":
