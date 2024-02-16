@@ -626,7 +626,7 @@ Attendees.dataAttendees = {
               text: " " + meet.display_name
             };
             if (meet.major_character && meet.audience_editable) {
-              $('<input>', {type: 'checkbox', value: meet.slug, title: 'click to join/leave', checked: 'checked'}).appendTo(container);
+              $('<input>', {type: 'checkbox', value: meet.slug, title: 'click to join/leave', checked: 'checked', disabled: rowData.data.deathday !== null}).appendTo(container);
             }
             if (previewUrl) {
               attr = {...Attendees.dataAttendees.previewAttrs(previewUrl + rowData.data.id, rowData.data.infos.names.original), ...attr}
@@ -648,9 +648,9 @@ Attendees.dataAttendees = {
             }
           }else{
             if (meet.major_character && meet.audience_editable) {
-                $('<input>', {type: 'checkbox', title: 'click to join/leave', value: meet.slug}).appendTo(container);
+                $('<input>', {type: 'checkbox', title: 'click to join/leave', value: meet.slug, disabled: rowData.data.deathday !== null}).appendTo(container);
             }
-            $('<span>', {text: ' -'}).appendTo(container);
+            $('<span>', {text: rowData.data.deathday === null ? ' -' : ' ✞✞✞'}).appendTo(container);
           }
         },
       })
