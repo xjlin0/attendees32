@@ -577,7 +577,8 @@ Attendees.datagridUpdate = {
                 'data-object-name': Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original,
               });
               const personalPlaces = Attendees.datagridUpdate.attendeeFormConfigs.formData.places || [];
-              let $personalLi = $('<li>', {class: 'list-group-item', text: 'Personal'}).append($personalNewButton);
+              const canAddPersonalAddress = Attendees.datagridUpdate.attendeeAttrs.dataset.canAddPersonalAddress;
+              let $personalLi = canAddPersonalAddress ? $('<li>', {class: 'list-group-item', text: 'Personal'}).append($personalNewButton) : $('<li>', {class: 'list-group-item', text: 'Personal'});
 
               personalPlaces.forEach(place => {
                 const addressName = (place.street || '').replace(', USA', '');
