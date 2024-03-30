@@ -240,6 +240,7 @@ Attendees.datagridUpdate = {
         $addAddressButton.attr('data-object-id', newFamily.id);
         $addAddressButton.attr('data-object-name', newFamily.display_name);
         $addAddressButton.removeAttr('disabled');
+        $addAddressButton.html('Add new address+');
         $familyAddressLi.removeAttr('title');
         $familyAddressLi.contents().filter(function(){ return this.nodeType === 3; }).first().replaceWith(newFamily.display_name);  // change text without altering children
       }
@@ -636,6 +637,7 @@ Attendees.datagridUpdate = {
                   'disabled': true,
                   ...newButtonAttrs,
                   'data-desc': 'family address ', //  (  family.display_name )
+                  text: '⬇⬇⬇ No family created, please creating family first',
                   class: 'place-button btn-outline-primary btn button btn-sm ',
                   // 'data-content-type': familyContentTypeId,
                   // 'data-object-id': family.id,
@@ -644,7 +646,7 @@ Attendees.datagridUpdate = {
 
                 let $familyLi = $('<li>', {
                   class: 'list-group-item no-family', //  + family.id,
-                  text: 'No family created',   // family.display_name
+                  text: 'No family created, please creating family first',   // family.display_name
                   title: 'Please add address after creating family',
                 }).append($familyNewButton);
                 $places = $places.append($familyLi);
