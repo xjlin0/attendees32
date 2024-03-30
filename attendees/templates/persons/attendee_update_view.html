@@ -84,6 +84,9 @@
     {{ pasts_to_add|json_script:"organization-pasts-to-add" }}
     {{ grade_converter|json_script:"organization-grade-converter" }}
     <div class="datagrid-attendee-update"
+         {% if request.user.is_superuser %}
+           data-can-add-personal-address="1"
+         {% endif %}
          data-teams-endpoint="{{teams_endpoint}}"
          data-user-organization-directory-meet="{{user_organization_directory_meet|default_if_none:''}}"
          data-attendee-contenttype-id="{{attendee_contenttype_id}}"

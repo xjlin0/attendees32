@@ -18,6 +18,7 @@ from attendees.persons.views import (  # api_attendee_relationships_viewset,
     # api_attendee_relationships_viewset,
     datagrid_assembly_all_attendings_list_view,
     datagrid_attendingmeets_list_view,
+    api_default_attendingmeets_viewset,
     api_organization_meet_character_attendingmeets_viewset,
     api_organization_meet_character_attendings_viewset_for_attendance,
     api_organization_meet_character_attendings_viewset_for_attendingmeet,
@@ -86,6 +87,11 @@ router.register(
 router.register(
     "api/organization_meet_character_attendingmeets",
     api_organization_meet_character_attendingmeets_viewset,
+    basename="attendingmeet",
+)
+router.register(
+    "api/default_attendingmeets",
+    api_default_attendingmeets_viewset,
     basename="attendingmeet",
 )
 router.register(

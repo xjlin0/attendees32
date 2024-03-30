@@ -62,12 +62,17 @@
     </div>
 
   </form>
+  {% csrf_token %}
   {{ available_meets_json|json_script:"organization-available-meets" }}
   <div class="dataAttendees"
       data-family-attendances-urn="{{family_attendances_urn}}"
-      data-available-meets="{{available_meets_json}}"
+      data-attendees-endpoint="{{attendees_endpoint}}"
+      data-attendingmeets-default-endpoint="{{attendingmeets_default_endpoint}}"
       data-divisions-endpoint="{{divisions_endpoint}}"
       data-attendee-urn="{{attendee_urn}}"
+      data-attendingmeets-url="{{attendingmeet_url}}"
+      data-scheduled-category="{{scheduled_category}}"
+      data-paused-category="{{paused_category}}"
       >
   </div>
 {% endblock content %}

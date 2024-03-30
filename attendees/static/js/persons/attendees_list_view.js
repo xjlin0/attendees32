@@ -3,7 +3,18 @@ Attendees.dataAttendees = {
   attendeeDatagrid: null,
   attendeeUrn: null,
   familyAttendancesUrn: null,
+  attendeesEndpoint: null,
+  attendingmeetsDefaultEndpoint: null,
+  attendingmeetsUrl: null,
   directoryPreviewPopup: null,
+  pausedCategory: null,
+  scheduledCategory: null,
+  previewAttr: {
+    class: 'text-info directory-preview text-decoration-underline',
+    role: 'button',
+    title: 'click to see the directory preview of ',
+  },
+
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
@@ -16,16 +27,38 @@ Attendees.dataAttendees = {
     Attendees.dataAttendees.initDirectoryPreview();
   },
 
-  reloadPreviewLinks: () => {
+  previewAttrs: (previewUrl, attendeeName) => {
+    return {
+      class: 'text-info directory-preview text-decoration-underline',
+      role: 'button',
+      title: `click to see ${attendeeName} in directory preview.`,
+      'data-url': previewUrl,
+    };
+  },
+
+  reloadCheckboxesAndPreviewLinks: () => {
     $('div.dataAttendees')
-      .off('click', 'u.directory-preview')  // in case of datagrid data change
-      .on('click','u.directory-preview', Attendees.dataAttendees.loadDirectoryPreview);
+      .off('click', 'span.directory-preview')  // in case of datagrid data change
+      .on('click','span.directory-preview', Attendees.dataAttendees.loadDirectoryPreview);
+
+    $('div.dataAttendees')
+      .off('change', 'input[type="checkbox"]')  // in case of datagrid data change
+      .on('change','input[type="checkbox"]', Attendees.dataAttendees.joinAndLeaveAttendingmeet);
+
+    $('div.dataAttendees')
+      .off('dblclick', 'span[id]')  // in case of datagrid data change
+      .on('dblclick','span[id]', Attendees.dataAttendees.pauseAndResumeAttendingmeet);
   },
 
   setDataAttrs: () => {
-    const $AttendeeAttrs = document.querySelector('div.dataAttendees').dataset;
-    Attendees.dataAttendees.familyAttendancesUrn = $AttendeeAttrs.familyAttendancesUrn;
-    Attendees.dataAttendees.attendeeUrn = $AttendeeAttrs.attendeeUrn;
+    const attendeeAttrs = document.querySelector('div.dataAttendees').dataset;
+    Attendees.dataAttendees.familyAttendancesUrn = attendeeAttrs.familyAttendancesUrn;
+    Attendees.dataAttendees.attendeeUrn = attendeeAttrs.attendeeUrn;
+    Attendees.dataAttendees.attendeesEndpoint = attendeeAttrs.attendeesEndpoint;
+    Attendees.dataAttendees.attendingmeetsDefaultEndpoint = attendeeAttrs.attendingmeetsDefaultEndpoint;
+    Attendees.dataAttendees.attendingmeetsUrl= attendeeAttrs.attendingmeetsUrl;
+    Attendees.dataAttendees.scheduledCategory = parseInt(attendeeAttrs.scheduledCategory);
+    Attendees.dataAttendees.pausedCategory = parseInt(attendeeAttrs.pausedCategory);
   },
 
   initDirectoryPreview: () => {
@@ -46,6 +79,177 @@ Attendees.dataAttendees = {
       at: 'center',
       my: 'center',
     },
+  },
+
+  joinAndLeaveAttendingmeet: (e) => {
+    const checkBox = e.currentTarget;
+    const action = checkBox.checked ? 'join' : 'leave';
+    const $attendeeNodes = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info');
+    const fullName = $attendeeNodes.first().text();
+    const attendeeId = $attendeeNodes.attr('href').split("/").pop();
+    if (confirm(`Are you sure to let ${fullName} ${action} the activity?`)) {
+      checkBox.disabled = true;
+      const deferred = $.Deferred();
+      $.ajax({
+        url: Attendees.dataAttendees.attendingmeetsDefaultEndpoint,
+        dataType: 'json',
+        method: 'PUT',
+        data: {
+          meet: e.currentTarget.value,
+          action: action,
+        },
+        headers: {
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+          'X-Target-Attendee-Id': attendeeId,
+        },
+        timeout: 10000,
+        success: (result) => {
+          const label = checkBox.nextElementSibling;
+          label.style.backgroundColor = null;
+          if (action === 'join') {
+            label.textContent = ' ' + result.meet__display_name;
+            const attrs = Attendees.dataAttendees.previewAttrs(result.preview_url + attendeeId, fullName);
+            label.role = attrs.role;
+            if (result.preview_url) {
+              label.classList = attrs.class;
+              label.title = attrs.title;
+              label.dataset.url = attrs['data-url'];
+            } else {
+              if (result.infos__note) {
+                label.title = result.infos__note;
+              }
+              label.dataset.category = result.category;
+              label.id = result.id;
+            }
+          } else {
+            label.textContent = ' -';
+            label.removeAttribute('class');
+            label.removeAttribute('role');
+            label.removeAttribute('title');
+            label.removeAttribute('id');
+          }
+          DevExpress.ui.notify(
+            {
+              message: `${fullName} ${action} ${result.meet__display_name} successfully.`,
+              position: {
+                my: 'center',
+                at: 'center',
+                of: window,
+              },
+            }, 'success', 2000);
+          deferred.resolve();
+        },
+        error: (e) => {
+          checkBox.checked = !checkBox.checked;
+          DevExpress.ui.notify({
+            message: `${fullName} ${action} meet failed: ${e}`,
+            position: {
+              my: 'center',
+              at: 'center',
+              of: window,
+            },
+          }, 'error', 3000);
+          deferred.reject('Data Loading Error, probably time out?');
+        },
+        complete: () => {
+          checkBox.disabled = false;
+        },
+      });
+    } else {
+      checkBox.checked = !checkBox.checked;
+    }
+  },
+
+  pauseAndResumeAttendingmeet: (e) => {
+    const target = e.currentTarget;
+    target.style.backgroundColor = 'Green';
+    const $attendeeNodes = $(e.currentTarget).parent('td').siblings('td.full-name').first().children('a.text-info');
+    const fullName = $attendeeNodes.first().text();
+    const attendeeId = $attendeeNodes.attr('href').split("/").pop();
+    const note = e.currentTarget.title ? e.currentTarget.title.split(fullName).pop().trim() : '';
+    const message = prompt(`Pause/Resume the activity for ${fullName} ? Add optional note:`, note);
+    if (e.currentTarget.dataset.category && message !== null) {  // if user click ok without adding note, it will be empty string ''
+      const currentCategory = parseInt(target.dataset.category);
+      const nextCategory = currentCategory === Attendees.dataAttendees.pausedCategory ? parseInt(target.dataset.previousCategory) : Attendees.dataAttendees.pausedCategory;
+      const nextData = {category: nextCategory};
+      if (message) {
+        nextData.infos = {note: message};
+      }
+
+      fetch(`${Attendees.dataAttendees.attendingmeetsUrl + e.currentTarget.id}/`, {
+        method: 'PATCH',
+        body: JSON.stringify(nextData),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Target-Attendee-Id': attendeeId,
+          'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+        },
+      }).then((response) => {
+        return new Promise((resolve) => response.json()
+          .then((json) => resolve({
+            status: response.status,
+            ok: response.ok,
+            json,
+          })));
+      }).then(({ status, json, ok }) => {
+        switch (status) {  // https://stackoverflow.com/a/60348315/4257237
+          case 200:
+            target.dataset.previousCategory = currentCategory;
+            target.dataset.category = json.category;
+            let notification = `${target.textContent} is resumed for ${fullName}`;
+            if (json.category === Attendees.dataAttendees.pausedCategory) {
+              target.classList.add('text-decoration-line-through');
+              notification = `${target.textContent} is PAUSED for ${fullName} ${json.infos.note || ''}`.trim();
+              target.title = notification;
+            } else {
+              target.classList.remove('text-decoration-line-through');
+              if (json.infos.note) {
+                target.title = json.infos.note;
+              }
+            }
+            target.style.backgroundColor = null;
+            DevExpress.ui.notify(
+              {
+                message: notification,
+                position: {
+                  my: 'center',
+                  at: 'center',
+                  of: window,
+                },
+              }, 'success', 2000);
+            break;
+          // case 400:
+          //   break;
+          // case 500:
+          //   break;
+          default:
+            console.log(`Updating AttendingMeet ${target.id} ${status} error: `, json);
+            target.style.backgroundColor = 'Red';
+            DevExpress.ui.notify({
+              message: `Updating ${fullName} attendingmeet failed with ${status} error: ${json}`,
+              position: {
+                my: 'center',
+                at: 'center',
+                of: window,
+              },
+            }, 'error', 3000);
+        }
+      })
+      .catch(err => {
+        console.log(`Updating AttendingMeet ${target.id} error: `, err);
+        target.style.backgroundColor = 'Red';
+        DevExpress.ui.notify({
+          message: `Updating ${fullName} attendingmeet failed with error: ${err}`,
+          position: {
+            my: 'center',
+            at: 'center',
+            of: window,
+          },
+        }, 'error', 3000);
+      });
+    } else {
+      target.style.backgroundColor = null;
+    }
   },
 
   loadDirectoryPreview: (e) => {
@@ -130,7 +334,7 @@ Attendees.dataAttendees = {
       });
 
       $.ajax({
-        url: "/persons/api/datagrid_data_attendees/",
+        url: Attendees.dataAttendees.attendeesEndpoint,
         dataType: "json",
         data: args,
         success: (result) => {
@@ -140,7 +344,7 @@ Attendees.dataAttendees = {
             groupCount: result.groupCount
           });
           if (result.totalCount > 0) {
-            Attendees.dataAttendees.reloadPreviewLinks();
+            Attendees.dataAttendees.reloadCheckboxesAndPreviewLinks();
           }
         },
         error: (e) => {
@@ -154,7 +358,7 @@ Attendees.dataAttendees = {
     },
     byKey: (key) => {
       const d = new $.Deferred();
-      $.get(`/persons/api/datagrid_data_attendees/${key}/`)
+      $.get(`${Attendees.dataAttendees.attendeesEndpoint}${key}/`)
         .done((result) => {
           d.resolve(result);
         });
@@ -246,6 +450,8 @@ Attendees.dataAttendees = {
       dataField: "infos.names",
       name: 'infos.names.original',
       dataType: "string",
+      fixed: true,
+      fixedPosition: "left",
       allowHeaderFiltering: false,
       cellTemplate: (container, rowData) => {
         const attrs = {
@@ -413,22 +619,38 @@ Attendees.dataAttendees = {
         },
         dataType: 'string',
         cellTemplate: (container, rowData) => {
-          if (rowData.data.attendingmeets && rowData.data.attendingmeets.includes(meet.slug)) {
-            const preview_url = previews[meet.slug];
-            const attr = {
-              text: meet.display_name
+          const matchedAttendingmeet = rowData.data.attendingmeets && rowData.data.attendingmeets.find(am => am.meet_slug === meet.slug);
+          if (matchedAttendingmeet) {
+            const previewUrl = previews[meet.slug];
+            let attr = {
+              text: " " + meet.display_name
             };
-            if (preview_url) {
-              attr['class'] = 'text-info directory-preview';
-              attr['role'] = 'button';
-              attr['data-url'] = preview_url + rowData.data.id;
-              attr['title'] = `click to see ${rowData.data.infos.names.original} in directory preview.`;
-              $($('<u>', attr)).appendTo(container);
+            if (meet.major_character && meet.audience_editable) {
+              $('<input>', {type: 'checkbox', value: meet.slug, title: 'click to join/leave', checked: 'checked', disabled: rowData.data.deathday !== null}).appendTo(container);
+            }
+            if (previewUrl) {
+              attr = {...Attendees.dataAttendees.previewAttrs(previewUrl + rowData.data.id, rowData.data.infos.names.original), ...attr}
+              $('<span>', attr).appendTo(container);
             } else {
-              $($('<span>', attr)).appendTo(container);
+              attr['id'] = matchedAttendingmeet.attendingmeet_id;
+              attr['data-category'] = matchedAttendingmeet.attendingmeet_category;
+              attr['role'] = 'button';
+              if (matchedAttendingmeet.attendingmeet_category === Attendees.dataAttendees.pausedCategory) {
+                attr['data-previous-category'] = meet.infos__active_category ? meet.infos__active_category : Attendees.dataAttendees.scheduledCategory;
+                attr['class'] = 'text-decoration-line-through';
+                attr['title'] = `${meet.display_name} is PAUSED for ${rowData.data.infos.names.original} ${matchedAttendingmeet.attendingmeet_note || ''}`.trim();
+              } else {
+                if (matchedAttendingmeet.attendingmeet_note) {
+                  attr['title'] = matchedAttendingmeet.attendingmeet_note;
+                }
+              }
+              $('<span>', attr).appendTo(container);
             }
           }else{
-            $($('<span>', {text: '-'})).appendTo(container);
+            if (meet.major_character && meet.audience_editable) {
+                $('<input>', {type: 'checkbox', title: 'click to join/leave', value: meet.slug, disabled: rowData.data.deathday !== null}).appendTo(container);
+            }
+            $('<span>', {text: rowData.data.deathday === null ? ' -' : ' ✞✞✞'}).appendTo(container);
           }
         },
       })

@@ -201,7 +201,7 @@ Attendees.datagridUpdate = {
           Attendees.datagridUpdate.initListeners();
           Attendees.datagridUpdate.familyAttrDefaults.division = response.division;
           Attendees.datagridUpdate.familyAttrDefaults.display_name = response.infos.names.original + ' family';
-          Attendees.datagridUpdate.patchNewAttendeeDropDown(null);
+          Attendees.datagridUpdate.patchNewAttendeeDropDownAndFamilyAddress(null);
         },
         error: (response) => {
           console.log('Failed to fetch data in Attendees.datagridUpdate.initAttendeeForm(), error: ', response);
@@ -219,17 +219,33 @@ Attendees.datagridUpdate = {
     }, {});
   },
 
-  patchNewAttendeeDropDown: (newFamily) => {
+  patchNewAttendeeDropDownAndFamilyAddress: (newFamily) => {
     const newAttendeeDxDropDownButton = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('add_new_attendee');
-    const $newAttendeeLinkWithoutFamily = $('a.add-new-attendee');
+    const $newAttendeeLinkWithoutFamily = $('a.add-new-attendee').last();  // Non-devextreme button for creating attendee (to family)
     if (newFamily) {
       Attendees.datagridUpdate.families.push(newFamily);
+      const $newAttendeeLinkWithFamily = $newAttendeeLinkWithoutFamily.clone();
+      $newAttendeeLinkWithFamily.attr('href', `new?familyId=${newFamily.id}&familyName=for%20${newFamily.display_name}`);
+      $newAttendeeLinkWithFamily.attr('title', `Add a new member to ${newFamily.display_name} ${newFamily.category === 0 ? 'family' : ''}`);
+      $newAttendeeLinkWithFamily.text(`+New member to ${newFamily.display_name}  ${newFamily.category === 0 ? 'family' : ''}`);
+      $newAttendeeLinkWithFamily.attr('target', '_blank');
+      $newAttendeeLinkWithFamily.insertBefore($newAttendeeLinkWithoutFamily);
+
+      const $familyAddressLi = $('li.list-group-item.no-family');
+      if ($familyAddressLi.length) {
+        const $addAddressButton = $familyAddressLi.children('button.place-button');
+        $addAddressButton.addClass('place-button-new');
+        $addAddressButton.attr('data-desc', `family address (${newFamily.display_name})`);
+        $addAddressButton.attr('data-content-type', document.querySelector('div.datagrid-attendee-update').dataset.familyContenttypeId);
+        $addAddressButton.attr('data-object-id', newFamily.id);
+        $addAddressButton.attr('data-object-name', newFamily.display_name);
+        $addAddressButton.removeAttr('disabled');
+        $addAddressButton.html('Add new address+');
+        $familyAddressLi.removeAttr('title');
+        $familyAddressLi.contents().filter(function(){ return this.nodeType === 3; }).first().replaceWith(newFamily.display_name);  // change text without altering children
+      }
     } else {
       Attendees.datagridUpdate.families = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set.flatMap(fa => fa.folk.category === 0 ? fa.folk : []);  // 0 is family
-    }
-    if (Attendees.datagridUpdate.families.length > 0) {
-      newAttendeeDxDropDownButton.option('dataSource', Attendees.datagridUpdate.families);
-      newAttendeeDxDropDownButton.option('hint', 'Select a family to add a new member');
       Attendees.datagridUpdate.families.forEach(family => {
         const $newAttendeeLinkWithFamily = $newAttendeeLinkWithoutFamily.clone();
         $newAttendeeLinkWithFamily.attr('href', `new?familyId=${family.id}&familyName=for%20${family.display_name}`);
@@ -238,6 +254,10 @@ Attendees.datagridUpdate = {
         $newAttendeeLinkWithFamily.attr('target', '_blank');
         $newAttendeeLinkWithFamily.insertBefore($newAttendeeLinkWithoutFamily);
       });
+    }
+    if (Attendees.datagridUpdate.families.length > 0) {
+      newAttendeeDxDropDownButton.option('dataSource', Attendees.datagridUpdate.families);
+      newAttendeeDxDropDownButton.option('hint', 'Select a family to add a new member');
     }
   },
 
@@ -558,8 +578,8 @@ Attendees.datagridUpdate = {
                 'data-object-name': Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original,
               });
               const personalPlaces = Attendees.datagridUpdate.attendeeFormConfigs.formData.places || [];
-              const familyattendees = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set || [];
-              let $personalLi = $('<li>', {class: 'list-group-item', text: 'Personal'}).append($personalNewButton);
+              const canAddPersonalAddress = Attendees.datagridUpdate.attendeeAttrs.dataset.canAddPersonalAddress;
+              let $personalLi = canAddPersonalAddress ? $('<li>', {class: 'list-group-item', text: 'Personal'}).append($personalNewButton) : $('<li>', {class: 'list-group-item', text: 'Personal'});
 
               personalPlaces.forEach(place => {
                 const addressName = (place.street || '').replace(', USA', '');
@@ -577,39 +597,60 @@ Attendees.datagridUpdate = {
               });
               let $places = $placeUl.append($personalLi);
 
-              familyattendees.forEach(familyattendee => {
-                const family = familyattendee.folk;
-                if (family && family.category === 0) {
-                  const $familyNewButton = Attendees.datagridUpdate.familyButtonFactory({
-                    ...newButtonAttrs,
-                    'data-desc': 'family address (' + family.display_name + ')',
-                    'data-content-type': familyContentTypeId,
-                    'data-object-id': family.id,
-                    'data-object-name': family.display_name,
-                  });
-
-                  let $familyLi = $('<li>', {
-                    class: 'list-group-item ' + family.id,
-                    text: family.display_name,
-                  }).append($familyNewButton);
-
-                  familyattendee.folk.places.forEach(place => {
-                    const addressName = (place.street || '').replace(', USA', '');
-                    const $button = Attendees.datagridUpdate.familyButtonFactory({
-                      // type: 'button',
-                      'data-desc': family.display_name + ' family address (' + place.street + ')',
-                      class: 'btn-outline-success place-button btn button btn-sm',
-                      value: place.id,
-                      text: (place.display_name && !addressName.includes(place.display_name) ? place.display_name + ': ' : '') + addressName,
+              const familyattendees = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set || [];
+              if (familyattendees.find(f => f.folk && f.folk.category === 0)) {  // any families?
+                familyattendees.forEach(familyattendee => {
+                  const family = familyattendee.folk;
+                  if (family && family.category === 0) {
+                    const $familyNewButton = Attendees.datagridUpdate.familyButtonFactory({
+                      ...newButtonAttrs,
+                      'data-desc': 'family address (' + family.display_name + ')',
+                      'data-content-type': familyContentTypeId,
                       'data-object-id': family.id,
                       'data-object-name': family.display_name,
-                      'data-address-raw': place.address && place.address.raw,
                     });
-                    $familyLi = $familyLi.append($button);
-                  });
-                  $places = $places.append($familyLi);
-                }
-              });
+
+                    let $familyLi = $('<li>', {
+                      class: 'list-group-item ' + family.id,
+                      text: family.display_name,
+                    }).append($familyNewButton);
+
+                    familyattendee.folk.places.forEach(place => {
+                      const addressName = (place.street || '').replace(', USA', '');
+                      const $button = Attendees.datagridUpdate.familyButtonFactory({
+                        // type: 'button',
+                        'data-desc': family.display_name + ' family address (' + place.street + ')',
+                        class: 'btn-outline-success place-button btn button btn-sm',
+                        value: place.id,
+                        text: (place.display_name && !addressName.includes(place.display_name) ? place.display_name + ': ' : '') + addressName,
+                        'data-object-id': family.id,
+                        'data-object-name': family.display_name,
+                        'data-address-raw': place.address && place.address.raw,
+                      });
+                      $familyLi = $familyLi.append($button);
+                    });
+                    $places = $places.append($familyLi);
+                  }
+                });
+              } else {
+                const $familyNewButton = Attendees.datagridUpdate.familyButtonFactory({
+                  'disabled': true,
+                  ...newButtonAttrs,
+                  'data-desc': 'family address ', //  (  family.display_name )
+                  text: '⬇⬇⬇ No family created, please creating family first',
+                  class: 'place-button btn-outline-primary btn button btn-sm ',
+                  // 'data-content-type': familyContentTypeId,
+                  // 'data-object-id': family.id,
+                  // 'data-object-name': family.display_name,
+                });
+
+                let $familyLi = $('<li>', {
+                  class: 'list-group-item no-family', //  + family.id,
+                  text: 'No family created, please creating family first',   // family.display_name
+                  title: 'Please add address after creating family',
+                }).append($familyNewButton);
+                $places = $places.append($familyLi);
+              }
               itemElement.append($places);
             },
           },
@@ -3531,7 +3572,7 @@ Attendees.datagridUpdate = {
                             },
                           }, 'success', 2500);
 
-                        if (!userData.id) { Attendees.datagridUpdate.patchNewAttendeeDropDown(savedFamily); }
+                        if (!userData.id) { Attendees.datagridUpdate.patchNewAttendeeDropDownAndFamilyAddress(savedFamily); }
                         if (familyAttrButton.value) {
                           familyAttrButton.textContent = savedFamily.display_name;
                         } else {

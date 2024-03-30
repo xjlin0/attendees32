@@ -44,7 +44,7 @@
           <div class="folk-container border-bottom {% cycle 'dark-background' '' %}">
             <div class="family-name">
               <a class="link-as-text"
-                 title="click to show/edit the first attendee"
+                 title="(Family#{{ forloop.counter }}) click to show/edit the first attendee"
                  href="{{attendee_url}}{{folk.first_attendee_id}}">
                 {{ folk.family_name }}
               </a>
@@ -57,7 +57,7 @@
                        title="{{member_attrs.attendingmeet_note}}"
                        data-attendee-id="{{member_id}}"
                        {% if member_attrs.paused %}
-                         data-previous-category="{{scheduled_category}}"
+                         data-previous-category="{{default_category}}"
                        {% endif %}
                        data-category="{{member_attrs.attendingmeet_category}}">
                     <span class="count mono-space"

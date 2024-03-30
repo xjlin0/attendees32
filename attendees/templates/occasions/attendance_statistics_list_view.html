@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}
+  Attendance Statistics
+{% endblock title %}
+
+{% block extra_css %}
+  <link rel="stylesheet"
+        href="{% static 'devextreme/dx.light.compact.min.css' %}">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <script defer
+          src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+          integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+  </script>
+
+
+  <script defer
+          src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"
+          integrity="sha512-UnrKxsCMN9hFk7M56t4I4ckB4N/2HHi0w/7+B/1JsXIX3DmyBcsGpT3/BsuZMZf+6mAr0vP81syWtfynHJ69JA=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+  </script>
+
+  <script defer
+          src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
+          integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="https://cdn3.devexpress.com/jslib/21.2.11/js/dx.web.js"
+          integrity="sha384-209QJH8lCoDrB70trdPkGFr84168dIgFO2IYDKFYUv73DqCa161cBayeTRYdzjSp"
+          crossorigin="anonymous">
+  </script>
+
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/occasions/attendance_statistics_list_view.js' %}">
+  </script>
+
+{% endblock extra_head %}
+
+{% block content %}
+<div class="attendance-container">
+  {% csrf_token %}
+  <div class="d-flex justify-content-between">
+    <div class="d-flex">
+      <h3>
+        Attendance Statistics
+      </h3>
+    </div>
+    <div>
+      <div id="custom-control-filter-meets-checkbox">
+      </div>
+    </div>
+    <div>
+      Totally <span id="gathering-count">0</span> gatherings by the chosen conditions.
+    </div>
+  </div>
+
+  <form class="filters-dxform"
+        data-characters-endpoint="{{characters_endpoint}}"
+        data-attendance-stats-endpoint="{{attendance_stats_endpoint}}"
+        data-categories-endpoint="{{categories_endpoint}}"
+        data-assemblies-endpoint="{{assemblies_endpoint}}"
+        data-attendings-endpoint="{{attendings_endpoint}}"
+        data-gatherings-endpoint="{{gatherings_endpoint}}"
+        data-teams-endpoint="{{teams_endpoint}}"
+        data-meets-endpoint-by-id="{{meets_endpoint_by_id}}"
+        data-meets-endpoint-by-slug="{{meets_endpoint_by_slug}}">
+  </form>
+</div>
+{% endblock content %}

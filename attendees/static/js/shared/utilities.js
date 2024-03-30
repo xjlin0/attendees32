@@ -7,6 +7,8 @@ Attendees.utilities = {
     datagridAttendingmeetsListViewOpts: "attendeesAttendingmeetsListOpts",
     attendancesListView: "attendancesListView",
     attendancesListViewOpts: "attendancesListViewOpts",
+    attendanceStatisticsListView: "attendanceStatisticsListView",
+    attendanceStatisticsListViewOpts: "attendanceStatisticsListViewOpts",
     personalAttendancesListView: "personalAttendancesListView",
     personalAttendancesListViewOpts: "personalAttendancesListViewOpts",
     gatheringsListView: "attendeesGatheringsList",
@@ -126,6 +128,13 @@ Attendees.utilities = {
           $title.siblings(".dx-form-group-content").hide();
         }
       });
+  },
+
+  areTwoArraysTheSame: (array1, array2) => {
+    if (Array.isArray(array1) && Array.isArray(array2)) {
+      return JSON.stringify(array1.sort()) === JSON.stringify(array2.sort());
+    }
+    return undefined;
   },
 
   trimBothKeyAndValueButKeepBasicContacts: (obj, keepEmpties=false) => {

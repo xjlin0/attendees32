@@ -21,12 +21,12 @@ window.Attendees = {
               Attendees.attendingmeetReportListView.patchMember(event.target, mainDiv.dataset.url, false);
             }, 400)
           }
-        }, false);
+        }, false);  // single click to toggle scheduled/pause
 
         mainDiv.addEventListener('dblclick', (event) => {
           clearTimeout(timer);
           Attendees.attendingmeetReportListView.patchMember(event.target, mainDiv.dataset.url, true);
-        }, false);
+        }, false);  // double click to pause with note
 
       } else {
         console.log('The report does not rendered yet! ');

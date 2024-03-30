@@ -73,14 +73,14 @@ class FolkService:
                     )
                     attrs['household_last_name'] = attendees.first().last_name
 
-                    if parents:
-                        phone1 = parents.first() and parents.first().infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
-                        phone2 = None
-                        if phone1:
-                            attrs['phone1'] = Utility.phone_number_formatter(phone1)
-                        email1 = parents.first() and parents.first().infos.get('contacts', {}).get('email1')  # only email1 published in directory
-                        if email1:
-                            attrs['email1'] = email1
+                    householder = parents.first() or attendees.first()
+                    phone1 = householder and householder.infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
+                    phone2 = None
+                    if phone1:
+                        attrs['phone1'] = Utility.phone_number_formatter(phone1)
+                    email1 = householder and householder.infos.get('contacts', {}).get('email1')  # only email1 published in directory
+                    if email1:
+                        attrs['email1'] = email1
 
                     is_householder_member = member_meet and AttendingMeet.check_participation_of(attendees.first(), member_meet)
                     householder_title = f'{attendees.first().last_name}, {attendees.first().first_name}{"*" if is_householder_member else ""}'

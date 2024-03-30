@@ -1834,7 +1834,7 @@
     "model": "django_celery_beat.periodictasks",
     "pk": 1,
     "fields": {
-      "last_update": "2023-05-28T01:25:03.063Z"
+      "last_update": "2023-12-20T15:56:04.764Z"
     }
   },
   {
@@ -1917,7 +1917,7 @@
       "enabled": true,
       "last_run_at": null,
       "total_run_count": 0,
-      "date_changed": "2023-05-28T01:25:03.059Z",
+      "date_changed": "2023-12-20T15:56:04.745Z",
       "description": ""
     }
   },
@@ -4519,7 +4519,7 @@
         "data-bs-toggle": "dropdown"
       },
       "lft": 1,
-      "rght": 22,
+      "rght": 24,
       "tree_id": 14,
       "level": 0
     }
@@ -5296,6 +5296,31 @@
       },
       "lft": 20,
       "rght": 21,
+      "tree_id": 14,
+      "level": 1
+    }
+  },
+  {
+    "model": "users.menu",
+    "pk": 42,
+    "fields": {
+      "created": "2023-12-20T16:01:58.863Z",
+      "modified": "2023-12-20T16:01:58.863Z",
+      "is_removed": false,
+      "organization": 1,
+      "category": "main",
+      "parent": 4,
+      "html_type": "a",
+      "urn": "/occasions/attendance_statistics/",
+      "url_name": "attendance_statistics_list_view",
+      "display_name": "stats 出席統計",
+      "display_order": 2980,
+      "infos": {
+        "class": "dropdown-item",
+        "title": "attandance statistics"
+      },
+      "lft": 22,
+      "rght": 23,
       "tree_id": 14,
       "level": 1
     }
@@ -6988,6 +7013,58 @@
       "read": true,
       "write": true,
       "menu": 41
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 153,
+    "fields": {
+      "created": "2023-12-20T16:01:58.868Z",
+      "modified": "2023-12-20T16:01:58.868Z",
+      "is_removed": false,
+      "auth_group": 500,
+      "read": true,
+      "write": true,
+      "menu": 42
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 154,
+    "fields": {
+      "created": "2023-12-20T16:01:58.868Z",
+      "modified": "2023-12-20T16:01:58.868Z",
+      "is_removed": false,
+      "auth_group": 300,
+      "read": true,
+      "write": true,
+      "menu": 42
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 155,
+    "fields": {
+      "created": "2023-12-20T16:01:58.868Z",
+      "modified": "2023-12-20T16:01:58.868Z",
+      "is_removed": false,
+      "auth_group": 400,
+      "read": true,
+      "write": true,
+      "menu": 42
+    }
+  },
+  {
+    "model": "users.menuauthgroup",
+    "pk": 156,
+    "fields": {
+      "created": "2023-12-20T16:01:58.869Z",
+      "modified": "2023-12-20T16:01:58.869Z",
+      "is_removed": false,
+      "auth_group": 600,
+      "read": true,
+      "write": true,
+      "menu": 42
     }
   },
   {
@@ -15428,7 +15505,7 @@
       "assembly": 5,
       "major_character": null,
       "shown_audience": false,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:53:44Z",
       "finish": "2999-05-12T15:53:45Z",
       "display_name": "封存 archived",
@@ -15470,7 +15547,7 @@
       "assembly": 5,
       "major_character": 26,
       "shown_audience": false,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:53:44Z",
       "finish": "2999-05-12T15:53:45Z",
       "display_name": "訪客 visitor",
@@ -15652,7 +15729,7 @@
       "assembly": 5,
       "major_character": 15,
       "shown_audience": true,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
       "display_name": "英文崇拜 Sunday Service (English)",
@@ -15742,7 +15819,7 @@
       "assembly": 3,
       "major_character": null,
       "shown_audience": true,
-      "audience_editable": true,
+      "audience_editable": false,
       "start": "2020-05-12T14:53:03Z",
       "finish": "2030-05-12T14:53:04Z",
       "display_name": "青少退休會",
@@ -15787,7 +15864,7 @@
       "assembly": 5,
       "major_character": 15,
       "shown_audience": true,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
       "display_name": "中文崇拜 Sunday Service (Chinese)",
@@ -15830,7 +15907,7 @@
       "assembly": 5,
       "major_character": 23,
       "shown_audience": false,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:54:35Z",
       "finish": "2099-05-12T15:54:36Z",
       "display_name": "通訊錄 directory",
@@ -15856,6 +15933,9 @@
           "Gathering": false,
           "Attendance": false
         },
+        "automatic_modification": {
+          "Folk": true
+        },
         "default_attendingmeet_in_weeks": 60
       },
       "site_type": 53,
@@ -15872,12 +15952,13 @@
       "assembly": 5,
       "major_character": 22,
       "shown_audience": false,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:54:24Z",
       "finish": "2099-05-12T15:54:26Z",
       "display_name": "會員 member",
       "slug": "d7c8Fd_cfcch_congregation_member",
       "infos": {
+        "active_category": 6,
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
@@ -16075,7 +16156,7 @@
       "is_removed": false,
       "assembly": 6,
       "major_character": null,
-      "shown_audience": true,
+      "shown_audience": false,
       "audience_editable": false,
       "start": "2024-07-12T16:32:20Z",
       "finish": "2024-07-14T16:32:24Z",
@@ -16159,7 +16240,7 @@
       "assembly": 5,
       "major_character": 24,
       "shown_audience": true,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
       "display_name": "已受洗 baptized",
@@ -16199,7 +16280,7 @@
       "assembly": 5,
       "major_character": 25,
       "shown_audience": true,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2020-05-12T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
       "display_name": "已信主 believer",
@@ -16239,7 +16320,7 @@
       "assembly": 4,
       "major_character": 7,
       "shown_audience": true,
-      "audience_editable": true,
+      "audience_editable": false,
       "start": "2020-05-12T14:53:19Z",
       "finish": "2099-05-12T15:53:21Z",
       "display_name": "天堂 玻璃海天使詩班",
@@ -16589,7 +16670,7 @@
       "assembly": 9,
       "major_character": 48,
       "shown_audience": true,
-      "audience_editable": true,
+      "audience_editable": false,
       "start": "2020-05-12T14:53:44Z",
       "finish": "2099-05-12T15:53:45Z",
       "display_name": "借閱 circulation",
@@ -16628,7 +16709,7 @@
       "assembly": 5,
       "major_character": 50,
       "shown_audience": false,
-      "audience_editable": false,
+      "audience_editable": true,
       "start": "2023-03-03T14:54:44Z",
       "finish": "2200-05-12T15:54:46Z",
       "display_name": "慕道友 catechumen",

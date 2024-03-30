@@ -196,7 +196,7 @@ class Utility:
         return datetime.now(timezone.utc) + timedelta(weeks=99999)
 
     @staticmethod
-    def now_with_timezone(delta=timedelta(weeks=0)):  # 1923 years from now
+    def now_with_timezone(delta=timedelta(weeks=0)):
         return datetime.now(timezone.utc) + delta
 
     @staticmethod
@@ -375,7 +375,7 @@ class Utility:
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             print(
-                f"\nbug: Utility.update_or_create_last() exception: {e} at line: {exc_tb.tb_lineno}"
+                f"\nbug: Sending id instead of instance? Utility.update_or_create_last() exception: {e} at line: {exc_tb.tb_lineno}"
             )
             print(f"and data of {klass} obj#{obj.id} has been saved (pk exist)")
             if excpetion_print_data:

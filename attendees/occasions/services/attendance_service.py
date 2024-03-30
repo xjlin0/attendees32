@@ -1,8 +1,9 @@
 from datetime import datetime
 
 from django.conf import settings
-from django.db.models import F, Q, CharField, Value, When, Case
+from django.db.models import F, Q, CharField, Value, When, Case, Count
 from django.db.models.functions import Concat, Trim
+from django.contrib.postgres.aggregates.general import StringAgg
 from rest_framework.utils import json
 from attendees.occasions.models import Attendance, Meet
 from attendees.persons.models import AttendingMeet
@@ -243,6 +244,79 @@ class AttendanceService:
         return Attendance.objects.annotate(**annotations).filter(extra_filters).order_by(*orderby_list)
 
     @staticmethod
+    def attendance_count(user_organization, meet_slugs, character_slugs, team_ids, category_ids, start, finish, orderbys, name_search=[[None]]):
+        orderby_list = AttendanceService.orderby_parser(orderbys)
+
+        filters = Q(gathering__meet__slug__in=meet_slugs).add(
+            Q(gathering__meet__assembly__division__organization=user_organization), Q.AND).add(
+            Q(category__in=category_ids), Q.AND)
+
+        if name_search[-1][-1]:
+            filters.add(Q(Q(attending__attendee__infos__names__original__icontains=name_search[-1][-1])
+                          |
+                          Q(attending__attendee__infos__names__traditional__icontains=name_search[-1][-1])
+                          |
+                          Q(attending__attendee__infos__names__simplified__icontains=name_search[-1][-1])), Q.AND)
+
+        if start:
+            filters.add((Q(gathering__finish__gte=start)), Q.AND)
+        if finish:
+            filters.add((Q(gathering__start__lte=finish)), Q.AND)
+        if character_slugs:
+            filters.add(Q(character__slug__in=character_slugs), Q.AND)
+        if team_ids:
+            filters.add(Q(team__in=team_ids), Q.AND)
+
+        attendee_name = Trim(
+            Concat(
+                Trim(Concat("attending__attendee__first_name", Value(' '), "attending__attendee__last_name",
+                            output_field=CharField())),
+                Value(' '),
+                Trim(Concat("attending__attendee__last_name2", "attending__attendee__first_name2",
+                            output_field=CharField())),
+                output_field=CharField()
+            )
+        )
+
+        register_name = Trim(
+            Concat(
+                Trim(Concat("attending__registration__registrant__first_name", Value(' '),
+                            "attending__registration__registrant__last_name", output_field=CharField())),
+                Value(' '),
+                Trim(Concat("attending__registration__registrant__last_name2",
+                            "attending__registration__registrant__first_name2", output_field=CharField())),
+                output_field=CharField()
+            )
+        )
+
+        return Attendance.objects.select_related(
+            "character",
+            "team",
+            "attending",
+            "gathering",
+            "attending__attendee",
+        ).filter(filters).values(
+            'attending__attendee',
+            'attending__attendee__infos__names__original'
+            'attending__registration__registrant_id',
+        ).annotate(
+            count=Count('attending__attendee'),
+            characters=StringAgg('character__display_name', delimiter=", ", distinct=True, default=None),
+            teams=StringAgg('team__display_name', delimiter=", ", distinct=True, default=None),
+            attending_name=Case(
+                When(attending__registration__isnull=True, then=attendee_name),
+                When(attending__attendee=F('attending__registration__registrant'), then=attendee_name),
+                default=Concat(
+                    attendee_name,
+                    Value(' by '),
+                    register_name,
+                    output_field=CharField()
+                ),
+                output_field=CharField()
+            ),
+        ).order_by(*orderby_list)
+
+    @staticmethod
     def batch_create(begin, end, meet_slug, meet, user_time_zone, attendee_id=None):
         """
         Idempotently create attendances based on the following params and attendingmeet.
@@ -328,6 +402,7 @@ class AttendanceService:
             'gathering': 'gathering__display_name',
             'character': 'character__display_name',
             'attending': 'attending__attendee__infos__names__original',
+            # 'attending_name': 'attending__attendee__infos__names__original',
         }
 
         for orderby in orderbys:
