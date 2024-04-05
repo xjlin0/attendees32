@@ -10032,42 +10032,6 @@
   },
   {
     "model": "persons.attendee",
-    "pk": "761d8788-47af-4414-bdc7-ca8ac96f0207",
-    "fields": {
-      "created": "2023-05-17T13:30:25.013Z",
-      "modified": "2023-05-17T13:30:25.013Z",
-      "is_removed": false,
-      "division": 1,
-      "user": null,
-      "first_name": "rr",
-      "last_name": "rrr",
-      "first_name2": "",
-      "last_name2": "",
-      "gender": "MALE",
-      "actual_birthday": null,
-      "estimated_birthday": null,
-      "deathday": null,
-      "photo": "",
-      "infos": {
-        "fixed": {
-          "mobility": 2
-        },
-        "names": {
-          "original": "rr rrr",
-          "simplified": "rr rrr",
-          "traditional": "rr rrr",
-          "romanization": "rr rrr"
-        },
-        "contacts": {},
-        "schedulers": {},
-        "progressions": {},
-        "emergency_contacts": {},
-        "updating_attendees": {}
-      }
-    }
-  },
-  {
-    "model": "persons.attendee",
     "pk": "786a9d44-379f-4671-9004-5b3d0bd0227b",
     "fields": {
       "created": "1999-05-10T01:02:35.482Z",
@@ -15974,7 +15938,7 @@
         "gathering_infos": {},
         "default_time_zone": "America/Los_Angeles",
         "automatic_creation": {
-          "Past": 5,
+          "Past": 37,
           "Gathering": null,
           "Attendance": null
         },

@@ -371,7 +371,7 @@ Attendees.datagridUpdate = {
       {
         colSpan: 24,
         colCount: 24,
-        caption: 'Add the new member to a family?',
+        caption: 'Add the new person to a family?',
         cssClass: 'h6 not-shrinkable leading-checkbox',
         itemType: 'group',
         items: [
@@ -3726,11 +3726,10 @@ Attendees.datagridUpdate = {
           dataSource: {
             store: new DevExpress.data.CustomStore({
               key: 'id',
-              load: () => {
-                return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.categoriesEndpoint, {
-                  take: 999,
-                  type: args.type,
-                });
+              load: (searchOpts) => {
+                searchOpts['take'] = 999;
+                searchOpts['type'] = args.type;
+                return $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.categoriesEndpoint, searchOpts);
               },
               byKey: (key) => {
                 const d = new $.Deferred();
@@ -3742,6 +3741,8 @@ Attendees.datagridUpdate = {
               },
             }),
           },
+
+
         },
       },
       {
