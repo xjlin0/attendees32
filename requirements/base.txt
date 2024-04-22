@@ -7,7 +7,7 @@ whitenoise==6.4.0  # https://github.com/evansd/whitenoise
 redis==4.4.4  # https://github.com/redis/redis-py
 hiredis==2.1.1  # https://github.com/redis/hiredis-py
 celery==5.3.1  # pyup: < 6.0  # https://github.com/celery/celery
-django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat
+django-celery-beat==2.4.0  # https://github.com/celery/django-celery-beat  # 2.5.0 will need new crontabschedule migration
 flower==2.0.1  # https://github.com/mher/flower
 uvicorn[standard]==0.29.0  # https://github.com/encode/uvicorn
 psycopg2==2.9.9  # https://github.com/psycopg/psycopg2
