@@ -379,7 +379,8 @@ DJANGO_DEFAULT_FROM_EMAIL=<<your email>>
 EMAIL_HOST=sendgrid
 ```
 * Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/settings/mac/#file-sharing).
-* build and start the CentOS based local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
+* In Docker Desktop Settings, please ensure both "Use Virtualization framework" and "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" options in enabled.
+* build and start the Debian based local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
 * to see django log: `docker-compose -f local.yml logs django`
 * enter Redis-CLI by `docker exec -it redis redis-cli`
 
