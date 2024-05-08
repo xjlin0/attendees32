@@ -186,6 +186,10 @@ class AttendeeService:
             qs.select_related()
             .prefetch_related()
             .annotate(
+                attending_meet_slugs=Coalesce(ArrayAgg('attendings__meets__slug',
+                                                 filter=Q(attendings__attendingmeet__finish__gte=now,
+                                                          attendings__attendingmeet__is_removed=False),
+                                                 distinct=True), []),  # Sorting only since <@ for JSONBAgg doesn't work
                 attendingmeets=JSONBAgg(
                     Func(
                         Value('attendingmeet_id'), 'attendings__attendingmeet',
@@ -221,12 +225,12 @@ class AttendeeService:
         :param current_user:
         :return: a List of sorter for order_by()
         """
-        meet_sorters = {  # this sorter only needed since there're dynamic columns (slug is column name)
-            meet.slug: Func(F("attendingmeets"), function="'{}'=ANY".format(meet.slug))
+        meet_sorters = {  # function="'[{\"meet_slug\":\"" + meet.slug + "\"}]'::jsonb <@ " doesn't sort for JSONBAgg
+            meet.slug: Func("attending_meet_slugs", function="'{}'=ANY".format(meet.slug))
             for meet in Meet.objects.filter(
                 id__in=meets, assembly__division__organization=current_user.organization
             )
-        }
+        }  # this sorter only needed since there're dynamic columns (slug is column name)
 
         orderby_list = (
             []
