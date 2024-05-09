@@ -2,9 +2,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg, JSONBAgg
-from django.db.models import Case, F, Func, Q, When, CharField
-from django.db.models.functions import Cast, Substr, Coalesce, JSONObject
+from django.contrib.postgres.aggregates.general import StringAgg, JSONBAgg
+from django.db.models import Case, F, Func, Q, When, CharField, JSONField
+from django.db.models.functions import Cast, Substr, Coalesce
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
 from rest_framework.utils import json
@@ -186,11 +186,7 @@ class AttendeeService:
             qs.select_related()
             .prefetch_related()
             .annotate(
-                attending_meet_slugs=Coalesce(ArrayAgg('attendings__meets__slug',
-                                                 filter=Q(attendings__attendingmeet__finish__gte=now,
-                                                          attendings__attendingmeet__is_removed=False),
-                                                 distinct=True), []),  # Sorting only since <@ for JSONBAgg doesn't work
-                attendingmeets=JSONBAgg(
+                attendingmeets=Coalesce(JSONBAgg(  # Coalesce required or null/true/false will break sorting
                     Func(
                         Value('attendingmeet_id'), 'attendings__attendingmeet',
                         Value('meet_slug'), 'attendings__meets__slug',
@@ -201,7 +197,7 @@ class AttendeeService:
                     filter=Q(attendings__attendingmeet__finish__gte=now, attendings__attendingmeet__is_removed=False),
                     distinct=True,
                     default=[],
-                ),
+                ), Value('[]'), output_field=JSONField()),
                 folkcities=StringAgg('folks__places__address__locality__name',
                                      filter=(Q(folks__places__finish__isnull=True) | Q(folks__places__finish__gte=now)) & Q(folks__places__is_removed=False),
                                      delimiter=", ",
@@ -225,12 +221,12 @@ class AttendeeService:
         :param current_user:
         :return: a List of sorter for order_by()
         """
-        meet_sorters = {  # function="'[{\"meet_slug\":\"" + meet.slug + "\"}]'::jsonb <@ " doesn't sort for JSONBAgg
-            meet.slug: Func("attending_meet_slugs", function="'{}'=ANY".format(meet.slug))
+        meet_sorters = {  # this sorter only needed since there're dynamic columns (slug is column name)
+            meet.slug: Func("attendingmeets", function="'[{\"meet_slug\":\"" + meet.slug + "\"}]'::jsonb <@ ")
             for meet in Meet.objects.filter(
                 id__in=meets, assembly__division__organization=current_user.organization
             )
-        }  # this sorter only needed since there're dynamic columns (slug is column name)
+        }
 
         orderby_list = (
             []
