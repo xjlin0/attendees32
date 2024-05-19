@@ -1036,6 +1036,8 @@ Attendees.datagridUpdate = {
   submitAttendeeForm: (e, confirmMessage, extraHeaders) => {
     const validationResults = Attendees.datagridUpdate.attendeeMainDxForm.validate();
     if (validationResults.isValid && confirm(confirmMessage)) {
+      $('div.spinner-border').show();
+      e.component.option('disabled', true);
       if (extraHeaders && extraHeaders['X-End-All-Attendee-Activities']) {
         const deathdayEditor = Attendees.datagridUpdate.attendeeMainDxForm.getEditor("deathday");
         if (!deathdayEditor.option('value')) {
@@ -1099,6 +1101,10 @@ Attendees.datagridUpdate = {
                 of: window,
               },
             }, 'error', 5000);
+        },
+        complete: (response) => {
+          $('div.spinner-border').hide();
+          e.component.option('disabled', false);
         },
       });
     } else if (!validationResults.isValid) {
