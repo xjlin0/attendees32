@@ -219,6 +219,18 @@ Attendees.datagridUpdate = {
     }, {});
   },
 
+  removeFamilyFromAttendeeDropDowns: (deletingFamilyId) => {
+    const newAttendeeDxDropDownButton = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('add_new_attendee');
+    Attendees.utilities.removeElementFromArray(Attendees.datagridUpdate.families, 'id', deletingFamilyId);
+    document.querySelectorAll('div.dropdown-menu-right a').forEach(x=> { if (x.getAttribute('href').includes(deletingFamilyId)) {x.parentNode.removeChild(x)} });
+    newAttendeeDxDropDownButton.option('dataSource', Attendees.datagridUpdate.families);
+    if (Attendees.datagridUpdate.families.length < 1) {
+      newAttendeeDxDropDownButton.option('text', '+New family member');
+      newAttendeeDxDropDownButton.option('hint', 'Need at least one family to add family members');
+      newAttendeeDxDropDownButton.option('disabled', true);
+    }
+  },
+
   patchNewAttendeeDropDownAndFamilyAddress: (newFamily) => {
     const newAttendeeDxDropDownButton = Attendees.datagridUpdate.attendeeMainDxForm.getEditor('add_new_attendee');
     const $newAttendeeLinkWithoutFamily = $('a.add-new-attendee').last();  // Non-devextreme button for creating attendee (to family)
@@ -256,6 +268,7 @@ Attendees.datagridUpdate = {
       });
     }
     if (Attendees.datagridUpdate.families.length > 0) {
+      newAttendeeDxDropDownButton.option('disabled', false);
       newAttendeeDxDropDownButton.option('dataSource', Attendees.datagridUpdate.families);
       newAttendeeDxDropDownButton.option('hint', 'Select a family to add a new member');
     }
@@ -3625,6 +3638,7 @@ Attendees.datagridUpdate = {
                       url: `${$('form#family-attr-update-popup-form').attr('action')}${Attendees.datagridUpdate.familyAttrPopupDxFormData.id}/`,
                       method: 'DELETE',
                       success: (response) => {
+                        Attendees.datagridUpdate.removeFamilyFromAttendeeDropDowns(familyAttrButton.value);
                         Attendees.datagridUpdate.familyAttrPopup.hide();
                         DevExpress.ui.notify(
                           {

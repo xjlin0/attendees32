@@ -231,6 +231,11 @@ Attendees.utilities = {
     window.sessionStorage.setItem(storageKey, JSON.stringify(state));
   },  // to remove annoyed search text.  Custom stateStoring interfered with column visibility
 
+  removeElementFromArray: (array, key, value) => {
+    const index = array.findIndex(obj => obj[key] === value);
+    return array.splice(index, 1);
+  },
+
   genderEnums: () => {
     return [
       {name: 'MALE'},
