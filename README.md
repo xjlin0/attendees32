@@ -380,18 +380,18 @@ EMAIL_HOST=sendgrid
 ```
 * Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/settings/mac/#file-sharing).
 * In Docker Desktop Settings, please ensure both "Use Virtualization framework" and "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" options in enabled.
-* build and start the Debian based local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
-* to see django log: `docker-compose -f local.yml logs django`
+* build and start the Debian based local machine by `docker compose -f local.yml build && docker compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
+* to see django log: `docker compose -f local.yml logs django`
 * enter Redis-CLI by `docker exec -it redis redis-cli`
 
 
 ## DB SQL Backup & Restore process (with local.yml)
-* backup current db to container `docker-compose -f local.yml exec postgres backup`
-* list backup files in container `docker-compose -f local.yml exec postgres backups`
+* backup current db to container `docker compose -f local.yml exec postgres backup`
+* list backup files in container `docker compose -f local.yml exec postgres backups`
 * When postgres container is up, copy all backup files from container to dev local computer `docker cp $(docker-compose -f local.yml ps -q postgres):/backups ./backups`
-* When postgres container is up, copy a backup file from dev local computer to container `docker cp ./backups/<filename> $(docker-compose -f local.yml ps -q postgres):/backups/`
-* restore a backup from a backup file in container `docker-compose -f local.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
-* print INSERT commands for a table `docker-compose -f local.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>` 
+* When postgres container is up, copy a backup file from dev local computer to container `docker cp ./backups/<filename> $(docker compose -f local.yml ps -q postgres):/backups/`
+* restore a backup from a backup file in container `docker compose -f local.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
+* print INSERT commands for a table `docker compose -f local.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>` 
 
 ## Todo & progress:
 
