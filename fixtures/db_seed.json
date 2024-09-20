@@ -3076,9 +3076,9 @@
     "model": "schedule.event",
     "pk": 31,
     "fields": {
-      "start": "2020-02-09T04:00:00Z",
-      "end": "2020-02-09T05:40:00Z",
-      "title": "source: 以斯拉團契 Ezra Fellowship 8PM-9:40PM",
+      "start": "2020-02-09T03:30:00Z",
+      "end": "2020-02-09T05:00:00Z",
+      "title": "source: 以斯拉團契 Ezra Fellowship 7:30PM-9:00PM",
       "description": "room#7",
       "creator": 1,
       "created_on": "2020-04-11T18:55:53.117Z",
@@ -3093,8 +3093,8 @@
     "model": "schedule.event",
     "pk": 32,
     "fields": {
-      "start": "2020-02-09T04:00:00Z",
-      "end": "2020-02-09T05:40:00Z",
+      "start": "2020-02-09T03:30:00Z",
+      "end": "2020-02-09T05:00:00Z",
       "title": "event#31",
       "description": "room#7",
       "creator": 1,
@@ -3144,8 +3144,8 @@
     "model": "schedule.event",
     "pk": 35,
     "fields": {
-      "start": "2020-02-09T04:00:00Z",
-      "end": "2020-02-09T05:40:00Z",
+      "start": "2020-02-09T03:30:00Z",
+      "end": "2020-02-09T05:00:00Z",
       "title": "event#31",
       "description": "room#23",
       "creator": 1,
@@ -10218,6 +10218,7 @@
           "phone2": "+6555555555"
         },
         "schedulers": {},
+        "sms_email": "5551234567@txt.att.net",
         "emergency_contacts": {},
         "updating_attendees": {}
       }
