@@ -348,19 +348,19 @@ SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 DJANGO_SECRET_KEY=your_django_secret_key
 ```
-* build and start the local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`.  If there's error about `docker-credential-desktop`,  change credsStore to credStore in `~/.docker/config.json`
-* create migration files by `docker-compose -f local.yml run --rm django python manage.py makemigrations`
-* migrate db by `docker-compose -f local.yml run --rm django python manage.py migrate`
-* upadte content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
-* create 2 superusers by `docker-compose -f local.yml run --rm django python manage.py createsuperuser`
-* import the seed data by `docker-compose -f local.yml run django python manage.py loaddata fixtures/db_seed`, data were created by:
+* build and start the local machine by `docker compose -f local.yml build && docker compose -f local.yml up -d`.  If there's error about `docker-credential-desktop`,  change credsStore to credStore in `~/.docker/config.json`
+* create migration files by `docker compose -f local.yml run --rm django python manage.py makemigrations`
+* migrate db by `docker compose -f local.yml run --rm django python manage.py migrate`
+* upadte content types after migration by `docker compose -f local.yml run django python manage.py update_content_types`
+* create 2 superusers by `docker compose -f local.yml run --rm django python manage.py createsuperuser`
+* import the seed data by `docker compose -f local.yml run django python manage.py loaddata fixtures/db_seed`, data were created by:
   ```
-  docker-compose -f local.yml run django python manage.py dumpdata -e users.user -e admin.logentry -e sessions.session -e contenttypes.contenttype -e sites.site -e account.emailaddress -e account.emailconfirmation -e socialaccount.socialtoken -e auth.permission -e pghistory.context -e pghistory.aggregateevent -e users.userhistory -e users.menushistory -e users.menuauthgroupshistory -e users.groupshistory -e users.grouppermissionshistory -e users.usergroupshistory -e users.userpermissionshistory -e users.emailaddresshistory -e users.emailconfirmationhistory -e whereabouts.organizationshistory -e whereabouts.divisionshistory -e whereabouts.placeshistory -e whereabouts.campuseshistory -e whereabouts.propertieshistory -e whereabouts.suiteshistory -e whereabouts.roomshistory -e whereabouts.countryhistory -e whereabouts.statehistory -e whereabouts.localityhistory -e whereabouts.addresshistory -e persons.categorieshistory -e persons.noteshistory -e persons.pastshistory -e persons.folkshistory -e persons.attendeeshistory -e persons.folkattendeeshistory -e persons.relationshistory -e persons.registrationshistory -e persons.attendingshistory -e persons.attendingmeetshistory -e occasions.assemblieshistory -e occasions.attendanceshistory -e occasions.charactershistory -e occasions.gatheringshistory -e occasions.meetshistory -e occasions.messagetemplateshistory -e occasions.priceshistory -e occasions.teamshistory -e occasions.calendarhistory -e occasions.calendarrelationhistory -e occasions.eventhistory -e occasions.eventrelationhistory -e occasions.occurrencehistory -e occasions.rulehistory -e occasions.periodictaskhistory -e occasions.crontabschedulehistory -e occasions.intervalschedulehistory -e users.permissionshistory -e users.GroupPermissionProxy -e users.UserGroupProxy -e users.UserPermissionProxy --indent 2 > fixtures/db_seed2.json
+  docker compose -f local.yml run django python manage.py dumpdata -e users.user -e admin.logentry -e sessions.session -e contenttypes.contenttype -e sites.site -e account.emailaddress -e account.emailconfirmation -e socialaccount.socialtoken -e auth.permission -e pghistory.context -e pghistory.aggregateevent -e users.userhistory -e users.menushistory -e users.menuauthgroupshistory -e users.groupshistory -e users.grouppermissionshistory -e users.usergroupshistory -e users.userpermissionshistory -e users.emailaddresshistory -e users.emailconfirmationhistory -e whereabouts.organizationshistory -e whereabouts.divisionshistory -e whereabouts.placeshistory -e whereabouts.campuseshistory -e whereabouts.propertieshistory -e whereabouts.suiteshistory -e whereabouts.roomshistory -e whereabouts.countryhistory -e whereabouts.statehistory -e whereabouts.localityhistory -e whereabouts.addresshistory -e persons.categorieshistory -e persons.noteshistory -e persons.pastshistory -e persons.folkshistory -e persons.attendeeshistory -e persons.folkattendeeshistory -e persons.relationshistory -e persons.registrationshistory -e persons.attendingshistory -e persons.attendingmeetshistory -e occasions.assemblieshistory -e occasions.attendanceshistory -e occasions.charactershistory -e occasions.gatheringshistory -e occasions.meetshistory -e occasions.messagetemplateshistory -e occasions.priceshistory -e occasions.teamshistory -e occasions.calendarhistory -e occasions.calendarrelationhistory -e occasions.eventhistory -e occasions.eventrelationhistory -e occasions.occurrencehistory -e occasions.rulehistory -e occasions.periodictaskhistory -e occasions.crontabschedulehistory -e occasions.intervalschedulehistory -e users.permissionshistory -e users.GroupPermissionProxy -e users.UserGroupProxy -e users.UserPermissionProxy --indent 2 > fixtures/db_seed2.json
   ```
 * go to Django admin to add the first organization and all groups to the first user (superuser) at http://192.168.99.100:8008/admin123/users/user/
 * use browser to open http://192.168.99.100:8008/ and http://192.168.99.100:8025/
-* Enter postgres db console by `docker-compose -f local.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>`
-* Enter Django console by `docker-compose -f local.yml run django python manage.py shell_plus`
+* Enter postgres db console by `docker compose -f local.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>`
+* Enter Django console by `docker compose -f local.yml run django python manage.py shell_plus`
 * remote debug in PyCharm for docker, please check [django cookie doc](https://github.com/pydanny/cookiecutter-django/blob/master/{{cookiecutter.project_slug}}/docs/pycharm/configuration.rst).
 
 </details>
@@ -382,6 +382,7 @@ EMAIL_HOST=sendgrid
 * In Docker Desktop Settings, please ensure both "Use Virtualization framework" and "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" options in enabled.
 * build and start the Debian based local machine by `docker compose -f local.yml build && docker compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
 * to see django log: `docker compose -f local.yml logs django`
+* enter the Bash shell of running container `docker compose -f local.yml run django bash`
 * enter Redis-CLI by `docker exec -it redis redis-cli`
 
 

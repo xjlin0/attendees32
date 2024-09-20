@@ -12,7 +12,7 @@ flower==2.0.1  # https://github.com/mher/flower
 uvicorn[standard]==0.29.0  # https://github.com/encode/uvicorn
 psycopg2==2.9.9  # https://github.com/psycopg/psycopg2
 unidecode==1.3.2
-opencc==1.1.3  ## https://github.com/BYVoid/OpenCC
+opencc==1.1.8  ## https://github.com/BYVoid/OpenCC
 # opencc-python-reimplemented==0.1.6  ## https://github.com/yichen0831/opencc-python
 # django-address==0.2.5  # https://github.com/furious-luke/django-address
 -e git+https://github.com/xjlin0/django-address.git@address_extra_field_026#egg=django-address
