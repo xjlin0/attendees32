@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timezone
 from django.contrib.postgres.aggregates.general import  ArrayAgg
-from django.db.models import Max, OuterRef, Q, Subquery
+from django.db.models import Max, OuterRef, Q, Subquery, Count
 
 from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
@@ -148,7 +148,7 @@ class FolkService:
         by families for print. If an Attendee belongs to many families, only 1) lowest display order 2) the last created
         folkattendee will be shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
         For cache computation final results may contain empty families so template need to filter them out. It does
-        NOT provide attendee counting, as view/template does css-counter or https://stackoverflow.com/a/34059709/4257237
+        NOT provide attendee counting, as view/template does css-counter
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
@@ -180,7 +180,9 @@ class FolkService:
                 householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
                 householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
                 householder_first_name2=Subquery(attendee_subquery.values_list('first_name2')[:1]),
+                attendee_count=Count('attendees', filter=Q(folkattendee__is_removed=False)),
             ).filter(
+                attendee_count__gt=0,
                 category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
                 attendees__in=Attendee.objects.filter(

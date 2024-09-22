@@ -116,7 +116,7 @@ class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
                 "fields": (
                     tuple(["display_name", "display_order", "division"]),
                     tuple(["infos"]),
-                    tuple(["category", "id", "created", "modified"]),
+                    tuple(["category", "id", "created", "modified", "is_removed"]),
                 ),
             },
         ),
@@ -135,15 +135,22 @@ class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
 class FolkAttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
     readonly_fields = ["id", "created", "modified"]
     list_display = ("id", "folk", "attendee", "role", "infos")
+    search_fields = ("id", "attendee__id", "attendee__infos", "folk__id", "infos")
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        message = "Not all, but only those records accessible to you will be listed here."
+        if request.user.is_superuser:
+            qs = FolkAttendee.all_objects.all()
+        else:
+            qs = super().get_queryset(request)
+
         if request.resolver_match.func.__name__ == "changelist_view":
             messages.warning(
                 request,
-                "Not all, but only those records accessible to you will be listed here.",
+                message + (" Including removed ones." if request.user.is_superuser else ""),
             )
-        return qs.filter(division__organization=request.user.organization)
+        ordering = super().get_ordering(request)
+        return qs.filter(folk__division__organization=request.user.organization).order_by(*ordering)
 
 
 class RelationAdmin(PgHistoryPage, admin.ModelAdmin):
