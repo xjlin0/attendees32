@@ -25,11 +25,11 @@ class AttendingmeetEnvelopesListView(RouteGuard, ListView):
         ) if self.request.user.privileged() else []
 
         context.update({
-            'report_titles': self.request.GET.get('reportTitle', '').split('\n'),
-            'report_dates': self.request.GET.get('reportDate', '').split('\n'),
+            'report_titles': self.request.GET.get('reportTitle', ''),
+            'report_dates': self.request.GET.get('reportDate', ''),
             'sender_color': self.request.GET.get('senderColor', '#000000'),
-            'sender_inner_width': self.request.GET.get('senderInnerWidth', '12rem'),
-            'sender_outer_width': self.request.GET.get('senderOuterWidth', '22rem'),
+            'sender_inner_width': self.request.GET.get('senderInnerWidth', '17rem'),
+            'sender_outer_width': self.request.GET.get('senderOuterWidth', '19rem'),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
             'newLines': range(int(self.request.GET.get('newLines', '2'))),
