@@ -23,15 +23,6 @@ div.d-flex {
   display: flex;
 }
 
-div.sender {
-  flex-basis: 25rem;
-}
-
-h6.center-text {
-  text-align: center;
-  width: 22rem;
-}
-
 div.recipient:hover {
   background: LightSkyBlue;
   cursor: pointer;
