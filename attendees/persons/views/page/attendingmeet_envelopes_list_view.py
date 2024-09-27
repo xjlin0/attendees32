@@ -27,6 +27,9 @@ class AttendingmeetEnvelopesListView(RouteGuard, ListView):
         context.update({
             'report_titles': self.request.GET.get('reportTitle', '').split('\n'),
             'report_dates': self.request.GET.get('reportDate', '').split('\n'),
+            'sender_color': self.request.GET.get('senderColor', '#000000'),
+            'sender_inner_width': self.request.GET.get('senderInnerWidth', '12rem'),
+            'sender_outer_width': self.request.GET.get('senderOuterWidth', '22rem'),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
             'newLines': range(int(self.request.GET.get('newLines', '2'))),
