@@ -39,40 +39,6 @@ Attendees.attendingmeetPrintConfiguration = {
     },
     items: [
       {
-        dataField: "reportTitle",
-        editorType: 'dxTextArea',
-        helpText: '(Optional) Sender address line 1 on envelope, or the Title on reports. Enter for new lines.',
-        label: {
-          text: 'Text 1',
-        },
-        editorOptions: {
-          height: 100,
-          autoResizeEnabled: true,
-          value: 'Sample title',
-          showClearButton: true,
-          buttons: [
-            'clear',
-          ],
-        },
-      },
-      {
-        dataField: "reportDate",
-        editorType: 'dxTextArea',
-        helpText: '(Optional) Sender address line 2 on envelope, or the date on reports.',
-        label: {
-          text: 'Text 2',
-        },
-        editorOptions: {
-          height: 70,
-          autoResizeEnabled: true,
-          value: new Date().toLocaleDateString('en', { day: '2-digit', month: 'long', year: 'numeric' }),
-          showClearButton: true,
-          buttons: [
-            'clear',
-          ],
-        },
-      },
-      {
         dataField: 'meet',
         isRequired: true,
         validationRules: [{type: 'required'}],
@@ -107,60 +73,6 @@ Attendees.attendingmeetPrintConfiguration = {
             }),
             key: 'slug',
           }),
-        },
-      },
-      {
-        dataField: 'showPaused',
-        helpText: 'show paused participations in reports',
-        label: {
-          text: 'Show paused participations?',
-        },
-        dataType: 'boolean',
-        editorType: 'dxCheckBox',
-      },
-      {
-        dataField: 'newLines',
-        helpText: 'Number of new lines above the recipient label on envelopes only',
-        label: {
-          text: '# of new lines above recipient on envelope',
-        },
-        dataType: 'number',
-        editorType: 'dxNumberBox',
-        editorOptions: {
-          value: 2,
-          showSpinButtons: true,
-          showClearButton: true,
-        },
-      },
-      {
-        dataField: 'senderColor',
-        helpText: 'Change the color of the sender address on envelopes only',
-        label: {
-          text: 'Color of the sender on envelopes',
-        },
-        editorType: 'dxColorBox',
-        editorOptions: {
-          value: '#0062AE',
-        },
-      },
-      {
-        dataField: 'senderInnerWidth',
-        helpText: 'The inner width of the sender address controls its position, controls the left margin of the sender address. it should be smaller than outer width. Better to bigger than 16rem',
-        label: {
-          text: 'Inner width of the sender on envelopes',
-        },
-        editorOptions: {
-          value: '17rem',
-        },
-      },
-      {
-        dataField: 'senderOuterWidth',
-        helpText: 'The inner width of the sender address controls its position, controls the left margin of the recipient address. it should be bigger than inner width. Better to smaller than 29rem',
-        label: {
-          text: 'Outer width of the sender on envelopes',
-        },
-        editorOptions: {
-          value: '19rem',
         },
       },
       {
@@ -208,6 +120,94 @@ Attendees.attendingmeetPrintConfiguration = {
               },
             })
           }),
+        },
+      },
+      {
+        dataField: "reportTitle",
+        editorType: 'dxTextArea',
+        helpText: '(Optional) Sender address line 1 on envelope, or the Title on reports. Enter for new lines.',
+        label: {
+          text: 'Text 1 in bigger font',
+        },
+        editorOptions: {
+          height: 100,
+          autoResizeEnabled: true,
+          value: document.attendingmeetPrintConfigurationForm.dataset.userOrganizationFullName || 'Sample title',
+          showClearButton: true,
+          buttons: [
+            'clear',
+          ],
+        },
+      },
+      {
+        dataField: "reportDate",
+        editorType: 'dxTextArea',
+        helpText: '(Optional) Sender address line 2 on envelope, or the date on reports. Enter for new lines.',
+        label: {
+          text: 'Text 2',
+        },
+        editorOptions: {
+          height: 100,
+          autoResizeEnabled: true,
+          value: new Date().toLocaleDateString('en', { day: '2-digit', month: 'long', year: 'numeric' }),
+          showClearButton: true,
+          buttons: [
+            'clear',
+          ],
+        },
+      },
+      {
+        dataField: 'showPaused',
+        helpText: 'show paused participations in reports',
+        label: {
+          text: 'Show paused participations?',
+        },
+        dataType: 'boolean',
+        editorType: 'dxCheckBox',
+      },
+      {
+        dataField: 'newLines',
+        helpText: 'Number of new lines above the recipient label on envelopes only',
+        label: {
+          text: '# of new lines above recipient on envelope',
+        },
+        dataType: 'number',
+        editorType: 'dxNumberBox',
+        editorOptions: {
+          value: 2,
+          showSpinButtons: true,
+          min: 0,
+        },
+      },
+      {
+        dataField: 'senderColor',
+        helpText: 'Change the color of the sender address on envelopes only',
+        label: {
+          text: 'Color of the sender on envelopes',
+        },
+        editorType: 'dxColorBox',
+        editorOptions: {
+          value: '#0062AE',
+        },
+      },
+      {
+        dataField: 'senderInnerWidth',
+        helpText: "The inner width of the sender address alters sender address horizontal position on envelopes only. It controls the width of the sender address. Smaller numbers make the sender's address more to the left. It should be smaller than outer width and bigger than 16rem.",
+        label: {
+          text: 'Inner width of the sender on envelopes',
+        },
+        editorOptions: {
+          value: '17rem',
+        },
+      },
+      {
+        dataField: 'senderOuterWidth',
+        helpText: "The outer width of the sender address alters recipient address horizontal position on envelopes only, it controls the left margin of the recipient address. it should be bigger than inner width. Smaller numbers make the recipient's address more to the left. Better to smaller than 29rem",
+        label: {
+          text: 'Outer width of the sender on envelopes',
+        },
+        editorOptions: {
+          value: '19rem',
         },
       },
       {

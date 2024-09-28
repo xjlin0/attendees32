@@ -43,10 +43,13 @@
         name="attendingmeetPrintConfigurationForm"
         data-meets-endpoint-by-slug="{{meets_endpoint_by_slug|safe}}"
         data-divisions-endpoint="{{divisions_endpoint|safe}}"
+        data-user-organization-full-name="{{user_organization_full_name}}"
         data-envelopes-url="{{envelopes_url}}"
         action="{{pdf_url}}">
     <div id="print-configuration-form"></div>
   </form>
+  <br>
+  <img src="/static/images/envelope.png" width="90%">
   <div class="spinner-border d-none"
        role="status">
     <span class="sr-only">

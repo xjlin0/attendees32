@@ -35,20 +35,19 @@
       {% for folk in families %}
         {% if folk.families and folk.families|length > 0 %}
           <div class="d-flex">
+
             <div class="sender"
                  style="flex-basis: {{sender_outer_width}};">
               <h6 class="center-text"
                   style="color:{{sender_color}}; width:{{sender_inner_width}}; text-align: center;">
-                {% for report_title in report_titles %}
-                  {{ report_title }}
-                  <br>
-                {% endfor %}
-                {% for report_date in report_dates %}
-                  {{ report_date }}
-                  <br>
-                {% endfor %}
+                <span style="font-family: dfkai-sb, stkaiti, cwTeXKai, 標楷體, kaiti, 华文楷体; font-size: 120%;">
+                  {{report_titles|linebreaksbr}}
+                </span>
+                <br>
+                {{report_dates|linebreaksbr}}
               </h6>
             </div>
+
             <div class="recipient">
               <a class="link-as-text"
                  href="{{attendee_url}}{{folk.recipient_attendee_id}}">
