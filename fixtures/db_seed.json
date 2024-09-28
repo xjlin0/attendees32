@@ -2526,10 +2526,10 @@
     "model": "schedule.rule",
     "pk": 25,
     "fields": {
-      "name": "Tue/Wed/Thu",
-      "description": "Every Tuesday, Wednesday & Thursday",
+      "name": "Mon/Tue/Wed/Thu",
+      "description": "Every Monday, Tuesday, Wednesday & Thursday",
       "frequency": "WEEKLY",
-      "params": "byweekday:TU,WE,TH"
+      "params": "byweekday:MO,TU,WE,TH"
     }
   },
   {
@@ -7134,6 +7134,7 @@
       "slug": "d7c8Fd_cfcc_hayward",
       "display_name": "CFCCH",
       "infos": {
+        "full_name": "The real official name of the organization, change it in Organization infos field",
         "acronym": "CFCCH",
         "contacts": {},
         "coworker": [
@@ -13730,9 +13731,9 @@
       "start": null,
       "finish": null,
       "category": 33,
-      "display_name": "夏令會2024 Summer retreat",
+      "display_name": "夏令會2025 Summer retreat",
       "display_order": 0,
-      "slug": "cfcch_summer_retreat_2024",
+      "slug": "cfcch_summer_retreat_2025",
       "division": 6,
       "infos": {
         "fixed": {},
@@ -14406,9 +14407,9 @@
       "modified": "2021-04-08T16:45:34.388Z",
       "is_removed": false,
       "assembly": 6,
-      "display_name": "夏令會2020參與會眾",
+      "display_name": "夏令會2025參與會眾",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_summer_retreat2020_attendee",
+      "slug": "d7c8Fd_cfcch_summer_retreat2025_attendee",
       "infos": {},
       "type": "audience"
     }
@@ -14421,9 +14422,9 @@
       "modified": "2021-04-08T16:45:45.376Z",
       "is_removed": false,
       "assembly": 6,
-      "display_name": "夏令會2020同工",
+      "display_name": "夏令會2025同工",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_summer_retreat2020_coworkers",
+      "slug": "d7c8Fd_cfcch_summer_retreat2025_coworkers",
       "infos": {},
       "type": "coworker"
     }
@@ -14436,9 +14437,9 @@
       "modified": "2021-04-08T16:45:52.984Z",
       "is_removed": false,
       "assembly": 6,
-      "display_name": "夏令會2020接送司機",
+      "display_name": "夏令會2025接送司機",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_summer_retreat2020_driver",
+      "slug": "d7c8Fd_cfcch_summer_retreat2025_driver",
       "infos": {},
       "type": "normal"
     }
@@ -14451,9 +14452,9 @@
       "modified": "2021-04-08T16:46:01.163Z",
       "is_removed": false,
       "assembly": 6,
-      "display_name": "夏令會2020討論小組員",
+      "display_name": "夏令會2025討論小組員",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_summer_retreat2020_panel_member",
+      "slug": "d7c8Fd_cfcch_summer_retreat2025_panel_member",
       "infos": {},
       "type": "normal"
     }
@@ -14466,9 +14467,9 @@
       "modified": "2021-04-08T16:46:08.130Z",
       "is_removed": false,
       "assembly": 6,
-      "display_name": "夏令會2020討論小組長",
+      "display_name": "夏令會2025討論小組長",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_summer_retreat2020_panel_leader",
+      "slug": "d7c8Fd_cfcch_summer_retreat2025_panel_leader",
       "infos": {},
       "type": "normal"
     }
@@ -14481,9 +14482,9 @@
       "modified": "2021-04-08T16:46:21.154Z",
       "is_removed": false,
       "assembly": 6,
-      "display_name": "夏令會2020接送乘客",
+      "display_name": "夏令會2025接送乘客",
       "display_order": 0,
-      "slug": "d7c8Fd_cfcch_summer_retreat2020_passenger",
+      "slug": "d7c8Fd_cfcch_summer_retreat2025_passenger",
       "infos": {},
       "type": "normal"
     }
@@ -15960,10 +15961,10 @@
       "major_character": 16,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2024-07-12T15:28:40Z",
-      "finish": "2024-07-14T15:29:58Z",
-      "display_name": "夏令會食宿 2024 retreat accommodation",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2024_accommodation",
+      "start": "2025-07-11T15:28:40Z",
+      "finish": "2025-07-13T15:29:58Z",
+      "display_name": "夏令會食宿 2025 retreat accommodation",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2025_accommodation",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -16001,10 +16002,10 @@
       "major_character": 21,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2024-07-12T15:30:54Z",
-      "finish": "2024-07-14T15:31:42Z",
-      "display_name": "2024夏令會接送",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2024_transportation",
+      "start": "2025-07-11T15:30:54Z",
+      "finish": "2025-07-13T15:31:42Z",
+      "display_name": "2025夏令會接送",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2025_transportation",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -16042,10 +16043,10 @@
       "major_character": 19,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2024-07-12T15:34:41Z",
-      "finish": "2024-07-14T15:37:06Z",
-      "display_name": "2024夏令會討論小組",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2024_panel",
+      "start": "2025-07-11T15:34:41Z",
+      "finish": "2025-07-13T15:37:06Z",
+      "display_name": "2025夏令會討論小組",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2025_panel",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -16082,10 +16083,10 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2024-07-12T16:28:13Z",
-      "finish": "2024-07-14T16:28:42Z",
-      "display_name": "2024夏令會中文議程",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2024_chinese_program",
+      "start": "2025-07-11T16:28:13Z",
+      "finish": "2025-07-13T16:28:42Z",
+      "display_name": "2025夏令會中文議程",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2025_chinese_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -16123,10 +16124,10 @@
       "major_character": null,
       "shown_audience": false,
       "audience_editable": false,
-      "start": "2024-07-12T16:32:20Z",
-      "finish": "2024-07-14T16:32:24Z",
+      "start": "2025-07-11T16:32:20Z",
+      "finish": "2025-07-13T16:32:24Z",
       "display_name": "2024夏令會兒童活動",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2024_junior_program",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2025_junior_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [
@@ -16165,10 +16166,10 @@
       "major_character": null,
       "shown_audience": true,
       "audience_editable": false,
-      "start": "2024-07-12T16:38:38Z",
-      "finish": "2024-07-14T16:39:12Z",
-      "display_name": "2024夏令會英文議程",
-      "slug": "d7c8Fd_cfcch_summer_retreat_2024_english_program",
+      "start": "2025-07-11T16:38:38Z",
+      "finish": "2025-07-13T16:39:12Z",
+      "display_name": "2025夏令會英文議程",
+      "slug": "d7c8Fd_cfcch_summer_retreat_2025_english_program",
       "infos": {
         "attendance": {},
         "allowed_groups": [

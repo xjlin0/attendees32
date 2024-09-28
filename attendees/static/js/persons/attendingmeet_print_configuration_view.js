@@ -132,7 +132,7 @@ Attendees.attendingmeetPrintConfiguration = {
         editorOptions: {
           height: 100,
           autoResizeEnabled: true,
-          value: 'Sample title',
+          value: document.attendingmeetPrintConfigurationForm.dataset.userOrganizationFullName || 'Sample title',
           showClearButton: true,
           buttons: [
             'clear',
@@ -176,7 +176,7 @@ Attendees.attendingmeetPrintConfiguration = {
         editorOptions: {
           value: 2,
           showSpinButtons: true,
-          showClearButton: true,
+          min: 0,
         },
       },
       {

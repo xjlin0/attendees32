@@ -32,7 +32,7 @@ class AttendingmeetEnvelopesListView(RouteGuard, ListView):
             'sender_outer_width': self.request.GET.get('senderOuterWidth', '19rem'),
             'meet_slug': self.request.GET.get('meet', ''),
             'families': families,
-            'newLines': range(int(self.request.GET.get('newLines', '2'))),
+            'newLines': range(int(self.request.GET.get('newLines', '2') or '0')),
             'attendee_url': '/persons/attendee/',
         })
         return context
