@@ -1,6 +1,6 @@
 @media print {
   @page {
-    margin: 0.4in;
+    margin: 0.2in;
     size: 9.5in 4.12in;  /* COM 10 envelope landscape */
   }
 }
