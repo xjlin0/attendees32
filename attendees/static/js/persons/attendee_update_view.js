@@ -2039,6 +2039,13 @@ Attendees.datagridUpdate = {
               editorOptions: {
                 placeholder: 'Main/parent/past, etc',
               },
+              validationRules: [
+                {
+                  type: 'stringLength',
+                  max: 50,
+                  message: "display name can't be more than 50 characters"
+                },
+              ],
             },
             {
               colSpan: 3,
@@ -2158,6 +2165,13 @@ Attendees.datagridUpdate = {
                   editorOptions: {
                     placeholder: "example: '22416'",
                   },
+                  validationRules: [
+                    {
+                      type: 'stringLength',
+                      max: 20,
+                      message: "Door number can't be more than 20 characters"
+                    },
+                  ],
                 },
                 {
                   colSpan: 4,
@@ -2169,6 +2183,13 @@ Attendees.datagridUpdate = {
                   editorOptions: {
                     placeholder: "example: 'A street'",
                   },
+                  validationRules: [
+                    {
+                      type: 'stringLength',
+                      max: 100,
+                      message: "route can't be more than 100 characters"
+                    },
+                  ],
                 },
                 {
                   colSpan: 4,
@@ -2180,6 +2201,13 @@ Attendees.datagridUpdate = {
                   editorOptions: {
                     placeholder: 'example: Apt 2G',
                   },
+                  validationRules: [
+                    {
+                      type: 'stringLength',
+                      max: 20,
+                      message: "extra can't be more than 20 characters"
+                    },
+                  ],
                 },
                 {
                   colSpan: 4,
@@ -2192,6 +2220,13 @@ Attendees.datagridUpdate = {
                   editorOptions: {
                     placeholder: "example: 'San Francisco'",
                   },
+                  validationRules: [
+                    {
+                      type: 'stringLength',
+                      max: 165,
+                      message: "City can't be more than 165 characters"
+                    },
+                  ],
                 },
                 {
                   colSpan: 4,
@@ -2200,6 +2235,13 @@ Attendees.datagridUpdate = {
                   editorOptions: {
                     placeholder: "example: '94106'",
                   },
+                  validationRules: [
+                    {
+                      type: 'stringLength',
+                      max: 10,
+                      message: "postal code can't be more than 10 characters"
+                    },
+                  ],
                 },
                 {
                   colSpan: 4,
@@ -2252,7 +2294,7 @@ Attendees.datagridUpdate = {
                 type: 'default',
                 useSubmitBehavior: true,
                 onClick: (clickEvent) => {
-                  if (confirm('Are you sure to submit the popup Place Form?')) {
+                  if (clickEvent.validationGroup.validate().isValid && confirm('Are you sure to submit the popup Place Form?')) {
                     const userData = Attendees.datagridUpdate.placePopupDxForm.option('formData');
                     const addressMaybeEdited = Attendees.datagridUpdate.placePopupDxForm.itemOption('NewAddressItems').visible;
 

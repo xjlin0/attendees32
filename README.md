@@ -380,7 +380,12 @@ EMAIL_HOST=sendgrid
 ```
 * Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/settings/mac/#file-sharing).
 * In Docker Desktop Settings, please ensure both "Use Virtualization framework" and "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" options in enabled.
-* build and start the Debian based local machine by `docker compose -f local.yml build && docker compose -f local.yml up -d`, your site will be at http://0.0.0.0:8008/
+* build the Debian based local machine by `docker compose -f local.yml build`
+* migrate db by `docker compose -f local.yml run --rm django python manage.py migrate`
+* upadte content types after migration by `docker compose -f local.yml run django python manage.py update_content_types`
+* create 2 superusers by `docker compose -f local.yml run --rm django python manage.py createsuperuser`
+* import the seed data by `docker compose -f local.yml run django python manage.py loaddata fixtures/db_seed`, data were created by:
+* start the Debian based local machine by `docker compose -f local.yml up -d`, your site will be at http://localhost:8008/
 * to see django log: `docker compose -f local.yml logs django`
 * enter the Bash shell of running container `docker compose -f local.yml run django bash`
 * enter Redis-CLI by `docker exec -it redis redis-cli`

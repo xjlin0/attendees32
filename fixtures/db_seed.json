@@ -9796,7 +9796,7 @@
       "last_name2": "",
       "gender": "MALE",
       "actual_birthday": null,
-      "estimated_birthday": null,
+      "estimated_birthday": "2011-12-13",
       "deathday": null,
       "photo": "",
       "infos": {
@@ -9831,7 +9831,7 @@
       "last_name2": "",
       "gender": "FEMALE",
       "actual_birthday": null,
-      "estimated_birthday": null,
+      "estimated_birthday": "1800-12",
       "deathday": null,
       "photo": "",
       "infos": {

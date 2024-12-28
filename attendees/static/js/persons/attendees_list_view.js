@@ -479,6 +479,19 @@ Attendees.dataAttendees = {
       visible: false,
     },
     {
+      dataField: "actual_birthday",
+      caption: "birthday YMD",
+      dataHtmlTitle: "YYYY-MM-DD",
+      visible: false,
+    },
+    {
+      dataField: "estimated_birthday",
+      caption: "birthday maybe",
+      dataHtmlTitle: "guessed birthday MM-DD",
+      calculateCellValue: (rowData) => rowData && rowData.estimated_birthday ? rowData.estimated_birthday.replace('1800-', '????-') : null,
+      visible: false,
+    },
+    {
       dataHtmlTitle: "click to sort, or click the funnel to select",
       caption: "division & attendance",
       dataField: "division",
