@@ -482,6 +482,7 @@ Attendees.dataAttendees = {
       dataField: "actual_birthday",
       caption: "birthday YMD",
       dataHtmlTitle: "YYYY-MM-DD",
+      allowSearch: false,
       visible: false,
     },
     {
@@ -489,6 +490,7 @@ Attendees.dataAttendees = {
       caption: "birthday maybe",
       dataHtmlTitle: "guessed birthday MM-DD",
       calculateCellValue: (rowData) => rowData && rowData.estimated_birthday ? rowData.estimated_birthday.replace('1800-', '????-') : null,
+      allowSearch: false,
       visible: false,
     },
     {
