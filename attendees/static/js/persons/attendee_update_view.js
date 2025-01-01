@@ -1327,6 +1327,18 @@ Attendees.datagridUpdate = {
         label: {
           text: 'Real birthday',
         },
+        validationRules: [
+            {
+              type: 'range',
+              max: new Date(),
+              message: "Birthday can't be future",
+            },
+            {
+              type: 'range',
+              min: new Date().setFullYear(1799),
+              message: "Birthday year should be 4 digit, like 1980 instead of  2 digit 80",
+            },
+        ],
         editorOptions: {
           showClearButton: true,
           placeholder: 'click calendar',
