@@ -1330,12 +1330,12 @@ Attendees.datagridUpdate = {
         validationRules: [
             {
               type: 'range',
-              max: new Date(),
+              max: new Date().toLocaleDateString('sv-SE'),
               message: "Birthday can't be future",
             },
             {
               type: 'range',
-              min: new Date().setFullYear(1799),
+              min: new Date(new Date().setFullYear(1799)).toLocaleDateString('sv-SE'),
               message: "Birthday year should be 4 digit, like 1980 instead of  2 digit 80",
             },
         ],
