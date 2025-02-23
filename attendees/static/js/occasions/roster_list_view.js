@@ -587,11 +587,11 @@ Attendees.roster = {
     rowAlternationEnabled: true,
     remoteOperations: {groupPaging: true},
     paging: {
-      pageSize: 20,
+      pageSize: 40,
     },
     pager: {
       visible: true,
-      allowedPageSizes: [30, 150, 9999],
+      allowedPageSizes: [40, 200, 9999],
       showPageSizeSelector: true,
       showInfo: true,
       showNavigationButtons: true,
