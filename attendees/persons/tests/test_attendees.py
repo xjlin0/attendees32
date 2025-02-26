@@ -5,9 +5,7 @@ from attendees.persons.models.enum import GenderEnum
 from attendees.persons.models import Attendee, Category, Relation
 from attendees.whereabouts.models import Division, Organization
 from django.contrib.auth.models import Group
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
 
 @pytest.mark.django_db
 class TestAttendee:
@@ -21,13 +19,13 @@ class TestAttendee:
             audience_auth_group=self.group
         )
         self.category = Category.objects.create(id=25, display_name="Test Category")
-        self.relation = Relation.objects.create(id=0, title="test", gender="UNSPECIFIED")
+        self.relation = Relation.objects.create(id=0, title="test", gender=GenderEnum.UNSPECIFIED.value)
 
     def test_create_attendee(self):
         attendee = Attendee(
             first_name="John",
             last_name="Doe",
-            gender="UNSPECIFIED",
+            gender=GenderEnum.UNSPECIFIED.value,
             division=self.division
         )
         attendee.save()
@@ -35,7 +33,7 @@ class TestAttendee:
 
     def test_create_attendee_without_name(self):
         attendee = Attendee(
-            gender="UNSPECIFIED",
+            gender=GenderEnum.UNSPECIFIED.value,
             division=self.division
         )
         with pytest.raises(ValidationError):
@@ -47,7 +45,7 @@ class TestAttendee:
             first_name="Jane",
             last_name="Smith",
             actual_birthday=actual_birthday,
-            gender="UNSPECIFIED",
+            gender=GenderEnum.UNSPECIFIED.value,
             division=self.division
         )
         attendee.save()
@@ -58,7 +56,7 @@ class TestAttendee:
         attendee = Attendee(
             first_name="Alice",
             last_name="Johnson",
-            gender="UNSPECIFIED",
+            gender=GenderEnum.UNSPECIFIED.value,
             division=self.division
         )
         attendee.save()
@@ -68,7 +66,7 @@ class TestAttendee:
         attendee = Attendee(
             first_name="Division",
             last_name="Tester",
-            gender="UNSPECIFIED",
+            gender=GenderEnum.UNSPECIFIED.value,
             division=self.division
         )
         attendee.save()
