@@ -101,7 +101,7 @@ class Utility:
     @staticmethod
     def phone_number_formatter(raw_number_text):
         """
-        only format US phone (12 digit) as of now
+        only format US phone (with + sign totally 12 digit '+15101001111') as of now
         """
         if raw_number_text:
             return f'({raw_number_text[2:5]}){raw_number_text[5:8]}-{raw_number_text[8:12]}'
@@ -312,7 +312,7 @@ class Utility:
                 except ValueError:
                     return value
         else:
-            return original_value
+            return boolean_converter.get(original_value) if original_value in boolean_converter else original_value
 
     @staticmethod
     def underscore(
