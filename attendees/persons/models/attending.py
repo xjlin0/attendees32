@@ -56,7 +56,7 @@ class Attending(TimeStampedModel, SoftDeletableModel, Utility):
         # fetching birthday from attendee record first
         # Todo: check if meets' assemblies under attendee's organization
         if (
-            self.registration
+            self.registration and self.registration.assembly
             and self.registration.assembly.infos.get('need_age')
             and (self.infos.get('bed_needs') and self.infos.get('bed_needs') < 1)
             and self.infos.get('age') is None

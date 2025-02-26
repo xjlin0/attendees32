@@ -389,7 +389,7 @@ EMAIL_HOST=sendgrid
 * to see django log: `docker compose -f local.yml logs django`
 * enter the Bash shell of running container `docker compose -f local.yml run django bash`
 * enter Redis-CLI by `docker exec -it redis redis-cli`
-* Run test by `docker compose -f local.yml run django pytest`
+* Run test by `docker compose -f local.yml run django pytest` for all tests or `docker compose -f local.yml run django pytest attendees/users/tests/test_admin.py` for running single test class, or `docker compose -f local.yml run django pytest attendees/users/tests/test_admin.py::TestUserAdmin::test_view_user` for a single test method.
 
 
 ## DB SQL Backup & Restore process (with local.yml)
