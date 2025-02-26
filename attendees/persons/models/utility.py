@@ -349,7 +349,7 @@ class Utility:
         excpetion_print_data=False,
     ):
         """
-        Sililar to update_or_create(), it'll search by the filters dictionary, get the last by
+        Similar to update_or_create(), it'll search by the filters dictionary, get the last by
         order_by, update its values specified by defaults dictionary, return created and obj
 
         :param order_key: order by condition.
