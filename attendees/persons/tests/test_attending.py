@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.contrib.contenttypes.models import ContentType
 from attendees.persons.models.enum import GenderEnum
 from attendees.persons.models import Attending, Attendee, Registration, Relation, Category, AttendingMeet
@@ -28,9 +28,9 @@ class TestAttending:
             registrant=self.attendee,
             assembly=self.assembly
         )
-        self.price = Price.objects.create(price_value=100.0, start=datetime.now(), finish=datetime.now()+timedelta(days=9))
-        self.meet = Meet.objects.create(display_name="Test Meet", assembly=self.assembly, finish=datetime.now()+timedelta(days=8), site_type=ContentType.objects.first(), site_id=ContentType.objects.first().model_class().objects.first().id)
-        self.gathering = Gathering.objects.create(display_name="Test Gathering", meet=self.meet, start=datetime.now(), finish=datetime.now()+timedelta(days=1), site_type=ContentType.objects.first(), site_id=ContentType.objects.first().model_class().objects.first().id)
+        self.price = Price.objects.create(price_value=100.0, start=datetime.now(timezone.utc), finish=datetime.now(timezone.utc)+timedelta(days=9))
+        self.meet = Meet.objects.create(display_name="Test Meet", assembly=self.assembly, finish=datetime.now(timezone.utc)+timedelta(days=8), site_type=ContentType.objects.first(), site_id=ContentType.objects.first().model_class().objects.first().id)
+        self.gathering = Gathering.objects.create(display_name="Test Gathering", meet=self.meet, start=datetime.now(timezone.utc), finish=datetime.now(timezone.utc)+timedelta(days=1), site_type=ContentType.objects.first(), site_id=ContentType.objects.first().model_class().objects.first().id)
 
     def test_create_attending(self):
         attending = Attending.objects.create(
