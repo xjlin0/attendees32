@@ -28,7 +28,6 @@ class TestAttendance:
         price = Price.objects.create(price_value=100.0, start=datetime.now(timezone.utc), finish=datetime.now(timezone.utc)+timedelta(days=9))
         attending = Attending.objects.create(registration=registration, attendee=attendee)
         team = Team.objects.create(display_name="Test Team", slug="test-team", meet=meet, site_type=ContentType.objects.first(), site_id=ContentType.objects.first().model_class().objects.first().id)
-        # Add meet to attending.meets
         attending_meet = AttendingMeet.objects.create(
             attending=attending,
             meet=meet,
@@ -38,12 +37,7 @@ class TestAttendance:
             category=category,
             team=team,
         )
-        # attending.meets.add(meet)
-        # Patch attendee display_label and main_contact for attendance_label property
-        # attendee.display_label = "John Doe"
-        # attendee.save()
-        # attending.main_contact = attendee
-        # attending.save()
+
         return {
             "organization": organization,
             "division": division,
@@ -120,11 +114,10 @@ class TestAttendance:
             team=setup_objects["team"],
             start=datetime.now(timezone.utc),
         )
-        # Should not raise
-        attendance.clean()
+
+        attendance.clean()  # Should not raise any exception
 
     def test_clean_invalid_assembly(self, setup_objects):
-        # Create a character with a different assembly
         other_assembly = Assembly.objects.create(display_name="Other Assembly", slug="other-assembly", division=setup_objects["division"], category=setup_objects["category"])
         other_character = Character.objects.create(display_name="Other Character", assembly=other_assembly, slug="other-assembly-other-character")
         attendance = Attendance(
@@ -139,7 +132,6 @@ class TestAttendance:
             attendance.clean()
 
     def test_clean_invalid_meet(self, setup_objects):
-        # Create a gathering with a meet not in attending.meets
         other_assembly = Assembly.objects.create(display_name="Other Assembly2", slug="other-assembly2", division=setup_objects["division"], category=setup_objects["category"])
         other_meet = Meet.objects.create(display_name="Other Meet", slug="other-meet", assembly=other_assembly, finish=datetime.now(timezone.utc) + timedelta(days=1), site_type=ContentType.objects.first(), site_id=ContentType.objects.first().model_class().objects.first().id)
         other_gathering = Gathering.objects.create(display_name="Other Gathering", meet=other_meet, start=datetime.now(timezone.utc), finish=datetime.now(timezone.utc) + timedelta(hours=2), site_type=ContentType.objects.first(), site_id=ContentType.objects.first().model_class().objects.first().id)
