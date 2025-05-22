@@ -1328,16 +1328,24 @@ Attendees.datagridUpdate = {
           text: 'Real birthday',
         },
         validationRules: [
-            {
-              type: 'range',
-              max: new Date(),
-              message: "Birthday can't be future",
+          {
+            type: 'custom',
+            validationCallback: (e) => {
+              if (e.value === null) {
+                return true;
+              }
+              if (e.value > new Date().toLocaleDateString('sv-SE') ) {
+                e.rule.message = "Birthday can't be future";
+                return false;
+              }
+              if (e.value < new Date(new Date().setFullYear(1799)).toLocaleDateString('sv-SE')) {
+                e.rule.message = 'Birthday year should be 4 digit, like 1980 instead of  2 digit 80';
+                return false;
+              }
+              return true;
             },
-            {
-              type: 'range',
-              min: new Date(new Date().setFullYear(1799)),
-              message: "Birthday year should be 4 digit, like 1980 instead of  2 digit 80",
-            },
+            message: "Birthday can't be future, and year should be 4 digit, like 1980 instead of  2 digit 80",
+          },
         ],
         editorOptions: {
           showClearButton: true,
