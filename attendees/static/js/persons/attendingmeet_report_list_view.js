@@ -9,9 +9,10 @@ window.Attendees = {
     init: () => {
       console.log('static/js/persons/attendingmeet_report_list_view.js');
       Attendees.attendingmeetReportListView.startListener();
+      Attendees.attendingmeetReportListView.counterPrompt();
     },
 
-    startListener: () => {
+    startListener: () => {  // for click to pause and double click to edit notes
       const mainDiv = document.querySelector('body');
       let timer;
       if (mainDiv) {
@@ -19,7 +20,7 @@ window.Attendees = {
           if (event.detail < 2) {
             timer = setTimeout(() => {
               Attendees.attendingmeetReportListView.patchMember(event.target, mainDiv.dataset.url, false);
-            }, 400)
+            }, 400)  // to distinguish single or double click
           }
         }, false);  // single click to toggle scheduled/pause
 
@@ -31,6 +32,16 @@ window.Attendees = {
       } else {
         console.log('The report does not rendered yet! ');
       }
+    },
+
+    counterPrompt: () => {
+      setTimeout(() => {
+        const familyCount = document.querySelectorAll('div.family-name').length;
+        const totalAttendeeCount = document.querySelectorAll('div.member[data-attendee-id]').length;
+        const pausedAttendeeCount = document.querySelectorAll('div.member.paused[data-attendee-id]').length;
+        const activeAttendeeCount = totalAttendeeCount - pausedAttendeeCount;
+        alert(`Total: ${totalAttendeeCount} live attendees in ${familyCount} families, including ${pausedAttendeeCount} paused attendees and ${activeAttendeeCount} active attendees.` );
+      }, 400)
     },
 
     patchMember: (target, endpoint, note) => {
