@@ -516,9 +516,9 @@ Attendees.attendingmeets = {
       enabled: true,
       allowExportSelectedData: true,  // needs selection mode
       texts: {
-        exportAll: 'Export data only on the current page',
-        exportSelectedRows: 'Export selected rows on the current page',
-        exportTo: 'Export data on the current page',
+        exportAll: 'Export data only on viewed pages',
+        exportSelectedRows: 'Export selected rows on viewed pages',
+        exportTo: 'Export data on viewed pages',
       },
     },
     selection: {

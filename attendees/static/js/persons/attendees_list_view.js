@@ -2,6 +2,8 @@ Attendees.dataAttendees = {
   meetTagBox: null,
   attendeeDatagrid: null,
   attendeeUrn: null,
+  availableMeets: null,
+  meetSlugSet: null,
   familyAttendancesUrn: null,
   attendeesEndpoint: null,
   attendingmeetsDefaultEndpoint: null,
@@ -18,13 +20,14 @@ Attendees.dataAttendees = {
   init: () => {
     console.log("attendees/static/js/persons/attendees_list_view.js");
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
-    const availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent);
+    Attendees.dataAttendees.availableMeets = JSON.parse(document.getElementById('organization-available-meets').textContent);
     Attendees.utilities.setAjaxLoaderOnDevExtreme();
     Attendees.dataAttendees.startMeetSelector();
     Attendees.dataAttendees.setDataAttrs();
-    Attendees.dataAttendees.setMeetsColumns(availableMeets.filter(meet => selectedMeetSlugs.includes(meet.id)));
+    Attendees.dataAttendees.setMeetsColumns(Attendees.dataAttendees.availableMeets.filter(meet => selectedMeetSlugs.includes(meet.id)));
     Attendees.dataAttendees.startDataGrid();
     Attendees.dataAttendees.initDirectoryPreview();
+    Attendees.dataAttendees.meetSlugSet = new Set(Attendees.dataAttendees.availableMeets.map(item => item.slug));
   },
 
   previewAttrs: (previewUrl, attendeeName) => {
@@ -407,21 +410,22 @@ Attendees.dataAttendees = {
       enabled: true,
       allowExportSelectedData: true,  // needs selection mode
       texts: {
-        exportAll: 'Export data only on the current page',
-        exportSelectedRows: 'Export selected rows on the current page',
-        exportTo: 'Export data on the current page',
+        exportAll: 'Export data only on viewed pages',
+        exportSelectedRows: 'Export selected rows on viewed pages',
+        exportTo: 'Export data on viewed pages',
       },
     },
     onExporting: (e) => {
+      const baseUrl = window.location.href.slice(0, -2) + '/';
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet(new Date().toLocaleDateString('sv-SE'));
+      const worksheet = workbook.addWorksheet('Attendee List');
       worksheet.columns = Array.from({ length: e.component.getVisibleColumns().length }, () => ({ width: 30 }));
 
       DevExpress.excelExporter.exportDataGrid({
         component: e.component,
         worksheet,
         keepColumnWidths: false,
-        topLeftCell: { row: 2, column: 2 },
+        topLeftCell: { row: 2, column: 1 },
         customizeCell: (options) => {
           const { gridCell } = options;
           const { excelCell } = options;
@@ -436,21 +440,32 @@ Attendees.dataAttendees = {
                   excelCell.value =  Attendees.utilities.getValuesByMatchingKeys(gridCell.value, /phone/i).join();
                   break;
                 case "infos.names.original":
-                  excelCell.value = gridCell.value.original;
+                  excelCell.value = { text: gridCell.value.original, hyperlink: baseUrl + gridCell.data.id };
+                  excelCell.font = { color: { argb: 'FF0000FF' }, underline: true };
                   break;
                 default:
                   excelCell.value = gridCell.value;
               }
               excelCell.alignment = { horizontal: 'left' };
+            } else if (Attendees.dataAttendees.meetSlugSet.has(gridCell.column.name)) {
+              if (gridCell.value) {
+                excelCell.value = Attendees.dataAttendees.pausedCategory === gridCell.value ? 'Paused' : 'Yes';
+              } else {
+                excelCell.value = 'No';
+              }
             }
           }
         },
       }).then(() => {
         workbook.xlsx.writeBuffer().then((buffer) => {
-          saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'AttendeeList.xlsx');
+          saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `${document.querySelector('a.navbar-brand').innerText}_${new Date().toLocaleDateString('sv-SE')}.xlsx`);
         });
       });
     }, // https://js.devexpress.com/jQuery/Demos/WidgetsGallery/Demo/DataGrid/ExcelJSCellCustomization
+    selection: {
+      mode: 'multiple',
+      showCheckBoxesMode: 'onLongTap',
+    },
     remoteOperations: true,
     paging: {
         pageSize:10
@@ -506,6 +521,7 @@ Attendees.dataAttendees = {
       cellTemplate: (container, rowData) => {
         const attrs = {
           "class": "text-info",
+          "title": "click to see attendee details, click&hold to select multiple",
           "text": rowData.data.infos.names.original,
           "href": Attendees.dataAttendees.attendeeUrn + rowData.data.id,
         };
@@ -608,12 +624,14 @@ Attendees.dataAttendees = {
             const phoneNumber = rowData.data.infos.contacts[key].trim();
             const attrs = {
               class: "text-info",
+              title: "click to call",
               text: Attendees.utilities.phoneNumberFormatter(phoneNumber),
               href: `tel:${phoneNumber}`,
             };
             const sms = {
               class: "text-success",
               text: "(SMS)",
+              title: "click to send text messages",
               href: `sms:${phoneNumber}`,
             };
             if (phones > 0) {$('<span>', {text: ', '}).appendTo(container);}
@@ -639,6 +657,7 @@ Attendees.dataAttendees = {
             const attrs = {
               "class": "text-info",
               "text": email,
+              "title": "click to send email",
               "href": `mailto:${email}`,
             };
             if (emails > 0) {$('<span>', {text: ', '}).appendTo(container);}
@@ -683,6 +702,13 @@ Attendees.dataAttendees = {
           ],
         },
         dataType: 'string',
+        calculateCellValue: (rowData) => {
+          const matchedAttendingmeet = rowData.attendingmeets && rowData.attendingmeets.find(am => am.meet_slug === meet.slug);
+          if (matchedAttendingmeet) {
+            return matchedAttendingmeet.attendingmeet_category;
+          }
+          return null;
+        },
         cellTemplate: (container, rowData) => {
           const matchedAttendingmeet = rowData.data.attendingmeets && rowData.data.attendingmeets.find(am => am.meet_slug === meet.slug);
           if (matchedAttendingmeet) {
@@ -703,10 +729,12 @@ Attendees.dataAttendees = {
               if (matchedAttendingmeet.attendingmeet_category === Attendees.dataAttendees.pausedCategory) {
                 attr['data-previous-category'] = meet.infos__active_category ? meet.infos__active_category : Attendees.dataAttendees.scheduledCategory;
                 attr['class'] = 'text-decoration-line-through';
-                attr['title'] = `${meet.display_name} is PAUSED for ${rowData.data.infos.names.original} ${matchedAttendingmeet.attendingmeet_note || ''}`.trim();
+                attr['title'] = `${meet.display_name} is PAUSED for ${rowData.data.infos.names.original} ${matchedAttendingmeet.attendingmeet_note || ''}. Double click to resume`.trim();
               } else {
                 if (matchedAttendingmeet.attendingmeet_note) {
                   attr['title'] = matchedAttendingmeet.attendingmeet_note;
+                } else {
+                  attr['title'] = `Double click text to pause.`;
                 }
               }
               $('<span>', attr).appendTo(container);
