@@ -236,6 +236,17 @@ Attendees.utilities = {
     return array.splice(index, 1);
   },
 
+  getValuesByMatchingKeys: (obj, regex) => {
+    if (typeof obj === 'object' && obj !== null) {
+      return Object.keys(obj)
+        .filter(key => regex.test(key))
+        .map(key => obj[key])
+        .filter(value => value !== null && value !== undefined && value !== '');
+    } else {
+      return [];
+    }
+  },
+
   genderEnums: () => {
     return [
       {name: 'MALE'},

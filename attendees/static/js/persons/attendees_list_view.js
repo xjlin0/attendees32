@@ -403,6 +403,54 @@ Attendees.dataAttendees = {
       visible: true
     },
     showBorders: false,
+    export: {
+      enabled: true,
+      allowExportSelectedData: true,  // needs selection mode
+      texts: {
+        exportAll: 'Export data data on the current page',
+        exportSelectedRows: 'Export selected rows on the current page',
+        exportTo: 'Export data on the current page',
+      },
+    },
+    onExporting: (e) => {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet(new Date().toLocaleDateString('sv-SE'));
+      worksheet.columns = Array.from({ length: e.component.getVisibleColumns().length }, () => ({ width: 30 }));
+
+      DevExpress.excelExporter.exportDataGrid({
+        component: e.component,
+        worksheet,
+        keepColumnWidths: false,
+        topLeftCell: { row: 2, column: 2 },
+        customizeCell: (options) => {
+          const { gridCell } = options;
+          const { excelCell } = options;
+          if (gridCell.rowType === 'data') {
+            if (['infos.names', 'infos.contacts'].includes(gridCell.column.dataField)) {
+              switch(gridCell.column.name) {
+                case "infos.contacts.emails":
+                  excelCell.value = Attendees.utilities.getValuesByMatchingKeys(gridCell.value, /email/i).join();
+                  break;
+                case "infos.contacts.phones":
+                  excelCell.numFmt = '@';
+                  excelCell.value =  Attendees.utilities.getValuesByMatchingKeys(gridCell.value, /phone/i).join();
+                  break;
+                case "infos.names.original":
+                  excelCell.value = gridCell.value.original;
+                  break;
+                default:
+                  excelCell.value = gridCell.value;
+              }
+              excelCell.alignment = { horizontal: 'left' };
+            }
+          }
+        },
+      }).then(() => {
+        workbook.xlsx.writeBuffer().then((buffer) => {
+          saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'AttendeeList.xlsx');
+        });
+      });
+    }, // https://js.devexpress.com/jQuery/Demos/WidgetsGallery/Demo/DataGrid/ExcelJSCellCustomization
     remoteOperations: true,
     paging: {
         pageSize:10

@@ -524,6 +524,11 @@ Attendees.gatherings = {
     export: {
       enabled: true,
       allowExportSelectedData: true,  // needs selection mode
+      texts: {
+        exportAll: 'Export data data on the current page',
+        exportSelectedRows: 'Export selected rows on the current page',
+        exportTo: 'Export data on the current page',
+      },
     },
     selection: {
       mode: 'multiple',
