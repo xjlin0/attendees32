@@ -1,4 +1,5 @@
 Attendees.dataAttendees = {
+  isExporting: false,
   meetTagBox: null,
   attendeeDatagrid: null,
   attendeeUrn: null,
@@ -336,6 +337,10 @@ Attendees.dataAttendees = {
               args[i] = JSON.stringify(loadOptions[i]);
       });
 
+      if (Attendees.dataAttendees.isExporting) {
+        args['take'] = 99999;
+      }  // https://supportcenter.devexpress.com/ticket/details/t929388
+
       $.ajax({
         url: Attendees.dataAttendees.attendeesEndpoint,
         dataType: "json",
@@ -408,14 +413,15 @@ Attendees.dataAttendees = {
     showBorders: false,
     export: {
       enabled: true,
-      allowExportSelectedData: true,  // needs selection mode
+      // allowExportSelectedData: true,  // does not work on exported excel files
       texts: {
-        exportAll: 'Export data only on viewed pages',
-        exportSelectedRows: 'Export selected rows on viewed pages',
-        exportTo: 'Export data on viewed pages',
+        exportAll: 'Export all data with current settings to Excel',
+        exportSelectedRows: 'Export selected rows to Excel',
+        exportTo: 'Export data to Excel',
       },
     },
     onExporting: (e) => {
+      Attendees.dataAttendees.isExporting = true;
       const baseUrl = window.location.href.slice(0, -2) + '/';
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Attendee List');
@@ -460,6 +466,7 @@ Attendees.dataAttendees = {
         workbook.xlsx.writeBuffer().then((buffer) => {
           saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `${document.querySelector('a.navbar-brand').innerText}_${new Date().toLocaleDateString('sv-SE')}.xlsx`);
         });
+        Attendees.dataAttendees.isExporting = false;  // https://supportcenter.devexpress.com/ticket/details/t1209599
       });
     }, // https://js.devexpress.com/jQuery/Demos/WidgetsGallery/Demo/DataGrid/ExcelJSCellCustomization
     selection: {
@@ -527,6 +534,11 @@ Attendees.dataAttendees = {
         };
         $($('<a>', attrs)).appendTo(container);
       },
+    },
+    {
+      caption: "attendee id",
+      dataField: "id",
+      visible: false,
     },
     {
       dataField: "first_name",
