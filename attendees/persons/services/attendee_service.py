@@ -166,6 +166,7 @@ class AttendeeService:
         init_query_q = {
             "division__organization": current_user.organization,
             "is_removed": False,
+            "folks__category": Attendee.FAMILY_CATEGORY,
         }
         if not include_dead:
             init_query_q["deathday__isnull"] = True

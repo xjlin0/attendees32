@@ -119,6 +119,7 @@ class MenuAuthGroupInline(PgHistoryPage, admin.TabularInline):
 
 @admin.register(Menu)
 class MenuAdmin(PgHistoryPage, MPTTModelAdmin):
+    search_fields = ["urn", "url_name", "display_name"]
     readonly_fields = ["id", "created", "modified"]
     formfield_overrides = {
         models.JSONField: {"widget": JSONEditorWidget},

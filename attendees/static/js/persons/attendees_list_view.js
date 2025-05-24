@@ -539,9 +539,10 @@ Attendees.dataAttendees = {
       dataField: "folks__display_name",
       caption: "Families",
       calculateCellValue: rowData => rowData?.folkattendee_set?.filter(fa => 0 === fa.folk?.category).map(fa => fa.folk?.display_name?.replace(/family/i, "").trim()).join(),  // 0 is family
-      allowSearch: false,    // same with general search, calculateDisplayValue doesn't work
-      allowFiltering: false, // no display name, calculateFilterExpression doesn't work
-      allowSorting: false,   // not implemented yet, calculateSortValue doesn't work
+      allowSearch: true,
+      allowHeaderFiltering: false,   // need lookup to work, still need solution for two Chinese systems on Folk name
+      allowFiltering: true,
+      allowSorting: true,
       visible: false,
     },
     {
@@ -638,6 +639,9 @@ Attendees.dataAttendees = {
       allowSorting: false,
       dataType: "string",
       allowHeaderFiltering: false,
+      editorOptions: {
+        placeholder: 'number only',
+      },
       cellTemplate: (container, rowData) => {
         let phones = 0;
         for (let key in rowData.data.infos.contacts) {
