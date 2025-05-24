@@ -413,7 +413,7 @@ Attendees.dataAttendees = {
     showBorders: false,
     export: {
       enabled: true,
-      // allowExportSelectedData: true,  // does not work on exported excel files
+       allowExportSelectedData: true,
       texts: {
         exportAll: 'Export all data with current settings to Excel',
         exportSelectedRows: 'Export selected rows to Excel',
@@ -468,6 +468,7 @@ Attendees.dataAttendees = {
         });
         Attendees.dataAttendees.isExporting = false;  // https://supportcenter.devexpress.com/ticket/details/t1209599
       });
+      e.cancel = true;
     }, // https://js.devexpress.com/jQuery/Demos/WidgetsGallery/Demo/DataGrid/ExcelJSCellCustomization
     selection: {
       mode: 'multiple',
