@@ -105,10 +105,10 @@ class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
         models.JSONField: {"widget": JSONEditorWidget},
     }
     search_fields = ("id", "display_name", "infos")
-    readonly_fields = ["id", "created", "modified"]
+    readonly_fields = ["is_removed", "id", "created", "modified"]
     inlines = (FolkAttendeeInline,)
     list_display_links = ("id",)
-    list_display = ("id", "display_name", "infos", "division", "category")
+    list_display = ("id", "display_name", "is_removed", "infos", "division", "category")
     fieldsets = (
         (
             None,
@@ -116,7 +116,11 @@ class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
                 "fields": (
                     tuple(["display_name", "display_order", "division"]),
                     tuple(["infos"]),
-                    tuple(["category", "id", "created", "modified", "is_removed"]),
+                    tuple(["category"]),
+                    tuple(["id"]),
+                    tuple(["created"]),
+                    tuple(["modified"]),
+                    tuple(["is_removed"]),
                 ),
             },
         ),
@@ -133,9 +137,14 @@ class FolkAdmin(PgHistoryPage, admin.ModelAdmin):
 
 
 class FolkAttendeeAdmin(PgHistoryPage, admin.ModelAdmin):
-    readonly_fields = ["id", "created", "modified"]
-    list_display = ("id", "folk", "attendee", "role", "infos")
+    readonly_fields = ["display_folk_id", "is_removed", "id", "created", "modified"]
+    list_display = ("id", "folk", "attendee", "role", "is_removed", "infos")
     search_fields = ("id", "attendee__id", "attendee__infos", "folk__id", "infos")
+
+    def display_folk_id(self, obj):
+        return obj.folk.id
+
+    display_folk_id.short_description = 'Folk id'
 
     def get_queryset(self, request):
         message = "Not all, but only those records accessible to you will be listed here."

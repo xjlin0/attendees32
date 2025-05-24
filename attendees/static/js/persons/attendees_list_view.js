@@ -539,9 +539,9 @@ Attendees.dataAttendees = {
       dataField: "folks__display_name",
       caption: "Families",
       calculateCellValue: rowData => rowData?.folkattendee_set?.filter(fa => 0 === fa.folk?.category).map(fa => fa.folk?.display_name?.replace(/family/i, "").trim()).join(),  // 0 is family
-      allowSearch: false,    // same with general search
-      allowFiltering: false, // no display name
-      allowSorting: false,   // not implemented yet
+      allowSearch: false,    // same with general search, calculateDisplayValue doesn't work
+      allowFiltering: false, // no display name, calculateFilterExpression doesn't work
+      allowSorting: false,   // not implemented yet, calculateSortValue doesn't work
       visible: false,
     },
     {
