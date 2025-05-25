@@ -468,7 +468,7 @@ Attendees.dataAttendees = {
         });
         Attendees.dataAttendees.isExporting = false;  // https://supportcenter.devexpress.com/ticket/details/t1209599
       });
-      e.cancel = true;
+      e.cancel = true;  // stop download twice for selected rows
     }, // https://js.devexpress.com/jQuery/Demos/WidgetsGallery/Demo/DataGrid/ExcelJSCellCustomization
     selection: {
       mode: 'multiple',
