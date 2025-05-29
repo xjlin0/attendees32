@@ -87,7 +87,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
     # def save(self, *args, **kwargs):  # https://stackoverflow.com/a/27241824
     #     super(Meet, self).save(*args, **kwargs)  # One meet may have multiple Events
 
-    def get_absolute_url(self):
+    def get_absolute_url(self):  # Todo: probably not needed, please remove it when upgrade
         return reverse("meet_detail", args=[str(self.id)])
 
     def info(self):
