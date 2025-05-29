@@ -33,7 +33,7 @@ class Character(TimeStampedModel, SoftDeletableModel, Utility):
     infos = models.JSONField(blank=True, default=dict, help_text='example: {"info": "for distrubuting food"}, please keep {} here even there\'s no data', null=True)
     type = models.CharField(max_length=50, null=False, default="normal", db_index=True)
 
-    def get_absolute_url(self):
+    def get_absolute_url(self):  # Todo: probably not needed, please remove it when upgrade
         return reverse("character_detail", args=[str(self.id)])
 
     class Meta:
