@@ -51,7 +51,7 @@ class Assembly(TimeStampedModel, SoftDeletableModel, Utility):
         help_text='example: {"need_age": 18}, please keep {} here even there\'s no data',
     )
 
-    def get_absolute_url(self):
+    def get_absolute_url(self):  # Todo: probably not needed, please remove it when upgrade
         return reverse("assembly_detail", args=[str(self.id)])
 
     class Meta:
