@@ -335,5 +335,7 @@ attendees/scripts/real_data
 .envs/*
 !.envs/.local/
 .envs/.local/.sendgrid.env
+.envs/.local/.mailgun.env
+.envs/.production/.mailgun.env
 backups/
 backups/*
