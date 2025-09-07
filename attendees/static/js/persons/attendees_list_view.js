@@ -586,6 +586,7 @@ Attendees.dataAttendees = {
       dataHtmlTitle: "click to sort, or click the funnel to select",
       caption: "division & attendance",
       dataField: "division",
+      allowSearch: false,
       cellTemplate: (container, rowData) => {
         const attrs = {
           class: 'text-body',
