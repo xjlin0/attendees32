@@ -48,7 +48,7 @@ jobs:
         run: docker compose -v
 
       - name: create an empty sendgrid.env to continue
-        run: touch .envs/.local/.sendgrid.env
+        run: touch .envs/.local/.sendgrid.env .envs/.local/.mailgun.env
 
       - name: Build the Stack
         run:  docker compose -f local.yml build
