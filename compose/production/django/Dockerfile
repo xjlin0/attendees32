@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=3.9-slim-bullseye
+ARG PYTHON_VERSION=3.10.12-slim-bookworm
 
 
 
@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # Translations dependencies
   gettext curl vim wget python3-dateutil git less gdal-bin libpango-1.0-0 libpangoft2-1.0-0 \
   # cleaning up unused files
+  && apt-get purge -y fontconfig-config mysql-common \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
