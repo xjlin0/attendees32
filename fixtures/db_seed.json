@@ -15661,6 +15661,7 @@
         "attendance": {},
         "allowed_groups": [
           "worship_organizer",
+          "roster_equipments",
           "data_organizer",
           "data_counselor"
         ],
@@ -15748,7 +15749,6 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
-          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -15795,7 +15795,6 @@
         "allowed_groups": [
           "children_organizer",
           "children_coworker",
-          "roster_equipments",
           "organization_participant",
           "data_organizer",
           "conference_organizer",
@@ -16132,7 +16131,6 @@
         "attendance": {},
         "allowed_groups": [
           "data_counselor",
-          "roster_equipments",
           "children_organizer",
           "conference_organizer"
         ],

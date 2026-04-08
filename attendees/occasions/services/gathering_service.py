@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import pytz
 from address.models import Address
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.utils import json
@@ -99,27 +100,46 @@ class GatheringService:
     def batch_create(begin, end, meet_slug, duration, meet, user_time_zone):
         """
         Idempotently create gatherings based on the following params.  Created Gatherings are associated with Occurrence
-        Todo 20210821 Hardcoded tzinfo for strptime to get event.get_occurrences() working as of now, needs improvement.
-        :param begin:
-        :param end:
-        :param meet_slug:
-        :param duration:
-        :param meet:
-        :param user_time_zone:
-        :return: number of gatherings created
+
+        :param begin: ISO format datetime string
+        :param end: ISO format datetime string
+        :param meet_slug: meet slug for error reporting
+        :param duration: gathering duration in minutes
+        :param meet: Meet instance
+        :param user_time_zone: DEPRECATED - timezone is now derived from meet.infos['default_time_zone'] since users can be anywhere
+        :return: dict with success status and number of gatherings created
         """
         number_created = 0
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_begin_time = datetime.strptime(begin, iso_time_format)
         user_end_time = datetime.strptime(end, iso_time_format)
 
+        # Validate that meet has default_time_zone configured
+        if not meet or not meet.infos.get('default_time_zone'):
+            results = {
+                "success": False,
+                "number_created": 0,
+                "meet_slug": meet.slug if meet else meet_slug,
+                "begin": begin,
+                "end": end,
+                "explain": (
+                    f"CRITICAL: Meet '{meet.slug if meet else meet_slug}' must have "
+                    f"'default_time_zone' configured in infos to avoid timezone ambiguity. "
+                    f"Please set meet.infos['default_time_zone'] (e.g., 'America/Los_Angeles')."
+                ),
+            }
+            return results
+
+        # Use meet's canonical timezone instead of user_time_zone parameter
+        canonical_time_zone = pytz.timezone(meet.infos['default_time_zone'])
+
         if meet and user_end_time > user_begin_time:
             begin_time = (
                 user_begin_time if meet.start < user_begin_time else meet.start
-            ).astimezone(user_time_zone)
+            ).astimezone(canonical_time_zone)
             end_time = (
                 user_end_time if meet.finish > user_end_time else meet.finish
-            ).astimezone(user_time_zone)
+            ).astimezone(canonical_time_zone)
             gathering_time = (
                 timedelta(minutes=duration) if duration and duration > 0 else None
             )
@@ -144,19 +164,23 @@ class GatheringService:
                         if er.distinction != 'source':
                             del infos['generate_attendance']  # no attendance will be generated for every location calendar
 
+                        # Force timezone conversion to canonical timezone to prevent duplicates
+                        canonical_start = occurrence.start.astimezone(canonical_time_zone)
+                        canonical_end = occurrence_end.astimezone(canonical_time_zone)
+
                         gathering, gathering_created = Gathering.objects.get_or_create(
                             meet=meet,
                             site_id=site_id,
                             site_type=site_type,
-                            start=occurrence.start,
+                            start=canonical_start,
                             defaults={
                                 "site_type": site_type,
                                 "site_id": site_id,
                                 "meet": meet,
-                                "start": occurrence.start,
-                                "finish": occurrence_end,
+                                "start": canonical_start,
+                                "finish": canonical_end,
                                 "infos": infos,
-                                "display_name": f'{meet.display_name} {occurrence.start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}'[0:254],
+                                "display_name": f'{meet.display_name} {canonical_start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {meet.site}'[0:254],
                             },
                         )  # don't update gatherings if exist since it may have customizations
 
