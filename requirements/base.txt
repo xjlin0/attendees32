@@ -9,7 +9,7 @@ hiredis==2.1.1  # https://github.com/redis/hiredis-py
 celery==5.3.1  # pyup: < 6.0  # https://github.com/celery/celery
 django-celery-beat==2.4.0  # https://github.com/celery/django-celery-beat  # 2.5.0 will need new crontabschedule migration
 flower==2.0.1  # https://github.com/mher/flower
-uvicorn[standard]==0.29.0  # https://github.com/encode/uvicorn
+uvicorn==0.29.0  # https://github.com/encode/uvicorn - removed [standard] to avoid anyio 4.x dependency
 psycopg2==2.9.9  # https://github.com/psycopg/psycopg2
 unidecode==1.3.2
 opencc==1.1.8  ## https://github.com/BYVoid/OpenCC
