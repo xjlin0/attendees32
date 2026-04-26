@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytz
 from django.conf import settings
 from django.db.models import F, Q, CharField, Value, When, Case, Count
 from django.db.models.functions import Concat, Trim
@@ -321,32 +322,55 @@ class AttendanceService:
         """
         Idempotently create attendances based on the following params and attendingmeet.
 
-        :param begin:
-        :param end:
-        :param meet:
-        :param meet_slug:
-        :param user_time_zone:
-        :param attendee_id:
-        :return: number of attendances created
+        :param begin: ISO format datetime string
+        :param end: ISO format datetime string
+        :param meet: Meet instance
+        :param meet_slug: meet slug for error reporting
+        :param user_time_zone: DEPRECATED - timezone is now derived from meet.infos['default_time_zone'] since users can be anywhere
+        :param attendee_id: optional attendee id to filter
+        :return: dict with success status and number of attendances created
         """
         number_created = 0
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_begin_time = datetime.strptime(begin, iso_time_format)
         user_end_time = datetime.strptime(end, iso_time_format)
 
+        # Validate that meet has default_time_zone configured
+        if not meet or not meet.infos.get('default_time_zone'):
+            results = {
+                "success": False,
+                "attendance_created": 0,
+                "meet_slug": meet.slug if meet else meet_slug,
+                "begin": begin,
+                "end": end,
+                "explain": (
+                    f"CRITICAL: No meet or Meet '{meet.slug if meet else meet_slug}' must have "
+                    f"'default_time_zone' configured in infos to avoid timezone ambiguity. "
+                    f"Please set meet.infos['default_time_zone'] (e.g., 'America/Los_Angeles')."
+                ),
+            }
+            return results
+
+        # Use meet's canonical timezone instead of user_time_zone parameter
+        canonical_time_zone = pytz.timezone(meet.infos['default_time_zone'])
+
         if meet and user_end_time > user_begin_time:
             begin_time = (
                 user_begin_time if meet.start < user_begin_time else meet.start
-            ).astimezone(user_time_zone)
+            ).astimezone(canonical_time_zone)
             end_time = (
                 user_end_time if meet.finish > user_end_time else meet.finish
-            ).astimezone(user_time_zone)
+            ).astimezone(canonical_time_zone)
 
             for gathering in meet.gathering_set.filter(finish__gte=begin_time, start__lte=end_time, infos__generate_attendance=True):
+                # Force timezone conversion to canonical timezone for consistent comparison
+                canonical_gathering_start = gathering.start.astimezone(canonical_time_zone)
+                canonical_gathering_finish = gathering.finish.astimezone(canonical_time_zone)
+
                 filters = {
                     'meet': meet,
-                    'finish__gte': gathering.start,
-                    'start__lte': gathering.finish,
+                    'finish__gte': canonical_gathering_start,
+                    'start__lte': canonical_gathering_finish,
                 }
                 if attendee_id:
                     filters['attending__attendee_id'] = attendee_id

@@ -259,8 +259,9 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * backup current db to container `docker-compose -f production.yml exec postgres backup`
 * list backup files in container `docker-compose -f production.yml exec postgres backups`
 * When postgres container is up, copy all backup files from container to dev local computer `docker cp $(docker-compose -f production.yml ps -q postgres):/backups ./backups`
-* When postgres container is up, copy all backup files from dev local computer to container `docker cp ./backups/* $(docker-compose -f production.yml ps -q postgres):/backups/`
+* When postgres container is up, copy all backup files from dev local computer to container `docker cp ./backups $(docker-compose -f production.yml ps -q postgres):/`
 * When postgres container is up, restore a backup from a backup file in container `docker-compose -f production.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
+* When postgres container is up, remove all backups from docker `docker-compose -f production.yml exec postgres sh -c "rm /backups/*"`
 * print INSERT commands for a table `docker-compose -f production.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.production/.postgres>>`
 * Enter postgres db console by `docker-compose -f production.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.production/.postgres>>`
 </details>
