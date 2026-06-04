@@ -73,6 +73,7 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.mfa",
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.google',
     "django_celery_beat",
@@ -435,3 +436,7 @@ SHELL_PLUS_DONT_LOAD = [
     'whereabouts.LocalityProxy',
     'whereabouts.StateProxy',
 ]
+
+# allauth MFA Settings
+MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+MFA_PASSCODE_LENGTH = 6
