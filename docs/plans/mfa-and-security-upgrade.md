@@ -16,6 +16,7 @@ Modify the `requirements/base.txt` file to upgrade vulnerable and outdated packa
 - Change `django-allauth==0.53.0` to `django-allauth==0.63.3` (Latest stable 0.x branch that officially supports Django 3.2 and includes native MFA).
 - Change `GitPython==3.1.43` to `GitPython==3.1.44` (or latest compatible 3.1.x to address CVE-2024-22190).
 - Add `PyJWT==2.8.0` (Required by `django-allauth` for JWT-based social login/OIDC).
+- Add `cryptography==42.0.5` (Required for JWT signature verification).
 
 ### 2. Configure Django Settings (`config/settings/base.py`)
 Enable and configure the MFA application provided by `django-allauth`:
