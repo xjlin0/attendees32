@@ -63,7 +63,7 @@ DJANGO_APPS = [
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "django.contrib.humanize", # Handy template tags
+    "django.contrib.humanize",
     "django.contrib.admin",
     "django.forms",
 ]
@@ -440,6 +440,8 @@ SHELL_PLUS_DONT_LOAD = [
 ]
 
 # allauth MFA Settings
-MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
 MFA_PASSCODE_LENGTH = 6
 MFA_ENFORCED = env.bool("DJANGO_MFA_ENFORCED", False)
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = env.bool("DJANGO_MFA_WEBAUTHN_INSECURE", True)

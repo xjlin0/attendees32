@@ -18,16 +18,22 @@ Modify the `requirements/base.txt` file to upgrade vulnerable and outdated packa
 - Add `PyJWT==2.8.0` (Required by `django-allauth` for JWT-based social login/OIDC).
 - Add `cryptography==42.0.5` (Required for JWT signature verification).
 - Add `qrcode[pil]==7.4.2` (Required for generating TOTP QR codes).
+- Add `python-fido2==1.1.2` (Required for WebAuthn/Passkey support).
 
 ### 2. Configure Django Settings (`config/settings/base.py`)
 Enable and configure the MFA application provided by `django-allauth`:
-- **INSTALLED_APPS**: Add `"allauth.mfa"` to the `THIRD_PARTY_APPS` or general `INSTALLED_APPS` list.
+- **INSTALLED_APPS**: 
+    - Add `"allauth.mfa"` to the `THIRD_PARTY_APPS`.
+    - Ensure `"django.contrib.humanize"` is enabled in `DJANGO_APPS`.
 - **MIDDLEWARE**: Add `"allauth.account.middleware.AccountMiddleware"` after `AuthenticationMiddleware`.
-- **MFA Settings**: Add the required MFA configuration block:
+- **MFA Settings**: Update the MFA configuration block:
   ```python
   # allauth MFA Settings
-  MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+  MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
   MFA_PASSCODE_LENGTH = 6
+  MFA_ENFORCED = env.bool("DJANGO_MFA_ENFORCED", False)
+  MFA_PASSKEY_LOGIN_ENABLED = True
+  MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = env.bool("DJANGO_MFA_WEBAUTHN_INSECURE", True)
   ```
 
 ### 3. URL Configuration (`config/urls.py`)
