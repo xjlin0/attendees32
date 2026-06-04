@@ -19,6 +19,7 @@ Modify the `requirements/base.txt` file to upgrade vulnerable and outdated packa
 ### 2. Configure Django Settings (`config/settings/base.py`)
 Enable and configure the MFA application provided by `django-allauth`:
 - **INSTALLED_APPS**: Add `"allauth.mfa"` to the `THIRD_PARTY_APPS` or general `INSTALLED_APPS` list.
+- **MIDDLEWARE**: Add `"allauth.account.middleware.AccountMiddleware"` after `AuthenticationMiddleware`.
 - **MFA Settings**: Add the required MFA configuration block:
   ```python
   # allauth MFA Settings
