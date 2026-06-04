@@ -354,7 +354,7 @@ ACCOUNT_ADAPTER = "attendees.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "attendees.users.adapters.SocialAccountAdapter"
 ACCOUNT_RATE_LIMITS = {
-    "login_failed": "3/600",
+    "login_failed": "3/10m",
 }
 ACCOUNT_UNIQUE_EMAIL = True
 
