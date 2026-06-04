@@ -18,7 +18,7 @@ Modify the `requirements/base.txt` file to upgrade vulnerable and outdated packa
 - Add `PyJWT==2.8.0` (Required by `django-allauth` for JWT-based social login/OIDC).
 - Add `cryptography==42.0.5` (Required for JWT signature verification).
 - Add `qrcode[pil]==7.4.2` (Required for generating TOTP QR codes).
-- Add `python-fido2==1.1.2` (Required for WebAuthn/Passkey support).
+- Add `fido2==1.1.2` (Required for WebAuthn/Passkey support).
 
 ### 2. Configure Django Settings (`config/settings/base.py`)
 Enable and configure the MFA application provided by `django-allauth`:
