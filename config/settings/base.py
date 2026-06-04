@@ -353,8 +353,9 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "attendees.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "attendees.users.adapters.SocialAccountAdapter"
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 3
-ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 600
+ACCOUNT_RATE_LIMITS = {
+    "login_failed": (3, 600),
+}
 ACCOUNT_UNIQUE_EMAIL = True
 
 SOCIALACCOUNT_PROVIDERS = {

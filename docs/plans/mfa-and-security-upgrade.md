@@ -30,7 +30,18 @@ Enable and configure the MFA application provided by `django-allauth`:
   MFA_PASSCODE_LENGTH = 6
   ```
 
-### 3. Database Migration
+### 3. URL Configuration (`config/urls.py`)
+Ensure the MFA URLs are explicitly included if not automatically covered by `allauth.urls`:
+```python
+urlpatterns = [
+    ...
+    path("accounts/", include("allauth.urls")),
+    path("accounts/mfa/", include("allauth.mfa.urls")),  # Add this line
+    ...
+]
+```
+
+### 4. Database Migration
 Since a new app (`allauth.mfa`) is being added, a database migration is required to create the necessary tables for storing user TOTP secrets and recovery codes.
 - Run `python manage.py migrate`.
 
