@@ -211,7 +211,6 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "allauth.mfa.context_processors.mfa",
                 "attendees.users.context_processors.allauth_settings",
                 "attendees.utils.context_processors.settings_context",
                 "attendees.context_processors.common_variables",
@@ -441,8 +440,6 @@ SHELL_PLUS_DONT_LOAD = [
 ]
 
 # allauth MFA Settings
-MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
+MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
 MFA_PASSCODE_LENGTH = 6
 MFA_ENFORCED = env.bool("DJANGO_MFA_ENFORCED", False)
-MFA_PASSKEY_LOGIN_ENABLED = True
-MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = env.bool("DJANGO_MFA_WEBAUTHN_INSECURE", True)
