@@ -1,7 +1,7 @@
 {% extends "account/base.html" %}
 
 {% load i18n %}
-{% load account socialaccount %}
+{% load account socialaccount mfa %}
 {% load crispy_forms_tags %}
 
 {% block head_title %}{% translate "Sign In" %}{% endblock %}
@@ -9,6 +9,15 @@
 {% block inner %}
 
 <h1>{% translate "Sign In" %}</h1>
+
+{% if mfa_passkey_login_enabled %}
+    <div class="mb-4">
+        <button id="mfa_webauthn_login" class="btn btn-outline-primary w-100 py-2">
+            <i class="fas fa-fingerprint"></i> {% translate "Sign in with Biometrics" %}
+        </button>
+    </div>
+    {% include "mfa/webauthn/js/login.html" %}
+{% endif %}
 
 {% get_providers as socialaccount_providers %}
 
