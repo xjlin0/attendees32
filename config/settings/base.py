@@ -211,6 +211,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
+                "allauth.mfa.context_processors.mfa",
                 "attendees.users.context_processors.allauth_settings",
                 "attendees.utils.context_processors.settings_context",
                 "attendees.context_processors.common_variables",
