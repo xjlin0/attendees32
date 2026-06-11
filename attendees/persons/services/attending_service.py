@@ -124,7 +124,7 @@ class AttendingService:
         if (
             registration
             and registration.registrant == attending.attendee
-            and not registration.attending_set.filter(is_removed=False)
+            and not registration.attending_set.filter(is_removed=False).exclude(pk=attending.pk)
         ):
             registration.delete()
         attending.delete()

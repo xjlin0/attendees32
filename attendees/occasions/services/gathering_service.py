@@ -154,6 +154,7 @@ class GatheringService:
                         site_type = meet.site_type
                         site_id = meet.site_id
                         site_info = er.event.description
+                        model_name = site_type.model
 
                         if site_info:
                             model_name, site_id = site_info.split("#")

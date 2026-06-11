@@ -414,7 +414,7 @@ class FolkService:
 
         if (
             folk.folkattendee_set.count() < 2
-            and folk.folkattendee_set.first() == attendee
+            and folk.folkattendee_set.first().attendee == attendee
         ):
             # Relationship.objects.filter(in_family=folk.id, relation__consanguinity=False, is_removed=False).delete()
             # Relationship.objects.filter(in_family=folk.id, relation__consanguinity=True, is_removed=False).update(in_family=None)
