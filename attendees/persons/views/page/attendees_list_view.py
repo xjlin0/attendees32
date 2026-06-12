@@ -69,7 +69,7 @@ class AttendeesListView(RouteGuard, ListView):
         self, context, **kwargs
     ):  # view only provides empty tables, it's API that needs to return valid data
         # if self.request.user.belongs_to_divisions_of([context['current_division_slug']]):
-        if self.request.is_ajax():
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             pass
 
         else:

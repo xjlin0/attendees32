@@ -45,7 +45,7 @@ class DatagridUserOrganizationAttendancesListView(RouteGuard, ListView):
 
     def render_to_response(self, context, **kwargs):
         if self.request.user.organization:
-            if self.request.is_ajax():
+            if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 pass
 
             else:

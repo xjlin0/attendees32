@@ -298,7 +298,7 @@ class AttendanceService:
             "attending__attendee",
         ).filter(filters).values(
             'attending__attendee',
-            'attending__attendee__infos__names__original'
+            'attending__attendee__infos__names__original',
             'attending__registration__registrant_id',
         ).annotate(
             count=Count('attending__attendee'),
@@ -315,7 +315,7 @@ class AttendanceService:
                 ),
                 output_field=CharField()
             ),
-        ).order_by(*orderby_list)
+        ).order_by(*(orderby_list or ['attending_name']))
 
     @staticmethod
     def batch_create(begin, end, meet_slug, meet, user_time_zone, attendee_id=None):

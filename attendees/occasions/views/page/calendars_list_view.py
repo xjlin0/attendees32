@@ -14,14 +14,21 @@ class CalendarsListView(RouteGuard, ListView):
     template_name = "occasions/calendar_list_view.html"
 
     def get_context_data(self, **kwargs):
+        from schedule.models import Calendar
         context = super().get_context_data(**kwargs)
-        user_organization_calendar = self.request.user.organization.calendar_relations.filter(distinction='source').first()
+        user_organization = self.request.user.organization
+        organization_acronym = user_organization.infos.get('acronym').strip()
+        user_organization_calendar = user_organization.calendar_relations.filter(distinction='source').first() or \
+                                     Calendar.objects.filter(
+                                         slug__istartswith=organization_acronym,
+                                         calendarrelation__distinction='source'
+                                     ).first()
         context.update(
             {
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 "content_type_models_endpoint": "/whereabouts/api/content_type_models/",
                 "calendars_endpoint": "/occasions/api/organization_calendars/",
-                "organization_default_calendar": user_organization_calendar and user_organization_calendar.id or 0,
+                "organization_default_calendar": getattr(user_organization_calendar, 'calendar_id', None) or getattr(user_organization_calendar, 'id', 0),
                 "occurrences_endpoint": "/occasions/api/organization_occurrences/",
                 # "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
                 # "meets_endpoint_by_id": "/occasions/api/user_assembly_meets/",
@@ -30,7 +37,7 @@ class CalendarsListView(RouteGuard, ListView):
         return context
 
     def render_to_response(self, context, **kwargs):
-        if self.request.is_ajax():
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             pass
 
         else:

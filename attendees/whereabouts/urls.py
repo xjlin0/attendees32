@@ -21,52 +21,52 @@ router = routers.DefaultRouter()
 router.register(
     "api/user_divisions",
     api_user_division_viewset,
-    basename="division",
+    basename="user_division",
 )
 router.register(
     "api/user_places",
     api_user_place_view_set,
-    basename="place",
+    basename="user_place",
 )
 router.register(
     "api/datagrid_data_place",
     api_datagrid_data_place_viewset,
-    basename="place",
+    basename="datagrid_place",
 )
 router.register(
     "api/all_addresses",
     api_all_address_view_set,
-    basename="address",
+    basename="all_address",
 )
 router.register(
     "api/all_states",
     api_all_state_view_set,
-    basename="address",
+    basename="all_state",
 )
 router.register(
     "api/user_organizations",
     api_user_organization_viewset,
-    basename="organization",
+    basename="user_organization",
 )
 router.register(
     "api/organizational_campuses",
     api_organizational_campus_view_set,
-    basename="campus",
+    basename="organizational_campus",
 )
 router.register(
     "api/organizational_properties",
     api_organizational_property_view_set,
-    basename="property",
+    basename="organizational_property",
 )
 router.register(
     "api/organizational_suites",
     api_organizational_suite_view_set,
-    basename="suite",
+    basename="organizational_suite",
 )
 router.register(
     "api/organizational_rooms",
     api_organizational_room_view_set,
-    basename="room",
+    basename="organizational_room",
 )
 
 urlpatterns = [

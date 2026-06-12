@@ -68,6 +68,24 @@ Since a new app (`allauth.mfa`) is being added, a database migration is required
    - Successfully authenticate using the TOTP code.
    - Verify that recovery codes can be generated and used to bypass TOTP if necessary.
 
+## Production Deployment Steps
+When deploying to the production environment, follow these steps to ensure all new dependencies and database tables are correctly initialized:
+
+1.  **Build the Production Stack**:
+    This will install the new versions of `Pillow`, `django-allauth`, `PyJWT`, `cryptography`, and `qrcode`.
+    ```bash
+    docker compose -f production.yml build
+    ```
+2.  **Apply Database Migrations**:
+    This will create the `mfa_*` tables required for TOTP.
+    ```bash
+    docker compose -f production.yml run --rm django python manage.py migrate
+    ```
+3.  **Restart Services**:
+    ```bash
+    docker compose -f production.yml up -d
+    ```
+
 ## Migration & Rollback
 - **Rollback Plan**: If critical issues arise post-deployment, revert `requirements/base.txt` and `config/settings/base.py` to their previous states. Note that rolling back `django-allauth` versions after migrations have been applied may require manual database intervention (dropping the `mfa_*` tables) if the application refuses to start with the newer schema but older code.
 
