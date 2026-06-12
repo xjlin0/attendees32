@@ -8,7 +8,7 @@ from django.db.models import CharField
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import validators
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 import pghistory
 from schedule.models import CalendarRelation
 
