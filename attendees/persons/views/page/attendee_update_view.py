@@ -86,7 +86,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
         if context[
             "targeting_attendee_id"
         ] == "new" or (self_attendee and self_attendee.under_same_org_with(context["targeting_attendee_id"])):
-            if self.request.is_ajax():
+            if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 pass
 
             else:

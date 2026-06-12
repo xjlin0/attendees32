@@ -39,32 +39,32 @@ router = routers.DefaultRouter()
 router.register(
     "api/(?P<division_slug>.+)/(?P<assembly_slug>.+)/assembly_meet_attendances",
     api_assembly_meet_attendances_viewset,
-    basename="attendance",
+    basename="assembly_meet_attendances",
 )
 router.register(
     "api/(?P<division_slug>.+)/(?P<assembly_slug>.+)/assembly_meet_characters",
     api_assembly_meet_characters_viewset,
-    basename="character",
+    basename="assembly_meet_characters",
 )
 router.register(
     "api/(?P<division_slug>.+)/(?P<assembly_slug>.+)/assembly_meet_teams",
     api_assembly_meet_teams_viewset,
-    basename="team",
+    basename="assembly_meet_teams",
 )
 router.register(
     "api/(?P<division_slug>.+)/(?P<assembly_slug>.+)/assembly_meet_gatherings",
     api_assembly_meet_gatherings_viewset,
-    basename="gathering",
+    basename="assembly_meet_gatherings",
 )
 router.register(
     "api/organization_meet_teams",
     api_organization_meet_team_viewset,
-    basename="team",
+    basename="organization_meet_teams",
 )
 router.register(
     "api/organization_team_gatherings",
     api_organization_meet_gatherings_viewset,
-    basename="gathering",
+    basename="organization_team_gatherings",
 )
 router.register(
     "api/series_gatherings",
@@ -79,67 +79,67 @@ router.register(
 router.register(
     "api/user_assembly_characters",
     api_user_assembly_characters_viewset,
-    basename="character",
+    basename="user_assembly_characters",
 )
 router.register(
     "api/user_assembly_meets",
     api_user_assembly_meets_viewset,
-    basename="meet",
+    basename="user_assembly_meets",
 )
 router.register(
     "api/organization_meets",
     organization_meets_viewset,
-    basename="meet",
+    basename="organization_meets",
 )
 router.register(
     "api/organization_characters",
     organization_characters_viewset,
-    basename="character",
+    basename="organization_characters",
 )
 router.register(
     "api/coworker_organization_attendances",
     api_coworker_organization_attendances_viewset,
-    basename="attendance",
+    basename="coworker_organization_attendances",
 )
 router.register(
     "api/family_organization_attendances",
     api_family_organization_attendances_viewset,
-    basename="attendance",
+    basename="family_organization_attendances",
 )
 router.register(
     "api/organization_meet_character_attendances",
     api_organization_meet_character_attendances_viewset,
-    basename="attendance",
+    basename="organization_meet_character_attendances",
 )
 router.register(
     "api/organization_meet_character_attendance_stats",
     api_organization_meet_character_attendance_stats_viewset,
-    basename="attendance",
+    basename="organization_meet_character_attendance_stats",
 )
 router.register(
     "api/family_organization_characters",
     api_family_organization_characters_viewset,
-    basename="character",
+    basename="family_organization_characters",
 )
 router.register(
     "api/family_organization_gatherings",
     api_family_organization_gatherings_viewset,
-    basename="gathering",
+    basename="family_organization_gatherings",
 )
 router.register(
     "api/user_assemblies",
     api_user_assembly_viewset,
-    basename="assembly",
+    basename="user_assemblies",
 )
 router.register(
     "api/organization_calendars",
     api_organization_calendars_viewset,
-    basename="calendar",
+    basename="organization_calendars",
 )  # Todo 20220924 make this API public and use domain name/Site as organization indicator
 router.register(
     "api/organization_occurrences",
     api_organization_occurrences_viewset,
-    basename="occurrence",
+    basename="organization_occurrences",
 )
 
 urlpatterns = [

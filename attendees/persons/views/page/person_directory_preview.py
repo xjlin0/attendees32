@@ -32,7 +32,7 @@ class PersonDirectoryPreview(RouteGuard, ListView):
         return context
 
     def render_to_response(self, context, **kwargs):
-        if self.request.is_ajax():
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             html = render_to_string(self.get_template_names()[0], context)
             return HttpResponse(html)
         else:

@@ -45,7 +45,7 @@ class DatagridAssemblyAllAttendancesListView(RouteGuard, ListView):
         if self.request.user.belongs_to_divisions_of(
             [context["current_division_slug"]]
         ):
-            if self.request.is_ajax():
+            if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 pass
             else:
                 context.update({"filtered_attendances": []})
