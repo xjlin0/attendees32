@@ -63,7 +63,7 @@ DJANGO_APPS = [
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "django.contrib.humanize", # Handy template tags
+    "django.contrib.humanize",
     "django.contrib.admin",
     "django.forms",
 ]
@@ -73,6 +73,7 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.mfa",
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.google',
     "django_celery_beat",
@@ -152,6 +153,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -351,8 +353,9 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "attendees.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "attendees.users.adapters.SocialAccountAdapter"
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 3
-ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 600
+ACCOUNT_RATE_LIMITS = {
+    "login_failed": "3/10m",
+}
 ACCOUNT_UNIQUE_EMAIL = True
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -435,3 +438,8 @@ SHELL_PLUS_DONT_LOAD = [
     'whereabouts.LocalityProxy',
     'whereabouts.StateProxy',
 ]
+
+# allauth MFA Settings
+MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+MFA_PASSCODE_LENGTH = 6
+MFA_ENFORCED = env.bool("DJANGO_MFA_ENFORCED", False)

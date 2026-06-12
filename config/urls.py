@@ -35,6 +35,7 @@ urlpatterns = [
     path("schedule/", include("schedule.urls")),
     path("users/", include("attendees.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
+    path("accounts/mfa/", include("allauth.mfa.urls")),
     # Your stuff: custom urls includes go here
     # path("summernote/", include("django_summernote.urls")),
     path(
