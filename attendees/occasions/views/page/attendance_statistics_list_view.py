@@ -30,10 +30,7 @@ class AttendanceStatisticsListView(RouteGuard, ListView):
         return context
 
     def render_to_response(self, context, **kwargs):
-        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            pass
-
-        else:
+        if self.request.accepts("text/html"):
             return render(self.request, self.get_template_names()[0], context)
 
 

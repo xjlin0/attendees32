@@ -54,10 +54,7 @@ class DatagridAssemblyAllAttendingsListView(RouteGuard, ListView):
         if self.request.user.belongs_to_divisions_of(
             [context["current_division_slug"]]
         ):
-            if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                pass
-
-            else:
+            if self.request.accepts("text/html"):
                 # chosen_character_slugs = self.request.GET.getlist('characters', [])
                 # context.update({'chosen_character_slugs': chosen_character_slugs})
                 context.update(

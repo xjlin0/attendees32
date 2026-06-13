@@ -45,10 +45,7 @@ class DatagridUserOrganizationAttendancesListView(RouteGuard, ListView):
 
     def render_to_response(self, context, **kwargs):
         if self.request.user.organization:
-            if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                pass
-
-            else:
+            if self.request.accepts("text/html"):
                 return render(self.request, self.get_template_names()[0], context)
         else:
             time.sleep(2)

@@ -47,6 +47,25 @@ Upgrade the core framework from Django 3.2.25 to **Django 4.2 LTS**, resolve str
 2.  **CI/CD**: Verify GitHub Actions pass with the new Docker image.
 3.  **MFA Flow**: Manually verify TOTP and then Biometric registration.
 
+## Production Deployment Steps
+When deploying this Django 4.2 upgrade to the production environment, follow these steps strictly to ensure a safe transition:
+
+1.  **Backup Database**: Ensure a full database snapshot is taken before proceeding.
+2.  **Build the Production Stack**:
+    This will install the new Python dependencies (Django 4.2.30, allauth 64.0.0, etc.) in the container.
+    ```bash
+    docker compose -f production.yml build
+    ```
+3.  **Apply Database Migrations**:
+    This step is critical. Django 4.2 updates internal tables and `django-pghistory` will recreate triggers.
+    ```bash
+    docker compose -f production.yml run --rm django python manage.py migrate
+    ```
+4.  **Restart Services**:
+    ```bash
+    docker compose -f production.yml up -d
+    ```
+
 ## Rollback Strategy
 *   Maintain a `git` branch for the 3.2 baseline.
 *   Database Snapshot: Ensure a full DB dump is taken before Phase 2.
