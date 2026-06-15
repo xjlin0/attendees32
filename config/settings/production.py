@@ -172,3 +172,4 @@ LOGGING = {
 # Your stuff...
 # ------------------------------------------------------------------------------
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = False
