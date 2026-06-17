@@ -47,7 +47,19 @@ urlpatterns = [
 ]
 ```
 
-### 4. Database Migration
+### 3. MFA Rollout Strategy (Optional to Enforced)
+The MFA implementation is designed for a phased rollout. You can transition from "Optional" to "Mandatory" without modifying the code or triggering a new deployment.
+
+*   **Phase 1: Optional MFA (Current Default)**
+    By default, `MFA_ENFORCED` is `False`. Users can log in with just their password but have the option to set up MFA in their account settings.
+*   **Phase 2: Enforced MFA (Future)**
+    When you are ready to force all users to use MFA, update your production environment variables (e.g., in your `.envs/.production/.django` file or AWS ECS config) by adding:
+    ```env
+    DJANGO_MFA_ENFORCED=True
+    ```
+    After updating the variable, simply **restart the Django service** (`docker compose restart django`). No code changes or database migrations are required. Users without MFA will be automatically redirected to the setup page upon their next login.
+
+### 4. Database Migrations
 Since a new app (`allauth.mfa`) is being added, a database migration is required to create the necessary tables for storing user TOTP secrets and recovery codes.
 - Run `python manage.py migrate`.
 
