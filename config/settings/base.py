@@ -32,8 +32,6 @@ LANGUAGE_CODE = "en-us"
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
 USE_I18N = True
-# https://docs.djangoproject.com/en/dev/ref/settings/#use-l10n
-USE_L10N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
@@ -343,12 +341,14 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # django-allauth
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", False)
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_AUTHENTICATION_METHOD = "username"
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_REQUIRED = True
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
+# https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_LOGIN_METHODS = {"username"}
+# https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+# https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_ADAPTER = "attendees.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
@@ -440,6 +440,8 @@ SHELL_PLUS_DONT_LOAD = [
 ]
 
 # allauth MFA Settings
-MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
 MFA_PASSCODE_LENGTH = 6
 MFA_ENFORCED = env.bool("DJANGO_MFA_ENFORCED", False)
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = env.bool("DJANGO_MFA_WEBAUTHN_INSECURE", False)

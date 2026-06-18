@@ -47,7 +47,19 @@ urlpatterns = [
 ]
 ```
 
-### 4. Database Migration
+### 3. MFA Rollout Strategy (Optional to Enforced)
+The MFA implementation is designed for a phased rollout. You can transition from "Optional" to "Mandatory" without modifying the code or triggering a new deployment.
+
+*   **Phase 1: Optional MFA (Current Default)**
+    By default, `MFA_ENFORCED` is `False`. Users can log in with just their password but have the option to set up MFA in their account settings.
+*   **Phase 2: Enforced MFA (Future)**
+    When you are ready to force all users to use MFA, update your production environment variables (e.g., in your `.envs/.production/.django` file or AWS ECS config) by adding:
+    ```env
+    DJANGO_MFA_ENFORCED=True
+    ```
+    After updating the variable, simply **restart the Django service** (`docker compose restart django`). No code changes or database migrations are required. Users without MFA will be automatically redirected to the setup page upon their next login.
+
+### 4. Database Migrations
 Since a new app (`allauth.mfa`) is being added, a database migration is required to create the necessary tables for storing user TOTP secrets and recovery codes.
 - Run `python manage.py migrate`.
 
@@ -67,6 +79,24 @@ Since a new app (`allauth.mfa`) is being added, a database migration is required
    - Log back in, verifying that the system prompts for the 6-digit TOTP code after password validation.
    - Successfully authenticate using the TOTP code.
    - Verify that recovery codes can be generated and used to bypass TOTP if necessary.
+
+## Production Deployment Steps
+When deploying to the production environment, follow these steps to ensure all new dependencies and database tables are correctly initialized:
+
+1.  **Build the Production Stack**:
+    This will install the new versions of `Pillow`, `django-allauth`, `PyJWT`, `cryptography`, and `qrcode`.
+    ```bash
+    docker compose -f production.yml build
+    ```
+2.  **Apply Database Migrations**:
+    This will create the `mfa_*` tables required for TOTP.
+    ```bash
+    docker compose -f production.yml run --rm django python manage.py migrate
+    ```
+3.  **Restart Services**:
+    ```bash
+    docker compose -f production.yml up -d
+    ```
 
 ## Migration & Rollback
 - **Rollback Plan**: If critical issues arise post-deployment, revert `requirements/base.txt` and `config/settings/base.py` to their previous states. Note that rolling back `django-allauth` versions after migrations have been applied may require manual database intervention (dropping the `mfa_*` tables) if the application refuses to start with the newer schema but older code.

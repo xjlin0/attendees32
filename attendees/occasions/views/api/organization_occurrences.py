@@ -25,7 +25,7 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         iso_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
         user_organization = self.request.user.organization
-        user_organization_calendar = user_organization.calendar_relations.filter(distinction='source').first().calendar
+        user_organization_calendar = user_organization.calendar_relations.filter(distinction='source').first().calendar if user_organization.calendar_relations.filter(distinction='source').exists() else None
         calendar_id = self.request.query_params.get("calendar")
         start = self.request.query_params.get("start")
         end = self.request.query_params.get("end")
@@ -45,11 +45,12 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
             if calendar_id:
                 filters.add(Q(pk=calendar_id), Q.AND)
             else:  # UI need all location calendars but not organization calendar which duplicates every events
-                filters.add(~Q(pk=user_organization_calendar.id), Q.AND)
+                if user_organization_calendar:
+                    filters.add(~Q(pk=user_organization_calendar.id), Q.AND)
             calendars = Calendar.objects.filter(filters)
 
             if calendars:
-                if calendar_id and int(calendar_id) == user_organization_calendar.id:
+                if calendar_id and user_organization_calendar and int(calendar_id) == user_organization_calendar.id:
                     return Period(
                         Event.objects.filter(calendar__in=calendars),  # no need to filter for end_recurring_period
                         datetime.strptime(start, iso_time_format),
@@ -62,7 +63,7 @@ class OccurrencesCalendarsViewSet(viewsets.ModelViewSet):
                         Event.objects.filter(
                             Q(calendar__in=calendars)
                             |
-                            (Q(calendar=user_organization_calendar) & Q(description__startswith='allDay:'))),
+                            (Q(calendar=user_organization_calendar) & Q(description__startswith='allDay:')) if user_organization_calendar else Q(calendar__in=calendars)),
                         datetime.strptime(start, iso_time_format),
                         datetime.strptime(end, iso_time_format),
                         tzinfo=user_time_zone,

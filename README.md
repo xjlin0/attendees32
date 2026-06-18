@@ -226,6 +226,13 @@ SENDGRID_API_KEY=YOUR_REAL_API_KEY
 DJANGO_DEFAULT_FROM_EMAIL=your@email.com
 DJANGO_SECRET_KEY=your_django_secret_key
 ```
+or mailgun.env
+```
+MAILGUN_API_KEY=YOUR_REAL_API_KEY
+DJANGO_DEFAULT_FROM_EMAIL=your@email.com
+MAILGUN_SENDER_DOMAIN=mailgun.YOUR_REAL.DOMAIN
+EMAIL_HOST=mailgun
+```
 * if other staging ran previously (such as local), please remove it like `docker-compose -f local.yml down -v`. Also please remove previous private media photos at attendees32/attendees/media/private-media/attendee_portrait/*
 * double check if previous [docker images needs to be removed](https://medium.com/@wlarch/no-space-left-on-device-when-using-docker-compose-why-c4a2c783c6f6). It will also remove attendees user images too.
 * double check the domain name in `compose/production/traefik/traefik.yml` and `attendees/contrib/sites/migrations/0003_set_site_domain_and_name.py`
@@ -305,7 +312,7 @@ DJANGO_SECRET_KEY=your_django_secret_key
 All libraries are included to facilitate offline development, it will take port 8008, 8025, 5555 when running, please change port in local.yml if those ports are occupied.
 * Install [git](https://git-scm.com/downloads) and [docker for windows](https://docs.docker.com/install), which includes docker-compose.
 * clone the repo by `git clone git@github.com:xjlin0/attendees30.git` and cd the repo directory `attendees30`
-* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `start notepad .envs/.local/.sendgrid.env` and save the following fake content.
+* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `start notepad .envs/.local/.sendgrid.env` and save the following fake content. or `.envs/.local/.mailgun.env` for mailgun
 ```
 SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
@@ -349,6 +356,13 @@ SENDGRID_API_KEY=FAKE
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
 DJANGO_SECRET_KEY=your_django_secret_key
 ```
+or mailhog
+```
+MAILGUN_API_KEY=<<any string>>
+DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
+MAILGUN_SENDER_DOMAIN=mailgun.fake.domain
+EMAIL_HOST=mailhog
+```
 * build and start the local machine by `docker compose -f local.yml build && docker compose -f local.yml up -d`.  If there's error about `docker-credential-desktop`,  change credsStore to credStore in `~/.docker/config.json`
 * create migration files by `docker compose -f local.yml run --rm django python manage.py makemigrations`
 * migrate db by `docker compose -f local.yml run --rm django python manage.py migrate`
@@ -373,11 +387,12 @@ All libraries are included to facilitate offline development, it will take port 
 * check local python version, Django cookie cutter is developed with Python 3
 * Install pre-commit for python, such as `pip3 install pre-commit` (pre-commit settings are at .git/hooks/pre-commit).
 * There is no need to have local docker machine, Django or Postgres running.
-* Add .envs/.local/.sendgrid.env
+* Add .envs/.local/.mailgun.env
 ```commandline
-SENDGRID_API_KEY=<<your sendgrid api key>>
+MAILGUN_SENDER_DOMAIN=<<any fake domain name>>
 DJANGO_DEFAULT_FROM_EMAIL=<<your email>>
-EMAIL_HOST=sendgrid
+MAILGUN_API_KEY=<<anystring or your mailgun api key with mailgun EMAIL_HOST>>
+EMAIL_HOST=mailhog
 ```
 * Install and start [docker desktop](https://www.docker.com/products/docker-desktop) (including docker compose), and [add local repo directory to file sharing in docker desktop preference](https://docs.docker.com/desktop/settings/mac/#file-sharing).
 * In Docker Desktop Settings, please ensure both "Use Virtualization framework" and "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" options in enabled.

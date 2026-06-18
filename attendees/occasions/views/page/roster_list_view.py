@@ -33,10 +33,7 @@ class RosterListView(RouteGuard, ListView):
         return context
 
     def render_to_response(self, context, **kwargs):
-        if self.request.is_ajax():
-            pass
-
-        else:
+        if self.request.accepts("text/html"):
             return render(self.request, self.get_template_names()[0], context)
 
 

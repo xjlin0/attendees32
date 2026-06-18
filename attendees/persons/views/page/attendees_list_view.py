@@ -69,10 +69,7 @@ class AttendeesListView(RouteGuard, ListView):
         self, context, **kwargs
     ):  # view only provides empty tables, it's API that needs to return valid data
         # if self.request.user.belongs_to_divisions_of([context['current_division_slug']]):
-        if self.request.is_ajax():
-            pass
-
-        else:
+        if self.request.accepts("text/html"):
             # chosen_character_slugs = self.request.GET.getlist('characters', [])
             # context.update({'chosen_character_slugs': chosen_character_slugs})
             context.update({"divisions_endpoint": "/whereabouts/api/user_divisions/"})

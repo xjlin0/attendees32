@@ -13,6 +13,8 @@ Welcome to Attendees's documentation!
    howto
    pycharm/configuration
    users
+   plans/django-42-upgrade-and-modernization
+   plans/mfa-and-security-upgrade
 
 
 

@@ -42,107 +42,107 @@ router = routers.DefaultRouter()  # (trailing_slash=False)
 router.register(
     "api/datagrid_data_attendees",
     api_datagrid_data_attendees_viewset,
-    basename="attendee",
+    basename="datagrid_data_attendees",
 )
 router.register(
     "api/(?P<division_slug>.+)/(?P<assembly_slug>.+)/assembly_meet_attendings",
     api_assembly_meet_attendings_viewset,
-    basename="attending",
+    basename="assembly_meet_attendings",
 )
 router.register(
     "api/attendee_attendings",
     api_attendee_attendings_viewset,
-    basename="attending",
+    basename="attendee_attendings",
 )
 router.register(
     "api/(?P<division_slug>.+)/(?P<assembly_slug>.+)/data_attendings",
     api_data_attendings_viewset,
-    basename="attending",
+    basename="data_attendings",
 )
 router.register(
     "api/(?P<division_slug>.+)/(?P<assembly_slug>.+)/assembly_meet_attendees",
     api_assembly_meet_attendees_viewset,
-    basename="attendee",
+    basename="assembly_meet_attendees",
 )
 router.register(
     "api/user_meet_attendings",
     api_user_meet_attendings_viewset,
-    basename="attending",
+    basename="user_meet_attendings",
 )
 router.register(
     "api/family_organization_attendings",
     api_family_organization_attendings_viewset,
-    basename="attending",
+    basename="family_organization_attendings",
 )
 router.register(
     "api/datagrid_data_attendee",
     api_datagrid_data_attendee_viewset,
-    basename="attendee",
+    basename="datagrid_data_attendee",
 )
 router.register(
     "api/datagrid_data_attendingmeet",
     api_datagrid_data_attendingmeet_viewset,
-    basename="attendingmeet",
+    basename="datagrid_data_attendingmeet",
 )
 router.register(
     "api/organization_meet_character_attendingmeets",
     api_organization_meet_character_attendingmeets_viewset,
-    basename="attendingmeet",
+    basename="organization_meet_character_attendingmeets",
 )
 router.register(
     "api/default_attendingmeets",
     api_default_attendingmeets_viewset,
-    basename="attendingmeet",
+    basename="default_attendingmeets",
 )
 router.register(
     "api/organization_meet_character_attendings_for_attendance",
     api_organization_meet_character_attendings_viewset_for_attendance,
-    basename="attending",
+    basename="organization_meet_character_attendings_for_attendance",
 )
 router.register(
     "api/organization_meet_character_attendings_for_attendingmeet",
     api_organization_meet_character_attendings_viewset_for_attendingmeet,
-    basename="attending",
+    basename="organization_meet_character_attendings_for_attendingmeet",
 )
 router.register(
     "api/datagrid_data_familyattendees",
     api_datagrid_data_folkattendees_viewset,
-    basename="folkattendee",
+    basename="datagrid_data_familyattendees",
 )
 router.register(
     "api/all_relations",
     api_all_relations_viewset,
-    basename="relation",
+    basename="all_relations",
 )
 router.register(
     "api/attendee_relationships",
     api_datagrid_data_folkattendees_viewset,  # api_attendee_relationships_viewset,
-    basename="folkattendee",
+    basename="attendee_relationships",
 )  # Todo 20211125: seperate viewset instead of sending category params
 router.register(
     "api/categorized_pasts",
     api_categorized_pasts_viewset,
-    basename="past",
+    basename="categorized_pasts",
 )
 router.register(
     "api/all_categories",
     api_all_categories_viewset,
-    basename="category",
+    basename="all_categories",
 )
 router.register(
     "api/all_registrations",
     api_all_registrations_viewset,
-    basename="registration",
+    basename="all_registrations",
 )
 router.register(
     "api/related_attendees",
     api_related_attendees_viewset,
-    basename="attendee",
+    basename="related_attendees",
 )
 router.register(
     "api/attendee_families",
     api_attendee_folks_viewset,
-    basename="family",
+    basename="attendee_families",
 )
 
 urlpatterns = [

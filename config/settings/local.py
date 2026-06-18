@@ -41,9 +41,10 @@ else:
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-# EMAIL_HOST = env("EMAIL_HOST", default="mailhog")
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env("EMAIL_HOST", default="mailhog")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-# EMAIL_PORT = 1025
+EMAIL_PORT = 1025
 
 # WhiteNoise
 # ------------------------------------------------------------------------------
@@ -83,3 +84,4 @@ INSTALLED_APPS += ["django_extensions"]  # noqa F405
 CELERY_TASK_EAGER_PROPAGATES = True
 # Your stuff...
 # ------------------------------------------------------------------------------
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = env.bool("DJANGO_MFA_WEBAUTHN_INSECURE", True)

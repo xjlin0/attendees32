@@ -86,10 +86,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
         if context[
             "targeting_attendee_id"
         ] == "new" or (self_attendee and self_attendee.under_same_org_with(context["targeting_attendee_id"])):
-            if self.request.is_ajax():
-                pass
-
-            else:
+            if self.request.accepts("text/html"):
                 context.update(
                     {"attendee_endpoint": "/persons/api/datagrid_data_attendee/"}
                 )

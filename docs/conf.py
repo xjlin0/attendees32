@@ -40,6 +40,7 @@ author = "Jack Jack"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
