@@ -25,7 +25,7 @@ class TestUpdateSpatialAPIView:
         mock_instance.address.id = 999
         mock_place.objects.select_related.return_value.get.return_value = mock_instance
 
-        with patch('attendees.whereabouts.views.api.update_spatial.GeocodingService.geocode_address') as mock_geocode:
+        with patch('attendees.whereabouts.views.api.update_spatial.CoordinatesService.geocode_address') as mock_geocode:
             mock_geocode.return_value = True
             
             url = reverse('whereabouts:update_spatial', kwargs={'pk': '123'})

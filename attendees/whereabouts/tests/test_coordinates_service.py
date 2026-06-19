@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from django.conf import settings
 from address.models import Address, Locality, State, Country
-from attendees.whereabouts.services.geocoding_service import GeocodingService
+from attendees.whereabouts.services.coordinates_service import CoordinatesService
 
 @pytest.fixture
 def address_setup():
@@ -43,9 +43,9 @@ def address_setup():
 
 
 @pytest.mark.django_db
-class TestGeocodingService:
+class TestCoordinatesService:
 
-    @patch('attendees.whereabouts.services.geocoding_service.requests.get')
+    @patch('attendees.whereabouts.services.coordinates_service.requests.get')
     def test_geocode_address_success_updates_siblings(self, mock_get, address_setup):
         """Test that a successful API call updates the target address and its siblings."""
         # Mock the Google Maps API response
@@ -72,7 +72,7 @@ class TestGeocodingService:
 
         try:
             target_id = address_setup['address1'].id
-            result = GeocodingService.geocode_address(target_id)
+            result = CoordinatesService.geocode_address(target_id)
 
             assert result is True
             
@@ -104,7 +104,7 @@ class TestGeocodingService:
         settings.GOOGLE_MAPS_API_KEY = ''
 
         try:
-            result = GeocodingService.geocode_address(address_setup['address1'].id)
+            result = CoordinatesService.geocode_address(address_setup['address1'].id)
             assert result is False
             
             add1 = Address.objects.get(id=address_setup['address1'].id)
@@ -123,14 +123,14 @@ class TestGeocodingService:
         settings.GOOGLE_MAPS_API_KEY = 'dummy_key'
 
         try:
-            with patch('attendees.whereabouts.services.geocoding_service.requests.get') as mock_get:
-                result = GeocodingService.geocode_address(add1.id)
+            with patch('attendees.whereabouts.services.coordinates_service.requests.get') as mock_get:
+                result = CoordinatesService.geocode_address(add1.id)
                 assert result is True
                 mock_get.assert_not_called()
         finally:
             settings.GOOGLE_MAPS_API_KEY = original_key
 
-    @patch('attendees.whereabouts.services.geocoding_service.requests.get')
+    @patch('attendees.whereabouts.services.coordinates_service.requests.get')
     def test_geocode_address_api_failure(self, mock_get, address_setup):
         """Test handling of Google Maps API returning ZERO_RESULTS."""
         mock_response = MagicMock()
@@ -144,7 +144,7 @@ class TestGeocodingService:
         settings.GOOGLE_MAPS_API_KEY = 'dummy_key'
 
         try:
-            result = GeocodingService.geocode_address(address_setup['address1'].id)
+            result = CoordinatesService.geocode_address(address_setup['address1'].id)
             assert result is False
             
             # Verify database wasn't touched

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from attendees.whereabouts.models import Place
-from attendees.whereabouts.services.geocoding_service import GeocodingService
+from attendees.whereabouts.services.coordinates_service import CoordinatesService
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class UpdateSpatialAPIView(APIView):
 
         # The service handles checking if it already has coordinates,
         # fetching from Google Maps, and updating the database.
-        success = GeocodingService.geocode_address(place.address.id)
+        success = CoordinatesService.geocode_address(place.address.id)
 
         if success:
             return Response(

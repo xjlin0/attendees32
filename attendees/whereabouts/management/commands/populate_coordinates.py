@@ -2,7 +2,7 @@ import time
 import logging
 from django.core.management.base import BaseCommand
 from address.models import Address
-from attendees.whereabouts.services.geocoding_service import GeocodingService
+from attendees.whereabouts.services.coordinates_service import CoordinatesService
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class Command(BaseCommand):
         sleep_time = options['sleep']
         
         # Find all addresses missing coordinates
-        # Because GeocodingService updates siblings, we only need to query distinct address combinations.
+        # Because CoordinatesService updates siblings, we only need to query distinct address combinations.
         # However, for simplicity and to ensure we don't miss any edge cases, we'll iterate through all missing.
         # The service itself protects against redundant API calls if siblings were already updated in a previous iteration.
         missing_coords_addresses = Address.objects.filter(
@@ -51,7 +51,7 @@ class Command(BaseCommand):
         for index, address in enumerate(distinct_addresses, start=1):
             self.stdout.write(f"Processing {index}/{total_to_process}: Address ID {address.id}...")
             
-            result = GeocodingService.geocode_address(address.id)
+            result = CoordinatesService.geocode_address(address.id)
             
             if result:
                 success_count += 1

@@ -10,24 +10,24 @@ Implement a spatial feature to calculate and display the 30 nearest neighbors ba
 
 ## Proposed Solution
 
-### 1. Geocoding Service (`attendees/whereabouts/services/geocoding_service.py`)
+### 1. Coordinates Service (`attendees/whereabouts/services/coordinates_service.py`)
 *   Create a service class to handle Google Maps API interactions.
 *   **Method**: `geocode_address(address_id)`
-    *   Fetches the `Address` instance.
-    *   If `latitude`/`longitude` are missing, calls Google Maps Geocoding API using `settings.GOOGLE_MAPS_API_KEY`.
-    *   Parses the response for coordinates.
-    *   Updates the target `Address` and *all* other `Address` records with matching `street_number`, `route`, and `locality_id` to save API calls.
+*   Fetches the `Address` instance.
+*   If `latitude`/`longitude` are missing, calls Google Maps Geocoding API using `settings.GOOGLE_MAPS_API_KEY`.
+*   Parses the response for coordinates.
+*   Updates the target `Address` and *all* other `Address` records with matching `street_number`, `route`, and `locality_id` to save API calls.
 
 ### 2. Management Command (`attendees/whereabouts/management/commands/populate_coordinates.py`)
 *   Iterates through all `Address` records where `latitude` OR `longitude` is null.
-*   Calls `GeocodingService.geocode_address()` for each.
+*   Calls `CoordinatesService.geocode_address()` for each.
 *   Includes a small sleep interval to respect Google Maps API rate limits.
 
 ### 3. APIs
 *   **`UpdateSpatialAPIView` (`/whereabouts/api/update_spatial_for/<place_id>/`)**:
     *   Accepts GET or POST (POST preferred for state changes).
     *   Retrieves the `Address` associated with the `Place`.
-    *   Calls `GeocodingService.geocode_address()`.
+    *   Calls `CoordinatesService.geocode_address()`.
     *   Returns 200 OK (no data required).
 *   **`NearestNeighborsAPIView` (`/whereabouts/api/nearest_neighbors_for/<object_id>/`)**:
     *   Accepts an `object_id` (Folk or Attendee UUID).

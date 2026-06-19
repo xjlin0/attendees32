@@ -1,13 +1,12 @@
 import logging
 from django.contrib.auth.decorators import login_required
-from django.db.models.expressions import RawSQL
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from attendees.whereabouts.models import Place
 from attendees.whereabouts.serializers import PlaceSerializer
+from attendees.whereabouts.services.coordinates_service import CoordinatesService
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +21,14 @@ class NearestNeighborsAPIView(APIView):
     def get(self, request, pk, format=None):
         logger.info(f"NearestNeighborsAPIView, pk: {pk}")
         try:
-            # We look for the specific Place the user clicked on
-            target_place = Place.objects.select_related('address').filter(
-                pk=pk,
-                address__latitude__isnull=False,
-                address__longitude__isnull=False
-            ).first()
+            top_n = int(request.query_params.get("top", 30))
+        except ValueError:
+            top_n = 30
+
+        try:
+            target_place, neighbors = CoordinatesService.get_nearest_neighbors(pk, top_n)
         except Exception as e:
-            logger.error(f"Error fetching target place for nearest neighbors: {e}")
+            logger.error(f"Error fetching nearest neighbors: {e}")
             return Response(
                 {"detail": "Error processing request."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -40,32 +39,6 @@ class NearestNeighborsAPIView(APIView):
                 {"detail": "No valid coordinates found for the provided ID. Please update the spatial data first."},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        target_lat = target_place.address.latitude
-        target_lon = target_place.address.longitude
-
-        try:
-            top_n = int(request.query_params.get("top", 30))
-        except ValueError:
-            top_n = 30
-
-        # Construct the PostGIS Distance Query using RawSQL.
-        # ST_DistanceSphere returns meters. Multiply by 0.000621371 to get miles.
-        distance_sql = """
-            ST_DistanceSphere(
-                ST_MakePoint(address_address.longitude, address_address.latitude),
-                ST_MakePoint(%s, %s)
-            ) * 0.000621371
-        """
-
-        neighbors = Place.objects.select_related('address', 'content_type').filter(
-            address__latitude__isnull=False,
-            address__longitude__isnull=False,
-        ).annotate(
-            distance_miles=RawSQL(distance_sql, (target_lon, target_lat))
-        ).exclude(
-            id=target_place.id  # Exclude themselves
-        ).order_by('distance_miles')[:top_n]
 
         # Use the updated PlaceSerializer which expects the annotated `distance_miles`
         serializer = PlaceSerializer(neighbors, many=True)

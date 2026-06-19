@@ -3,9 +3,49 @@ import requests
 from django.conf import settings
 from address.models import Address
 
+from django.db.models.expressions import RawSQL
+from attendees.whereabouts.models import Place
+
 logger = logging.getLogger(__name__)
 
-class GeocodingService:
+
+class CoordinatesService:
+    @staticmethod
+    def get_nearest_neighbors(place_id, top_n=30):
+        """
+        Fetches the nearest neighbors based on a Place ID.
+        Returns a tuple: (target_place, neighbors_queryset)
+        """
+        target_place = Place.objects.select_related('address').filter(
+            pk=place_id,
+            address__latitude__isnull=False,
+            address__longitude__isnull=False
+        ).first()
+
+        if not target_place:
+            return None, []
+
+        target_lat = target_place.address.latitude
+        target_lon = target_place.address.longitude
+
+        distance_sql = """
+            ST_DistanceSphere(
+                ST_MakePoint(address_address.longitude, address_address.latitude),
+                ST_MakePoint(%s, %s)
+            ) * 0.000621371
+        """
+
+        neighbors = Place.objects.select_related('address', 'content_type').filter(
+            address__latitude__isnull=False,
+            address__longitude__isnull=False,
+        ).annotate(
+            distance_miles=RawSQL(distance_sql, (target_lon, target_lat))
+        ).exclude(
+            id=target_place.id
+        ).order_by('distance_miles')[:top_n]
+
+        return target_place, neighbors
+
     @staticmethod
     def geocode_address(address_id):
         """
