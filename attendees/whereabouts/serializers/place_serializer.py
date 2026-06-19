@@ -12,6 +12,8 @@ class PlaceSerializer(serializers.ModelSerializer):
 
     street = serializers.CharField(read_only=True)
     address = AddressSerializer(required=False)
+    distance = serializers.SerializerMethodField()
+    attendee_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Place
@@ -21,7 +23,23 @@ class PlaceSerializer(serializers.ModelSerializer):
         ] + [
             "street",
             "address",
+            "distance",
+            "attendee_id",
         ]
+
+    def get_distance(self, obj):
+        if hasattr(obj, 'distance_miles') and obj.distance_miles is not None:
+            return f"{obj.distance_miles:.1f} miles"
+        return None
+
+    def get_attendee_id(self, obj):
+        from attendees.persons.models import FolkAttendee
+        if obj.content_type.model == 'attendee':
+            return obj.object_id
+        elif obj.content_type.model == 'folk':
+            fa = FolkAttendee.objects.filter(folk_id=obj.object_id).order_by('display_order').first()
+            return fa.attendee_id if fa else None
+        return None
 
     def create(self, validated_data):
         """

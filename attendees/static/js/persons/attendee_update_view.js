@@ -46,6 +46,7 @@ Attendees.datagridUpdate = {
     display_name: 'main',
     // content_type: parseInt(document.querySelector('div.datagrid-attendee-update').dataset.attendeeContenttypeId),
   },
+  nearestNeighborsPopup: null,
   duplicatesForNewAttendeeDatagrid: null,
   families: [],
   familyAttendeeDatagrid: null,
@@ -2014,6 +2015,9 @@ Attendees.datagridUpdate = {
   placePopupDxFormConfig: (placeButton) => {
     const ajaxUrl = $('form#place-update-popup-form').attr('action') + (placeButton.value ? placeButton.value + '/' : '');
     return {
+      elementAttr: {
+        'data-testid': 'place-popup',
+      },
       visible: true,
       title: (placeButton.value ? 'Viewing ' : 'Creating ') + placeButton.dataset.desc,
       minwidth: '20%',
@@ -2022,6 +2026,11 @@ Attendees.datagridUpdate = {
         my: 'center',
         at: 'center',
         of: window,
+      },
+      onShowing: () => {
+        if (placeButton.value) {
+          Attendees.datagridUpdate.updateSpatial(placeButton.value);
+        }
       },
       onHiding: () => {
         const $existingAddressSelector = $('div.address-lookup-search').dxLookup('instance');
@@ -2128,7 +2137,20 @@ Attendees.datagridUpdate = {
               colSpan: 12,
               template: (data, itemElement) => {
                 if (placeButton.dataset.addressRaw) {
-                  itemElement.append($(`<span>Google Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
+                  const $linkContainer = $('<div></div>');
+                  $linkContainer.append($(`<span>Google Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
+                  
+                  if (placeButton.value) {
+                    const $neighborsBtn = $('<a href="#" id="find-neighbors-btn" data-testid="find-neighbors-btn" class="ml-3" style="margin-left: 15px;">🔎Find neighbors</a>');
+                    $neighborsBtn.on('click', (e) => {
+                      e.preventDefault();
+                      Attendees.datagridUpdate.placePopup.hide();
+                      Attendees.datagridUpdate.initNearestNeighborsPopupDxForm(placeButton.value);
+                    });
+                    $linkContainer.append($neighborsBtn);
+                  }
+                  
+                  itemElement.append($linkContainer);
                 }
               },
             },
@@ -2546,6 +2568,76 @@ Attendees.datagridUpdate = {
         });
       }
     }
+  },
+
+  updateSpatial: (placeId) => {
+    if (placeId) {
+      $.post(`/whereabouts/api/update_spatial_for/${placeId}/`);
+    }
+  },
+
+  initNearestNeighborsPopupDxForm: (placeId) => {
+    if (!placeId) return;
+    
+    const dataSourceUrl = `/whereabouts/api/nearest_neighbors_for/${placeId}/?top=30`;
+
+    if (Attendees.datagridUpdate.nearestNeighborsPopup) {
+      // If already initialized, just update the grid data and show
+      const grid = $('#nearest-neighbors-grid').dxDataGrid('instance');
+      if (grid) {
+        grid.option('dataSource', dataSourceUrl);
+      }
+      Attendees.datagridUpdate.nearestNeighborsPopup.show();
+      return;
+    }
+
+    Attendees.datagridUpdate.nearestNeighborsPopup = $('div.popup-nearest-neighbors').dxPopup({
+      elementAttr: {
+        'data-testid': 'nearest-neighbors-popup',
+      },
+      visible: true,
+      title: 'Nearest 30 Neighbors',
+      minwidth: '40%',
+      minheight: '60%',
+      position: {
+        my: 'center',
+        at: 'center',
+        of: window,
+      },
+      dragEnabled: true,
+      showCloseButton: true,
+      contentTemplate: (e) => {
+        const gridContainer = $('<div id="nearest-neighbors-grid"></div>');
+        gridContainer.dxDataGrid({
+          dataSource: dataSourceUrl,
+          showBorders: true,
+          columnAutoWidth: true,
+          rowAlternationEnabled: true,
+          columns: [
+            {
+              dataField: 'distance',
+              caption: 'Distance',
+              dataType: 'string',
+              width: 120,
+            },
+            {
+              dataField: 'place.address.display_name',
+              caption: 'Address',
+              cellTemplate: (container, options) => {
+                const attendeeId = options.data.place.attendee_id;
+                const displayName = options.value;
+                if (attendeeId) {
+                  container.append($(`<a target="_blank" href="/persons/attendee/${attendeeId}">${displayName}</a>`));
+                } else {
+                  container.append($('<span>').text(displayName));
+                }
+              }
+            }
+          ],
+        });
+        e.append(gridContainer);
+      }
+    }).dxPopup('instance');
   },
 
   addressSource: new DevExpress.data.CustomStore({

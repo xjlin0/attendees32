@@ -1,0 +1,50 @@
+name: Playwright E2E Tests
+
+on:
+  push:
+    branches: [ main, upgrade4 ]
+  pull_request:
+    branches: [ main, upgrade4 ]
+
+jobs:
+  e2e-test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+
+    - name: Install Node dependencies
+      run: npm install
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - name: Build and Start Django Docker Environment
+      run: |
+        docker compose -f local.yml build
+        docker compose -f local.yml up -d
+        # Wait for PostgreSQL and Django to be fully ready
+        sleep 15
+        docker compose -f local.yml run --rm django python manage.py migrate
+        # Load your natural key fixture
+        # docker compose -f local.yml run --rm django python manage.py loaddata fixtures/db_seed2.json
+        # Load your content types update script
+        # docker compose -f local.yml run --rm django python manage.py update_content_types
+
+    - name: Run Playwright tests
+      run: npx playwright test
+      env:
+        BASE_URL: http://127.0.0.1:8008
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
