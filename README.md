@@ -417,6 +417,16 @@ EMAIL_HOST=mailhog
 * restore a backup from a backup file in container `docker compose -f local.yml exec postgres restore backup_2018_03_13T09_05_07.sql.gz`
 * print INSERT commands for a table `docker compose -f local.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>` 
 
+## Find nearest neighbors
+### Define google map API key in the .django env:
+```
+GOOGLE_MAPS_API_KEY=<your google api key>
+```
+### Geocoding all address:
+```
+docker-compose -f production.yml run django python manage.py populate_coordinates
+```
+
 ## How to run test
 ### Django unit test:
 ```
@@ -424,7 +434,7 @@ docker compose -f local.yml run django pytest
 ```
 ### Playwright (with chromium) e2e test:
 ```
-C_PASSWORD=your_password_for_superuser_in_seed> npx playwright test
+C_PASSWORD=your_password_for_superuser_in_seed npx playwright test
 ```
 ## Todo & progress:
 
