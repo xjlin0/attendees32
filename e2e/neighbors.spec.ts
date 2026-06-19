@@ -17,11 +17,19 @@ test.describe('Find Neighbors Feature', () => {
     // 2. Fill in credentials (UPDATE THESE with your actual db_seed2.json test user)
     // We use standard selectors here since we might not control the 3rd party allauth HTML
     await page.fill('input[name="login"]', 'jack'); // Try user 'jack'
-    await page.fill('input[name="password"]', 'password123'); // Update this password!
+    const password = process.env.C_PASSWORD || 'password123';
+    await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
 
     // 3. Verify login success (wait for a known element on the dashboard)
-    // await expect(page.locator('text=Sign Out')).toBeVisible(); 
+    console.log('Submitted login form. Waiting for redirect to /users/jack/...');
+    try {
+      await page.waitForURL('**/users/jack/**', { timeout: 10000 });
+      console.log(`Login verification successful. Current URL is: ${page.url()}`);
+    } catch (error) {
+      console.error(`Login verification failed! Expected redirect to /users/jack/ but current URL is: ${page.url()}`);
+      throw error;
+    } 
   });
 
   for (const pageInfo of testPages) {
