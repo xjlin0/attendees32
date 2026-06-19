@@ -32,7 +32,9 @@ class Command(BaseCommand):
         
         # Optimize by getting only distinct combinations of street_number, route, locality
         # to feed into the service, minimizing the loop size.
-        distinct_addresses = missing_coords_addresses.distinct(
+        distinct_addresses = missing_coords_addresses.order_by(
+            'street_number', 'route', 'locality_id'
+        ).distinct(
             'street_number', 'route', 'locality_id'
         )
 
