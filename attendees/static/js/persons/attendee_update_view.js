@@ -2145,7 +2145,7 @@ Attendees.datagridUpdate = {
                     $neighborsBtn.on('click', (e) => {
                       e.preventDefault();
                       Attendees.datagridUpdate.placePopup.hide();
-                      Attendees.datagridUpdate.initNearestNeighborsPopupDxForm(placeButton.value);
+                      Attendees.datagridUpdate.initNearestNeighborsPopupDxForm(placeButton.value, placeButton.dataset.addressRaw);
                     });
                     $linkContainer.append($neighborsBtn);
                   }
@@ -2576,7 +2576,7 @@ Attendees.datagridUpdate = {
     }
   },
 
-  initNearestNeighborsPopupDxForm: (placeId) => {
+  initNearestNeighborsPopupDxForm: (placeId, addressName) => {
     if (!placeId) return;
     
     const dataSourceUrl = `/whereabouts/api/nearest_neighbors_for/${placeId}/?top=50`;
@@ -2596,9 +2596,7 @@ Attendees.datagridUpdate = {
         'data-testid': 'nearest-neighbors-popup',
       },
       visible: true,
-      title: 'Nearest Neighbors',
-      columnAutoWidth: true,
-      allowColumnResizing: true,
+      title: 'Nearest Neighbors for ' + addressName,
       minwidth: '40%',
       minheight: '60%',
       position: {
@@ -2614,6 +2612,7 @@ Attendees.datagridUpdate = {
           dataSource: dataSourceUrl,
           showBorders: true,
           columnAutoWidth: true,
+          allowColumnResizing: true,
           rowAlternationEnabled: true,
           columns: [
             {
