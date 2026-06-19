@@ -18,7 +18,7 @@ class TestPlaceSerializer:
         # Verify it just returns the object_id directly
         assert serializer.data['attendee_id'] == '123e4567-e89b-12d3-a456-426614174000'
 
-    @patch('attendees.persons.models.FolkAttendee')
+    @patch('attendees.whereabouts.serializers.place_serializer.FolkAttendee')
     def test_attendee_id_resolves_from_folk_using_display_order(self, mock_folk_attendee):
         # Mock Place instance linked to a Folk
         mock_place = MagicMock()
