@@ -2579,7 +2579,7 @@ Attendees.datagridUpdate = {
   initNearestNeighborsPopupDxForm: (placeId) => {
     if (!placeId) return;
     
-    const dataSourceUrl = `/whereabouts/api/nearest_neighbors_for/${placeId}/?top=30`;
+    const dataSourceUrl = `/whereabouts/api/nearest_neighbors_for/${placeId}/?top=50`;
 
     if (Attendees.datagridUpdate.nearestNeighborsPopup) {
       // If already initialized, just update the grid data and show
@@ -2596,7 +2596,9 @@ Attendees.datagridUpdate = {
         'data-testid': 'nearest-neighbors-popup',
       },
       visible: true,
-      title: 'Nearest 30 Neighbors',
+      title: 'Nearest Neighbors',
+      columnAutoWidth: true,
+      allowColumnResizing: true,
       minwidth: '40%',
       minheight: '60%',
       position: {
@@ -2618,16 +2620,30 @@ Attendees.datagridUpdate = {
               dataField: 'distance',
               caption: 'Distance',
               dataType: 'string',
-              width: 120,
+              width: '9%',
+            },
+            {
+              dataField: 'place.attendee_name',
+              caption: 'Attendee',
+              width: '9%',
+              cellTemplate: (container, options) => {
+                const attendeeId = options.data.place.attendee_id;
+                const attendeeName = options.value;
+                if (attendeeId) {
+                  container.append($(`<a target="_blank" href="/persons/attendee/${attendeeId}">${attendeeName}</a>`));
+                } else {
+                  container.append($('<span>').text(attendeeName));
+                }
+              }
             },
             {
               dataField: 'place.address.display_name',
               caption: 'Address',
               cellTemplate: (container, options) => {
-                const attendeeId = options.data.place.attendee_id;
+                const addressRaw = options.data.place.address.raw;
                 const displayName = options.value;
-                if (attendeeId) {
-                  container.append($(`<a target="_blank" href="/persons/attendee/${attendeeId}">${displayName}</a>`));
+                if (addressRaw) {
+                  container.append($(`<a target="_blank" href="https://www.google.com/maps/place/${addressRaw.replaceAll(" ", "+")}">${displayName}</a>`));
                 } else {
                   container.append($('<span>').text(displayName));
                 }
