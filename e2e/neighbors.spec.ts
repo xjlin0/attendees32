@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 // Define the URLs we want to test to ensure functional parity during migration.
 // Once you build the Vue version, just add its URL to this array!
 const testPages = [
-  { name: 'Legacy jQuery', url: '/persons/attendee/27/' }, // Assuming Attendee 27 has a valid address in your fixture
-  // { name: 'Modern Vue', url: '/persons/vue/attendee/27/' }
+  { name: 'Legacy jQuery', url: '/persons/attendee/a48e4375-1a64-4c4f-beb3-8f088bf77340/' }, // Assuming Attendee 27 has a valid address in your fixture
+  // { name: 'Modern Vue', url: '/persons/vue/attendee/a48e4375-1a64-4c4f-beb3-8f088bf77340/' }
 ];
 
 test.describe('Find Neighbors Feature', () => {
