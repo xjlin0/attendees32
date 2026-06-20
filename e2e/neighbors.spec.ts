@@ -28,8 +28,8 @@ test.describe('Find Neighbors Feature', () => {
     // 2. Fill in credentials (UPDATE THESE with your actual db_seed2.json test user)
     // We use standard selectors here since we might not control the 3rd party allauth HTML
     await page.fill('input[name="login"]', 'jack'); // Try user 'jack'
-    const password = process.env.C_PASSWORD || 'password123';
-    console.log(`Using password: ${password === 'password123' ? 'default (password123)' : 'provided secret (length ' + password.length + ')'}`);
+    const password = process.env.C_PASSWORD || 'your_password_for_superuser_in_seed';
+    console.log(`Using password: ${password === 'your_password_for_superuser_in_seed' ? 'please use password in seed' : 'provided secret in env'}`);
     
     // Set the password directly via DOM evaluation to avoid logging it in Playwright reports
     await page.locator('input[name="password"]').evaluate((el, val) => {

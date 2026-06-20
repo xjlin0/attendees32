@@ -2015,7 +2015,7 @@ Attendees.datagridUpdate = {
   placePopupDxFormConfig: (placeButton) => {
     const ajaxUrl = $('form#place-update-popup-form').attr('action') + (placeButton.value ? placeButton.value + '/' : '');
     return {
-      elementAttr: {
+      wrapperAttr: {
         'data-testid': 'place-popup',
       },
       visible: true,
@@ -2592,7 +2592,7 @@ Attendees.datagridUpdate = {
     }
 
     Attendees.datagridUpdate.nearestNeighborsPopup = $('div.popup-nearest-neighbors').dxPopup({
-      elementAttr: {
+      wrapperAttr: {
         'data-testid': 'nearest-neighbors-popup',
       },
       visible: true,
