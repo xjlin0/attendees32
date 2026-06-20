@@ -180,14 +180,8 @@ class TestCoordinatesService:
         assert target is None
         assert list(neighbors) == []
 
-    @patch('attendees.whereabouts.services.coordinates_service.RawSQL')
-    def test_get_nearest_neighbors_success(self, mock_rawsql, address_setup):
-        """Test get_nearest_neighbors successfully calculates distance and orders results."""
-        from django.db.models import Value, FloatField
-        
-        # Mock the RawSQL to return a constant float to bypass missing PostGIS functions in test DB
-        mock_rawsql.return_value = Value(10.5, output_field=FloatField())
-        
+    def test_get_nearest_neighbors_success(self, address_setup):
+        """Test get_nearest_neighbors successfully calculates distance and orders results using real PostGIS queries."""
         org = Organization.objects.create(slug="test-org", display_name="Test Org")
         ctype = ContentType.objects.get_for_model(Organization)
         
@@ -201,7 +195,7 @@ class TestCoordinatesService:
             address=addr1, display_name="Target SF"
         )
         
-        # Neighbor 1: Oakland (approx 10 miles away)
+        # Neighbor 1: Oakland (approx 8.5 miles away)
         addr2 = address_setup['address2']
         addr2.latitude = 37.8044
         addr2.longitude = -122.2712
@@ -211,7 +205,7 @@ class TestCoordinatesService:
             address=addr2, display_name="Oakland"
         )
         
-        # Neighbor 2: San Jose (approx 45 miles away)
+        # Neighbor 2: San Jose (approx 42 miles away)
         addr3 = address_setup['address3']
         addr3.latitude = 37.3382
         addr3.longitude = -121.8863
@@ -233,10 +227,15 @@ class TestCoordinatesService:
         assert target == target_place
         assert len(neighbors) == 2
         
-        # Both will be returned since both have coordinates
-        assert neighbor_oakland in neighbors
-        assert neighbor_sj in neighbors
+        # Because we're using real PostGIS calculations now, Oakland should be index 0, San Jose index 1
+        assert neighbors[0] == neighbor_oakland
+        assert neighbors[1] == neighbor_sj
         
-        # Distance should be annotated and equal to our mock value
+        # Distance should be annotated and accurately calculated
         assert hasattr(neighbors[0], 'distance_miles')
-        assert neighbors[0].distance_miles == 10.5
+        assert hasattr(neighbors[1], 'distance_miles')
+        
+        # SF to Oakland is roughly 8-10 miles
+        assert 8.0 < neighbors[0].distance_miles < 10.0
+        # SF to SJ is roughly 40-50 miles
+        assert 40.0 < neighbors[1].distance_miles < 50.0
