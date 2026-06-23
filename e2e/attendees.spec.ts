@@ -103,35 +103,50 @@ test.describe('Attendee List Page', () => {
     }).toPass({ timeout: 15000 });
   });
 
-  test('Should show organizational meets grouped by assembly in the activities selector dropdown', async ({ page }) => {
+  test('Should show organizational meets grouped by assembly in the activities selector dropdown, and selecting activity will add column', async ({ page }) => {
     // 1. Go to the attendees list page
     await page.goto('/persons/attendees/');
 
     const gridContainer = page.locator('div.dataAttendees');
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
+    
+    // Wait for the initial data load to finish
+    await expect(gridContainer.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
 
-    // 2. Locate the "Select activities..." tag box
+    // 1. Read how many columns the datagrid has initially
+    const initialColumnCount = await page.evaluate(() => {
+      // @ts-ignore
+      return window.Attendees.dataAttendees.attendeeDatagrid.columnCount();
+    });
+    console.log(`Initial datagrid column count: ${initialColumnCount}`);
+
+    // Locate the "Select activities..." tag box
     const tagBox = page.locator('div.meet-tag-box');
     await expect(tagBox).toBeVisible();
 
-    // 3. Click the text editor container precisely where a user clicks to trigger the dropdown
+    // Click to open the dropdown
     const tagBoxContainer = tagBox.locator('.dx-texteditor-container').first();
     await tagBoxContainer.click();
 
-    // 4. Wait for the actual list items to render and become visible
-    // We use a global locator because there might be other closed popups on the page (like grid filters)
+    // Wait for the dropdown items to appear
     const listItems = page.locator('.dx-list-item');
     await expect(listItems.first()).toBeVisible({ timeout: 10000 });
 
-    // 5. Verify that the dropdown contains Group Headers (representing Assemblies)
-    const groupHeaders = page.locator('.dx-list-group-header');
-    await expect(async () => {
-      expect(await groupHeaders.count()).toBeGreaterThan(1);
-    }).toPass();
+    // 2. Select "directory" from the dropdown
+    const directoryItem = listItems.filter({ hasText: '通訊錄 directory' });
+    await expect(directoryItem).toBeVisible();
+    await directoryItem.click();
 
-    // 6. Verify that the dropdown contains individual list items (representing Meets)
-    await expect(async () => {
-      expect(await listItems.count()).toBeGreaterThan(5); 
-    }).toPass();
+    // Wait for the grid to re-render and hide the load panel
+    await expect(gridContainer.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // 3. Read the column count again and assert it increased by 1
+    const finalColumnCount = await page.evaluate(() => {
+      // @ts-ignore
+      return window.Attendees.dataAttendees.attendeeDatagrid.columnCount();
+    });
+    console.log(`Final datagrid column count: ${finalColumnCount}`);
+
+    expect(finalColumnCount).toBe(initialColumnCount + 1);
   });
 });

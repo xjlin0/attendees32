@@ -69,7 +69,7 @@ In development, it is often nice to be able to see emails that are being sent fr
 Container mailhog will start automatically when you will run all docker containers.
 Please check [cookiecutter-django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html) for more details how to start all containers.
 
-With MailHog running, to view messages that are sent by your application, open your browser and go to `http://127.0.0.1:8025`
+With MailHog running, to view messages that are sent by your application, open your browser and go to `http://localhost:8025`
 
 ## Deployment
 
@@ -220,13 +220,7 @@ POSTGRES_DB=attendees
 POSTGRES_USER=<<production database user name>>
 POSTGRES_PASSWORD=<<production database user password>>
 ```
-* create a [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.sendgrid.env` with 640 and save the following example content. (yes, local, really)
-```
-SENDGRID_API_KEY=YOUR_REAL_API_KEY
-DJANGO_DEFAULT_FROM_EMAIL=your@email.com
-DJANGO_SECRET_KEY=your_django_secret_key
-```
-or mailgun.env
+* create a [email credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.local/.mailgun.env` with 640 and save the following example content. (yes, local, really)
 ```
 MAILGUN_API_KEY=YOUR_REAL_API_KEY
 DJANGO_DEFAULT_FROM_EMAIL=your@email.com
@@ -284,11 +278,12 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * install docker and docker-compose, such as `sudo apt  install docker docker-compose`
 * add web user to the docker group by `sudo usermod -aG docker <<web user name>>  && sudo service docker restart`
 * Assuming git is available, git clone the repo by `git clone https://github.com/xjlin0/attendees32.git`
-* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.production/.sendgrid.env` and save the following fake content.
+* create a fake [email credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `vi .envs/.production/.mailgun.env` and save the following fake content.
 ```
-SENDGRID_API_KEY=FAKE
-DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
-DJANGO_SECRET_KEY=your_django_secret_key
+MAILGUN_API_KEY=YOUR_REAL_API_KEY
+DJANGO_DEFAULT_FROM_EMAIL=your@email.com
+MAILGUN_SENDER_DOMAIN=mailgun.YOUR_REAL.DOMAIN
+EMAIL_HOST=mailgun
 ```
 * build and start the local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`
 * collect static file: `docker-compose -f local.yml run django python /app/manage.py collectstatic`
@@ -312,11 +307,12 @@ docker compose -f local.yml run --rm django python manage.py dumpdata --natural-
 All libraries are included to facilitate offline development, it will take port 8008, 8025, 5555 when running, please change port in local.yml if those ports are occupied.
 * Install [git](https://git-scm.com/downloads) and [docker for windows](https://docs.docker.com/install), which includes docker-compose.
 * clone the repo by `git clone git@github.com:xjlin0/attendees30.git` and cd the repo directory `attendees30`
-* create a fake [sendgrid credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `start notepad .envs/.local/.sendgrid.env` and save the following fake content. or `.envs/.local/.mailgun.env` for mailgun
+* create a fake [mail credential](https://docs.gravityforms.com/sendgrid-api-key/) files by `start notepad .envs/.local/.sendgrid.env` and save the following fake content. or `.envs/.local/.mailgun.env` for mailgun
 ```
-SENDGRID_API_KEY=FAKE
-DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
-DJANGO_SECRET_KEY=your_django_secret_key
+MAILGUN_API_KEY=YOUR_REAL_API_KEY
+DJANGO_DEFAULT_FROM_EMAIL=your@email.com
+MAILGUN_SENDER_DOMAIN=mailgun.YOUR_REAL.DOMAIN
+EMAIL_HOST=mailgun
 ```
 * build and start the local machine by `docker-compose -f local.yml build && docker-compose -f local.yml up -d`
 * upadte content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
@@ -325,12 +321,12 @@ DJANGO_SECRET_KEY=your_django_secret_key
   ```
 docker compose -f local.yml run --rm django python manage.py dumpdata --natural-foreign --natural-primary -e users.user -e admin.logentry -e sessions.session -e contenttypes.contenttype -e sites.site -e account.emailaddress -e account.emailconfirmation -e socialaccount.socialtoken -e auth.permission -e pghistory.context -e pghistory.aggregateevent -e users.userhistory -e users.menushistory -e users.menuauthgroupshistory -e users.groupshistory -e users.grouppermissionshistory -e users.usergroupshistory -e users.userpermissionshistory -e users.emailaddresshistory -e users.emailconfirmationhistory -e whereabouts.organizationshistory -e whereabouts.divisionshistory -e whereabouts.placeshistory -e whereabouts.campuseshistory -e whereabouts.propertieshistory -e whereabouts.suiteshistory -e whereabouts.roomshistory -e whereabouts.countryhistory -e whereabouts.statehistory -e whereabouts.localityhistory -e whereabouts.addresshistory -e persons.categorieshistory -e persons.noteshistory -e persons.pastshistory -e persons.folkshistory -e persons.attendeeshistory -e persons.folkattendeeshistory -e persons.relationshistory -e persons.registrationshistory -e persons.attendingshistory -e persons.attendingmeetshistory -e occasions.assemblieshistory -e occasions.attendanceshistory -e occasions.charactershistory -e occasions.gatheringshistory -e occasions.meetshistory -e occasions.messagetemplateshistory -e occasions.priceshistory -e occasions.teamshistory -e occasions.calendarhistory -e occasions.calendarrelationhistory -e occasions.eventhistory -e occasions.eventrelationhistory -e occasions.occurrencehistory -e occasions.rulehistory -e occasions.periodictaskhistory -e occasions.crontabschedulehistory -e occasions.intervalschedulehistory -e users.permissionshistory -e users.grouppermissionproxy -e users.usergroupproxy -e users.userpermissionproxy --indent 2 > fixtures/db_seed.json
   ```
-* go to Django admin to add the first organization and all groups to the first user (superuser) at http://192.168.99.100:8008/admin123/users/user/
+* go to Django admin to add the first organization and all groups to the first user (superuser) at http://localhost:8008/admin123/users/user/
 ```
-192.168.99.100 is default ip, if your docker use a different IP and browser shows "DisallowedHost"
+localhost or 127.0.0.1 is default ip, if your docker use a different IP and browser shows "DisallowedHost"
 Please add your IP to ALLOWED_HOSTS in config/settings/local.py
 ```
-* use browser to open http://192.168.99.100:8008/ and http://192.168.99.100:8025/
+* use browser to open http://localhost:8008/ and http://localhost:8025/
 * Enter postgres db console by `docker-compose -f local.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>`
 * Enter Django console by `docker-compose -f local.yml run django python manage.py shell_plus`
 * remote debug in PyCharm for docker, please check [django cookie doc](https://github.com/pydanny/cookiecutter-django/blob/master/{{cookiecutter.project_slug}}/docs/pycharm/configuration.rst).
@@ -350,13 +346,7 @@ All libraries are included to facilitate offline development, it will take port 
 * start a docker machine named "dev" by `docker-machine create --driver virtualbox dev`
 * Start the dev virtual machine, your "dev" vm can be run at headless mode. Be sure to check permissions of virtual machine in the system preference.
 * get all env variables from "dev" by `eval $(docker-machine env dev)`
-* create a fake sendgrid credential files by `vi .envs/.local/.sendgrid.env` and save the following fake content.
-```
-SENDGRID_API_KEY=FAKE
-DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
-DJANGO_SECRET_KEY=your_django_secret_key
-```
-or mailhog
+* create a fake email credential files by `vi .envs/.local/.mailgun.env` and save the following fake content.
 ```
 MAILGUN_API_KEY=<<any string>>
 DJANGO_DEFAULT_FROM_EMAIL=fake@email.com
@@ -372,8 +362,8 @@ EMAIL_HOST=mailhog
   ```
 docker compose -f local.yml run --rm django python manage.py dumpdata --natural-foreign --natural-primary -e users.user -e admin.logentry -e sessions.session -e contenttypes.contenttype -e sites.site -e account.emailaddress -e account.emailconfirmation -e socialaccount.socialtoken -e auth.permission -e pghistory.context -e pghistory.aggregateevent -e users.userhistory -e users.menushistory -e users.menuauthgroupshistory -e users.groupshistory -e users.grouppermissionshistory -e users.usergroupshistory -e users.userpermissionshistory -e users.emailaddresshistory -e users.emailconfirmationhistory -e whereabouts.organizationshistory -e whereabouts.divisionshistory -e whereabouts.placeshistory -e whereabouts.campuseshistory -e whereabouts.propertieshistory -e whereabouts.suiteshistory -e whereabouts.roomshistory -e whereabouts.countryhistory -e whereabouts.statehistory -e whereabouts.localityhistory -e whereabouts.addresshistory -e persons.categorieshistory -e persons.noteshistory -e persons.pastshistory -e persons.folkshistory -e persons.attendeeshistory -e persons.folkattendeeshistory -e persons.relationshistory -e persons.registrationshistory -e persons.attendingshistory -e persons.attendingmeetshistory -e occasions.assemblieshistory -e occasions.attendanceshistory -e occasions.charactershistory -e occasions.gatheringshistory -e occasions.meetshistory -e occasions.messagetemplateshistory -e occasions.priceshistory -e occasions.teamshistory -e occasions.calendarhistory -e occasions.calendarrelationhistory -e occasions.eventhistory -e occasions.eventrelationhistory -e occasions.occurrencehistory -e occasions.rulehistory -e occasions.periodictaskhistory -e occasions.crontabschedulehistory -e occasions.intervalschedulehistory -e users.permissionshistory -e users.grouppermissionproxy -e users.usergroupproxy -e users.userpermissionproxy --indent 2 > fixtures/db_seed.json
   ```
-* go to Django admin to add the first organization and all groups to the first user (superuser) at http://192.168.99.100:8008/admin123/users/user/
-* use browser to open http://192.168.99.100:8008/ and http://192.168.99.100:8025/
+* go to Django admin to add the first organization and all groups to the first user (superuser) at http://localhost:8008/admin123/users/user/
+* use browser to open http://localhost:8008/ and http://localhost:8025/
 * Enter postgres db console by `docker compose -f local.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.local/.postgres>>`
 * Enter Django console by `docker compose -f local.yml run django python manage.py shell_plus`
 * remote debug in PyCharm for docker, please check [django cookie doc](https://github.com/pydanny/cookiecutter-django/blob/master/{{cookiecutter.project_slug}}/docs/pycharm/configuration.rst).
@@ -549,7 +539,7 @@ PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.9/site-pa
 - [x db currently allow non-uniq email, but duplicated email will cause send mail failure.
 - [x] retire django summer note
 - [x] restart production docker lost all images, perhaps because docker was not installed correctly with rootless mode, thus the user become first available non-root user 1001. (resolved by add user option in production yaml)
-- [x] modify django-allauth so that the host in the email activation link won't be http://127.0.0.1:8008/ even in production. Perhaps Header, RequestHeader. Solution: use [ProxyPreserveHost On](https://stackoverflow.com/a/25225871/4257237) and [Require expr %{HTTP_HOST} == "example.com"](https://stackoverflow.com/a/43323088/4257237)
+- [x] modify django-allauth so that the host in the email activation link won't be http://localhost:8008/ even in production. Perhaps Header, RequestHeader. Solution: use [ProxyPreserveHost On](https://stackoverflow.com/a/25225871/4257237) and [Require expr %{HTTP_HOST} == "example.com"](https://stackoverflow.com/a/43323088/4257237)
 - [x] Setup [Django allauth with social login](https://learndjango.com/tutorials/django-allauth-tutorial), [steps](https://instamentor.com/articles/django-all-auth-tutorial-with-google-and-django-cookiecutter).
 </details>
 
