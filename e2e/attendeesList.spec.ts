@@ -148,5 +148,148 @@ test.describe('Attendee List Page', () => {
     console.log(`Final datagrid column count: ${finalColumnCount}`);
 
     expect(finalColumnCount).toBe(initialColumnCount + 1);
+
+    // 4. Verify the new column header title is "通訊錄 directory"
+    const newColumnHeader = gridContainer.locator('.dx-header-row .dx-datagrid-text-content').filter({ hasText: '通訊錄 directory' });
+    await expect(newColumnHeader).toBeVisible();
+
+    // 5. Find and click the directory preview link for "Abraham Faith 亞伯拉罕"
+    const previewLink = gridContainer.locator('span.directory-preview[title="click to see Abraham Faith 亞伯拉罕 in directory preview."]');
+    await expect(previewLink).toBeVisible();
+    await previewLink.click();
+
+    // 6. Verify that the "Directory Preview" popup appears
+    // DevExtreme detaches the original div and wraps the visible popup in a .dx-popup-wrapper
+    const previewPopup = page.locator('.dx-popup-wrapper').filter({ hasText: 'Directory Preview' }).first();
+    await expect(previewPopup).toBeVisible({ timeout: 10000 });
+  });
+
+  test('Should allow joining and leaving a meet via checkbox click, triggering JS confirm and AJAX PUT', async ({ page }) => {
+    // 1. Go to the attendees list page
+    await page.goto('/persons/attendees/');
+
+    const gridContainer = page.locator('div.dataAttendees');
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+    await expect(gridContainer.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // 2. Open the "Select activities..." tag box and select "會員 member"
+    const tagBox = page.locator('div.meet-tag-box');
+    await tagBox.locator('.dx-texteditor-container').first().click();
+
+    const listItems = page.locator('.dx-list-item');
+    await expect(listItems.first()).toBeVisible({ timeout: 10000 });
+
+    const memberItem = listItems.filter({ hasText: '會員 member' });
+    await expect(memberItem).toBeVisible();
+    await memberItem.click();
+
+    // Wait for grid to re-render
+    await expect(gridContainer.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // 3. Verify the new column header title is "會員 member"
+    const newColumnHeader = gridContainer.locator('.dx-header-row .dx-datagrid-text-content').filter({ hasText: '會員 member' });
+    await expect(newColumnHeader).toBeVisible();
+
+    // 4. Find the checkbox for "Abraham Faith 亞伯拉罕" in the "會員 member" column
+    // DevExtreme rows can be split into fixed and scrollable tables, but they share the same aria-rowindex
+    const abrahamRow = gridContainer.locator('.dx-data-row', { hasText: 'Abraham Faith 亞伯拉罕' }).first();
+    const rowIndex = await abrahamRow.getAttribute('aria-rowindex');
+    expect(rowIndex).toBeTruthy();
+    
+    // Find the corresponding checkbox in either part of the split row using the same aria-rowindex
+    // We use the title attribute to find the join/leave checkbox to avoid hardcoded slugs.
+    const checkbox = gridContainer.locator(`.dx-data-row[aria-rowindex="${rowIndex}"] input[type="checkbox"][title="click to join/leave"]`).first();
+    await expect(checkbox).toBeVisible();
+
+    // Setup dialog handler to automatically click "OK" on JS confirm
+    let dialogCount = 0;
+    page.on('dialog', async dialog => {
+      dialogCount++;
+      await dialog.accept();
+    });
+
+    page.on('pageerror', err => {
+      console.error(`PAGE ERROR: ${err.message}`);
+      throw err;
+    });
+
+    // Determine initial state BEFORE clicking
+    const isInitiallyChecked = await checkbox.isChecked();
+    const expectedFirstAction = isInitiallyChecked ? 'leave' : 'join';
+
+    // Setup listener for the FIRST AJAX PUT request at the REQUEST stage
+    const firstRequestPromise = page.waitForRequest(async request => {
+      return request.url().includes('default_attendingmeets') && request.method() === 'PUT';
+    });
+
+    // 5. Invoke the JS function directly to bypass any event routing issues
+    await checkbox.evaluate((node: HTMLInputElement) => {
+      // Toggle the checked state since click() normally does this before change event fires
+      node.checked = !node.checked;
+      
+      const mockEvent = {
+        currentTarget: node,
+        preventDefault: () => {},
+        stopPropagation: () => {}
+      };
+      // @ts-ignore
+      window.Attendees.dataAttendees.joinAndLeaveAttendingmeet(mockEvent);
+    });
+
+    // Verify dialog was triggered before waiting for network
+    await expect.poll(() => dialogCount, { timeout: 5000 }).toBeGreaterThanOrEqual(1);
+
+    // Wait for the AJAX request to be SENT
+    const firstRequest = await firstRequestPromise;
+    expect(firstRequest.url()).toContain('default_attendingmeets');
+
+    // Wait for the RESPONSE of that specific request
+    const firstResponse = await firstRequest.response();
+    expect(firstResponse).toBeTruthy();
+    expect([200, 201, 202]).toContain(firstResponse!.status());
+
+    // Verify the state flipped
+    if (isInitiallyChecked) {
+      await expect(checkbox).not.toBeChecked({ timeout: 10000 });
+    } else {
+      await expect(checkbox).toBeChecked({ timeout: 10000 });
+    }
+
+    // --- Second interaction: FLIP BACK ---
+
+    const expectedSecondAction = isInitiallyChecked ? 'join' : 'leave';
+
+    // Setup listener for the SECOND AJAX PUT request
+    const secondResponsePromise = page.waitForResponse(async response => {
+      return response.url().includes('default_attendingmeets') && response.request().method() === 'PUT';
+    });
+
+    // 6. Click the checkbox again
+    await checkbox.evaluate((node: HTMLInputElement) => {
+      // Toggle the checked state since click() normally does this before change event fires
+      node.checked = !node.checked;
+      
+      const mockEvent = {
+        currentTarget: node,
+        preventDefault: () => {},
+        stopPropagation: () => {}
+      };
+      // @ts-ignore
+      window.Attendees.dataAttendees.joinAndLeaveAttendingmeet(mockEvent);
+    });
+
+    // Verify dialog was triggered
+    await expect.poll(() => dialogCount, { timeout: 5000 }).toBeGreaterThanOrEqual(2);
+
+    // Wait for the AJAX response
+    const secondResponse = await secondResponsePromise;
+    expect([200, 201, 202]).toContain(secondResponse.status());
+
+    // Verify it flipped back to initial state
+    if (isInitiallyChecked) {
+      await expect(checkbox).toBeChecked({ timeout: 10000 });
+    } else {
+      await expect(checkbox).not.toBeChecked({ timeout: 10000 });
+    }
   });
 });
