@@ -35,11 +35,19 @@ class CoordinatesService:
             ) * 0.000621371
         """
 
+        azimuth_sql = """
+            ST_Azimuth(
+                ST_MakePoint(%s, %s),
+                ST_MakePoint(address_address.longitude, address_address.latitude)
+            )
+        """
+
         neighbors = Place.objects.select_related('address', 'content_type').filter(
             address__latitude__isnull=False,
             address__longitude__isnull=False,
         ).annotate(
-            distance_miles=RawSQL(distance_sql, (target_lon, target_lat))
+            distance_miles=RawSQL(distance_sql, (target_lon, target_lat)),
+            azimuth=RawSQL(azimuth_sql, (target_lon, target_lat))
         ).exclude(
             id=target_place.id
         ).order_by('distance_miles')[:top_n]

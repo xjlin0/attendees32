@@ -32,7 +32,14 @@ class PlaceSerializer(serializers.ModelSerializer):
 
     def get_distance(self, obj):
         if hasattr(obj, 'distance_miles') and obj.distance_miles is not None:
-            return f"{obj.distance_miles:.1f} miles"
+            direction = ""
+            if hasattr(obj, 'azimuth') and obj.azimuth is not None:
+                import math
+                degrees = math.degrees(obj.azimuth)
+                dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                ix = round(degrees / 45) % 8
+                direction = f" {dirs[ix]}"
+            return f"{obj.distance_miles:.1f} miles{direction}"
         return None
 
     def get_attendee_id(self, obj):

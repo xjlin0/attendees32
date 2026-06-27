@@ -38,7 +38,7 @@ jobs:
         docker compose -f local.yml run --rm django python manage.py loaddata fixtures/ci_seed.json
 
     - name: Run Playwright tests
-      run: npx playwright test --workers=1
+      run: timeout 500 npx playwright test --workers=1
       env:
         BASE_URL: http://127.0.0.1:8008
         C_PASSWORD: ${{ secrets.C_PASSWORD }}

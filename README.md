@@ -420,11 +420,11 @@ docker-compose -f production.yml run django python manage.py populate_coordinate
 ## How to run test
 ### Django unit test:
 ```
-docker compose -f local.yml run django pytest
+timout 300 docker compose -f local.yml run django pytest
 ```
 ### Playwright (with chromium) e2e test when Django server is up:
 ```
-C_PASSWORD=your_password_for_superuser_in_seed npx playwright test --workers=1
+C_PASSWORD=your_password_for_superuser_in_seed timout 300 npx playwright test --workers=1
 ```
 Please also define the repository secret `C_PASSWORD` in Github for running e2e in CI/CD
 

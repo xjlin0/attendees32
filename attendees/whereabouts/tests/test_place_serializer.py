@@ -55,10 +55,17 @@ class TestPlaceSerializer:
         mock_place.object_id = '123'
         mock_place.address = None
         
-        # Scenario 1: distance_miles is present
+        # Scenario 1: distance_miles is present but no azimuth
         mock_place.distance_miles = 1.2345
+        mock_place.azimuth = None
         serializer1 = PlaceSerializer(mock_place)
         assert serializer1.data['distance'] == "1.2 miles"
+
+        # Scenario 1.5: distance_miles and azimuth are present
+        mock_place.distance_miles = 1.2345
+        mock_place.azimuth = 3.14159  # roughly 180 degrees (South)
+        serializer1_5 = PlaceSerializer(mock_place)
+        assert serializer1_5.data['distance'] == "1.2 miles S"
 
         # Scenario 2: distance_miles is explicitly None
         mock_place.distance_miles = None
