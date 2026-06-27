@@ -54,7 +54,7 @@ jobs:
         run:  timeout 1800 docker compose -f local.yml build
 
       - name: Run DB Migrations
-        run:  timout 300 docker compose -f local.yml run --rm django python manage.py migrate
+        run:  timeout 300 docker compose -f local.yml run --rm django python manage.py migrate
 
       - name: Run Django Tests
         run:  timeout 500 docker compose -f local.yml run django pytest
