@@ -11,13 +11,14 @@ logger = logging.getLogger(__name__)
 
 class CoordinatesService:
     @staticmethod
-    def get_nearest_neighbors(place_id, top_n=30):
+    def get_nearest_neighbors(place_id, user_organization, top_n=30):
         """
         Fetches the nearest neighbors based on a Place ID.
         Returns a tuple: (target_place, neighbors_queryset)
         """
         target_place = Place.objects.select_related('address').filter(
             pk=place_id,
+            organization=user_organization,
             address__latitude__isnull=False,
             address__longitude__isnull=False
         ).first()
@@ -43,6 +44,7 @@ class CoordinatesService:
         """
 
         neighbors = Place.objects.select_related('address', 'content_type').filter(
+            organization=user_organization,
             address__latitude__isnull=False,
             address__longitude__isnull=False,
         ).annotate(

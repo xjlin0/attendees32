@@ -16,6 +16,11 @@ def api_client():
 @pytest.mark.django_db
 class TestNearestNeighborsAPIView:
 
+    @pytest.fixture(autouse=True)
+    def bypass_spyguard(self):
+        with patch('attendees.whereabouts.views.api.nearest_neighbors.NearestNeighborsAPIView.test_func', return_value=True):
+            yield
+
     @patch('attendees.whereabouts.views.api.nearest_neighbors.CoordinatesService')
     def test_get_nearest_neighbors_success(self, mock_coords_service, api_client):
         # Mock the target place resolution and neighbors

@@ -87,6 +87,9 @@
          {% if request.user.is_superuser %}
            data-can-add-personal-address="1"
          {% endif %}
+         {% if show_create_attendee %}
+           data-show-create-attendee="1"
+         {% endif %}
          data-teams-endpoint="{{teams_endpoint}}"
          data-user-organization-directory-meet="{{user_organization_directory_meet|default_if_none:''}}"
          data-attendee-contenttype-id="{{attendee_contenttype_id}}"

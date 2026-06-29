@@ -2140,7 +2140,7 @@ Attendees.datagridUpdate = {
                   const $linkContainer = $('<div></div>');
                   $linkContainer.append($(`<span>Google Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
                   
-                  if (placeButton.value) {
+                  if (placeButton.value && Attendees.datagridUpdate.attendeeAttrs.dataset.showCreateAttendee) {  // only coworkers that can access attendee_create_view see the link
                     const $neighborsBtn = $('<a href="#" id="find-neighbors-btn" data-testid="find-neighbors-btn" class="ml-3" style="margin-left: 15px;">🔎Find neighbors</a>');
                     $neighborsBtn.on('click', (e) => {
                       e.preventDefault();
@@ -2577,7 +2577,7 @@ Attendees.datagridUpdate = {
   },
 
   initNearestNeighborsPopupDxForm: (placeId, addressName) => {
-    if (!placeId) return;
+    if (!placeId || !Attendees.datagridUpdate.attendeeAttrs.dataset.showCreateAttendee) return;
     
     const dataSourceUrl = `/whereabouts/api/nearest_neighbors_for/${placeId}/?top=50`;
 

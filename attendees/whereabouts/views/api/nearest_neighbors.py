@@ -7,14 +7,15 @@ from rest_framework.views import APIView
 
 from attendees.whereabouts.serializers import PlaceSerializer
 from attendees.whereabouts.services.coordinates_service import CoordinatesService
+from attendees.users.authorization.route_guard import SpyGuard
 
 logger = logging.getLogger(__name__)
 
 
 @method_decorator([login_required], name="dispatch")
-class NearestNeighborsAPIView(APIView):
+class NearestNeighborsAPIView(SpyGuard, APIView):
     """
-    API endpoint to fetch the nearest neighbors based on an Attendee or Folk ID.
+    API endpoint to fetch the nearest neighbors based on an Place ID.
     Returns the nearest 30 valid places sorted by distance.
     """
 
@@ -26,7 +27,7 @@ class NearestNeighborsAPIView(APIView):
             top_n = 30
 
         try:
-            target_place, neighbors = CoordinatesService.get_nearest_neighbors(pk, top_n)
+            target_place, neighbors = CoordinatesService.get_nearest_neighbors(pk, self.request.user.organization, top_n)
         except Exception as e:
             logger.error(f"Error fetching nearest neighbors: {e}")
             return Response(

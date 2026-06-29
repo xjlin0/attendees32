@@ -158,8 +158,9 @@ class TestCoordinatesService:
 
     def test_get_nearest_neighbors_target_not_found(self, address_setup):
         """Test get_nearest_neighbors when the target Place doesn't exist."""
+        org = Organization.objects.create(slug="test-org-notfound", display_name="Test Org")
         # 9999 doesn't exist
-        target, neighbors = CoordinatesService.get_nearest_neighbors(9999)
+        target, neighbors = CoordinatesService.get_nearest_neighbors(9999, org)
         assert target is None
         assert list(neighbors) == []
 
@@ -176,7 +177,7 @@ class TestCoordinatesService:
             display_name="No Coords Place"
         )
         
-        target, neighbors = CoordinatesService.get_nearest_neighbors(target_place.id)
+        target, neighbors = CoordinatesService.get_nearest_neighbors(target_place.id, org)
         assert target is None
         assert list(neighbors) == []
 
@@ -222,7 +223,7 @@ class TestCoordinatesService:
             address=addr_no_coords, display_name="No Coords"
         )
         
-        target, neighbors = CoordinatesService.get_nearest_neighbors(target_place.id)
+        target, neighbors = CoordinatesService.get_nearest_neighbors(target_place.id, org)
         
         assert target == target_place
         assert len(neighbors) == 2
