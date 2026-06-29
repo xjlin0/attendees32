@@ -30,7 +30,7 @@ services:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: ./compose/production/postgres/Dockerfile
+      dockerfile: ./compose/local/postgres/Dockerfile
     image: attendees_production_postgres
     container_name: postgres
     volumes:

@@ -15,6 +15,7 @@ Welcome to Attendees's documentation!
    users
    plans/django-42-upgrade-and-modernization
    plans/mfa-and-security-upgrade
+   plans/find-neighbors-feature
 
 
 

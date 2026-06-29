@@ -75,6 +75,9 @@ RUN sed -i 's/\r$//g' /start-flower
 RUN chmod +x /start-flower
 
 
+# config git to ignore ownership issues in Docker under WSL so home page shows git sha correctly 
+RUN git config --global --add safe.directory /app
+
 # copy application code to WORKDIR
 COPY . ${APP_HOME}
 

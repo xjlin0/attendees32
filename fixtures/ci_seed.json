@@ -13,9 +13,9 @@
   "fields": {
     "minute": "30",
     "hour": "1",
-    "day_of_week": "1",
     "day_of_month": "*",
     "month_of_year": "*",
+    "day_of_week": "1",
     "timezone": "UTC"
   }
 },
@@ -25,9 +25,9 @@
   "fields": {
     "minute": "30",
     "hour": "2",
-    "day_of_week": "1",
     "day_of_month": "*",
     "month_of_year": "*",
+    "day_of_week": "1",
     "timezone": "UTC"
   }
 },
@@ -37,9 +37,9 @@
   "fields": {
     "minute": "0",
     "hour": "4",
-    "day_of_week": "*",
     "day_of_month": "*",
     "month_of_year": "*",
+    "day_of_week": "*",
     "timezone": "UTC"
   }
 },
@@ -47,7 +47,7 @@
   "model": "django_celery_beat.periodictasks",
   "pk": 1,
   "fields": {
-    "last_update": "2026-06-15T05:40:08.057Z"
+    "last_update": "2026-06-19T07:28:35.196Z"
   }
 },
 {
@@ -130,7 +130,7 @@
     "enabled": true,
     "last_run_at": null,
     "total_run_count": 0,
-    "date_changed": "2026-06-15T05:40:08.049Z",
+    "date_changed": "2026-06-19T07:28:35.191Z",
     "description": ""
   }
 },
@@ -21504,6 +21504,69 @@
   }
 },
 {
+  "model": "users.user",
+  "fields": {
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$d0ZMcjZaYXA4Y2JZVGlwbVQ5ZTFVeg$36yZhbLp4HFBP2G+nawJ7LCS0HQMdyDsR7Ml5UKBQVE",
+    "last_login": "2026-06-19T07:31:59.589Z",
+    "is_superuser": true,
+    "username": "jack",
+    "email": "jack@email.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-06-19T07:26:38Z",
+    "name": "",
+    "organization": 1,
+    "infos": {
+      "settings": {}
+    },
+    "groups": [
+      [
+        "organization_participant"
+      ],
+      [
+        "children_coworker"
+      ],
+      [
+        "children_organizer"
+      ],
+      [
+        "conference_organizer"
+      ],
+      [
+        "data_organizer"
+      ],
+      [
+        "data_counselor"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "fields": {
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$M1RLVlIybGJ2NEtFbEVmZlBOWEYweg$9NaMlK+CyWWSeyMVwOGzpUSR0AgkxQbUXrS8Ej63tMI",
+    "last_login": "2026-06-19T07:32:25.173Z",
+    "is_superuser": true,
+    "username": "hagar",
+    "email": "hagar@email.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-06-19T07:27:06Z",
+    "name": "",
+    "organization": 1,
+    "infos": {
+      "settings": {}
+    },
+    "groups": [
+      [
+        "children_coworker"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
   "model": "users.menuauthgroup",
   "pk": 1,
   "fields": {
@@ -25195,6 +25258,30 @@
     "end_recurring_period": null,
     "calendar": 1,
     "color_event": "#D85504"
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "jack"
+    ],
+    "email": "jack@email.com",
+    "verified": true,
+    "primary": true
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "hagar"
+    ],
+    "email": "hagar@email.com",
+    "verified": true,
+    "primary": true
   }
 }
 ]

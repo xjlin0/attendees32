@@ -1,6 +1,7 @@
 from address.models import Address, Locality, State
 from rest_framework import serializers
 
+from attendees.persons.models import FolkAttendee
 from attendees.whereabouts.models import Place
 from attendees.whereabouts.serializers import AddressSerializer
 
@@ -12,6 +13,9 @@ class PlaceSerializer(serializers.ModelSerializer):
 
     street = serializers.CharField(read_only=True)
     address = AddressSerializer(required=False)
+    distance = serializers.SerializerMethodField()
+    attendee_id = serializers.SerializerMethodField()
+    attendee_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Place
@@ -21,7 +25,38 @@ class PlaceSerializer(serializers.ModelSerializer):
         ] + [
             "street",
             "address",
+            "distance",
+            "attendee_id",
+            "attendee_name",
         ]
+
+    def get_distance(self, obj):
+        if hasattr(obj, 'distance_miles') and obj.distance_miles is not None:
+            direction = ""
+            if hasattr(obj, 'azimuth') and obj.azimuth is not None:
+                import math
+                degrees = math.degrees(obj.azimuth)
+                dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                ix = round(degrees / 45) % 8
+                direction = f" {dirs[ix]}"
+            return f"{obj.distance_miles:.1f} miles{direction}"
+        return None
+
+    def get_attendee_id(self, obj):
+        if obj.content_type.model == 'attendee':
+            return obj.object_id
+        elif obj.content_type.model == 'folk':
+            fa = FolkAttendee.objects.filter(folk_id=obj.object_id).order_by('display_order').first()
+            return fa.attendee_id if fa else None
+        return None
+
+    def get_attendee_name(self, obj):
+        if obj.content_type.model == 'attendee':
+            return obj.subject.infos["names"]["original"]
+        elif obj.content_type.model == 'folk':
+            fa = FolkAttendee.objects.filter(folk_id=obj.object_id).order_by('display_order').first()
+            return fa.attendee.infos["names"]["original"] if fa else None
+        return None
 
     def create(self, validated_data):
         """

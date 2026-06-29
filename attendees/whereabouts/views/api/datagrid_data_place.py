@@ -8,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied
 from attendees.persons.models import Attendee
 from attendees.whereabouts.models import Place
 from attendees.whereabouts.serializers import PlaceSerializer
+from attendees.whereabouts.services.coordinates_service import CoordinatesService
 
 
 class ApiDatagridDataPlaceViewSet(
@@ -41,6 +42,8 @@ class ApiDatagridDataPlaceViewSet(
         )
         if self.request.user.privileged_to_edit(target_attendee.id):  # checked same org
             instance = serializer.save()
+            if instance.address and (instance.address.latitude is None or instance.address.longitude is None):
+                CoordinatesService.geocode_address(instance.address.id)
             instance.subject.save(update_fields=['modified'])
             if instance.subject != target_attendee:
                 target_attendee.save(update_fields=['modified'])
@@ -56,6 +59,8 @@ class ApiDatagridDataPlaceViewSet(
         )
         if self.request.user.privileged_to_edit(target_attendee.id):  # checked same org
             instance = serializer.save(organization=self.request.user.organization)
+            if instance.address and (instance.address.latitude is None or instance.address.longitude is None):
+                CoordinatesService.geocode_address(instance.address.id)
             instance.subject.save(update_fields=['modified'])
             if instance.subject != target_attendee:
                 target_attendee.save(update_fields=['modified'])
