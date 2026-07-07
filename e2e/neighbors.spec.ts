@@ -64,12 +64,19 @@ test.describe('Find Neighbors Feature', () => {
       const placeButton = page.locator('button.place-button:not([disabled])').first();
       await placeButton.waitFor({ state: 'visible', timeout: 10000 });
 
-      // 2. Intercept the Update Spatial API
-      const spatialApiPromise = page.waitForResponse(response => 
-        response.url().includes('/whereabouts/api/update_spatial_for/') && 
-        response.request().method() === 'POST' &&
-        response.status() === 200
-      );
+      // Check if it needs geocoding
+      const needsGeocodingStr = await placeButton.getAttribute('data-needs-geocoding');
+      const needsGeocoding = needsGeocodingStr === 'true';
+
+      // 2. Intercept the Update Spatial API ONLY IF NEEDED
+      let spatialApiPromise = null;
+      if (needsGeocoding) {
+        spatialApiPromise = page.waitForResponse(response => 
+          response.url().includes('/whereabouts/api/update_spatial_for/') && 
+          response.request().method() === 'POST' &&
+          response.status() === 200
+        );
+      }
 
       // 3. Click the place button to open the Place Popup
       await placeButton.click();
@@ -79,8 +86,10 @@ test.describe('Find Neighbors Feature', () => {
       await expect(placePopupContent).toBeVisible();
 
       // 5. Verify the Update Spatial API was called correctly in the background
-      const spatialResponse = await spatialApiPromise;
-      expect(spatialResponse.ok()).toBeTruthy();
+      if (needsGeocoding && spatialApiPromise) {
+        const spatialResponse = await spatialApiPromise;
+        expect(spatialResponse.ok()).toBeTruthy();
+      }
 
       // ---------------------------------------------------------
       // Behavior 2: Find Neighbors Modal

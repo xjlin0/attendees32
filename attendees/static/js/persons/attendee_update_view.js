@@ -2010,7 +2010,28 @@ Attendees.datagridUpdate = {
 
   initPlacePopupDxForm: (event) => {
     const placeButton = event.target;
-    Attendees.datagridUpdate.placePopup = $('div.popup-place-update').dxPopup(Attendees.datagridUpdate.placePopupDxFormConfig(placeButton)).dxPopup('instance');
+    // Save current button globally so the singleton showing event can read it
+    Attendees.datagridUpdate.currentPlaceButton = placeButton;
+
+    if (!Attendees.datagridUpdate.placePopup) {
+      Attendees.datagridUpdate.placePopup = $('div.popup-place-update').dxPopup(Attendees.datagridUpdate.placePopupDxFormConfig(placeButton)).dxPopup('instance');
+
+      Attendees.datagridUpdate.placePopup.on('showing', () => {  // putting this in onShowing in config will trigger twice firing after first click
+        const btn = Attendees.datagridUpdate.currentPlaceButton;
+        if (btn && btn.value && btn.dataset.needsGeocoding) {
+          $.post(`${Attendees.datagridUpdate.attendeeAttrs.dataset.geocodingEndpoint}${btn.value}/`)
+          .done((response) => {
+            if (response && response.success) {
+              delete btn.dataset.needsGeocoding;
+            }
+          });
+        }
+      });
+    } else {
+      Attendees.datagridUpdate.placePopup.option(Attendees.datagridUpdate.placePopupDxFormConfig(placeButton));
+    }
+
+    Attendees.datagridUpdate.placePopup.show();  // Call show BEFORE fetchPlaceFormData to ensure contentTemplate is executed and placePopupDxForm is created
     Attendees.datagridUpdate.fetchPlaceFormData(placeButton);
   },
 
@@ -2020,7 +2041,6 @@ Attendees.datagridUpdate = {
       wrapperAttr: {
         'data-testid': 'place-popup',
       },
-      visible: true,
       title: (placeButton.value ? 'Viewing ' : 'Creating ') + placeButton.dataset.desc,
       minwidth: '20%',
       minheight: '30%',
@@ -2028,17 +2048,6 @@ Attendees.datagridUpdate = {
         my: 'center',
         at: 'center',
         of: window,
-      },
-      onShowing: () => {
-console.log(`Bug Todo: place popup onShowing() triggered twice after the first click regardless of onShown() or onShowing()! For ${placeButton.value} here is placeButton.dataset.needsGeocoding: ${placeButton.dataset.needsGeocoding}`);
-        if (placeButton.value && placeButton.dataset.needsGeocoding) {
-          $.post(`${Attendees.datagridUpdate.attendeeAttrs.dataset.geocodingEndpoint}${placeButton.value}/`)
-          .done((response) => {
-            if (response && response.success) {
-              delete placeButton.dataset.needsGeocoding;
-            }
-          });;
-        }
       },
       onHiding: () => {
         const $existingAddressSelector = $('div.address-lookup-search').dxLookup('instance');
@@ -2409,7 +2418,7 @@ console.log(`Bug Todo: place popup onShowing() triggered twice after the first c
                           placeButton.textContent = newText;
                           placeButton.dataset.addressRaw = savedPlace.address && savedPlace.address.raw;
                           if (geoCoded) {
-                            delete element.dataset.needsGeocoding;
+                            delete placeButton.dataset.needsGeocoding;
                           }
                         } else {
                           Attendees.datagridUpdate.familyButtonFactory({
