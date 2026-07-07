@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         sleep_time = options['sleep']
-        
+
         # Find all addresses missing coordinates
         # Because CoordinatesService updates siblings, we only need to query distinct address combinations.
         # However, for simplicity and to ensure we don't miss any edge cases, we'll iterate through all missing.
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         ) | Address.objects.filter(
             longitude__isnull=True
         )
-        
+
         # Optimize by getting only distinct combinations of street_number, route, locality
         # to feed into the service, minimizing the loop size.
         distinct_addresses = missing_coords_addresses.order_by(
@@ -50,9 +50,9 @@ class Command(BaseCommand):
 
         for index, address in enumerate(distinct_addresses, start=1):
             self.stdout.write(f"Processing {index}/{total_to_process}: Address ID {address.id}...")
-            
+
             result = CoordinatesService.geocode_address(address.id)
-            
+
             if result:
                 success_count += 1
                 self.stdout.write(self.style.SUCCESS(f"  -> Success"))

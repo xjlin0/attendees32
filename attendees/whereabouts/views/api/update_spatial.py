@@ -39,12 +39,12 @@ class UpdateSpatialAPIView(APIView):
 
         if success:
             return Response(
-                {"detail": "Address coordinates updated successfully."},
+                {"success": True, "detail": "Address coordinates updated successfully."},
                 status=status.HTTP_200_OK
             )
         else:
             return Response(
-                {"detail": "Failed to update coordinates or they already exist."},
+                {"success": False, "detail": "Failed to update coordinates or they already exist."},
                 status=status.HTTP_200_OK  # 200 OK because the action completed (even if skipped/failed silently)
             )
 

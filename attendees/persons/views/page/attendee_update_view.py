@@ -52,6 +52,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 "organizational_characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint": "/occasions/api/user_assembly_meets/",
                 "attendingmeets_endpoint": "/persons/api/datagrid_data_attendingmeet/",
+                "geocoding_endpoint": "/whereabouts/api/update_spatial_for/",
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "divisions_endpoint": "/whereabouts/api/user_divisions/",
                 "addresses_endpoint": "/whereabouts/api/all_addresses/",

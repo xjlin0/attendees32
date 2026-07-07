@@ -606,13 +606,14 @@ Attendees.datagridUpdate = {
                   'data-object-id': Attendees.datagridUpdate.attendeeId,
                   'data-object-name': Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original,
                   'data-address-raw': place.address && place.address.raw,
+                  ...(place.address && place.address.latitude && place.address.longitude ? {} : {'data-needs-geocoding': true}),
                 });
                 $personalLi = $personalLi.append($button);
               });
               let $places = $placeUl.append($personalLi);
 
               const familyattendees = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set || [];
-              if (familyattendees.find(f => f.folk && f.folk.category === 0)) {  // any families?
+              if (familyattendees.find(f => f.folk && f.folk.category === 0)) {  // FAMILY_CATEGORY
                 familyattendees.forEach(familyattendee => {
                   const family = familyattendee.folk;
                   if (family && family.category === 0) {
@@ -640,6 +641,7 @@ Attendees.datagridUpdate = {
                         'data-object-id': family.id,
                         'data-object-name': family.display_name,
                         'data-address-raw': place.address && place.address.raw,
+                        ...(place.address && place.address.latitude && place.address.longitude ? {} : {'data-needs-geocoding': true}),
                       });
                       $familyLi = $familyLi.append($button);
                     });
@@ -2028,8 +2030,14 @@ Attendees.datagridUpdate = {
         of: window,
       },
       onShowing: () => {
-        if (placeButton.value) {
-          Attendees.datagridUpdate.updateSpatial(placeButton.value);
+console.log(`Bug Todo: place popup onShowing() triggered twice after the first click regardless of onShown() or onShowing()! For ${placeButton.value} here is placeButton.dataset.needsGeocoding: ${placeButton.dataset.needsGeocoding}`);
+        if (placeButton.value && placeButton.dataset.needsGeocoding) {
+          $.post(`${Attendees.datagridUpdate.attendeeAttrs.dataset.geocodingEndpoint}${placeButton.value}/`)
+          .done((response) => {
+            if (response && response.success) {
+              delete placeButton.dataset.needsGeocoding;
+            }
+          });;
         }
       },
       onHiding: () => {
@@ -2139,7 +2147,7 @@ Attendees.datagridUpdate = {
                 if (placeButton.dataset.addressRaw) {
                   const $linkContainer = $('<div></div>');
                   $linkContainer.append($(`<span>Google Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
-                  
+
                   if (placeButton.value && Attendees.datagridUpdate.attendeeAttrs.dataset.showCreateAttendee) {  // only coworkers that can access attendee_create_view see the link
                     const $neighborsBtn = $('<a href="#" id="find-neighbors-btn" data-testid="find-neighbors-btn" class="ml-3" style="margin-left: 15px;">🔎Find neighbors</a>');
                     $neighborsBtn.on('click', (e) => {
@@ -2149,7 +2157,7 @@ Attendees.datagridUpdate = {
                     });
                     $linkContainer.append($neighborsBtn);
                   }
-                  
+
                   itemElement.append($linkContainer);
                 }
               },
@@ -2395,10 +2403,14 @@ Attendees.datagridUpdate = {
                         const clickedButtonDescPrefix = placeButton.dataset.desc.split(' (')[0];
                         const newDesc = clickedButtonDescPrefix + ' (' + savedPlace.address.formatted + ')';
                         const newText = savedPlace.display_name + ': ' + savedPlace.address.formatted;
+                        const geoCoded = savedPlace.address && savedPlace.address.latitude && savedPlace.address.longitude;
                         if (placeButton.value) {
                           placeButton.dataset.desc = newDesc;
                           placeButton.textContent = newText;
                           placeButton.dataset.addressRaw = savedPlace.address && savedPlace.address.raw;
+                          if (geoCoded) {
+                            delete element.dataset.needsGeocoding;
+                          }
                         } else {
                           Attendees.datagridUpdate.familyButtonFactory({
                             class: placeButton.className.replace('place-button-new', '').replace('btn-outline-primary', 'btn-outline-success'),
@@ -2410,6 +2422,7 @@ Attendees.datagridUpdate = {
                             'data-object-name': placeButton.dataset.objectName,
                             'data-content-type': placeButton.dataset.contentType,
                             'data-address-raw': savedPlace.address && savedPlace.address.raw,
+                            ...(geoCoded ? {} : {'data-needs-geocoding': true}),
                           }).insertAfter(placeButton);
                         }
                       },
@@ -2570,15 +2583,9 @@ Attendees.datagridUpdate = {
     }
   },
 
-  updateSpatial: (placeId) => {
-    if (placeId) {
-      $.post(`/whereabouts/api/update_spatial_for/${placeId}/`);
-    }
-  },
-
   initNearestNeighborsPopupDxForm: (placeId, addressName) => {
     if (!placeId || !Attendees.datagridUpdate.attendeeAttrs.dataset.showCreateAttendee) return;
-    
+
     const dataSourceUrl = `/whereabouts/api/nearest_neighbors_for/${placeId}/?top=50`;
 
     if (Attendees.datagridUpdate.nearestNeighborsPopup) {
