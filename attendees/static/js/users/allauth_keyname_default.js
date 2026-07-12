@@ -1,0 +1,32 @@
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.location.pathname.includes('webauthn/add') || window.location.pathname.includes('mfa/add')) {
+    const nameInput = document.querySelector('input[name="name"]');
+    if (nameInput) {
+      const ua = navigator.userAgent.toLowerCase();
+      let deviceName = "device unlock"; // Fallback name
+
+      if (/iphone/.test(ua)) {
+        deviceName = "iPhone unlock";
+      } else if (/ipad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+        deviceName = "iPad unlock";
+      } else if (/mac os/.test(ua)) {
+        deviceName = "Mac unlock";
+      } else if (/android/.test(ua)) {
+        deviceName = "Android unlock";
+      } else if (/windows/.test(ua)) {
+        deviceName = "Windows unlock";
+      }
+
+      const currentValue = nameInput.value.toLowerCase();
+      if (currentValue === "" || currentValue.includes("key") || currentValue.includes("master") || currentValue.includes("backup")) {
+        nameInput.value = deviceName;
+      }
+    }
+
+    // Auto-check the Passwordless checkbox for better user experience
+    const passwordlessCheckbox = document.querySelector('input[name="passwordless"]');
+    if (passwordlessCheckbox && !passwordlessCheckbox.checked) {
+      passwordlessCheckbox.checked = true;
+    }
+  }
+});
