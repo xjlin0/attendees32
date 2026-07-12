@@ -13,6 +13,12 @@ from attendees.persons.models import PgHistoryPage
 from attendees.users.forms import UserChangeForm, UserCreationForm
 
 from .models import Menu, MenuAuthGroup
+import os
+import subprocess
+from datetime import datetime
+from django.urls import path
+from django.conf import settings
+from django.http import StreamingHttpResponse, HttpResponse
 
 User = get_user_model()
 
@@ -33,6 +39,7 @@ class GroupAdmin(PgHistoryPage, GroupAdmin):
 
 @admin.register(User)
 class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
+    change_list_template = "admin/user_change_list.html"
     form = UserChangeForm
     add_form = UserCreationForm
     superuser_fieldsets = (
@@ -80,6 +87,72 @@ class UserAdmin(PgHistoryPage, auth_admin.UserAdmin):
 
     list_display = ["username", "organization", "is_staff", "is_superuser"]
     search_fields = ["username"]
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('download-sql/', self.admin_site.admin_view(self.download_sql_backup), name='download_sql_backup'),
+        ]
+        return custom_urls + urls
+
+    def download_sql_backup(self, request):
+        if not request.user.is_superuser:
+            return HttpResponse("Unauthorized", status=401)
+
+        if request.method != "POST":
+            return HttpResponse("Invalid request method", status=405)
+
+        # Verify password from JS prompt
+        pwd = request.POST.get('pwd', '')
+        if not request.user.check_password(pwd):
+            messages.error(request, "Incorrect admin password. Backup cancelled.")
+            from django.shortcuts import redirect
+            return redirect(request.META.get('HTTP_REFERER', '..'))
+
+        filename = f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.sql.gz"
+        db_config = settings.DATABASES['default']
+        
+        env = os.environ.copy()
+        env['PGPASSWORD'] = db_config['PASSWORD']
+        
+        # 移除 -F c 讓 pg_dump 產出預設的 Plain-text SQL
+        pg_cmd = [
+            'pg_dump',
+            '-h', db_config['HOST'],
+            '-p', str(db_config['PORT']),
+            '-U', db_config['USER'],
+            db_config['NAME']
+        ]
+
+        try:
+            # 第一段：執行 pg_dump
+            pg_process = subprocess.Popen(pg_cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # 第二段：將 pg_dump 的輸出導向給 gzip 進行即時壓縮
+            gzip_process = subprocess.Popen(['gzip', '-c'], stdin=pg_process.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # 關閉 pg_process 在主程序的 stdout，讓它完全交給 gzip，避免 deadlock
+            pg_process.stdout.close()
+
+            def file_iterator(proc):
+                while True:
+                    chunk = proc.stdout.read(8192)
+                    if not chunk:
+                        break
+                    yield chunk
+                proc.stdout.close()
+                proc.wait()
+                if proc.returncode != 0:
+                    stderr_output = proc.stderr.read().decode('utf-8')
+                    print(f"gzip error: {stderr_output}")
+
+            # content_type 改為 gzip
+            response = StreamingHttpResponse(file_iterator(gzip_process), content_type='application/gzip')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+
+        except Exception as e:
+            return HttpResponse(f"Backup failed to start: {str(e)}", status=500)
 
     def get_fieldsets(self, request, obj=None):
         if not obj:

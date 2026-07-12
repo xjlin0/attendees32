@@ -43,7 +43,7 @@ RUN addgroup --system django \
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
   # psycopg2 dependencies
-  libpq-dev \
+  libpq-dev postgresql-client \
   # Translations dependencies
   gettext curl vim wget python3-dateutil git less gdal-bin libpango-1.0-0 libpangoft2-1.0-0 \
   # cleaning up unused files
