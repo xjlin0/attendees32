@@ -52,10 +52,10 @@ class PlaceSerializer(serializers.ModelSerializer):
 
     def get_attendee_name(self, obj):
         if obj.content_type.model == 'attendee':
-            return obj.subject.infos["names"]["original"]
+            return f"{obj.subject.infos['names']['original']}({obj.subject.division.infos['acronym']})"
         elif obj.content_type.model == 'folk':
             fa = FolkAttendee.objects.filter(folk_id=obj.object_id).order_by('display_order').first()
-            return fa.attendee.infos["names"]["original"] if fa else None
+            return f"{fa.attendee.infos['names']['original']}({fa.attendee.division.infos['acronym']})" if fa else None
         return None
 
     def create(self, validated_data):

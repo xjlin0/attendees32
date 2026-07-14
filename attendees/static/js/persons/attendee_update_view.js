@@ -2633,14 +2633,14 @@ Attendees.datagridUpdate = {
           columns: [
             {
               dataField: 'distance',
-              caption: 'Distance',
+              caption: 'Direct distance',
               dataType: 'string',
               width: '9%',
             },
             {
               dataField: 'place.attendee_name',
               caption: 'Attendee',
-              width: '9%',
+              width: '18%',
               cellTemplate: (container, options) => {
                 const attendeeId = options.data.place.attendee_id;
                 const attendeeName = options.value;
