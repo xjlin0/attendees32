@@ -636,27 +636,26 @@ Attendees.dataAttendees = {
       allowHeaderFiltering: false,  // needs lookup with postprocess to locality id to avoid duplicates
       filterRow: false,
       cellTemplate: (container, rowData) => {
-        // // console.log("rowData: ");  console.log(rowData); 
-        // rowData.value && rowData.value.length && rowData.value.forEach((place, index) => {
-        //   const attrs = {
-        //     class: 'text-body',
-        //     text: place.locality__name,
-        //     title: `${Attendees.dataAttendees.seeAllAttendees ? 'Click to show neighbors for ' : ''}${place.address__raw}`,
-        //     ...(Attendees.dataAttendees.seeAllAttendees ? {'data-place-id': place.places__id, 'href': '#', click: (e) => {
-        //       e.preventDefault();
-        //       window.Attendees.nearestNeighbors.initPopupDxForm(place.places__id, place.address__raw);
-        //     }} : {}),
-        //   };
-        //   $($(`${Attendees.dataAttendees.seeAllAttendees ? '<a>' : '<span>'}`, attrs)).appendTo(container);
-        //     $.ajaxSetup({
-        //       headers: {
-        //         'X-Target-Attendee-Id': rowData.key,
-        //       }
-        //     });
-        //   if (index < rowData.value.length -1) {
-        //     $(container).append(', ');
-        //   }
-        // });
+        rowData.value && rowData.value.length && rowData.value.forEach((place, index) => {
+          const attrs = {
+            class: 'text-body',
+            text: place.locality__name,
+            title: `${Attendees.dataAttendees.seeAllAttendees ? 'Click to show neighbors for ' : ''}${place.address__raw}`,
+            ...(Attendees.dataAttendees.seeAllAttendees ? {'data-place-id': place.places__id, 'href': '#', click: (e) => {
+              e.preventDefault();
+              window.Attendees.nearestNeighbors.initPopupDxForm(place.places__id, place.address__raw);
+            }} : {}),
+          };
+          $($(`${Attendees.dataAttendees.seeAllAttendees ? '<a>' : '<span>'}`, attrs)).appendTo(container);
+            $.ajaxSetup({
+              headers: {
+                'X-Target-Attendee-Id': rowData.key,
+              }
+            });
+          if (index < rowData.value.length -1) {
+            $(container).append(', ');
+          }
+        });
       },
     },
     {
