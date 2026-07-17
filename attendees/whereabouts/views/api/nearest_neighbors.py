@@ -22,12 +22,17 @@ class NearestNeighborsAPIView(SpyGuard, APIView):
     def get(self, request, pk, format=None):
         logger.info(f"NearestNeighborsAPIView, pk: {pk}")
         try:
-            top_n = int(request.query_params.get("top", 30))
+            take = int(request.query_params.get("take", 20))
         except ValueError:
-            top_n = 30
+            take = 20
 
         try:
-            target_place, neighbors = CoordinatesService.get_nearest_neighbors(pk, self.request.user.organization, top_n)
+            skip = int(request.query_params.get("skip", 0))
+        except ValueError:
+            skip = 0
+
+        try:
+            target_place, neighbors = CoordinatesService.get_nearest_neighbors(pk, self.request.user.organization, take=take, skip=skip)
         except Exception as e:
             logger.error(f"Error fetching nearest neighbors: {e}")
             return Response(

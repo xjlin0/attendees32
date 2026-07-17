@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class CoordinatesService:
     @staticmethod
-    def get_nearest_neighbors(place_id, user_organization, top_n=30):
+    def get_nearest_neighbors(place_id, user_organization, take=20, skip=0):
         """
         Fetches the nearest neighbors based on a Place ID.
         Returns a tuple: (target_place, neighbors_queryset)
@@ -52,7 +52,7 @@ class CoordinatesService:
             azimuth=RawSQL(azimuth_sql, (target_lon, target_lat))
         ).exclude(
             id=target_place.id
-        ).order_by('distance_miles')[:top_n]
+        ).order_by('distance_miles')[skip : skip + take]
 
         return target_place, neighbors
 
