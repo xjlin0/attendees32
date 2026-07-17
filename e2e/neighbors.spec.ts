@@ -84,6 +84,9 @@ test.describe('Find Neighbors Feature', () => {
       // 4. Wait for the Place Popup to become visible (check for its inner form container)
       const placePopupContent = page.locator('.locate-form');
       await expect(placePopupContent).toBeVisible();
+      
+      // Wait a moment for the DevExtreme popup animation to finish
+      await page.waitForTimeout(500);
 
       // 5. Verify the Update Spatial API was called correctly in the background
       if (needsGeocoding && spatialApiPromise) {
@@ -123,4 +126,41 @@ test.describe('Find Neighbors Feature', () => {
       await expect(gridCell).toBeVisible({ timeout: 10000 });
     });
   }
+
+  test(`Behavior 3: Clicking folkcities on the Attendees List Page opens Nearest Neighbors popup`, async ({ page }) => {
+    // 1. Go to attendees list page
+    await page.goto('/persons/attendees/');
+    
+    // 2. Wait for the data grid to load
+    const gridContainer = page.locator('div.dataAttendees');
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+    await expect(gridContainer.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // 3. Find a city link in the folkcities column
+    // The links have 'data-place-id' attributes
+    const cityLink = page.locator('td[aria-colindex] a[data-place-id]').first();
+    await expect(cityLink).toBeVisible({ timeout: 10000 });
+
+    // 4. Intercept the Nearest Neighbors API
+    const neighborsApiPromise = page.waitForResponse(response => 
+      response.url().includes('/whereabouts/api/nearest_neighbors_for/') && 
+      response.status() === 200
+    );
+
+    // 5. Click the city link
+    await cityLink.click();
+
+    // 6. Verify the Nearest Neighbors Popup is visible
+    const neighborsPopupContent = page.locator('#nearest-neighbors-grid');
+    await expect(neighborsPopupContent).toBeVisible({ timeout: 5000 });
+
+    // 7. Verify the API returned data
+    const neighborsResponse = await neighborsApiPromise;
+    const responseData = await neighborsResponse.json();
+    expect(responseData).toHaveProperty('data');
+
+    // 8. Verify the DataGrid rendered the data (look for "miles" in the distance column)
+    const gridCell = neighborsPopupContent.locator('.dx-datagrid-content').getByText(/miles/i).first();
+    await expect(gridCell).toBeVisible({ timeout: 10000 });
+  });
 });

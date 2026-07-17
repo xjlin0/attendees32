@@ -2161,7 +2161,7 @@ Attendees.datagridUpdate = {
                     $neighborsBtn.on('click', (e) => {
                       e.preventDefault();
                       Attendees.datagridUpdate.placePopup.hide();
-                      Attendees.nearestNeighbors.initPopupDxForm(placeButton.value, placeButton.dataset.addressRaw);
+                      window.Attendees.nearestNeighbors.initPopupDxForm(placeButton.value, placeButton.dataset.addressRaw);
                     });
                     $linkContainer.append($neighborsBtn);
                   }
