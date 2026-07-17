@@ -48,6 +48,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 "folk_contenttype_id": ContentType.objects.get_for_model(Folk).id,
                 "empty_image_link": f"{settings.STATIC_URL}images/empty.png",
                 "show_create_attendee": show_create_attendee,
+                "see_all_attendees": show_create_attendee and self.request.user.can_see_all_organizational_meets_attendees,
                 "characters_endpoint": "/occasions/api/user_assembly_characters/",
                 "organizational_characters_endpoint": "/occasions/api/organization_characters/",
                 "meets_endpoint": "/occasions/api/user_assembly_meets/",

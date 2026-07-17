@@ -55,6 +55,7 @@ class AttendeesListView(RouteGuard, ListView):
                 else None,
                 "available_meets_json": list(available_meets),
                 "allowed_to_create_attendee": allowed_to_create_attendee,
+                "see_all_attendees": allowed_to_create_attendee and self.request.user.can_see_all_organizational_meets_attendees,
                 "create_attendee_urn": "/persons/attendee/new",
                 "attendees_endpoint": "/persons/api/datagrid_data_attendees/",
                 "attendingmeets_default_endpoint": "/persons/api/default_attendingmeets/",

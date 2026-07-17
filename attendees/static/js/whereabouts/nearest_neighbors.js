@@ -20,7 +20,12 @@ window.Attendees.nearestNeighbors = {
       return;
     }
 
-    window.Attendees.nearestNeighbors.popup = $('div.popup-nearest-neighbors').dxPopup({
+    let popupDiv = $('div.popup-nearest-neighbors');
+    if (popupDiv.length === 0) {
+      popupDiv = $('<div class="popup-nearest-neighbors"></div>').appendTo('body');
+    }
+
+    window.Attendees.nearestNeighbors.popup = popupDiv.dxPopup({
       wrapperAttr: {
         'data-testid': 'nearest-neighbors-popup',
       },

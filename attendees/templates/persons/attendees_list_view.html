@@ -44,6 +44,11 @@
 
   <script defer
           type="text/javascript"
+          src="{% static 'js/whereabouts/nearest_neighbors.js' %}">
+  </script>
+
+  <script defer
+          type="text/javascript"
           src="{% static 'js/persons/attendees_list_view.js' %}">
   </script>
 
@@ -86,6 +91,9 @@
   {% csrf_token %}
   {{ available_meets_json|json_script:"organization-available-meets" }}
   <div class="dataAttendees"
+      {% if see_all_attendees %}
+        data-see-all-attendees="1"
+      {% endif %}
       data-family-attendances-urn="{{family_attendances_urn}}"
       data-attendees-endpoint="{{attendees_endpoint}}"
       data-attendingmeets-default-endpoint="{{attendingmeets_default_endpoint}}"

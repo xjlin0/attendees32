@@ -15,7 +15,7 @@ class AttendeeMinimalSerializer(serializers.ModelSerializer):
     )  # trying DevExtreme dxFileUploader https://supportcenter.devexpress.com/ticket/details/t404408
     photo_path = serializers.SerializerMethodField(required=False, read_only=True)
     attendingmeets = serializers.JSONField(read_only=True)
-    folkcities = serializers.CharField(read_only=True)
+    folkcities = serializers.JSONField(read_only=True)
     visitor_since = serializers.CharField(read_only=True)
     user = serializers.PrimaryKeyRelatedField(
         many=False, read_only=True
