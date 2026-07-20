@@ -3,6 +3,12 @@ import requests
 from django.conf import settings
 from address.models import Address
 
+from django.contrib.contenttypes.models import ContentType
+from attendees.persons.models import Attendee, Folk
+from django.db.models.functions import Cast
+from django.db import models
+from django.db.models import Q
+
 from django.db.models.expressions import RawSQL
 from attendees.whereabouts.models import Place
 
@@ -11,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class CoordinatesService:
     @staticmethod
-    def get_nearest_neighbors(place_id, user_organization, take=20, skip=0):
+    def get_nearest_neighbors(place_id, user_organization, take=20, skip=0, meets=None):
         """
         Fetches the nearest neighbors based on a Place ID.
         Returns a tuple: (target_place, neighbors_queryset)
@@ -52,7 +58,31 @@ class CoordinatesService:
             azimuth=RawSQL(azimuth_sql, (target_lon, target_lat))
         ).exclude(
             id=target_place.id
-        ).order_by('distance_miles')[skip : skip + take]
+        )
+
+        if meets:
+
+            attendee_ct = ContentType.objects.get_for_model(Attendee)
+            folk_ct = ContentType.objects.get_for_model(Folk)
+
+            attendee_ids = Attendee.objects.filter(
+                attendings__meets__slug__in=meets
+            ).annotate(
+                str_id=Cast('id', output_field=models.CharField())
+            ).values_list('str_id', flat=True)
+
+            folk_ids = Folk.objects.filter(
+                attendees__attendings__meets__slug__in=meets
+            ).annotate(
+                str_id=Cast('id', output_field=models.CharField())
+            ).values_list('str_id', flat=True)
+
+            q_attendee = Q(content_type=attendee_ct, object_id__in=attendee_ids)
+            q_folk = Q(content_type=folk_ct, object_id__in=folk_ids)
+
+            neighbors = neighbors.filter(q_attendee | q_folk)
+
+        neighbors = neighbors.order_by('distance_miles')[skip : skip + take]
 
         return target_place, neighbors
 

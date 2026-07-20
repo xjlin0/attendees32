@@ -59,6 +59,7 @@ Attendees.datagridUpdate = {
     display_name: '',  // will be assigned later
   },
   meetCharacters: null,
+  userAssemblyMeets: null,
   divisionIdNames: null,
 
   init: () => {
@@ -4347,9 +4348,14 @@ Attendees.datagridUpdate = {
                   const d = new $.Deferred();
                   $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts)
                     .done((result) => {
-                      if (result.data && Attendees.datagridUpdate.meetCharacters === null) {
-                        Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
-                      }  // cache the every meet's major characters for later use
+                      if (result.data) { 
+                        if (Attendees.datagridUpdate.meetCharacters === null) {
+                          Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
+                        }  // cache the every meet's major characters for later use
+                        if (Attendees.datagridUpdate.userAssemblyMeets === null) {
+                          Attendees.datagridUpdate.userAssemblyMeets = result.data.sort((a, b) => a.assembly_name.localeCompare(b.assembly_name) || a.display_name.localeCompare(b.display_name) ).map(meet => ({id: meet.id, assembly_name: meet.assembly_name, slug: meet.slug, display_name: meet.display_name}));
+                        }
+                      }
                       d.resolve(result.data);
                     });
                   return d.promise();

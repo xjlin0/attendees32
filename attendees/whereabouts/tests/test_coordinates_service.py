@@ -6,6 +6,12 @@ from attendees.whereabouts.services.coordinates_service import CoordinatesServic
 from attendees.whereabouts.models.place import Place
 from attendees.whereabouts.models.organization import Organization
 from django.contrib.contenttypes.models import ContentType
+from attendees.persons.models import Attendee, Attending, AttendingMeet, Folk, FolkAttendee, Category, Relation
+from attendees.occasions.models import Meet, Assembly, Character
+from attendees.whereabouts.models import Division
+from django.contrib.auth.models import Group
+import datetime
+from django.utils import timezone
 
 @pytest.fixture
 def address_setup():
@@ -240,3 +246,85 @@ class TestCoordinatesService:
         assert 8.0 < neighbors[0].distance_miles < 10.0
         # SF to SJ is roughly 40-50 miles
         assert 40.0 < neighbors[1].distance_miles < 50.0
+
+    def test_get_nearest_neighbors_with_meets_filter(self, address_setup):
+        """Test get_nearest_neighbors correctly filters results by meets parameter."""
+        now = timezone.now()
+        
+        folk_category = Category.objects.create(id=0, type="folk", display_name="folk")
+        attending_category = Category.objects.create(id=25, type="attending", display_name="attending")
+        assembly_category = Category.objects.create(id=33, type="assembly", display_name="assembly")
+        Relation.objects.create(id=0, title="self", gender="unspecified")
+        
+        org = Organization.objects.create(slug="test-org", display_name="Test Org")
+        auth_group = Group.objects.create(name="test-group")
+        div = Division.objects.create(organization=org, slug="test-div", display_name="Test Div", audience_auth_group=auth_group)
+        assembly = Assembly.objects.create(division=div, slug="test-assembly", display_name="Test Assembly", category=assembly_category)
+        character = Character.objects.create(assembly=assembly, slug="test-char", display_name="Test Char")
+        
+        ct = ContentType.objects.get_for_model(Organization)
+        meet_a = Meet.objects.create(assembly=assembly, slug="meet-a", display_name="Meet A", start=now, finish=now + datetime.timedelta(days=1), site_type=ct, site_id=org.id)
+        meet_b = Meet.objects.create(assembly=assembly, slug="meet-b", display_name="Meet B", start=now, finish=now + datetime.timedelta(days=1), site_type=ct, site_id=org.id)
+        
+        # Setup coordinates for 3 places
+        addr1 = address_setup['address1']
+        addr1.latitude, addr1.longitude = 37.7749, -122.4194  # SF (Target)
+        addr1.save()
+        
+        addr2 = address_setup['address2']
+        addr2.latitude, addr2.longitude = 37.8044, -122.2712  # Oakland (Attendee in Meet A)
+        addr2.save()
+        
+        addr3 = address_setup['address3']
+        addr3.latitude, addr3.longitude = 37.3382, -121.8863  # SJ (Folk containing Attendee in Meet B)
+        addr3.save()
+        
+        # Create Attendees
+        attendee_target = Attendee.objects.create(first_name="Target", last_name="SF", division=div, gender="male")
+        attendee_a = Attendee.objects.create(first_name="Attendee A", last_name="Oak", division=div, gender="male")
+        attendee_b = Attendee.objects.create(first_name="Attendee B", last_name="SJ", division=div, gender="male")
+        
+        # Attendings
+        attending_target = Attending.objects.create(attendee=attendee_target, category=attending_category)
+        attending_a = Attending.objects.create(attendee=attendee_a, category=attending_category)
+        attending_b = Attending.objects.create(attendee=attendee_b, category=attending_category)
+        
+        # AttendingMeets
+        AttendingMeet.objects.create(attending=attending_target, meet=meet_a, character=character, category=attending_category, start=now, finish=now + datetime.timedelta(days=1))
+        AttendingMeet.objects.create(attending=attending_a, meet=meet_a, character=character, category=attending_category, start=now, finish=now + datetime.timedelta(days=1))
+        AttendingMeet.objects.create(attending=attending_b, meet=meet_b, character=character, category=attending_category, start=now, finish=now + datetime.timedelta(days=1))
+        
+        # Folk
+        folk_b = Folk.objects.create(division=div)
+        FolkAttendee.objects.create(folk=folk_b, attendee=attendee_b, role_id=0)
+        
+        # Places
+        attendee_ct = ContentType.objects.get_for_model(Attendee)
+        folk_ct = ContentType.objects.get_for_model(Folk)
+        
+        target_place = Place.objects.create(
+            content_type=attendee_ct, object_id=str(attendee_target.id), organization=org,
+            address=addr1, display_name="Target SF"
+        )
+        neighbor_oakland = Place.objects.create(
+            content_type=attendee_ct, object_id=str(attendee_a.id), organization=org,
+            address=addr2, display_name="Oakland"
+        )
+        neighbor_sj = Place.objects.create(
+            content_type=folk_ct, object_id=str(folk_b.id), organization=org,
+            address=addr3, display_name="San Jose"
+        )
+        
+        # Query with meet-a (Should return Oakland only)
+        _, neighbors_a = CoordinatesService.get_nearest_neighbors(target_place.id, org, meets=['meet-a'])
+        assert len(neighbors_a) == 1
+        assert neighbors_a[0] == neighbor_oakland
+        
+        # Query with meet-b (Should return San Jose only)
+        _, neighbors_b = CoordinatesService.get_nearest_neighbors(target_place.id, org, meets=['meet-b'])
+        assert len(neighbors_b) == 1
+        assert neighbors_b[0] == neighbor_sj
+        
+        # Query with both
+        _, neighbors_both = CoordinatesService.get_nearest_neighbors(target_place.id, org, meets=['meet-a', 'meet-b'])
+        assert len(neighbors_both) == 2

@@ -59,6 +59,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
                     assembly_name=F("assembly__display_name"),
                 )
                 .order_by(
+                    'assembly_name',
                     Case(
                         When(
                             id__in=AttendingMeet.objects.filter(

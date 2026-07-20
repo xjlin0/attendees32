@@ -67,3 +67,27 @@ class TestNearestNeighborsAPIView:
         
         assert response.status_code == 500
         assert "Error processing request" in response.data['detail']
+
+    @patch('attendees.whereabouts.views.api.nearest_neighbors.CoordinatesService')
+    def test_get_nearest_neighbors_with_meets_param(self, mock_coords_service, api_client):
+        # Mock the target place resolution and neighbors
+        mock_target_place = MagicMock()
+        mock_neighbor = MagicMock()
+        
+        mock_coords_service.get_nearest_neighbors.return_value = (mock_target_place, [mock_neighbor])
+        
+        with patch('attendees.whereabouts.views.api.nearest_neighbors.PlaceSerializer') as mock_serializer:
+            mock_serializer.return_value.data = []
+            
+            url = reverse('whereabouts:nearest_neighbors', kwargs={'pk': 'user-uuid-123'})
+            # Pass meets array
+            response = api_client.get(url, {'take': 20, 'skip': 10, 'meets[]': ['slug1', 'slug2']})
+            
+            assert response.status_code == 200
+            
+            # Verify CoordinatesService was called with the correct meets array
+            mock_coords_service.get_nearest_neighbors.assert_called_once()
+            args, kwargs = mock_coords_service.get_nearest_neighbors.call_args
+            assert kwargs['take'] == 20
+            assert kwargs['skip'] == 10
+            assert kwargs['meets'] == ['slug1', 'slug2']
