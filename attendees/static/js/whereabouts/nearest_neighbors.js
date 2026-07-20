@@ -56,6 +56,7 @@ window.Attendees.nearestNeighbors = {
       remoteOperations: { paging: true },
       scrolling: {
         mode: 'infinite',
+        showScrollbar: 'always',
       },
       paging: {
         pageSize: 20,
@@ -63,18 +64,18 @@ window.Attendees.nearestNeighbors = {
       showBorders: true,
       columnAutoWidth: true,
       allowColumnResizing: true,
+      columnResizingMode: 'nextColumn',
+      wordWrapEnabled: false,
       rowAlternationEnabled: true,
       columns: [
         {
           dataField: 'distance',
           caption: 'Direct distance',
           dataType: 'string',
-          width: '9%',
         },
         {
           dataField: 'place.attendee_name',
           caption: 'Attendee',
-          width: '18%',
           cellTemplate: (container, options) => {
             const attendeeId = options.data.place.attendee_id;
             const attendeeName = options.value;
@@ -109,6 +110,9 @@ window.Attendees.nearestNeighbors = {
 
     if (window.Attendees.nearestNeighbors.popup) {
       // If already initialized, dispose and recreate grid for new place
+      if (window.Attendees.nearestNeighbors.meetTagBox) {
+        window.Attendees.nearestNeighbors.meetTagBox.option('value', null);
+      }
       window.Attendees.nearestNeighbors.renderGrid(dataSource);
       window.Attendees.nearestNeighbors.popup.option('title', 'Nearest Neighbors for ' + addressName);
       window.Attendees.nearestNeighbors.popup.show();
@@ -123,10 +127,11 @@ window.Attendees.nearestNeighbors = {
     window.Attendees.nearestNeighbors.popup = popupDiv.dxPopup({
       wrapperAttr: {
         'data-testid': 'nearest-neighbors-popup',
+        class: 'nearest-neighbors-popup-wrapper',
       },
       visible: true,
       title: 'Nearest Neighbors for ' + addressName,
-      width: '60vw',
+      width: $(window).width() < 768 ? '100vw' : '60vw',
       height: '80vh',
       position: {
         my: 'center',
@@ -144,16 +149,11 @@ window.Attendees.nearestNeighbors = {
           }
         }
         $('#nearest-neighbors-grid').empty();
-        
-        if (window.Attendees.nearestNeighbors.meetTagBox) {
-           window.Attendees.nearestNeighbors.meetTagBox.dispose();
-           window.Attendees.nearestNeighbors.meetTagBox = null;
-        }
-        $('#nearest-neighbors-meets').empty();
       },
       contentTemplate: (e) => {
-        const tagBoxContainer = $('<div id="nearest-neighbors-meets" style="margin-bottom: 10px;"></div>');
-        const gridContainer = $('<div id="nearest-neighbors-grid" style="height: calc(100% - 50px);"></div>');
+        e.css({ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' });
+        const tagBoxContainer = $('<div id="nearest-neighbors-meets" style="margin-bottom: 10px; flex: 0 0 auto;"></div>');
+        const gridContainer = $('<div id="nearest-neighbors-grid" style="flex: 1 1 auto; min-height: 0; width: 100%;"></div>');
         e.append(tagBoxContainer);
         e.append(gridContainer);
         

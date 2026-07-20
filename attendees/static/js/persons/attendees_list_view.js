@@ -292,6 +292,7 @@ Attendees.dataAttendees = {
   startMeetSelector: () => {
     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['attendeeListViewOpts'], 'selectedMeetIds') || [];
     Attendees.dataAttendees.meetTagBox = $('div.meet-tag-box').dxTagBox({
+      label: 'Wanna add activity columns?',
       dataSource: new DevExpress.data.DataSource({
         store: JSON.parse(document.getElementById('organization-available-meets').textContent),
         key: 'id',
