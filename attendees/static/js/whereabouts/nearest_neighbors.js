@@ -14,6 +14,13 @@ window.Attendees.nearestNeighbors = {
         if (loadOptions.skip) args.skip = loadOptions.skip;
         if (loadOptions.take) args.take = loadOptions.take;
         else args.take = 20;
+        
+        if (window.Attendees.nearestNeighbors.meetTagBox) {
+          const meets = window.Attendees.nearestNeighbors.meetTagBox.option('value');
+          if (meets && meets.length > 0) {
+            args['meets[]'] = meets;
+          }
+        }
 
         $.ajax({
           url: `/whereabouts/api/nearest_neighbors_for/${placeId}/`,
@@ -25,7 +32,7 @@ window.Attendees.nearestNeighbors = {
             });
           },
           error: () => {
-            deferred.reject('Data Loading Error');
+            deferred.reject('Nearest Neighbors Data Loading Error');
           },
           timeout: 10000,
         });
@@ -95,7 +102,7 @@ window.Attendees.nearestNeighbors = {
     });
   },
 
-  initPopupDxForm: (placeId, addressName) => {
+  initPopupDxForm: (placeId, addressName, availableMeets) => {
     if (!placeId) return;
 
     const dataSource = window.Attendees.nearestNeighbors.createDataSource(placeId);
@@ -137,10 +144,42 @@ window.Attendees.nearestNeighbors = {
           }
         }
         $('#nearest-neighbors-grid').empty();
+        
+        if (window.Attendees.nearestNeighbors.meetTagBox) {
+           window.Attendees.nearestNeighbors.meetTagBox.dispose();
+           window.Attendees.nearestNeighbors.meetTagBox = null;
+        }
+        $('#nearest-neighbors-meets').empty();
       },
       contentTemplate: (e) => {
-        const gridContainer = $('<div id="nearest-neighbors-grid"></div>');
+        const tagBoxContainer = $('<div id="nearest-neighbors-meets" style="margin-bottom: 10px;"></div>');
+        const gridContainer = $('<div id="nearest-neighbors-grid" style="height: calc(100% - 50px);"></div>');
+        e.append(tagBoxContainer);
         e.append(gridContainer);
+        
+        if (availableMeets && availableMeets.length > 0) {
+          window.Attendees.nearestNeighbors.meetTagBox = tagBoxContainer.dxTagBox({
+            label: 'Show attendees joining at least one of activities',
+            dataSource: new DevExpress.data.DataSource({
+              store: availableMeets,
+              key: 'slug',
+              group: 'assembly_name'
+            }),
+            valueExpr: 'slug',
+            displayExpr: 'display_name',
+            showClearButton: true,
+            placeholder: 'Select none for all activities.',
+            searchEnabled: true,
+            grouped: true,
+            onValueChanged: () => {
+              const grid = DevExpress.ui.dxDataGrid.getInstance(document.getElementById('nearest-neighbors-grid'));
+              if (grid) {
+                grid.refresh();
+              }
+            }
+          }).dxTagBox('instance');
+        }
+
         window.Attendees.nearestNeighbors.renderGrid(dataSource);
       }
     }).dxPopup('instance');

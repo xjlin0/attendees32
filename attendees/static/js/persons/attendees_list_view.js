@@ -643,7 +643,7 @@ Attendees.dataAttendees = {
             title: `${Attendees.dataAttendees.seeAllAttendees ? 'Click to show neighbors for ' : ''}${place.address__raw}`,
             ...(Attendees.dataAttendees.seeAllAttendees ? {'data-place-id': place.places__id, 'href': '#', click: (e) => {
               e.preventDefault();
-              window.Attendees.nearestNeighbors.initPopupDxForm(place.places__id, place.address__raw);
+              window.Attendees.nearestNeighbors.initPopupDxForm(place.places__id, place.address__raw, Attendees.dataAttendees.availableMeets);
             }} : {}),
           };
           $($(`${Attendees.dataAttendees.seeAllAttendees ? '<a>' : '<span>'}`, attrs)).appendTo(container);

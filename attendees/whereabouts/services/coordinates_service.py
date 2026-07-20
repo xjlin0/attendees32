@@ -19,8 +19,19 @@ class CoordinatesService:
     @staticmethod
     def get_nearest_neighbors(place_id, user_organization, take=20, skip=0, meets=None):
         """
-        Fetches the nearest neighbors based on a Place ID.
-        Returns a tuple: (target_place, neighbors_queryset)
+        Fetches the nearest neighbors based on a target Place ID.
+        
+        Args:
+            place_id: The primary key of the target Place.
+            user_organization: The organization of the current user.
+            take (int): Pagination limit.
+            skip (int): Pagination offset.
+            meets (list of str): Optional. A list of meet slugs. If provided, filters neighbors 
+                                 so that the results only include attendees (or folks containing attendees) 
+                                 who have attended AT LEAST ONE of the specified meets (Logical OR).
+        
+        Returns:
+            A tuple: (target_place, neighbors_queryset)
         """
         target_place = Place.objects.select_related('address').filter(
             pk=place_id,

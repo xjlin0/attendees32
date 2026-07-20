@@ -162,5 +162,32 @@ test.describe('Find Neighbors Feature', () => {
     // 8. Verify the DataGrid rendered the data (look for "miles" in the distance column)
     const gridCell = neighborsPopupContent.locator('.dx-datagrid-content').getByText(/miles/i).first();
     await expect(gridCell).toBeVisible({ timeout: 10000 });
+
+    // 9. Verify the meetTagBox is visible
+    const meetsTagBox = page.locator('#nearest-neighbors-meets');
+    await expect(meetsTagBox).toBeVisible();
+
+    // 10. Click on the TagBox to open dropdown
+    await meetsTagBox.locator('.dx-texteditor-input').click();
+
+    // 11. Select the first meet from the dropdown (or a specific meet)
+    // Wait for the dropdown list to appear
+    const dropdownList = page.locator('.dx-dropdownlist-popup-wrapper').filter({ hasText: 'meets' }).or(page.locator('.dx-dropdownlist-popup-wrapper'));
+    await expect(dropdownList.first()).toBeVisible();
+    
+    // 12. Intercept the NEW Nearest Neighbors API call when filter is applied
+    const filteredNeighborsApiPromise = page.waitForResponse(response => 
+      response.url().includes('/whereabouts/api/nearest_neighbors_for/') && 
+      response.url().includes('meets') && 
+      response.status() === 200
+    );
+
+    // Click the first list item in the dropdown
+    await dropdownList.first().locator('.dx-list-item').first().click();
+
+    // 13. Verify the API returned data with meets filter
+    const filteredNeighborsResponse = await filteredNeighborsApiPromise;
+    const filteredResponseData = await filteredNeighborsResponse.json();
+    expect(filteredResponseData).toHaveProperty('data');
   });
 });
