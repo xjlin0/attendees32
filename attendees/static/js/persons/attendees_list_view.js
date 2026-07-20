@@ -642,12 +642,23 @@ Attendees.dataAttendees = {
             class: 'text-body',
             text: place.locality__name,
             title: `${Attendees.dataAttendees.seeAllAttendees ? 'Click to show neighbors for ' : ''}${place.address__raw}`,
-            ...(Attendees.dataAttendees.seeAllAttendees ? {'data-place-id': place.places__id, 'href': '#', click: (e) => {
-              e.preventDefault();
-              window.Attendees.nearestNeighbors.initPopupDxForm(place.places__id, place.address__raw, Attendees.dataAttendees.availableMeets);
-            }} : {}),
+            ...(Attendees.dataAttendees.seeAllAttendees ? {
+              'title': `Click to show neighbors for ${place.address__raw}`,
+              'data-place-id': place.places__id,
+              'href': '#',
+              click: (e) => {
+                e.preventDefault();
+                window.Attendees.nearestNeighbors.initPopupDxForm(place.places__id, place.address__raw, Attendees.dataAttendees.availableMeets);
+              }
+            }
+            :
+            {
+              title: `Show map for ${place.address__raw}`,
+              target: '_blank',
+              href: `https://www.google.com/maps/place/${place.address__raw ? place.address__raw.replaceAll(" ", "+") : ''}`,
+            }),
           };
-          $($(`${Attendees.dataAttendees.seeAllAttendees ? '<a>' : '<span>'}`, attrs)).appendTo(container);
+          $($('<a>', attrs)).appendTo(container);
             $.ajaxSetup({
               headers: {
                 'X-Target-Attendee-Id': rowData.key,

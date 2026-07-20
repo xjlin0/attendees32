@@ -2155,7 +2155,7 @@ Attendees.datagridUpdate = {
               template: (data, itemElement) => {
                 if (placeButton.dataset.addressRaw) {
                   const $linkContainer = $('<div></div>');
-                  $linkContainer.append($(`<span>Google Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
+                  $linkContainer.append($(`<span>Show Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
 
                   if (placeButton.value && Attendees.datagridUpdate.attendeeAttrs.dataset.seeAllAttendees) {  // only coworkers that can access attendee_create_view see the link
                     const $neighborsBtn = $('<a href="#" id="find-neighbors-btn" data-testid="find-neighbors-btn" class="ml-3" style="margin-left: 15px;">🔎Find neighbors</a>');
