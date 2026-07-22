@@ -9,30 +9,44 @@ def address_setup():
     country = Country.objects.create(name='USA', code='US')
     state = State.objects.create(name='California', code='CA', country=country)
     locality = Locality.objects.create(name='Hayward', postal_code='94541', state=state)
-    
+    # Create a dummy content object for the generic foreign key
+    from django.contrib.contenttypes.models import ContentType
+    from attendees.whereabouts.models.organization import Organization
+    from attendees.whereabouts.models.place import Place
+
+    org = Organization.objects.create(
+        slug="test-org",
+        display_name="Test Organization",
+    )
+    ct = ContentType.objects.get_for_model(Organization)
+
     # 1. Address with coordinates
     addr_with_coords = Address.objects.create(
         street_number='123', route='Main St', locality=locality,
         raw='123 Main St', latitude=37.0, longitude=-122.0
     )
+    Place.objects.create(address=addr_with_coords, content_type=ct, object_id=str(org.id), organization=org)
     
     # 2. Address missing coordinates (target 1)
     addr_missing = Address.objects.create(
         street_number='456', route='Other St', locality=locality,
         raw='456 Other St'
     )
+    Place.objects.create(address=addr_missing, content_type=ct, object_id=str(org.id), organization=org)
     
     # 3. Address missing coordinates but is a sibling to target 1 (same street_number, route, locality)
     addr_missing_sibling = Address.objects.create(
         street_number='456', route='Other St', locality=locality,
         raw='456 Other St Ste B'
     )
+    Place.objects.create(address=addr_missing_sibling, content_type=ct, object_id=str(org.id), organization=org)
     
     # 4. Another distinct address missing coordinates (target 2)
     addr_missing_distinct = Address.objects.create(
         street_number='789', route='Another St', locality=locality,
         raw='789 Another St'
     )
+    Place.objects.create(address=addr_missing_distinct, content_type=ct, object_id=str(org.id), organization=org)
 
     return {
         'with_coords': addr_with_coords,
