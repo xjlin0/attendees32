@@ -86,45 +86,53 @@ class TestSpyGuard:
         assert guard.test_func() is True
         mock_menu.user_can_create_attendee.assert_called_once_with(guard.request.user)
 
+    @patch("attendees.users.authorization.route_guard.Attendee")
     @patch("attendees.users.authorization.route_guard.time.sleep")
-    def test_test_func_self_attendee(self, mock_sleep):
+    def test_test_func_self_attendee(self, mock_sleep, mock_attendee):
+        mock_attendee.objects.filter.return_value.exists.return_value = True
         current_attendee = MagicMock()
         current_attendee.id = 123
-        guard = self.setup_guard(meta_target="123", current_attendee=current_attendee)
+        guard = self.setup_guard(meta_target="00000000-0000-0000-0000-000000000123", current_attendee=current_attendee)
 
         assert guard.test_func() is True
         mock_sleep.assert_not_called()
 
+    @patch("attendees.users.authorization.route_guard.Attendee")
     @patch("attendees.users.authorization.route_guard.time.sleep")
-    def test_test_func_same_org_can_see_all(self, mock_sleep):
+    def test_test_func_same_org_can_see_all(self, mock_sleep, mock_attendee):
+        mock_attendee.objects.filter.return_value.exists.return_value = True
         current_attendee = MagicMock()
         current_attendee.id = 123
         current_attendee.under_same_org_with.return_value = True
-        guard = self.setup_guard(meta_target="456", current_attendee=current_attendee)
+        guard = self.setup_guard(meta_target="00000000-0000-0000-0000-000000000456", current_attendee=current_attendee)
         guard.request.user.can_see_all_organizational_meets_attendees.return_value = True
 
         assert guard.test_func() is True
-        current_attendee.under_same_org_with.assert_called_once_with("456")
+        current_attendee.under_same_org_with.assert_called_once_with("00000000-0000-0000-0000-000000000456")
 
+    @patch("attendees.users.authorization.route_guard.Attendee")
     @patch("attendees.users.authorization.route_guard.time.sleep")
-    def test_test_func_same_org_can_schedule(self, mock_sleep):
+    def test_test_func_same_org_can_schedule(self, mock_sleep, mock_attendee):
+        mock_attendee.objects.filter.return_value.exists.return_value = True
         current_attendee = MagicMock()
         current_attendee.id = 123
         current_attendee.under_same_org_with.return_value = True
         current_attendee.can_schedule_attendee.return_value = True
-        guard = self.setup_guard(meta_target="456", current_attendee=current_attendee)
+        guard = self.setup_guard(meta_target="00000000-0000-0000-0000-000000000456", current_attendee=current_attendee)
         guard.request.user.can_see_all_organizational_meets_attendees.return_value = False
 
         assert guard.test_func() is True
-        current_attendee.can_schedule_attendee.assert_called_once_with("456")
+        current_attendee.can_schedule_attendee.assert_called_once_with("00000000-0000-0000-0000-000000000456")
 
+    @patch("attendees.users.authorization.route_guard.Attendee")
     @patch("attendees.users.authorization.route_guard.time.sleep")
-    def test_test_func_same_org_cannot_access(self, mock_sleep):
+    def test_test_func_same_org_cannot_access(self, mock_sleep, mock_attendee):
+        mock_attendee.objects.filter.return_value.exists.return_value = True
         current_attendee = MagicMock()
         current_attendee.id = 123
         current_attendee.under_same_org_with.return_value = True
         current_attendee.can_schedule_attendee.return_value = False
-        guard = self.setup_guard(meta_target="456", current_attendee=current_attendee)
+        guard = self.setup_guard(meta_target="00000000-0000-0000-0000-000000000456", current_attendee=current_attendee)
         guard.request.user.can_see_all_organizational_meets_attendees.return_value = False
 
         assert guard.test_func() is False

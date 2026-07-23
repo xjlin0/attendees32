@@ -13,6 +13,7 @@ Attendees.datagridUpdate = {
   },
   attendeeAttrs: null,  // will be assigned later
   attendeeId: '',  // the attendee is being edited, since it maybe admin/parent editing another attendee
+  attendeeRemoved: null,
   attendeeAjaxUrl: null,
   attendeePhotoFileUploader: null,
   relationshipDatagrid: null,
@@ -193,10 +194,11 @@ Attendees.datagridUpdate = {
       $.ajax({
         url: Attendees.datagridUpdate.attendeeAjaxUrl,
         success: (response) => {
+          Attendees.datagridUpdate.attendeeRemoved = response && response.is_removed;
+          $('h3.page-title').text((Attendees.datagridUpdate.attendeeRemoved ? 'Deleted record of ' : 'Details of ') + response.infos.names.original);
+          window.top.document.title = response.infos.names.original;
           Attendees.datagridUpdate.attendeeFormConfigs = Attendees.datagridUpdate.getAttendeeFormConfigs();
           Attendees.datagridUpdate.attendeeFormConfigs.formData = response ? response : Attendees.datagridUpdate.attendeeMainDxFormDefault;
-          $('h3.page-title').text('Details of ' + Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original);
-          window.top.document.title = Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original;
           Attendees.datagridUpdate.attendeeMainDxForm = $("div.datagrid-attendee-update").dxForm(Attendees.datagridUpdate.attendeeFormConfigs).dxForm('instance');
           Attendees.datagridUpdate.populateBasicInfoBlock();
           Attendees.datagridUpdate.initListeners();
@@ -945,7 +947,7 @@ Attendees.datagridUpdate = {
           elementAttr: {
             class: 'attendee-form-delete',  // for toggling editing mode
           },
-          disabled: !Attendees.utilities.editingEnabled,
+          disabled: !Attendees.utilities.editingEnabled && Attendees.datagridUpdate.attendeeRemoved,
           text: "Delete attendee",
           icon: 'trash',
           hint: "delete attendee's all data in the page",

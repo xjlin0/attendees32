@@ -19,6 +19,7 @@ from attendees.persons.models import (  # , Relationship
     Relation,
     Utility, Past)
 from attendees.persons.services import AttendingService, FolkService
+from attendees.whereabouts.services import PlaceService
 
 
 class AttendeeService:
@@ -447,7 +448,8 @@ class AttendeeService:
         #     is_removed=False,
         # ).delete()
 
-        attendee.places.filter(is_removed=False).delete()
+        for place in attendee.places.filter(is_removed=False):
+            PlaceService.destroy_with_associations(place)
 
         for family in attendee.folks.filter(is_removed=False):
             FolkService.destroy_with_associations(family, attendee)

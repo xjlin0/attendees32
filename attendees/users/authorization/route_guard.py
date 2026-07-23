@@ -1,8 +1,9 @@
 import time
 
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 
+from attendees.persons.models import Attendee
 from attendees.users.models import Menu
 
 
@@ -46,6 +47,9 @@ class SpyGuard(UserPassesTestMixin):
                 self.request.user
             )  # create nonfamily attendee is attendee_create_view
         if targeting_attendee_id:
+            if not Attendee.objects.filter(pk=targeting_attendee_id).exists():
+                raise Http404("Attendee does not exist or has been deleted.")
+
             if current_attendee:
                 if str(current_attendee.id) == targeting_attendee_id:
                     return True  # self.request.resolver_match.url_name == Menu.ATTENDEE_UPDATE_VIEW # for make spy guard only allows self/new at certian view

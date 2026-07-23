@@ -62,14 +62,14 @@ class PlaceSerializer(serializers.ModelSerializer):
         ct = validated_data.get('content_type')
         if not ct and instance:
             ct = instance.content_type
-            
+
         obj_id = validated_data.get('object_id')
         if not obj_id and instance:
             obj_id = instance.object_id
-            
+
         if not ct or not obj_id:
             return ""
-            
+
         if ct.model == 'attendee':
             from attendees.persons.models import Attendee
             attendee = Attendee.objects.filter(pk=obj_id).first()
@@ -80,21 +80,21 @@ class PlaceSerializer(serializers.ModelSerializer):
             folk = Folk.objects.filter(pk=obj_id).first()
             if folk:
                 return folk.display_name
-                
+
         return ""
 
     def _handle_address_update_or_fork(self, place_data, validated_data, instance=None, is_update=False):
         address_data = place_data.get("address")
         if not address_data:
             return None
-            
+
         address_id = address_data.get("id")
-        
+
         # 1. Resolve locality safely
         new_city = address_data.get("city")
         new_zip = address_data.get("postal_code")
         state_id = address_data.get("state_id")
-        
+
         locality = None
         if state_id:
             new_state = State.objects.filter(pk=state_id).first()
@@ -118,7 +118,7 @@ class PlaceSerializer(serializers.ModelSerializer):
                 clean_address_data[field] = address_data[field]
         if locality:
             clean_address_data["locality"] = locality
-            
+
         place_display_name = validated_data.get("display_name") or place_data.get("display_name")
         if not place_display_name and instance:
             place_display_name = instance.display_name
@@ -126,7 +126,7 @@ class PlaceSerializer(serializers.ModelSerializer):
             place_display_name = "main"
 
         subject_name = self._get_subject_name(validated_data, instance)
-        
+
         generated_name = f"{subject_name} {place_display_name} address".strip()
         if generated_name:
             clean_address_data["name"] = generated_name[:40]
@@ -145,7 +145,7 @@ class PlaceSerializer(serializers.ModelSerializer):
                     if getattr(old_address, k) != v:
                         is_different = True
                         break
-                
+
                 if not is_different:
                     return old_address # No changes, return the existing one safely
 
@@ -162,7 +162,7 @@ class PlaceSerializer(serializers.ModelSerializer):
         # 4. Fork / Create new address
         # Remove any empty/None fields for a cleaner get_or_create/filter
         search_kwargs = {k: v for k, v in clean_address_data.items() if v is not None}
-        
+
         # We can't rely on getting an exact match for float lat/long sometimes, 
         # but for simplicity, we just create a new one.
         # Alternatively, try to find an existing one first to deduplicate
@@ -170,7 +170,7 @@ class PlaceSerializer(serializers.ModelSerializer):
             existing_address = Address.objects.filter(**search_kwargs).first()
             if existing_address:
                 return existing_address
-            
+
         return Address.objects.create(**clean_address_data)
 
     def create(self, validated_data):

@@ -22,10 +22,10 @@ class Command(BaseCommand):
 
         # Clean up unused Address records first
         from attendees.whereabouts.models import Place
-        
-        used_address_ids = Place._base_manager.values_list('address_id', flat=True).distinct()
+
+        used_address_ids = Place.all_objects.values_list('address_id', flat=True).distinct()
         unused_addresses = Address.objects.exclude(id__in=used_address_ids)
-        
+
         # Django's delete() returns a tuple (total_deleted, dict_of_deleted_models)
         deleted_count, deleted_details = unused_addresses.delete()
         if deleted_count > 0:

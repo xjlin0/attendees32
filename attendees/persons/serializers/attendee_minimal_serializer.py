@@ -21,6 +21,7 @@ class AttendeeMinimalSerializer(serializers.ModelSerializer):
         many=False, read_only=True
     )  # For MVP, Admin UI can handle this use case. Todo: when non admins start to use app, admin need to edit this on UI
     organization_slug = serializers.CharField(read_only=True)
+    is_removed = serializers.BooleanField(read_only=True)
 
     def get_photo_path(self, obj):
         return obj.photo.url if obj.photo else ""
@@ -29,7 +30,7 @@ class AttendeeMinimalSerializer(serializers.ModelSerializer):
         model = Attendee
         # fields = '__all__'
         fields = [
-            f.name for f in model._meta.fields if f.name not in ["is_removed"]
+            f.name for f in model._meta.fields
         ] + [
             "organization_slug",
             "attendingmeets",
