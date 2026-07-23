@@ -6,4 +6,5 @@ def allauth_settings(request):
     return {
         "ACCOUNT_ALLOW_REGISTRATION": settings.ACCOUNT_ALLOW_REGISTRATION,
         "mfa_passkey_login_enabled": getattr(settings, "MFA_PASSKEY_LOGIN_ENABLED", False),
+        "mfa_enforced": getattr(settings, "MFA_ENFORCED", False),
     }

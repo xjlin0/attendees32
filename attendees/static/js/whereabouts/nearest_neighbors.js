@@ -14,7 +14,7 @@ window.Attendees.nearestNeighbors = {
         if (loadOptions.skip) args.skip = loadOptions.skip;
         if (loadOptions.take) args.take = loadOptions.take;
         else args.take = 20;
-        
+
         if (window.Attendees.nearestNeighbors.meetTagBox) {
           const meets = window.Attendees.nearestNeighbors.meetTagBox.option('value');
           if (meets && meets.length > 0) {
@@ -32,7 +32,7 @@ window.Attendees.nearestNeighbors = {
             });
           },
           error: (result) => {
-            deferred.reject(result && result.detail || 'Nearest Neighbors Data Loading Error');
+            deferred.reject(result && result.responseJSON && result.responseJSON.detail || 'Nearest Neighbors Data Loading Error');
           },
           timeout: 10000,
         });
@@ -49,7 +49,7 @@ window.Attendees.nearestNeighbors = {
         existingGrid.dispose();
       }
     }
-    
+
     $('#nearest-neighbors-grid').dxDataGrid({
       dataSource: dataSource,
       height: '100%',
@@ -156,7 +156,7 @@ window.Attendees.nearestNeighbors = {
         const gridContainer = $('<div id="nearest-neighbors-grid" style="flex: 1 1 auto; min-height: 0; width: 100%;"></div>');
         e.append(tagBoxContainer);
         e.append(gridContainer);
-        
+
         if (availableMeets && availableMeets.length > 0) {
           window.Attendees.nearestNeighbors.meetTagBox = tagBoxContainer.dxTagBox({
             label: 'Show attendees joining at least one of activities',
