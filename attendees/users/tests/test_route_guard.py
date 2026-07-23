@@ -91,7 +91,7 @@ class TestSpyGuard:
     def test_test_func_self_attendee(self, mock_sleep, mock_attendee):
         mock_attendee.objects.filter.return_value.exists.return_value = True
         current_attendee = MagicMock()
-        current_attendee.id = 123
+        current_attendee.id = "00000000-0000-0000-0000-000000000123"
         guard = self.setup_guard(meta_target="00000000-0000-0000-0000-000000000123", current_attendee=current_attendee)
 
         assert guard.test_func() is True

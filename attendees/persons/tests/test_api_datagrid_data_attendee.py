@@ -5,7 +5,7 @@ from attendees.persons.views.api.datagrid_data_attendee import ApiDatagridDataAt
 
 
 class TestApiDatagridDataAttendeeViewSet:
-    @patch('attendees.persons.views.api.datagrid_data_attendee.Attendee.objects.annotate')
+    @patch('attendees.persons.views.api.datagrid_data_attendee.Attendee.all_objects.annotate')
     def test_get_queryset_with_pk(self, mock_annotate):
         view = ApiDatagridDataAttendeeViewSet()
         view.request = MagicMock()

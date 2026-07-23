@@ -66,7 +66,7 @@ class TestNearestNeighborsAPIView:
         response = api_client.get(url)
         
         assert response.status_code == 500
-        assert "Error processing request" in response.data['detail']
+        assert "Error fetching nearest neighbors:" in response.data['detail']
 
     @patch('attendees.whereabouts.views.api.nearest_neighbors.CoordinatesService')
     def test_get_nearest_neighbors_with_meets_param(self, mock_coords_service, api_client):
