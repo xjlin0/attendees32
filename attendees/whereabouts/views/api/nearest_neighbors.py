@@ -50,13 +50,13 @@ class NearestNeighborsAPIView(SpyGuard, APIView):
         except Exception as e:
             logger.error(f"Error fetching nearest neighbors: {e}")
             return Response(
-                {"detail": "Error processing request."},
+                {"detail": f"Error fetching nearest neighbors: {e}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
         if not target_place:
             return Response(
-                {"detail": "No valid coordinates found for the provided ID. Please update the spatial data first."},
+                {"detail": "No valid coordinates found for the provided Place Id. Please update the spatial data first."},
                 status=status.HTTP_404_NOT_FOUND
             )
 

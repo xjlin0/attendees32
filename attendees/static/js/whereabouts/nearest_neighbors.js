@@ -31,8 +31,8 @@ window.Attendees.nearestNeighbors = {
               totalCount: result.totalCount
             });
           },
-          error: () => {
-            deferred.reject('Nearest Neighbors Data Loading Error');
+          error: (result) => {
+            deferred.reject(result && result.detail || 'Nearest Neighbors Data Loading Error');
           },
           timeout: 10000,
         });
