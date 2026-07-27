@@ -1,5 +1,6 @@
 import time
 import logging
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from address.models import Address
@@ -20,6 +21,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        if not getattr(settings, 'GOOGLE_MAPS_API_KEY', '') or not str(settings.GOOGLE_MAPS_API_KEY).strip():
+            self.stdout.write(self.style.ERROR("GOOGLE_MAPS_API_KEY is not configured or empty. Aborting."))
+            return
+
         sleep_time = options['sleep']
 
         # Clean up unused Address records first
