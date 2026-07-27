@@ -118,6 +118,10 @@ class CoordinatesService:
             logger.info(f"Address {address_id} already has coordinates. Skipping.")
             return True
 
+        if not target_address.street_number or not target_address.route:
+            logger.warning(f"Address {address_id} is missing street_number or route. Geocoding skipped.")
+            return False
+
         # Construct the search string. Ensure we have the necessary parts.
         search_parts = []
         if target_address.street_number:

@@ -1,7 +1,9 @@
 import time
 import logging
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from address.models import Address
+from attendees.whereabouts.models import Place
 from attendees.whereabouts.services.coordinates_service import CoordinatesService
 
 logger = logging.getLogger(__name__)
@@ -21,8 +23,6 @@ class Command(BaseCommand):
         sleep_time = options['sleep']
 
         # Clean up unused Address records first
-        from attendees.whereabouts.models import Place
-
         used_address_ids = Place.all_objects.values_list('address_id', flat=True).distinct()
         unused_addresses = Address.objects.exclude(id__in=used_address_ids)
 
@@ -31,14 +31,13 @@ class Command(BaseCommand):
         if deleted_count > 0:
             self.stdout.write(self.style.WARNING(f"Cleaned up {deleted_count} unused Address records."))
 
-        # Find all addresses missing coordinates
+        # Find all addresses missing coordinates and having both street_number and route
         # Because CoordinatesService updates siblings, we only need to query distinct address combinations.
-        # However, for simplicity and to ensure we don't miss any edge cases, we'll iterate through all missing.
         # The service itself protects against redundant API calls if siblings were already updated in a previous iteration.
-        missing_coords_addresses = Address.objects.filter(
-            latitude__isnull=True
-        ) | Address.objects.filter(
-            longitude__isnull=True
+        missing_coords_addresses = (
+            Address.objects.filter(Q(latitude__isnull=True) | Q(longitude__isnull=True))
+            .exclude(Q(street_number__isnull=True) | Q(street_number=''))
+            .exclude(Q(route__isnull=True) | Q(route=''))
         )
 
         # Optimize by getting only distinct combinations of street_number, route, locality

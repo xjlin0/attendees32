@@ -2,17 +2,16 @@ import pytest
 from io import StringIO
 from unittest.mock import patch
 from django.core.management import call_command
+from django.contrib.contenttypes.models import ContentType
 from address.models import Address, Locality, State, Country
+from attendees.whereabouts.models.organization import Organization
+from attendees.whereabouts.models.place import Place
 
 @pytest.fixture
 def address_setup():
     country = Country.objects.create(name='USA', code='US')
     state = State.objects.create(name='California', code='CA', country=country)
     locality = Locality.objects.create(name='Hayward', postal_code='94541', state=state)
-    # Create a dummy content object for the generic foreign key
-    from django.contrib.contenttypes.models import ContentType
-    from attendees.whereabouts.models.organization import Organization
-    from attendees.whereabouts.models.place import Place
 
     org = Organization.objects.create(
         slug="test-org",
@@ -48,11 +47,19 @@ def address_setup():
     )
     Place.objects.create(address=addr_missing_distinct, content_type=ct, object_id=str(org.id), organization=org)
 
+    # 5. Address missing street_number and route (should be ignored by query)
+    addr_no_street = Address.objects.create(
+        locality=locality,
+        raw='Hayward, CA'
+    )
+    Place.objects.create(address=addr_no_street, content_type=ct, object_id=str(org.id), organization=org)
+
     return {
         'with_coords': addr_with_coords,
         'missing': addr_missing,
         'missing_sibling': addr_missing_sibling,
-        'missing_distinct': addr_missing_distinct
+        'missing_distinct': addr_missing_distinct,
+        'no_street': addr_no_street,
     }
 
 @pytest.mark.django_db
