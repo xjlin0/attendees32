@@ -8,6 +8,19 @@ ENV_NAME = env('ENV_NAME', default='production.py')  # for mail task
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["chineseforchristchurch.org"])
+# https://docs.djangoproject.com/en/4.2/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = env.list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    default=[
+        "https://chineseforchristchurch.org",
+        "https://*.chineseforchristchurch.org",
+    ],
+)
+for host in ALLOWED_HOSTS:
+    if not host.startswith("http://") and not host.startswith("https://"):
+        url = f"https://{host}"
+        if url not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(url)
 
 # DATABASES
 # ------------------------------------------------------------------------------
