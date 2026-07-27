@@ -35,16 +35,16 @@ class UpdateSpatialAPIView(APIView):
 
         # The service handles checking if it already has coordinates,
         # fetching from Google Maps, and updating the database.
-        success = CoordinatesService.geocode_address(place.address.id)
+        success, reason = CoordinatesService.geocode_address(place.address.id, return_details=True)
 
         if success:
             return Response(
-                {"success": True, "detail": "Address coordinates updated successfully."},
+                {"success": True, "detail": f"Address coordinates updated successfully: {reason}"},
                 status=status.HTTP_200_OK
             )
         else:
             return Response(
-                {"success": False, "detail": "Failed to update coordinates or they already exist."},
+                {"success": False, "detail": f"Failed to update coordinates or skipped: {reason}"},
                 status=status.HTTP_200_OK  # 200 OK because the action completed (even if skipped/failed silently)
             )
 

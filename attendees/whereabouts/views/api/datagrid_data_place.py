@@ -36,6 +36,20 @@ class ApiDatagridDataPlaceViewSet(
             pk=querying_place_id, organization=self.request.user.organization
         )
 
+    def update(self, request, *args, **kwargs):
+        self._geocoding_notice = None
+        response = super().update(request, *args, **kwargs)
+        if getattr(self, "_geocoding_notice", None) and isinstance(response.data, dict):
+            response.data["geocoding_error"] = self._geocoding_notice
+        return response
+
+    def create(self, request, *args, **kwargs):
+        self._geocoding_notice = None
+        response = super().create(request, *args, **kwargs)
+        if getattr(self, "_geocoding_notice", None) and isinstance(response.data, dict):
+            response.data["geocoding_error"] = self._geocoding_notice
+        return response
+
     def perform_update(self, serializer):
         target_attendee = get_object_or_404(
             Attendee, pk=self.request.META.get("HTTP_X_TARGET_ATTENDEE_ID")
@@ -43,7 +57,9 @@ class ApiDatagridDataPlaceViewSet(
         if self.request.user.privileged_to_edit(target_attendee.id):  # checked same org
             instance = serializer.save()
             if instance.address and (instance.address.latitude is None or instance.address.longitude is None):
-                CoordinatesService.geocode_address(instance.address.id)
+                success, reason = CoordinatesService.geocode_address(instance.address.id, return_details=True)
+                if not success:
+                    self._geocoding_notice = reason
             instance.subject.save(update_fields=['modified'])
             if instance.subject != target_attendee:
                 target_attendee.save(update_fields=['modified'])
@@ -60,7 +76,9 @@ class ApiDatagridDataPlaceViewSet(
         if self.request.user.privileged_to_edit(target_attendee.id):  # checked same org
             instance = serializer.save(organization=self.request.user.organization)
             if instance.address and (instance.address.latitude is None or instance.address.longitude is None):
-                CoordinatesService.geocode_address(instance.address.id)
+                success, reason = CoordinatesService.geocode_address(instance.address.id, return_details=True)
+                if not success:
+                    self._geocoding_notice = reason
             instance.subject.save(update_fields=['modified'])
             if instance.subject != target_attendee:
                 target_attendee.save(update_fields=['modified'])

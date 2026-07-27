@@ -26,14 +26,32 @@ class TestUpdateSpatialAPIView:
         mock_place.objects.select_related.return_value.get.return_value = mock_instance
 
         with patch('attendees.whereabouts.views.api.update_spatial.CoordinatesService.geocode_address') as mock_geocode:
-            mock_geocode.return_value = True
+            mock_geocode.return_value = (True, "Geocoded successfully")
             
             url = reverse('whereabouts:update_spatial', kwargs={'pk': '123'})
             response = api_client.post(url)
             
             assert response.status_code == 200
-            assert response.data['detail'] == "Address coordinates updated successfully."
-            mock_geocode.assert_called_once_with(999)
+            assert response.data['detail'] == "Address coordinates updated successfully: Geocoded successfully"
+            mock_geocode.assert_called_once_with(999, return_details=True)
+
+    @patch('attendees.whereabouts.views.api.update_spatial.Place')
+    def test_post_geocoding_failure(self, mock_place, api_client):
+        mock_instance = MagicMock()
+        mock_instance.address = MagicMock()
+        mock_instance.address.id = 999
+        mock_place.objects.select_related.return_value.get.return_value = mock_instance
+
+        with patch('attendees.whereabouts.views.api.update_spatial.CoordinatesService.geocode_address') as mock_geocode:
+            mock_geocode.return_value = (False, "REQUEST_DENIED - Invalid key")
+            
+            url = reverse('whereabouts:update_spatial', kwargs={'pk': '123'})
+            response = api_client.post(url)
+            
+            assert response.status_code == 200
+            assert response.data['success'] is False
+            assert "Failed to update coordinates or skipped: REQUEST_DENIED - Invalid key" in response.data['detail']
+            mock_geocode.assert_called_once_with(999, return_details=True)
 
     @patch('attendees.whereabouts.views.api.update_spatial.Place.objects.select_related')
     def test_post_place_not_found(self, mock_select_related, api_client):

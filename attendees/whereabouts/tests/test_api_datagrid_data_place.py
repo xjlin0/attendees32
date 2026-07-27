@@ -63,6 +63,7 @@ class TestApiDatagridDataPlaceViewSet:
         mock_target_attendee.id = "123"
         mock_get_object_or_404.return_value = mock_target_attendee
         
+        mock_coords_service.geocode_address.return_value = (True, "Success")
         mock_serializer = MagicMock()
         mock_instance = MagicMock()
         mock_instance.address.latitude = None
@@ -74,7 +75,7 @@ class TestApiDatagridDataPlaceViewSet:
         mock_get_object_or_404.assert_called_once()
         mock_request.user.privileged_to_edit.assert_called_once_with("123")
         mock_serializer.save.assert_called_once()
-        mock_coords_service.geocode_address.assert_called_once_with(mock_instance.address.id)
+        mock_coords_service.geocode_address.assert_called_once_with(mock_instance.address.id, return_details=True)
         mock_instance.subject.save.assert_called_once_with(update_fields=['modified'])
         mock_target_attendee.save.assert_called_once_with(update_fields=['modified'])
 
@@ -110,6 +111,7 @@ class TestApiDatagridDataPlaceViewSet:
         mock_target_attendee.id = "123"
         mock_get_object_or_404.return_value = mock_target_attendee
         
+        mock_coords_service.geocode_address.return_value = (False, "API error")
         mock_serializer = MagicMock()
         mock_instance = MagicMock()
         mock_instance.address.longitude = None
@@ -118,8 +120,9 @@ class TestApiDatagridDataPlaceViewSet:
         
         view.perform_create(mock_serializer)
         
+        assert getattr(view, "_geocoding_notice", None) == "API error"
         mock_serializer.save.assert_called_once_with(organization=mock_request.user.organization)
-        mock_coords_service.geocode_address.assert_called_once_with(mock_instance.address.id)
+        mock_coords_service.geocode_address.assert_called_once_with(mock_instance.address.id, return_details=True)
         mock_instance.subject.save.assert_called_once_with(update_fields=['modified'])
         mock_target_attendee.save.assert_called_once_with(update_fields=['modified'])
 
