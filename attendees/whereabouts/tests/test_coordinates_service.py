@@ -179,6 +179,27 @@ class TestCoordinatesService:
         finally:
             settings.GOOGLE_MAPS_API_KEY = original_key
 
+    @patch('attendees.whereabouts.services.coordinates_service.requests.get')
+    def test_geocode_address_api_failure_details(self, mock_get, address_setup):
+        """Test handling of Google Maps API returning error status with error_message."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "status": "REQUEST_DENIED",
+            "error_message": "The provided API key is invalid.",
+            "results": []
+        }
+        mock_get.return_value = mock_response
+
+        original_key = settings.GOOGLE_MAPS_API_KEY
+        settings.GOOGLE_MAPS_API_KEY = 'dummy_key'
+
+        try:
+            success, reason = CoordinatesService.geocode_address(address_setup['address1'].id, return_details=True)
+            assert success is False
+            assert "REQUEST_DENIED - The provided API key is invalid." in reason
+        finally:
+            settings.GOOGLE_MAPS_API_KEY = original_key
+
     def test_get_nearest_neighbors_target_not_found(self, address_setup):
         """Test get_nearest_neighbors when the target Place doesn't exist."""
         org = Organization.objects.create(slug="test-org-notfound", display_name="Test Org")

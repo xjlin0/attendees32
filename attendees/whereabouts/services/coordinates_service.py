@@ -98,29 +98,36 @@ class CoordinatesService:
         return target_place, neighbors
 
     @staticmethod
-    def geocode_address(address_id):
+    def geocode_address(address_id, return_details=False):
         """
         Fetches coordinates for a given address ID from Google Maps API.
         If successful, updates the target address and all matching sibling addresses
         (same street_number, route, and locality) to minimize API usage.
         """
+        def result(success, message):
+            return (success, message) if return_details else success
+
         if not settings.GOOGLE_MAPS_API_KEY:
-            logger.warning("GOOGLE_MAPS_API_KEY is not set. Geocoding skipped.")
-            return False
+            msg = "GOOGLE_MAPS_API_KEY is not set."
+            logger.warning(f"{msg} Geocoding skipped.")
+            return result(False, msg)
 
         try:
             target_address = Address.objects.get(id=address_id)
         except Address.DoesNotExist:
-            logger.error(f"Address with id {address_id} does not exist.")
-            return False
+            msg = f"Address with id {address_id} does not exist."
+            logger.error(msg)
+            return result(False, msg)
 
         if target_address.latitude and target_address.longitude:
+            msg = "Already has coordinates."
             logger.info(f"Address {address_id} already has coordinates. Skipping.")
-            return True
+            return result(True, msg)
 
         if not target_address.street_number or not target_address.route:
+            msg = "Missing street_number or route."
             logger.warning(f"Address {address_id} is missing street_number or route. Geocoding skipped.")
-            return False
+            return result(False, msg)
 
         # Construct the search string. Ensure we have the necessary parts.
         search_parts = []
@@ -136,8 +143,9 @@ class CoordinatesService:
                     search_parts.append(target_address.locality.state.country.name)
 
         if not search_parts:
+            msg = "Insufficient data for geocoding."
             logger.warning(f"Address {address_id} has insufficient data for geocoding.")
-            return False
+            return result(False, msg)
 
         search_query = ", ".join(search_parts)
         
@@ -151,8 +159,9 @@ class CoordinatesService:
             response = requests.get(url, params=params)
             response.raise_for_status()
             data = response.json()
+            status_code = data.get("status")
 
-            if data.get("status") == "OK" and data.get("results"):
+            if status_code == "OK" and data.get("results"):
                 location = data["results"][0]["geometry"]["location"]
                 lat = location.get("lat")
                 lng = location.get("lng")
@@ -165,12 +174,20 @@ class CoordinatesService:
                         locality=target_address.locality
                     ).update(latitude=lat, longitude=lng)
                     
+                    msg = f"Geocoded to ({lat}, {lng})"
                     logger.info(f"Successfully geocoded Address {address_id} and siblings to ({lat}, {lng})")
-                    return True
+                    return result(True, msg)
+                else:
+                    msg = "API Status OK but lat/lng missing."
+                    logger.warning(f"Geocoding failed for Address {address_id}. {msg}")
+                    return result(False, msg)
             else:
-                logger.warning(f"Geocoding failed for Address {address_id}. API Response: {data.get('status')}")
-                return False
+                error_msg = data.get("error_message", "")
+                reason_str = f"{status_code}" + (f" - {error_msg}" if error_msg else "")
+                logger.warning(f"Geocoding failed for Address {address_id}. API Response: {reason_str}")
+                return result(False, f"API Response: {reason_str}")
 
         except requests.RequestException as e:
+            msg = f"Request error: {e}"
             logger.error(f"Error calling Google Maps API for Address {address_id}: {e}")
-            return False
+            return result(False, msg)

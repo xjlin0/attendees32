@@ -64,16 +64,16 @@ class Command(BaseCommand):
         failure_count = 0
 
         for index, address in enumerate(distinct_addresses, start=1):
-            self.stdout.write(f"Processing {index}/{total_to_process}: Address ID {address.id}...")
+            self.stdout.write(f"Processing {index}/{total_to_process}: Id {address.id} {address.name}...")
 
-            result = CoordinatesService.geocode_address(address.id)
+            success, reason = CoordinatesService.geocode_address(address.id, return_details=True)
 
-            if result:
+            if success:
                 success_count += 1
-                self.stdout.write(self.style.SUCCESS(f"  -> Success"))
+                self.stdout.write(self.style.SUCCESS(f"  -> Success: {reason}"))
             else:
                 failure_count += 1
-                self.stdout.write(self.style.ERROR(f"  -> Failed or Skipped"))
+                self.stdout.write(self.style.ERROR(f"  -> Failed or Skipped: {reason}"))
 
             # Sleep to respect rate limits
             time.sleep(sleep_time)

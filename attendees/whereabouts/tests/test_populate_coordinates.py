@@ -104,8 +104,8 @@ class TestPopulateCoordinatesCommand:
         original_key = getattr(settings, 'GOOGLE_MAPS_API_KEY', '')
         settings.GOOGLE_MAPS_API_KEY = 'dummy_key'
         try:
-            # Mock geocode_address to return True for the first distinct address and False for the second
-            mock_geocode.side_effect = [True, False]
+            # Mock geocode_address to return tuples since return_details=True is used
+            mock_geocode.side_effect = [(True, 'OK'), (False, 'API error')]
             
             out = StringIO()
             call_command('populate_coordinates', sleep=0.1, stdout=out)
