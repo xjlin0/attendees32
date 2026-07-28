@@ -162,7 +162,7 @@ https://dbdiagram.io/d/5d5ff66eced98361d6dddc48
 DJANGO_SETTINGS_MODULE=config.settings.production
 DJANGO_SECRET_KEY=<<your django secret key>>
 DJANGO_ADMIN_URL=<<any cryptic string as admin path>>
-DJANGO_ALLOWED_HOSTS=<<your domain name>>
+DJANGO_ALLOWED_HOSTS=<<your domain name>>,127.0.0.1,localhost
 DJANGO_DEBUG=False
 ENV_NAME=production
 # Security
@@ -230,10 +230,10 @@ EMAIL_HOST=mailgun
 * if other staging ran previously (such as local), please remove it like `docker-compose -f local.yml down -v`. Also please remove previous private media photos at attendees32/attendees/media/private-media/attendee_portrait/*
 * double check if previous [docker images needs to be removed](https://medium.com/@wlarch/no-space-left-on-device-when-using-docker-compose-why-c4a2c783c6f6). It will also remove attendees user images too.
 * double check the domain name in `compose/production/traefik/traefik.yml` and `attendees/contrib/sites/migrations/0003_set_site_domain_and_name.py`
-* setup env variables for django secret key:
+* setup env variables for django secret key in .envs/.production/.django:
 ```
-export DJANGO_ALLOWED_HOSTS=("your.domain.name")
-export DJANGO_SECRET_KEY=<<production Django secret key>>
+DJANGO_ALLOWED_HOSTS=your.domain.name,another.domain.name,127.0.0.1,localhost
+DJANGO_SECRET_KEY=<<production Django secret key>>
 ```
 * build and start the production machine by `docker-compose -f production.yml build`
 * migrate database by
@@ -265,8 +265,34 @@ export DJANGO_SECRET_KEY=<<production Django secret key>>
 * When postgres container is up, remove all backups from docker `docker-compose -f production.yml exec postgres sh -c "rm /backups/*"`
 * print INSERT commands for a table `docker-compose -f production.yml exec postgres pg_dump --column-inserts --data-only --table=<<table name>> -d attendees --username=<<POSTGRES_USER in .envs/.production/.postgres>>`
 * Enter postgres db console by `docker-compose -f production.yml exec postgres psql -d attendees --username=<<POSTGRES_USER in .envs/.production/.postgres>>`
+* Clear out mfa to save an user lost phones `DELETE FROM mfa_authenticator WHERE user_id=<<user` id>>;`
 </details>
 
+## Apache Proxy configuration
+Since the Django server is running on port 8008, you can use Apache to proxy the requests to the Django server. Here is an example configuration for Apache:
+```
+<VirtualHost *:443>
+    <LocationMatch "(?i)(\/\.git.*|\.(jsp|old|json|yaml|yml|conf|bak|backup|php|txt|env|ini|sql|django|postgres|esp)$)">
+        Require all denied
+    </LocationMatch>
+
+    RewriteEngine on
+    RewriteCond %{HTTP_HOST} !^attendees\.chineseforchristchurch\.org(:[0-9]+)?$ [NC]
+    RewriteRule ^ - [F,L]
+
+    ProxyPreserveHost On
+    RequestHeader set X-Forwarded-Proto "https"
+    ProxyPass /.well-known !
+
+    RewriteCond %{HTTP:UPGRADE} ^WebSocket$ [NC]
+    RewriteCond %{HTTP:CONNECTION} Upgrade [NC]
+    RewriteRule ^/?(.*) "ws://127.0.0.1:8008/$1" [P]
+
+    ProxyPass / http://127.0.0.1:8008/
+    ProxyPassReverse / http://127.0.0.1:8008/
+</VirtualHost>
+```
+Don't forget to enable module *header* since the webauthn needs the header.
 
 ## [How to start dev env on Linux](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html)
 
