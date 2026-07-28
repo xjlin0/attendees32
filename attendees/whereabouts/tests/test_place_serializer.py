@@ -145,3 +145,64 @@ class TestPlaceSerializer:
         data = serializer.data
         assert data['attendee_id'] == str(wife.id)
         assert data['attendee_name'] == "SR Wife Active"
+
+    def test_address_update_resets_coordinates_when_location_fields_change(self):
+        """
+        Verify that updating an address with new location components (e.g. street_number, route)
+        resets latitude and longitude to None so that re-geocoding is triggered in viewsets.
+        """
+        org = Organization.objects.create(slug="geo-org", display_name="Geo Org")
+        country = Country.objects.create(name="USA", code="US")
+        state = State.objects.create(name="California", code="CA", country=country)
+        locality = Locality.objects.create(name="Hayward", postal_code="94541", state=state)
+        old_address = Address.objects.create(
+            street_number="123",
+            route="Old St",
+            raw="123 Old St",
+            locality=locality,
+            latitude=37.7749,
+            longitude=-122.4194,
+        )
+        ctype_org = ContentType.objects.get_for_model(Organization)
+        place = Place.objects.create(
+            content_type=ctype_org,
+            object_id=str(org.id),
+            organization=org,
+            address=old_address,
+            display_name="Old Office",
+        )
+        assert place.address.latitude == 37.7749
+        assert place.address.longitude == -122.4194
+
+        update_payload = {
+            "id": place.id,
+            "display_name": "New Office",
+            "address": {
+                "id": old_address.id,
+                "street_number": "456",
+                "route": "New Ave",
+                "raw": "456 New Ave",
+                "latitude": 37.7749,
+                "longitude": -122.4194,
+                "locality": {
+                    "name": "Hayward",
+                    "postal_code": "94541",
+                    "state": {
+                        "name": "California",
+                        "code": "CA",
+                        "country": {
+                            "name": "USA",
+                            "code": "US",
+                        }
+                    }
+                }
+            }
+        }
+        serializer = PlaceSerializer(instance=place, data=update_payload)
+        serializer._kwargs = {"data": update_payload}
+        updated_place = serializer.update(place, {"display_name": "New Office"})
+        
+        assert updated_place.address.street_number == "456"
+        assert updated_place.address.route == "New Ave"
+        assert updated_place.address.latitude is None
+        assert updated_place.address.longitude is None

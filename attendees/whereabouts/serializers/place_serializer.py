@@ -185,7 +185,17 @@ class PlaceSerializer(serializers.ModelSerializer):
                         break
 
                 if not is_different:
-                    return old_address # No changes, return the existing one safely
+                    return old_address  # No changes, return the existing one safely
+
+                # If any physical location component changed, reset GPS coordinates to trigger re-geocoding
+                location_fields = ['street_number', 'route', 'extra', 'locality', 'raw', 'formatted']
+                location_changed = any(
+                    k in clean_address_data and getattr(old_address, k) != clean_address_data[k]
+                    for k in location_fields
+                )
+                if location_changed:
+                    clean_address_data['latitude'] = None
+                    clean_address_data['longitude'] = None
 
                 # Changes detected!
                 if is_update:
