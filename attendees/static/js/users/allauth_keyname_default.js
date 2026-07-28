@@ -30,3 +30,36 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+document.addEventListener('allauth.error', (event) => {
+  const detail = event.detail;
+  if (detail && detail.tags && detail.tags.includes('webauthn')) {
+    event.preventDefault();
+    const ex = detail.exception || {};
+    let msg = ex.message || String(ex);
+
+    if (ex.name === 'InvalidStateError' || msg.includes('already registered') || msg.includes('contains one of the credentials')) {
+      msg = 'This security key or device is already registered to your account. You do not need to add it again. Just use the existing key.';
+    } else if (ex.name === 'NotAllowedError' || msg.includes('timed out') || msg.includes('cancelled') || msg.includes('canceled')) {
+      msg = 'The security key operation was cancelled or timed out. Please try again. On windows you can check if Bluetooth Support, Device Association and Windows Biometric Service are running in services.msc';
+    }
+
+    let alertContainer = document.getElementById('webauthn-error-alert');
+    if (!alertContainer) {
+      const targetContainer = document.querySelector('.col-md-8.offset-md-2') || document.querySelector('form') || document.querySelector('.container');
+      if (targetContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.id = 'webauthn-error-alert';
+        alertContainer.className = 'alert alert-danger alert-dismissible fade show mt-3';
+        alertContainer.setAttribute('role', 'alert');
+        targetContainer.insertBefore(alertContainer, targetContainer.firstChild);
+      }
+    }
+
+    if (alertContainer) {
+      alertContainer.innerHTML = `<strong>Notice:</strong> ${msg}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+      alertContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+});
