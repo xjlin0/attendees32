@@ -1,10 +1,11 @@
+import copy
 import logging
 import requests
 from django.conf import settings
 from address.models import Address
 
 from django.contrib.contenttypes.models import ContentType
-from attendees.persons.models import Attendee, Folk
+from attendees.persons.models import Attendee, Folk, AttendingMeet, FolkAttendee, Utility
 from django.db.models.functions import Cast
 from django.db import models
 from django.db.models import Q
@@ -31,7 +32,7 @@ class CoordinatesService:
                                  who have attended AT LEAST ONE of the specified meets (Logical OR).
         
         Returns:
-            A tuple: (target_place, neighbors_queryset)
+            A tuple: (target_place, neighbors_list)
         """
         target_place = Place.objects.select_related('address').filter(
             pk=place_id,
@@ -71,31 +72,98 @@ class CoordinatesService:
             id=target_place.id
         )
 
+        attendee_ct = ContentType.objects.get_for_model(Attendee)
+        folk_ct = ContentType.objects.get_for_model(Folk)
+
+        now_dt = Utility.now_with_timezone()
+        now_date = now_dt.date()
+
+        active_attendee_ids = None
         if meets:
+            active_attendee_ids = set(
+                AttendingMeet.objects.filter(
+                    meet__slug__in=meets,
+                    is_removed=False,
+                    finish__gte=now_dt,
+                    attending__is_removed=False,
+                    attending__attendee__is_removed=False,
+                ).values_list("attending__attendee_id", flat=True)
+            )
 
-            attendee_ct = ContentType.objects.get_for_model(Attendee)
-            folk_ct = ContentType.objects.get_for_model(Folk)
+            valid_folk_ids = set(
+                FolkAttendee.objects.filter(
+                    attendee_id__in=active_attendee_ids,
+                    is_removed=False,
+                    folk__is_removed=False,
+                ).filter(
+                    Q(finish__isnull=True) | Q(finish__gte=now_date)
+                ).values_list('folk_id', flat=True)
+            )
 
-            attendee_ids = Attendee.objects.filter(
-                attendings__meets__slug__in=meets
-            ).annotate(
-                str_id=Cast('id', output_field=models.CharField())
-            ).values_list('str_id', flat=True)
+            attendee_str_ids = [str(aid) for aid in active_attendee_ids]
+            folk_str_ids = [str(fid) for fid in valid_folk_ids]
 
-            folk_ids = Folk.objects.filter(
-                attendees__attendings__meets__slug__in=meets
-            ).annotate(
-                str_id=Cast('id', output_field=models.CharField())
-            ).values_list('str_id', flat=True)
-
-            q_attendee = Q(content_type=attendee_ct, object_id__in=attendee_ids)
-            q_folk = Q(content_type=folk_ct, object_id__in=folk_ids)
-
+            q_attendee = Q(content_type=attendee_ct, object_id__in=attendee_str_ids)
+            q_folk = Q(content_type=folk_ct, object_id__in=folk_str_ids)
             neighbors = neighbors.filter(q_attendee | q_folk)
 
-        neighbors = neighbors.order_by('distance_miles')[skip : skip + take]
+        ordered_places = list(neighbors.order_by('distance_miles'))
 
-        return target_place, neighbors
+        attendee_object_ids = [str(p.object_id) for p in ordered_places if p.content_type_id == attendee_ct.id and p.object_id]
+        folk_object_ids = [str(p.object_id) for p in ordered_places if p.content_type_id == folk_ct.id and p.object_id]
+
+        attendees_map = {}
+        if attendee_object_ids:
+            for att in Attendee.objects.select_related('division').filter(id__in=attendee_object_ids, is_removed=False):
+                acronym = att.division.infos.get('acronym', '') if att.division and isinstance(att.division.infos, dict) else ''
+                name_orig = att.infos.get('names', {}).get('original', '') if isinstance(att.infos, dict) else ''
+                attendees_map[str(att.id)] = f"{acronym} {name_orig}".strip()
+
+        folk_attendees_map = {}
+        if folk_object_ids:
+            fa_query = FolkAttendee.objects.select_related('attendee', 'attendee__division').filter(
+                Q(finish__isnull=True) | Q(finish__gte=now_date),
+                folk_id__in=folk_object_ids,
+                is_removed=False,
+                attendee__is_removed=False,
+            ).order_by('display_order')
+
+            if active_attendee_ids is not None:
+                fa_query = fa_query.filter(attendee_id__in=active_attendee_ids)
+
+            for fa in fa_query:
+                att = fa.attendee
+                acronym = att.division.infos.get('acronym', '') if att.division and isinstance(att.division.infos, dict) else ''
+                name_orig = att.infos.get('names', {}).get('original', '') if isinstance(att.infos, dict) else ''
+                display_name = f"{acronym} {name_orig}".strip()
+                folk_attendees_map.setdefault(str(fa.folk_id), []).append((str(att.id), display_name))
+
+        expanded_list = []
+        active_attendee_str_ids = {str(aid) for aid in active_attendee_ids} if active_attendee_ids is not None else None
+
+        for p in ordered_places:
+            if p.content_type_id == attendee_ct.id:
+                if p.object_id:
+                    obj_id_str = str(p.object_id)
+                    if obj_id_str in attendees_map:
+                        if active_attendee_str_ids is None or obj_id_str in active_attendee_str_ids:
+                            p.target_attendee_id = obj_id_str
+                            p.target_attendee_name = attendees_map[obj_id_str]
+                            expanded_list.append(p)
+            elif p.content_type_id == folk_ct.id:
+                if p.object_id:
+                    obj_id_str = str(p.object_id)
+                    fa_list = folk_attendees_map.get(obj_id_str, [])
+                    for att_id_str, att_name in fa_list:
+                        cloned_p = copy.copy(p)
+                        cloned_p.target_attendee_id = att_id_str
+                        cloned_p.target_attendee_name = att_name
+                        expanded_list.append(cloned_p)
+            else:
+                if not meets:
+                    expanded_list.append(p)
+
+        return target_place, expanded_list[skip : skip + take]
 
     @staticmethod
     def geocode_address(address_id, return_details=False):

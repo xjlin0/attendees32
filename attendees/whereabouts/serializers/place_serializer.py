@@ -1,7 +1,8 @@
 from address.models import Address, Locality, State
+from django.db.models import Q
 from rest_framework import serializers
 
-from attendees.persons.models import FolkAttendee
+from attendees.persons.models import Attendee, FolkAttendee, Utility
 from attendees.whereabouts.models import Place
 from attendees.whereabouts.serializers import AddressSerializer
 
@@ -43,19 +44,56 @@ class PlaceSerializer(serializers.ModelSerializer):
         return None
 
     def get_attendee_id(self, obj):
+        target_id = getattr(obj, '__dict__', {}).get('target_attendee_id')
+        if target_id is not None:
+            return str(target_id)
         if obj.content_type.model == 'attendee':
-            return obj.object_id
+            return str(obj.object_id)
         elif obj.content_type.model == 'folk':
-            fa = FolkAttendee.objects.filter(folk_id=obj.object_id).order_by('display_order').first()
-            return fa.attendee_id if fa else None
+            now_date = Utility.now_with_timezone().date()
+            try:
+                fa = FolkAttendee.objects.filter(
+                    Q(finish__isnull=True) | Q(finish__gte=now_date),
+                    folk_id=obj.object_id,
+                    is_removed=False,
+                    attendee__is_removed=False,
+                ).order_by('display_order').first()
+                return str(fa.attendee_id) if fa else None
+            except Exception:
+                return None
         return None
 
     def get_attendee_name(self, obj):
+        target_name = getattr(obj, '__dict__', {}).get('target_attendee_name')
+        if target_name is not None:
+            return target_name
         if obj.content_type.model == 'attendee':
-            return f"{obj.subject.division.infos['acronym']} {obj.subject.infos['names']['original']}"
+            try:
+                att = Attendee.objects.select_related('division').filter(pk=obj.object_id, is_removed=False).first()
+            except Exception:
+                return None
+            if not att:
+                return None
+            acronym = att.division.infos.get('acronym', '') if att.division and isinstance(att.division.infos, dict) else ''
+            name_orig = att.infos.get('names', {}).get('original', '') if isinstance(att.infos, dict) else ''
+            return f"{acronym} {name_orig}".strip()
         elif obj.content_type.model == 'folk':
-            fa = FolkAttendee.objects.filter(folk_id=obj.object_id).order_by('display_order').first()
-            return f"{fa.attendee.division.infos['acronym']} {fa.attendee.infos['names']['original']}" if fa else None
+            now_date = Utility.now_with_timezone().date()
+            try:
+                fa = FolkAttendee.objects.select_related('attendee', 'attendee__division').filter(
+                    Q(finish__isnull=True) | Q(finish__gte=now_date),
+                    folk_id=obj.object_id,
+                    is_removed=False,
+                    attendee__is_removed=False,
+                ).order_by('display_order').first()
+            except Exception:
+                return None
+            if not fa or not fa.attendee:
+                return None
+            att = fa.attendee
+            acronym = att.division.infos.get('acronym', '') if att.division and isinstance(att.division.infos, dict) else ''
+            name_orig = att.infos.get('names', {}).get('original', '') if isinstance(att.infos, dict) else ''
+            return f"{acronym} {name_orig}".strip()
         return None
 
     def _get_subject_name(self, validated_data, instance=None):

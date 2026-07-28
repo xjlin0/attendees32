@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 from django.conf import settings
 from address.models import Address, Locality, State, Country
 from attendees.whereabouts.services.coordinates_service import CoordinatesService
+from attendees.whereabouts.serializers.place_serializer import PlaceSerializer
 from attendees.whereabouts.models.place import Place
 from attendees.whereabouts.models.organization import Organization
 from django.contrib.contenttypes.models import ContentType
@@ -366,3 +367,75 @@ class TestCoordinatesService:
         # Query with both
         _, neighbors_both = CoordinatesService.get_nearest_neighbors(target_place.id, org, meets=['meet-a', 'meet-b'])
         assert len(neighbors_both) == 2
+
+    def test_get_nearest_neighbors_folk_husband_wife_filtering(self, address_setup):
+        """
+        Test husband and wife belonging to the same Folk family sharing one Place.
+        When only the wife participates in the filtered meet, only her attendee_id
+        and attendee_name are returned, ignoring the husband even if his display_order is smaller.
+        """
+        now = timezone.now()
+        folk_category, _ = Category.objects.get_or_create(id=0, defaults={"type": "folk", "display_name": "folk"})
+        attending_category, _ = Category.objects.get_or_create(id=25, defaults={"type": "attending", "display_name": "attending"})
+        assembly_category, _ = Category.objects.get_or_create(id=33, defaults={"type": "assembly", "display_name": "assembly"})
+        Relation.objects.get_or_create(id=0, defaults={"title": "self", "gender": "unspecified"})
+        Relation.objects.get_or_create(id=1, defaults={"title": "spouse", "gender": "unspecified"})
+
+        org = Organization.objects.create(slug="test-org-hw", display_name="Test Org HW")
+        auth_group = Group.objects.create(name="test-group-hw")
+        div = Division.objects.create(organization=org, slug="div-hw", display_name="Div HW", audience_auth_group=auth_group, infos={"acronym": "HW"})
+        assembly = Assembly.objects.create(division=div, slug="assembly-hw", display_name="Assembly HW", category=assembly_category)
+        ct_org = ContentType.objects.get_for_model(Organization)
+        meet = Meet.objects.create(assembly=assembly, slug="meet-hw", display_name="Meet HW", start=now, finish=now + datetime.timedelta(days=1), site_type=ct_org, site_id=org.id)
+        character = Character.objects.create(assembly=assembly, slug="char-hw", display_name="Char HW")
+
+        addr_target = address_setup['address1']
+        addr_target.latitude = 37.7749
+        addr_target.longitude = -122.4194
+        addr_target.save()
+
+        addr_family = address_setup['address2']
+        addr_family.latitude = 37.8044
+        addr_family.longitude = -122.2712
+        addr_family.save()
+
+        # Target attendee
+        attendee_target = Attendee.objects.create(first_name="Target", last_name="User", division=div, gender="male", infos={"names": {"original": "Target User"}})
+        attending_target = Attending.objects.create(attendee=attendee_target, category=attending_category)
+        AttendingMeet.objects.create(attending=attending_target, meet=meet, character=character, category=attending_category, start=now, finish=now + datetime.timedelta(days=1))
+
+        # Husband and Wife
+        husband = Attendee.objects.create(first_name="Husband", last_name="Smith", division=div, gender="male", infos={"names": {"original": "Husband Smith"}})
+        wife = Attendee.objects.create(first_name="Wife", last_name="Smith", division=div, gender="female", infos={"names": {"original": "Wife Smith"}})
+
+        # Both belong to same Folk (Family)
+        family_folk = Folk.objects.create(division=div, category=folk_category)
+        FolkAttendee.objects.create(folk=family_folk, attendee=husband, role_id=0, display_order=0)
+        FolkAttendee.objects.create(folk=family_folk, attendee=wife, role_id=1, display_order=1)
+
+        # Only Wife attends the meet
+        attending_wife = Attending.objects.create(attendee=wife, category=attending_category)
+        AttendingMeet.objects.create(attending=attending_wife, meet=meet, character=character, category=attending_category, start=now, finish=now + datetime.timedelta(days=1))
+
+        attendee_ct = ContentType.objects.get_for_model(Attendee)
+        folk_ct = ContentType.objects.get_for_model(Folk)
+
+        target_place = Place.objects.create(
+            content_type=attendee_ct, object_id=str(attendee_target.id), organization=org,
+            address=addr_target, display_name="Target Residence"
+        )
+        family_place = Place.objects.create(
+            content_type=folk_ct, object_id=str(family_folk.id), organization=org,
+            address=addr_family, display_name="Smith Family Residence"
+        )
+
+        target, neighbors = CoordinatesService.get_nearest_neighbors(target_place.id, org, meets=['meet-hw'])
+
+        assert len(neighbors) == 1
+        neighbor = neighbors[0]
+        assert str(neighbor.object_id) == str(family_folk.id)
+
+        serializer_data = PlaceSerializer(neighbor).data
+        assert serializer_data['attendee_id'] == str(wife.id)
+        assert serializer_data['attendee_name'] == "HW Wife Smith"
+
