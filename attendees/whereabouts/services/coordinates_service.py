@@ -74,6 +74,7 @@ class CoordinatesService:
 
         attendee_ct = ContentType.objects.get_for_model(Attendee)
         folk_ct = ContentType.objects.get_for_model(Folk)
+        neighbors = neighbors.filter(content_type__in=[attendee_ct, folk_ct])
 
         now_dt = Utility.now_with_timezone()
         now_date = now_dt.date()
@@ -95,6 +96,7 @@ class CoordinatesService:
                     attendee_id__in=active_attendee_ids,
                     is_removed=False,
                     folk__is_removed=False,
+                    attendee__is_removed=False,
                 ).filter(
                     Q(finish__isnull=True) | Q(finish__gte=now_date)
                 ).values_list('folk_id', flat=True)
@@ -125,6 +127,7 @@ class CoordinatesService:
                 Q(finish__isnull=True) | Q(finish__gte=now_date),
                 folk_id__in=folk_object_ids,
                 is_removed=False,
+                folk__is_removed=False,
                 attendee__is_removed=False,
             ).order_by('display_order')
 
@@ -159,9 +162,6 @@ class CoordinatesService:
                         cloned_p.target_attendee_id = att_id_str
                         cloned_p.target_attendee_name = att_name
                         expanded_list.append(cloned_p)
-            else:
-                if not meets:
-                    expanded_list.append(p)
 
         return target_place, expanded_list[skip : skip + take]
 

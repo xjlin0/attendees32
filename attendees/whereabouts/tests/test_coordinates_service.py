@@ -228,8 +228,15 @@ class TestCoordinatesService:
 
     def test_get_nearest_neighbors_success(self, address_setup):
         """Test get_nearest_neighbors successfully calculates distance and orders results using real PostGIS queries."""
-        org = Organization.objects.create(slug="test-org", display_name="Test Org")
-        ctype = ContentType.objects.get_for_model(Organization)
+        folk_category, _ = Category.objects.get_or_create(id=0, defaults={"type": "folk", "display_name": "folk"})
+        attending_category, _ = Category.objects.get_or_create(id=25, defaults={"type": "attending", "display_name": "attending"})
+        Relation.objects.get_or_create(id=0, defaults={"title": "self", "gender": "unspecified"})
+        org = Organization.objects.create(slug="test-org-succ", display_name="Test Org Succ")
+        auth_group = Group.objects.create(name="test-group-succ")
+        div = Division.objects.create(organization=org, slug="div-succ", display_name="Div Succ", audience_auth_group=auth_group, infos={"acronym": "SU"})
+        
+        ctype_org = ContentType.objects.get_for_model(Organization)
+        ctype_att = ContentType.objects.get_for_model(Attendee)
         
         # Target place: San Francisco (approx)
         addr1 = address_setup['address1']
@@ -237,9 +244,12 @@ class TestCoordinatesService:
         addr1.longitude = -122.4194
         addr1.save()
         target_place = Place.objects.create(
-            content_type=ctype, object_id=str(org.id), organization=org,
+            content_type=ctype_org, object_id=str(org.id), organization=org,
             address=addr1, display_name="Target SF"
         )
+        
+        att_oak = Attendee.objects.create(first_name="Oak", last_name="Land", division=div, gender="male")
+        att_sj = Attendee.objects.create(first_name="San", last_name="Jose", division=div, gender="male")
         
         # Neighbor 1: Oakland (approx 8.5 miles away)
         addr2 = address_setup['address2']
@@ -247,7 +257,7 @@ class TestCoordinatesService:
         addr2.longitude = -122.2712
         addr2.save()
         neighbor_oakland = Place.objects.create(
-            content_type=ctype, object_id=str(org.id), organization=org,
+            content_type=ctype_att, object_id=str(att_oak.id), organization=org,
             address=addr2, display_name="Oakland"
         )
         
@@ -257,14 +267,14 @@ class TestCoordinatesService:
         addr3.longitude = -121.8863
         addr3.save()
         neighbor_sj = Place.objects.create(
-            content_type=ctype, object_id=str(org.id), organization=org,
+            content_type=ctype_att, object_id=str(att_sj.id), organization=org,
             address=addr3, display_name="San Jose"
         )
         
         # Another place without coordinates (should be ignored)
         addr_no_coords = Address.objects.create(raw="No coords", locality=addr1.locality)
         Place.objects.create(
-            content_type=ctype, object_id=str(org.id), organization=org,
+            content_type=ctype_att, object_id=str(att_oak.id), organization=org,
             address=addr_no_coords, display_name="No Coords"
         )
         
@@ -274,8 +284,8 @@ class TestCoordinatesService:
         assert len(neighbors) == 2
         
         # Because we're using real PostGIS calculations now, Oakland should be index 0, San Jose index 1
-        assert neighbors[0] == neighbor_oakland
-        assert neighbors[1] == neighbor_sj
+        assert neighbors[0].id == neighbor_oakland.id
+        assert neighbors[1].id == neighbor_sj.id
         
         # Distance should be annotated and accurately calculated
         assert hasattr(neighbors[0], 'distance_miles')
@@ -439,3 +449,80 @@ class TestCoordinatesService:
         assert serializer_data['attendee_id'] == str(wife.id)
         assert serializer_data['attendee_name'] == "HW Wife Smith"
 
+    def test_get_nearest_neighbors_without_meets_excludes_soft_deleted_and_expired(self, address_setup):
+        """
+        Verify that even when meets is not provided, soft-deleted place, soft-deleted folk/attendee,
+        and expired family members are completely excluded from neighbors.
+        """
+        folk_category, _ = Category.objects.get_or_create(id=0, defaults={"type": "folk", "display_name": "folk"})
+        attending_category, _ = Category.objects.get_or_create(id=25, defaults={"type": "attending", "display_name": "attending"})
+        Relation.objects.get_or_create(id=0, defaults={"title": "self", "gender": "unspecified"})
+
+        org = Organization.objects.create(slug="org-exc", display_name="Org Excl")
+        auth_group = Group.objects.create(name="grp-exc")
+        div = Division.objects.create(organization=org, slug="div-exc", display_name="Div Excl", audience_auth_group=auth_group, infos={"acronym": "EX"})
+
+        addr_target = address_setup['address1']
+        addr_target.latitude = 37.7749
+        addr_target.longitude = -122.4194
+        addr_target.save()
+
+        addr_neighbor = address_setup['address2']
+        addr_neighbor.latitude = 37.8044
+        addr_neighbor.longitude = -122.2712
+        addr_neighbor.save()
+
+        attendee_ct = ContentType.objects.get_for_model(Attendee)
+        folk_ct = ContentType.objects.get_for_model(Folk)
+        org_ct = ContentType.objects.get_for_model(Organization)
+
+        # Target place
+        target_place = Place.objects.create(
+            content_type=org_ct, object_id=str(org.id), organization=org,
+            address=addr_target, display_name="Center Place"
+        )
+
+        # 1. Non-person place (Organization place) should be ignored
+        Place.objects.create(
+            content_type=org_ct, object_id=str(org.id), organization=org,
+            address=addr_neighbor, display_name="Org Bldg"
+        )
+
+        # 2. Soft-deleted Place should be ignored
+        active_attendee = Attendee.objects.create(first_name="Active", last_name="User", division=div, gender="unspecified")
+        Place.objects.create(
+            content_type=attendee_ct, object_id=str(active_attendee.id), organization=org,
+            address=addr_neighbor, display_name="Deleted Place", is_removed=True
+        )
+
+        # 3. Place pointing to soft-deleted Attendee should be ignored
+        deleted_attendee = Attendee.objects.create(first_name="Deleted", last_name="Person", division=div, gender="unspecified", is_removed=True)
+        Place.objects.create(
+            content_type=attendee_ct, object_id=str(deleted_attendee.id), organization=org,
+            address=addr_neighbor, display_name="Deleted Attendee Place", is_removed=False
+        )
+
+        # 4. Place pointing to Folk with only expired members should be ignored
+        expired_folk = Folk.objects.create(division=div, category=folk_category)
+        expired_attendee = Attendee.objects.create(first_name="Expired", last_name="Member", division=div, gender="unspecified")
+        past_date = datetime.date.today() - datetime.timedelta(days=30)
+        FolkAttendee.objects.create(folk=expired_folk, attendee=expired_attendee, role_id=0, finish=past_date)
+        Place.objects.create(
+            content_type=folk_ct, object_id=str(expired_folk.id), organization=org,
+            address=addr_neighbor, display_name="Expired Folk Place"
+        )
+
+        # 5. Valid active folk place (should be returned!)
+        valid_folk = Folk.objects.create(division=div, category=folk_category)
+        valid_attendee = Attendee.objects.create(first_name="Valid", last_name="Person", division=div, gender="unspecified", infos={"names": {"original": "Valid Person"}})
+        FolkAttendee.objects.create(folk=valid_folk, attendee=valid_attendee, role_id=0, finish=None)
+        valid_place = Place.objects.create(
+            content_type=folk_ct, object_id=str(valid_folk.id), organization=org,
+            address=addr_neighbor, display_name="Valid Folk Place"
+        )
+
+        _, neighbors = CoordinatesService.get_nearest_neighbors(target_place.id, org, meets=[])
+        assert len(neighbors) == 1
+        assert neighbors[0].id == valid_place.id
+        assert neighbors[0].target_attendee_id == str(valid_attendee.id)
+        assert neighbors[0].target_attendee_name == "EX Valid Person"
