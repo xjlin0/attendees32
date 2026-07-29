@@ -526,3 +526,72 @@ class TestCoordinatesService:
         assert neighbors[0].id == valid_place.id
         assert neighbors[0].target_attendee_id == str(valid_attendee.id)
         assert neighbors[0].target_attendee_name == "EX Valid Person"
+
+    def test_get_nearest_neighbors_excludes_deceased_and_paused_or_expired_default_member(self, address_setup):
+        """
+        Verify that deceased attendees (deathday is not None) and members whose default_member_meet
+        AttendingMeet is expired (finish < now) or paused (category=Attendee.PAUSED_CATEGORY) are excluded.
+        """
+        now = timezone.now()
+        folk_category, _ = Category.objects.get_or_create(id=0, defaults={"type": "folk", "display_name": "folk"})
+        attending_category, _ = Category.objects.get_or_create(id=25, defaults={"type": "attending", "display_name": "attending"})
+        paused_category, _ = Category.objects.get_or_create(id=Attendee.PAUSED_CATEGORY, defaults={"type": "attending", "display_name": "paused"})
+        assembly_category, _ = Category.objects.get_or_create(id=33, defaults={"type": "assembly", "display_name": "assembly"})
+        Relation.objects.get_or_create(id=0, defaults={"title": "self", "gender": "unspecified"})
+
+        org = Organization.objects.create(
+            slug="org-def-mem",
+            display_name="Org Default Member",
+            infos={"settings": {"default_member_meet": "default-mem-meet"}}
+        )
+        auth_group = Group.objects.create(name="grp-def-mem")
+        div = Division.objects.create(organization=org, slug="div-def-mem", display_name="Div Def Mem", audience_auth_group=auth_group, infos={"acronym": "DM"})
+        assembly = Assembly.objects.create(division=div, slug="asm-def-mem", display_name="Asm Def Mem", category=assembly_category)
+        character = Character.objects.create(assembly=assembly, slug="char-def-mem", display_name="Char Def Mem")
+
+        org_ct = ContentType.objects.get_for_model(Organization)
+        attendee_ct = ContentType.objects.get_for_model(Attendee)
+        mem_meet = Meet.objects.create(assembly=assembly, slug="default-mem-meet", display_name="Default Member Meet", start=now, finish=now + datetime.timedelta(days=365), site_type=org_ct, site_id=org.id)
+
+        addr_target = address_setup['address1']
+        addr_target.latitude = 37.7749
+        addr_target.longitude = -122.4194
+        addr_target.save()
+
+        addr_neighbor = address_setup['address2']
+        addr_neighbor.latitude = 37.8044
+        addr_neighbor.longitude = -122.2712
+        addr_neighbor.save()
+
+        target_place = Place.objects.create(
+            content_type=org_ct, object_id=str(org.id), organization=org,
+            address=addr_target, display_name="Target HQ"
+        )
+
+        # 1. Deceased attendee (should be excluded)
+        att_deceased = Attendee.objects.create(first_name="Deceased", last_name="Person", division=div, gender="unspecified", deathday=datetime.date(2020, 1, 1))
+        Place.objects.create(content_type=attendee_ct, object_id=str(att_deceased.id), organization=org, address=addr_neighbor, display_name="Deceased Residence")
+
+        # 2. Paused member in default_member_meet (should be excluded)
+        att_paused = Attendee.objects.create(first_name="Paused", last_name="Member", division=div, gender="unspecified")
+        attending_paused = Attending.objects.create(attendee=att_paused, category=attending_category)
+        AttendingMeet.objects.create(attending=attending_paused, meet=mem_meet, character=character, category=paused_category, start=now, finish=now + datetime.timedelta(days=30))
+        Place.objects.create(content_type=attendee_ct, object_id=str(att_paused.id), organization=org, address=addr_neighbor, display_name="Paused Residence")
+
+        # 3. Expired member in default_member_meet (should be excluded)
+        att_expired = Attendee.objects.create(first_name="Expired", last_name="Member", division=div, gender="unspecified")
+        attending_expired = Attending.objects.create(attendee=att_expired, category=attending_category)
+        AttendingMeet.objects.create(attending=attending_expired, meet=mem_meet, character=character, category=attending_category, start=now - datetime.timedelta(days=60), finish=now - datetime.timedelta(days=10))
+        Place.objects.create(content_type=attendee_ct, object_id=str(att_expired.id), organization=org, address=addr_neighbor, display_name="Expired Residence")
+
+        # 4. Valid active member (should be returned!)
+        att_valid = Attendee.objects.create(first_name="Valid", last_name="Member", division=div, gender="unspecified", infos={"names": {"original": "Valid Member"}})
+        attending_valid = Attending.objects.create(attendee=att_valid, category=attending_category)
+        AttendingMeet.objects.create(attending=attending_valid, meet=mem_meet, character=character, category=attending_category, start=now, finish=now + datetime.timedelta(days=30))
+        valid_place = Place.objects.create(content_type=attendee_ct, object_id=str(att_valid.id), organization=org, address=addr_neighbor, display_name="Valid Residence")
+
+        _, neighbors = CoordinatesService.get_nearest_neighbors(target_place.id, org, meets=[])
+        assert len(neighbors) == 1
+        assert neighbors[0].id == valid_place.id
+        assert neighbors[0].target_attendee_id == str(att_valid.id)
+        assert neighbors[0].target_attendee_name == "DM Valid Member"

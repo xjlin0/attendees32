@@ -79,6 +79,25 @@ class CoordinatesService:
         now_dt = Utility.now_with_timezone()
         now_date = now_dt.date()
 
+        default_member_meet = None
+        if user_organization and hasattr(user_organization, 'infos') and isinstance(user_organization.infos, dict):
+            default_member_meet = user_organization.infos.get('settings', {}).get('default_member_meet')
+
+        excluded_attendee_ids = set()
+        if default_member_meet:
+            if isinstance(default_member_meet, int) or (isinstance(default_member_meet, str) and default_member_meet.isdigit()):
+                meet_query = Q(meet_id=int(default_member_meet)) | Q(meet__slug=str(default_member_meet))
+            else:
+                meet_query = Q(meet__slug=str(default_member_meet))
+            condition_query = Q(finish__lt=now_dt) | Q(category=Attendee.PAUSED_CATEGORY) | Q(category_id=Attendee.PAUSED_CATEGORY)
+            excluded_attendee_ids = set(
+                AttendingMeet.objects.filter(
+                    meet_query,
+                    condition_query,
+                    is_removed=False,
+                ).values_list("attending__attendee_id", flat=True)
+            )
+
         active_attendee_ids = None
         if meets:
             active_attendee_ids = set(
@@ -88,8 +107,11 @@ class CoordinatesService:
                     finish__gte=now_dt,
                     attending__is_removed=False,
                     attending__attendee__is_removed=False,
+                    attending__attendee__deathday__isnull=True,
                 ).values_list("attending__attendee_id", flat=True)
             )
+            if excluded_attendee_ids:
+                active_attendee_ids -= excluded_attendee_ids
 
             valid_folk_ids = set(
                 FolkAttendee.objects.filter(
@@ -97,6 +119,7 @@ class CoordinatesService:
                     is_removed=False,
                     folk__is_removed=False,
                     attendee__is_removed=False,
+                    attendee__deathday__isnull=True,
                 ).filter(
                     Q(finish__isnull=True) | Q(finish__gte=now_date)
                 ).values_list('folk_id', flat=True)
@@ -116,7 +139,15 @@ class CoordinatesService:
 
         attendees_map = {}
         if attendee_object_ids:
-            for att in Attendee.objects.select_related('division').filter(id__in=attendee_object_ids, is_removed=False):
+            att_qs = Attendee.objects.select_related('division').filter(
+                id__in=attendee_object_ids,
+                is_removed=False,
+                deathday__isnull=True,
+            )
+            if excluded_attendee_ids:
+                att_qs = att_qs.exclude(id__in=excluded_attendee_ids)
+
+            for att in att_qs:
                 acronym = att.division.infos.get('acronym', '') if att.division and isinstance(att.division.infos, dict) else ''
                 name_orig = att.infos.get('names', {}).get('original', '') if isinstance(att.infos, dict) else ''
                 attendees_map[str(att.id)] = f"{acronym} {name_orig}".strip()
@@ -129,10 +160,13 @@ class CoordinatesService:
                 is_removed=False,
                 folk__is_removed=False,
                 attendee__is_removed=False,
+                attendee__deathday__isnull=True,
             ).order_by('display_order')
 
             if active_attendee_ids is not None:
                 fa_query = fa_query.filter(attendee_id__in=active_attendee_ids)
+            elif excluded_attendee_ids:
+                fa_query = fa_query.exclude(attendee_id__in=excluded_attendee_ids)
 
             for fa in fa_query:
                 att = fa.attendee
