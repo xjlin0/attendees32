@@ -10,6 +10,10 @@ from django.views.static import serve
 from git import Repo
 from rest_framework.authtoken.views import obtain_auth_token
 
+from attendees.utils.view_helpers import defensive_404_handler
+
+handler404 = "attendees.utils.view_helpers.defensive_404_handler"
+
 repo = Repo(settings.ROOT_DIR)
 
 try:
@@ -122,7 +126,7 @@ if settings.DEBUG:
         ),
         path(
             "404/",
-            default_views.page_not_found,
+            defensive_404_handler,
             kwargs={"exception": Exception("Page not Found")},
         ),
         path("500/", default_views.server_error),
@@ -135,6 +139,6 @@ if settings.DEBUG:
 else:  # catch all for soft 404 without sending email or using django.core.cache in PRODUCTION
     urlpatterns += [
         re_path(
-            r'^.*$', TemplateView.as_view(template_name='404.txt', content_type='text/plain'),
+            r'^.*$', defensive_404_handler,
         ),
     ]
