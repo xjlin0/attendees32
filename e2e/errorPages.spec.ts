@@ -27,7 +27,7 @@ test.describe('Defensive and Standard 404 Error Pages', () => {
     await expect(page).toHaveURL(/\/about\/?$/);
   });
 
-  test('Should render standard 404 page with base navbar after login (with session cookie)', async ({ page }) => {
+  test('Should render lightweight 404 page even after login (with session cookie) to prevent DB exhaustion', async ({ page }) => {
     // 1. Perform login flow to establish a session and session cookie
     console.log('--- STARTING LOGIN FLOW FOR AUTHENTICATED 404 TEST ---');
     await page.goto('/accounts/login/');
@@ -56,14 +56,14 @@ test.describe('Defensive and Standard 404 Error Pages', () => {
     await page.goto('/404/');
     await expect(page).toHaveURL(/\/404\/?$/);
 
-    // 3. Verify standard 404 header
-    await expect(page.locator('h1')).toHaveText('Page not found');
+    // 3. Verify lightweight 404 header is shown
+    await expect(page.locator('h1')).toHaveText('Page Not Found (404)');
 
-    // 4. Verify base.html navbar IS present for authenticated users with active sessions
-    await expect(page.locator('nav.navbar')).toBeVisible();
+    // 4. Verify base.html navbar IS ABSENT even for authenticated users to save DB
+    await expect(page.locator('nav.navbar')).toHaveCount(0);
 
-    // 5. Verify standard Bootstrap Go Back button is displayed
-    const backBtn = page.locator('button.btn.btn-primary');
+    // 5. Verify the custom styled English-only Go Back button is displayed
+    const backBtn = page.locator('button.back-btn');
     await expect(backBtn).toBeVisible();
     await expect(backBtn).toHaveText('Go Back');
 

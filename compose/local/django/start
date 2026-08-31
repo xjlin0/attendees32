@@ -6,5 +6,5 @@ set -o nounset
 
 
 python manage.py migrate
-export ANYIO_MAX_THREADS=50
+export ANYIO_MAX_THREADS=20
 uvicorn config.asgi:application --host 0.0.0.0 --reload
