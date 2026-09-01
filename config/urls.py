@@ -136,9 +136,3 @@ if settings.DEBUG:
 
         urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
 
-else:  # catch all for soft 404 without sending email or using django.core.cache in PRODUCTION
-    urlpatterns += [
-        re_path(
-            r'^.*$', defensive_404_handler,
-        ),
-    ]

@@ -5,6 +5,27 @@ from django.utils import timezone
 from django.conf import settings
 
 
+from django.urls import resolve, Resolver404
+from django.http import HttpResponseNotFound
+from django.template.loader import render_to_string
+
+class Early404Middleware:
+    """
+    Scans the requested URL against urls.py. If it doesn't match any valid path, 
+    immediately returns a lightweight 404 response. This runs high in the middleware 
+    stack to completely bypass DB queries caused by other middlewares (like pghistory).
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            resolve(request.path_info)
+        except Resolver404:
+            return HttpResponseNotFound(render_to_string("404_light.html", request=None))
+        return self.get_response(request)
+
+
 class TimezoneMiddleware:
 
     # @staticmethod
