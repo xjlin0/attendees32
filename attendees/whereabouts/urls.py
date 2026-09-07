@@ -13,6 +13,8 @@ from attendees.whereabouts.views import (
     api_user_organization_viewset,
     api_user_place_view_set,
     content_type_list_api_view,
+    api_update_spatial_view,
+    api_nearest_neighbors_view,
 )
 
 app_name = "whereabouts"
@@ -80,5 +82,15 @@ urlpatterns = [
         "api/content_type_models/<str:pk>/",
         content_type_list_api_view.as_view(),
         name="content_type",
+    ),
+    path(
+        "api/update_spatial_for/<str:pk>/",
+        api_update_spatial_view,
+        name="update_spatial",
+    ),
+    path(
+        "api/nearest_neighbors_for/<str:pk>/",
+        api_nearest_neighbors_view,
+        name="nearest_neighbors",
     ),
 ]

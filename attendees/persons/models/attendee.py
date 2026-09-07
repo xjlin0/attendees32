@@ -301,7 +301,7 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
             raise ValidationError("You must specify at least a name")
 
     def get_absolute_url(self):
-        return reverse("/persons/attendee_detail_view/", kwargs={"pk": self.pk})
+        return reverse("persons:attendee_update_view", kwargs={"attendee_id": self.id})
 
     class Meta:
         db_table = "persons_attendees"

@@ -61,7 +61,7 @@ class ApiDatagridDataAttendeeViewSet(
         querying_term = self.request.query_params.get("searchValue")
 
         if querying_attendee_id:
-            qs = Attendee.objects.annotate(
+            qs = Attendee.all_objects.annotate(
                 organization_slug=F("division__organization__slug"),
                 attendingmeets=JSONBAgg(
                     Func(

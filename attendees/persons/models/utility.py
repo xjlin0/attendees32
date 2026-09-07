@@ -129,6 +129,8 @@ class Utility:
                 "past_category_to_attendingmeet_meet": {},
                 "attendingmeet_pdf_export_groups": {},
             },
+            "grade_converter": [],
+            "all_access_assemblies": [],
             "groups_see_all_meets_attendees": [],
             "contacts": {},
             "counselor": [],

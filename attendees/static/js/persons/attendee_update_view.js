@@ -13,6 +13,7 @@ Attendees.datagridUpdate = {
   },
   attendeeAttrs: null,  // will be assigned later
   attendeeId: '',  // the attendee is being edited, since it maybe admin/parent editing another attendee
+  attendeeRemoved: null,
   attendeeAjaxUrl: null,
   attendeePhotoFileUploader: null,
   relationshipDatagrid: null,
@@ -59,10 +60,11 @@ Attendees.datagridUpdate = {
     display_name: '',  // will be assigned later
   },
   meetCharacters: null,
+  userAssemblyMeets: null,
   divisionIdNames: null,
 
   init: () => {
-    console.log('/static/js/persons/attendee_update_view.js');
+    console.log('attendees/static/js/persons/attendee_update_view.js');
     Attendees.datagridUpdate.displayNotifierFromSearchParam('success');
     Attendees.datagridUpdate.initAttendeeForm();
   },
@@ -192,10 +194,11 @@ Attendees.datagridUpdate = {
       $.ajax({
         url: Attendees.datagridUpdate.attendeeAjaxUrl,
         success: (response) => {
+          Attendees.datagridUpdate.attendeeRemoved = response && response.is_removed;
+          $('h3.page-title').text((Attendees.datagridUpdate.attendeeRemoved ? 'Deleted record of ' : 'Details of ') + response.infos.names.original);
+          window.top.document.title = response.infos.names.original;
           Attendees.datagridUpdate.attendeeFormConfigs = Attendees.datagridUpdate.getAttendeeFormConfigs();
           Attendees.datagridUpdate.attendeeFormConfigs.formData = response ? response : Attendees.datagridUpdate.attendeeMainDxFormDefault;
-          $('h3.page-title').text('Details of ' + Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original);
-          window.top.document.title = Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original;
           Attendees.datagridUpdate.attendeeMainDxForm = $("div.datagrid-attendee-update").dxForm(Attendees.datagridUpdate.attendeeFormConfigs).dxForm('instance');
           Attendees.datagridUpdate.populateBasicInfoBlock();
           Attendees.datagridUpdate.initListeners();
@@ -605,13 +608,14 @@ Attendees.datagridUpdate = {
                   'data-object-id': Attendees.datagridUpdate.attendeeId,
                   'data-object-name': Attendees.datagridUpdate.attendeeFormConfigs.formData.infos.names.original,
                   'data-address-raw': place.address && place.address.raw,
+                  ...(place.address && place.address.latitude && place.address.longitude ? {} : {'data-needs-geocoding': true}),
                 });
                 $personalLi = $personalLi.append($button);
               });
               let $places = $placeUl.append($personalLi);
 
               const familyattendees = Attendees.datagridUpdate.attendeeFormConfigs.formData.folkattendee_set || [];
-              if (familyattendees.find(f => f.folk && f.folk.category === 0)) {  // any families?
+              if (familyattendees.find(f => f.folk && f.folk.category === 0)) {  // FAMILY_CATEGORY
                 familyattendees.forEach(familyattendee => {
                   const family = familyattendee.folk;
                   if (family && family.category === 0) {
@@ -639,6 +643,7 @@ Attendees.datagridUpdate = {
                         'data-object-id': family.id,
                         'data-object-name': family.display_name,
                         'data-address-raw': place.address && place.address.raw,
+                        ...(place.address && place.address.latitude && place.address.longitude ? {} : {'data-needs-geocoding': true}),
                       });
                       $familyLi = $familyLi.append($button);
                     });
@@ -942,7 +947,7 @@ Attendees.datagridUpdate = {
           elementAttr: {
             class: 'attendee-form-delete',  // for toggling editing mode
           },
-          disabled: !Attendees.utilities.editingEnabled,
+          disabled: !Attendees.utilities.editingEnabled && Attendees.datagridUpdate.attendeeRemoved,
           text: "Delete attendee",
           icon: 'trash',
           hint: "delete attendee's all data in the page",
@@ -2007,14 +2012,37 @@ Attendees.datagridUpdate = {
 
   initPlacePopupDxForm: (event) => {
     const placeButton = event.target;
-    Attendees.datagridUpdate.placePopup = $('div.popup-place-update').dxPopup(Attendees.datagridUpdate.placePopupDxFormConfig(placeButton)).dxPopup('instance');
+    // Save current button globally so the singleton showing event can read it
+    Attendees.datagridUpdate.currentPlaceButton = placeButton;
+
+    if (!Attendees.datagridUpdate.placePopup) {
+      Attendees.datagridUpdate.placePopup = $('div.popup-place-update').dxPopup(Attendees.datagridUpdate.placePopupDxFormConfig(placeButton)).dxPopup('instance');
+
+      Attendees.datagridUpdate.placePopup.on('showing', () => {  // putting this in onShowing in config will trigger twice firing after first click
+        const btn = Attendees.datagridUpdate.currentPlaceButton;
+        if (btn && btn.value && btn.dataset.needsGeocoding) {
+          $.post(`${Attendees.datagridUpdate.attendeeAttrs.dataset.geocodingEndpoint}${btn.value}/`)
+          .done((response) => {
+            if (response && response.success) {
+              delete btn.dataset.needsGeocoding;
+            }
+          });
+        }
+      });
+    } else {
+      Attendees.datagridUpdate.placePopup.option(Attendees.datagridUpdate.placePopupDxFormConfig(placeButton));
+    }
+
+    Attendees.datagridUpdate.placePopup.show();  // Call show BEFORE fetchPlaceFormData to ensure contentTemplate is executed and placePopupDxForm is created
     Attendees.datagridUpdate.fetchPlaceFormData(placeButton);
   },
 
   placePopupDxFormConfig: (placeButton) => {
     const ajaxUrl = $('form#place-update-popup-form').attr('action') + (placeButton.value ? placeButton.value + '/' : '');
     return {
-      visible: true,
+      wrapperAttr: {
+        'data-testid': 'place-popup',
+      },
       title: (placeButton.value ? 'Viewing ' : 'Creating ') + placeButton.dataset.desc,
       minwidth: '20%',
       minheight: '30%',
@@ -2128,7 +2156,20 @@ Attendees.datagridUpdate = {
               colSpan: 12,
               template: (data, itemElement) => {
                 if (placeButton.dataset.addressRaw) {
-                  itemElement.append($(`<span>Google Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
+                  const $linkContainer = $('<div></div>');
+                  $linkContainer.append($(`<span>Show Map Link: </span><a target="_blank" href="https://www.google.com/maps/place/${placeButton.dataset.addressRaw.replaceAll(" ", "+")}">${placeButton.dataset.addressRaw}</a>`));
+
+                  if (placeButton.value && Attendees.datagridUpdate.attendeeAttrs.dataset.seeAllAttendees) {  // only coworkers that can access attendee_create_view see the link
+                    const $neighborsBtn = $('<a href="#" id="find-neighbors-btn" data-testid="find-neighbors-btn" class="ml-3" style="margin-left: 15px;">🔎Find neighbors</a>');
+                    $neighborsBtn.on('click', (e) => {
+                      e.preventDefault();
+                      Attendees.datagridUpdate.placePopup.hide();
+                      window.Attendees.nearestNeighbors.initPopupDxForm(placeButton.value, placeButton.dataset.addressRaw, Attendees.datagridUpdate.userAssemblyMeets);
+                    });
+                    $linkContainer.append($neighborsBtn);
+                  }
+
+                  itemElement.append($linkContainer);
                 }
               },
             },
@@ -2373,10 +2414,14 @@ Attendees.datagridUpdate = {
                         const clickedButtonDescPrefix = placeButton.dataset.desc.split(' (')[0];
                         const newDesc = clickedButtonDescPrefix + ' (' + savedPlace.address.formatted + ')';
                         const newText = savedPlace.display_name + ': ' + savedPlace.address.formatted;
+                        const geoCoded = savedPlace.address && savedPlace.address.latitude && savedPlace.address.longitude;
                         if (placeButton.value) {
                           placeButton.dataset.desc = newDesc;
                           placeButton.textContent = newText;
                           placeButton.dataset.addressRaw = savedPlace.address && savedPlace.address.raw;
+                          if (geoCoded) {
+                            delete placeButton.dataset.needsGeocoding;
+                          }
                         } else {
                           Attendees.datagridUpdate.familyButtonFactory({
                             class: placeButton.className.replace('place-button-new', '').replace('btn-outline-primary', 'btn-outline-success'),
@@ -2388,6 +2433,7 @@ Attendees.datagridUpdate = {
                             'data-object-name': placeButton.dataset.objectName,
                             'data-content-type': placeButton.dataset.contentType,
                             'data-address-raw': savedPlace.address && savedPlace.address.raw,
+                            ...(geoCoded ? {} : {'data-needs-geocoding': true}),
                           }).insertAfter(placeButton);
                         }
                       },
@@ -4304,9 +4350,14 @@ Attendees.datagridUpdate = {
                   const d = new $.Deferred();
                   $.getJSON(Attendees.datagridUpdate.attendeeAttrs.dataset.meetsEndpoint, searchOpts)
                     .done((result) => {
-                      if (result.data && Attendees.datagridUpdate.meetCharacters === null) {
-                        Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
-                      }  // cache the every meet's major characters for later use
+                      if (result.data) { 
+                        if (Attendees.datagridUpdate.meetCharacters === null) {
+                          Attendees.datagridUpdate.meetCharacters = result.data.reduce((all, now)=> {all[now.id] = now.major_character; return all}, {});
+                        }  // cache the every meet's major characters for later use
+                        if (Attendees.datagridUpdate.userAssemblyMeets === null) {
+                          Attendees.datagridUpdate.userAssemblyMeets = result.data.sort((a, b) => a.assembly_name.localeCompare(b.assembly_name) || a.display_name.localeCompare(b.display_name) ).map(meet => ({id: meet.id, assembly_name: meet.assembly_name, slug: meet.slug, display_name: meet.display_name}));
+                        }
+                      }
                       d.resolve(result.data);
                     });
                   return d.promise();

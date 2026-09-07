@@ -5,6 +5,7 @@ from django.db.models import Max, OuterRef, Q, Subquery, Count
 
 from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
+from attendees.whereabouts.services import PlaceService
 
 
 class FolkService:
@@ -418,7 +419,8 @@ class FolkService:
         ):
             # Relationship.objects.filter(in_family=folk.id, relation__consanguinity=False, is_removed=False).delete()
             # Relationship.objects.filter(in_family=folk.id, relation__consanguinity=True, is_removed=False).update(in_family=None)
-            folk.places.filter(is_removed=False).delete()
+            for place in folk.places.filter(is_removed=False):
+                PlaceService.destroy_with_associations(place)
             folk.folkattendee_set.filter(is_removed=False).delete()
             folk.delete()
 

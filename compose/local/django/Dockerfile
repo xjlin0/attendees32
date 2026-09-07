@@ -11,6 +11,7 @@ ARG BUILD_ENVIRONMENT=local
 RUN apt-get update && apt-get install --no-install-recommends -y \
   # dependencies for building Python packages
   build-essential \
+  libpq-dev postgresql-client \
   # psycopg2 dependencies
   libpq-dev curl vim wget python3-dateutil git less gdal-bin libpango-1.0-0 libpangoft2-1.0-0
 
@@ -37,7 +38,7 @@ WORKDIR ${APP_HOME}
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
   # psycopg2 dependencies
-  libpq-dev \
+  libpq-dev postgresql-client \
   # Translations dependencies
   gettext curl vim wget python3-dateutil git less gdal-bin libpango-1.0-0 libpangoft2-1.0-0 \
   # cleaning up unused files
@@ -74,6 +75,9 @@ COPY ./compose/local/django/celery/flower/start /start-flower
 RUN sed -i 's/\r$//g' /start-flower
 RUN chmod +x /start-flower
 
+
+# config git to ignore ownership issues in Docker under WSL so home page shows git sha correctly 
+RUN git config --global --add safe.directory /app
 
 # copy application code to WORKDIR
 COPY . ${APP_HOME}

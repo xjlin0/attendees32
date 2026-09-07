@@ -16,6 +16,10 @@
           integrity="sha384-n0Qg+GKEj2b5PQ3GBb4eu8nef1Rvhjl7+Ry4ypKQ/ASzAgtqt4dDrM1yFB5HlSAn"
           crossorigin="anonymous">
   </script>
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/whereabouts/nearest_neighbors.js' %}">
+  </script>
 
   <script defer
           type="text/javascript"
@@ -87,6 +91,9 @@
          {% if request.user.is_superuser %}
            data-can-add-personal-address="1"
          {% endif %}
+         {% if see_all_attendees %}
+           data-see-all-attendees="1"
+         {% endif %}
          data-teams-endpoint="{{teams_endpoint}}"
          data-user-organization-directory-meet="{{user_organization_directory_meet|default_if_none:''}}"
          data-attendee-contenttype-id="{{attendee_contenttype_id}}"
@@ -94,6 +101,7 @@
          data-empty-image-link="{{empty_image_link}}"
          data-meets-endpoint="{{meets_endpoint}}"
          data-attendingmeets-endpoint="{{attendingmeets_endpoint}}"
+         data-geocoding-endpoint="{{geocoding_endpoint}}"
          data-characters-endpoint="{{characters_endpoint}}"
          data-organizational-characters-endpoint="{{organizational_characters_endpoint}}"
          data-divisions-endpoint="{{divisions_endpoint}}"
@@ -138,5 +146,7 @@
     <div class="popup-family-attr-update">
     </div>
   </form>
+  <div class="popup-nearest-neighbors" style="display: none;">
+  </div>
 </div>
 {% endblock content %}

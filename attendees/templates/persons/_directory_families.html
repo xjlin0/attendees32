@@ -18,10 +18,10 @@
             {{attendee.name2}}      <br>
             {{attendee.first_name}} <br>
             {% if attendee.photo_url%}
-            <img class="directory-photo-img"
+            <img class="directory-photo-img" loading="lazy"
                  src="{{attendee.photo_url}}">
             {% else %}
-            <img class="directory-photo-img"
+            <img class="directory-photo-img" loading="lazy"
                  src="{{empty_image_link}}">
             {% endif %}
           </div>

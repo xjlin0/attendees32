@@ -8,3 +8,9 @@
   </div>
 </div>
 {% endblock %}
+
+{% load static %}
+{% block inline_javascript %}
+{{ block.super }}
+<script src="{% static 'js/users/allauth_keyname_default.js' %}"></script>
+{% endblock inline_javascript %}
