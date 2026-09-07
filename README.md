@@ -272,24 +272,52 @@ DJANGO_SECRET_KEY=<<production Django secret key>>
 Since the Django server is running on port 8008, you can use Apache to proxy the requests to the Django server. Here is an example configuration for Apache:
 ```
 <VirtualHost *:443>
-    <LocationMatch "(?i)(\/\.git.*|\.(jsp|old|json|yaml|yml|conf|bak|backup|php|txt|env|ini|sql|django|postgres|esp)$)">
-        Require all denied
-    </LocationMatch>
+RemoteIPHeader X-Forwarded-For
+RemoteIPInternalProxy 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 127.0.0.1 ::1
 
-    RewriteEngine on
-    RewriteCond %{HTTP_HOST} !^attendees\.chineseforchristchurch\.org(:[0-9]+)?$ [NC]
-    RewriteRule ^ - [F,L]
+<LocationMatch "(?i)/(wp-(json|admin|login|includes|content)|xmlrpc|docker|\.git)">
+    Require all denied
+</LocationMatch>
 
-    ProxyPreserveHost On
-    RequestHeader set X-Forwarded-Proto "https"
-    ProxyPass /.well-known !
+<LocationMatch "(?i)\.(jsp|old|yaml|yml|conf|bak|backup|php|env|ini|sql|django|postgres|esp|aws)$">
+    Require all denied
+</LocationMatch>
 
-    RewriteCond %{HTTP:UPGRADE} ^WebSocket$ [NC]
-    RewriteCond %{HTTP:CONNECTION} Upgrade [NC]
-    RewriteRule ^/?(.*) "ws://127.0.0.1:8008/$1" [P]
+<Directory /home/username/domains/your.domain.name/public_html>
+    Options -Indexes +IncludesNOEXEC +SymLinksIfOwnerMatch
+    Require all granted
+    AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
+</Directory>
+<Directory /home/username/domains/your.domain.name/cgi-bin>
+    Require all granted
+    AllowOverride All Options=ExecCGI,Includes,IncludesNOEXEC,Indexes,MultiViews,SymLinksIfOwnerMatch
+</Directory>
+<Proxy *>
+    <RequireAll>
+        Require all granted
+        # IP you wanna block, multiple lines is ok
+        Require not ip 163.7.5.166
+    </RequireAll>
+</Proxy>
 
-    ProxyPass / http://127.0.0.1:8008/
-    ProxyPassReverse / http://127.0.0.1:8008/
+RemoveHandler .php
+RemoveHandler .php8.2
+
+RewriteEngine on
+RewriteCond %{HTTP_HOST} !^subdomain\.domain\.name(:[0-9]+)?$ [NC]
+RewriteRule ^ - [F,L]
+
+ProxyPreserveHost On
+RequestHeader set X-Forwarded-Proto "https"
+ProxyPass /.well-known !
+
+RewriteCond %{HTTP:UPGRADE} ^WebSocket$ [NC]
+RewriteCond %{HTTP:CONNECTION} Upgrade [NC]
+RewriteRule ^/?(.*) "ws://127.0.0.1:8008/$1" [P]
+
+ProxyPass / http://127.0.0.1:8008/
+ProxyPassReverse / http://127.0.0.1:8008/
+
 </VirtualHost>
 ```
 Don't forget to enable module *header* since the webauthn needs the header.
