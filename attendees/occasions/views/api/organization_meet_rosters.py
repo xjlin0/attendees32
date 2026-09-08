@@ -1,7 +1,9 @@
 import time
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch, Q
+from django.contrib.postgres.aggregates import JSONBAgg
+from django.db.models import Prefetch, Q, Value, Count, Func, JSONField
+from django.db.models.functions import Coalesce
 from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -43,21 +45,32 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             for g in gatherings
         ]
 
-        # 2. Prefetch Attendances within the date range
-        attendance_prefetch = Prefetch(
-            'attendance_set',
-            queryset=Attendance.objects.filter(
-                gathering__in=gatherings,
-                is_removed=False
-            ).select_related('category'),
-            to_attr='recent_attendances'
-        )
-
-        # 3. Query Attendings (Rows)
+        # 2. Query Attendings (Rows) with Database Aggregation
         attendings_qs = Attending.objects.filter(
             meets__slug__in=meet_slugs,
             is_removed=False
-        ).select_related('attendee').prefetch_related(attendance_prefetch).distinct()
+        ).annotate(
+            total_attendances=Count(
+                'attendance',
+                filter=Q(
+                    attendance__gathering__in=gatherings,
+                    attendance__is_removed=False
+                ) & ~Q(attendance__category_id=1),
+                distinct=True
+            ),
+            attendances=Coalesce(JSONBAgg(
+                Func(
+                    Value('attendance_id'), 'attendance__id',
+                    Value('category_id'), 'attendance__category__id',
+                    Value('category_name'), 'attendance__category__display_name',
+                    Value('gathering_id'), 'attendance__gathering__id',
+                    function='jsonb_build_object',
+                ),
+                filter=Q(attendance__gathering__in=gatherings, attendance__is_removed=False),
+                distinct=True,
+                default=[],
+            ), Value('[]'), output_field=JSONField()),
+        ).select_related('attendee').distinct().order_by('attendee__first_name', 'attendee__last_name')
 
         # Pagination
         try:
@@ -73,20 +86,9 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         total_count = attendings_qs.count()
         attendings_page = attendings_qs[skip: skip + take]
 
-        # 4. In-Memory Pivot
+        # 3. Build Response
         rows = []
         for attending in attendings_page:
-            attendance_map = {}
-            actual_attendance_count = 0
-            for att in attending.recent_attendances:
-                attendance_map[str(att.gathering_id)] = {
-                    "attendance_id": att.id,
-                    "category_id": att.category_id,
-                    "category_name": att.category.display_name,
-                }
-                if att.category_id != 1:
-                    actual_attendance_count += 1
-
             photo_url = None
             if attending.attendee.photo:
                 try:
@@ -99,8 +101,8 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                 "attendee_id": attending.attendee.id,
                 "attendee_name": attending.attendee.display_label,
                 "photo_url": photo_url,
-                "attendances": attendance_map,
-                "total_attendances": actual_attendance_count,
+                "attendances": attending.attendances,
+                "total_attendances": attending.total_attendances,
             })
 
         return Response({

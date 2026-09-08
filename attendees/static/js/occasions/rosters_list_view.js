@@ -117,7 +117,8 @@ const app = createApp({
     };
 
     const getAttendanceRecord = (rowData, gatheringId) => {
-      return rowData.attendances[gatheringId];
+      // The backend now returns an array of attendances instead of a dictionary
+      return rowData.attendances.find(a => String(a.gathering_id) === String(gatheringId));
     };
 
     const isCheckedIn = (rowData, gatheringId) => {
@@ -206,11 +207,12 @@ const app = createApp({
             if (!response.ok) throw new Error('Failed to create walk-in attendance');
             const newAtt = await response.json();
             
-            rowData.attendances[gatheringId] = {
+            rowData.attendances.push({
               attendance_id: newAtt.id,
+              gathering_id: gatheringId,
               category_id: 9,
               category_name: 'attended'
-            };
+            });
             rowData.total_attendances += 1;
             rowUpdated = true;
           }

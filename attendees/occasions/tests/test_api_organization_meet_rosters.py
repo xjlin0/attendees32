@@ -108,8 +108,12 @@ def test_organization_meet_rosters_success(api_client, setup_objects):
     row = data["rows"][0]
     assert row["attendee_name"] == "John Doe"
     assert row["total_attendances"] == 1
-    
-    gathering_id_str = str(setup_objects["gathering"].id)
-    assert gathering_id_str in row["attendances"]
-    assert row["attendances"][gathering_id_str]["category_id"] == setup_objects["category"].id
 
+    gathering_id_str = str(setup_objects["gathering"].id)
+    
+    # Check that attendances is a list and contains the attendance object
+    attendance_record = next((a for a in row["attendances"] if str(a["gathering_id"]) == gathering_id_str), None)
+    assert attendance_record is not None
+    assert attendance_record["attendance_id"] == setup_objects["attendance"].id
+    assert attendance_record["category_id"] == setup_objects["category"].id
+    assert attendance_record["category_name"] == "Test Category"
