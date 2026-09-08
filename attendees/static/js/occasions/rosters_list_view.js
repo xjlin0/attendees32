@@ -14,7 +14,6 @@ const app = createApp({
   setup() {
     // DOM Refs
     const filterFormRef = ref(null);
-    const loadButtonRef = ref(null);
     const dataGridRef = ref(null);
 
     // State
@@ -29,17 +28,13 @@ const app = createApp({
     // DevExtreme Component Instances
     let formInstance = null;
     let gridInstance = null;
-    let buttonInstance = null;
 
     const loadData = async () => {
       if (!filterData.meets || !filterData.meets.length) {
-        DevExpress.ui.notify('Please select at least one Meet', 'warning', 2000);
-        return;
+        return; // Auto-load skips if no meets selected
       }
 
       isLoading.value = true;
-      if (buttonInstance) buttonInstance.option('disabled', true);
-      
       if (gridInstance) {
         gridInstance.beginCustomLoading("Loading rosters...");
       }
@@ -63,6 +58,8 @@ const app = createApp({
               dataField: 'attendee_name',
               caption: 'Attendee',
               fixed: true,
+              fixedPosition: 'left',
+              width: 200,
               cellTemplate: attendeeCellTemplate
             }
           ];
@@ -85,7 +82,6 @@ const app = createApp({
         console.error(error);
       } finally {
         isLoading.value = false;
-        if (buttonInstance) buttonInstance.option('disabled', false);
         if (gridInstance) gridInstance.endCustomLoading();
       }
     };
@@ -112,6 +108,8 @@ const app = createApp({
       const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
       const apiEndpoint = '/occasions/api/organization_meet_character_attendances/';
 
+      let rowUpdated = false;
+
       if (isCurrentlyCheckedIn) {
         // Revert to 'scheduled' (category 1) and remove start time
         if (!confirm(`Remove the time-in record of ${rowData.attendee_name} and revert status?`)) return;
@@ -134,6 +132,7 @@ const app = createApp({
           record.category_id = 1;
           record.category_name = 'scheduled';
           rowData.total_attendances = Math.max(0, rowData.total_attendances - 1);
+          rowUpdated = true;
           DevExpress.ui.notify('Reverted to scheduled.', 'info', 1500);
 
         } catch (err) {
@@ -161,10 +160,10 @@ const app = createApp({
             record.category_id = 9;
             record.category_name = 'attended';
             rowData.total_attendances += 1;
+            rowUpdated = true;
 
           } else {
             // Walk-in (No scheduled record exists)
-            // Create a new attendance record via POST
             const response = await fetch(apiEndpoint, {
               method: 'POST',
               headers: {
@@ -174,7 +173,7 @@ const app = createApp({
               body: JSON.stringify({
                 gathering: gatheringId,
                 attending: rowData.attending_id,
-                character: 1, // Defaulting to 1 for walk-ins (usually student), needs backend enhancement for robust character selection
+                character: 1, // Defaulting to 1 for walk-ins
                 category: 9,
                 start: new Date().toISOString()
               })
@@ -189,6 +188,7 @@ const app = createApp({
               category_name: 'attended'
             };
             rowData.total_attendances += 1;
+            rowUpdated = true;
           }
 
           DevExpress.ui.notify('Checked in successfully!', 'success', 1500);
@@ -198,7 +198,14 @@ const app = createApp({
         }
       }
 
-      if (gridInstance) gridInstance.repaint();
+      if (rowUpdated && gridInstance) {
+        const rowIndex = gridInstance.getRowIndexByKey(rowData.attending_id);
+        if (rowIndex >= 0) {
+          gridInstance.repaintRows([rowIndex]);
+        } else {
+          gridInstance.repaint(); // fallback
+        }
+      }
     };
 
     const markOut = async (rowData, gatheringId) => {
@@ -249,7 +256,7 @@ const app = createApp({
         ${photoHtml}
         <span>
           <a href="#" class="attendee-link">${data.attendee_name}</a> 
-          <span class="badge badge-info ml-1">(${data.total_attendances})</span>
+          <span style="color: #17a2b8; font-weight: bold; margin-left: 5px;" title="Total actual attendances">(${data.total_attendances || 0})</span>
         </span>
       `;
       
@@ -300,28 +307,11 @@ const app = createApp({
         colCount: 4,
         onFieldDataChanged: (e) => {
           filterData[e.dataField] = e.value;
+          if (['meets', 'startDate', 'endDate'].includes(e.dataField)) {
+            loadData();
+          }
         },
         items: [
-          {
-            dataField: 'meets',
-            editorType: 'dxTagBox',
-            label: { text: 'Meets' },
-            editorOptions: {
-              dataSource: new DevExpress.data.CustomStore({
-                key: 'slug',
-                loadMode: 'raw',
-                load: async () => {
-                  const response = await fetch(endpoints.meets + '?take=9999');
-                  if (!response.ok) throw new Error('Failed to load meets');
-                  const json = await response.json();
-                  return json.data || json; // Handle DRF paginated vs unpaginated
-                }
-              }),
-              displayExpr: 'display_name',
-              valueExpr: 'slug',
-              placeholder: 'Select Meets...'
-            }
-          },
           {
             dataField: 'startDate',
             editorType: 'dxDateBox',
@@ -335,6 +325,26 @@ const app = createApp({
             editorOptions: { type: 'date', displayFormat: 'shortDate' }
           },
           {
+            dataField: 'meets',
+            editorType: 'dxTagBox',
+            label: { text: 'Meets' },
+            editorOptions: {
+              dataSource: new DevExpress.data.CustomStore({
+                key: 'slug',
+                loadMode: 'raw',
+                load: async () => {
+                  const response = await fetch(endpoints.meets + '?take=9999');
+                  if (!response.ok) throw new Error('Failed to load meets');
+                  const json = await response.json();
+                  return json.data || json; 
+                }
+              }),
+              displayExpr: 'display_name',
+              valueExpr: 'slug',
+              placeholder: 'Select Meets...'
+            }
+          },
+          {
             dataField: 'showPhotos',
             editorType: 'dxCheckBox',
             label: { text: 'Show Photos' }
@@ -342,26 +352,31 @@ const app = createApp({
         ]
       });
 
-      // 2. Initialize Load Button
-      buttonInstance = new DevExpress.ui.dxButton(loadButtonRef.value, {
-        text: 'Load Rosters',
-        type: 'default',
-        stylingMode: 'contained',
-        onClick: loadData
-      });
-
-      // 3. Initialize DataGrid
+      // 2. Initialize DataGrid
       gridInstance = new DevExpress.ui.dxDataGrid(dataGridRef.value, {
         dataSource: [],
+        keyExpr: 'attending_id',
         showBorders: true,
         columnAutoWidth: true,
         hoverStateEnabled: true,
-        noDataText: "No data found. Please adjust filters and click Load.",
+        noDataText: "No data found. Please select a meet to load.",
+        paging: {
+          pageSize: 40
+        },
+        pager: {
+          visible: true,
+          allowedPageSizes: [40, 200, 9999],
+          showPageSizeSelector: true,
+          showInfo: true,
+          showNavigationButtons: true
+        },
         columns: [
           {
             dataField: 'attendee_name',
             caption: 'Attendee',
             fixed: true,
+            fixedPosition: 'left',
+            width: 200,
             cellTemplate: attendeeCellTemplate
           }
         ]
@@ -370,7 +385,6 @@ const app = createApp({
 
     return {
       filterFormRef,
-      loadButtonRef,
       dataGridRef,
     };
   }

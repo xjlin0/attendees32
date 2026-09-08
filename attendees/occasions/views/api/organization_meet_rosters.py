@@ -63,12 +63,15 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         rows = []
         for attending in attendings:
             attendance_map = {}
+            actual_attendance_count = 0
             for att in attending.recent_attendances:
                 attendance_map[str(att.gathering_id)] = {
                     "attendance_id": att.id,
                     "category_id": att.category_id,
                     "category_name": att.category.display_name,
                 }
+                if att.category_id != 1:
+                    actual_attendance_count += 1
 
             photo_url = None
             if attending.attendee.photo:
@@ -83,7 +86,7 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                 "attendee_name": attending.attendee.display_label,
                 "photo_url": photo_url,
                 "attendances": attendance_map,
-                "total_attendances": len(attending.recent_attendances),
+                "total_attendances": actual_attendance_count,
             })
 
         return Response({
