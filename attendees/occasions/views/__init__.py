@@ -40,3 +40,4 @@ from .api.organization_meet_character_attendance_stats import api_organization_m
 from .page.roster_list_view import roster_list_view
 from .page.attendance_statistics_list_view import attendance_statistics_list_view
 from .page.calendars_list_view import calendars_list_view
+from .api.organization_meet_rosters import api_organization_meet_rosters_viewset
