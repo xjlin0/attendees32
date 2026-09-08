@@ -28,6 +28,7 @@ from attendees.occasions.views import (
     series_gatherings_viewset,
     series_attendances_viewset,
     roster_list_view,
+    rosters_list_view,
     attendance_statistics_list_view,
     calendars_list_view,
     api_organization_calendars_viewset,
@@ -185,6 +186,11 @@ urlpatterns = [
         "roster/",
         view=roster_list_view,
         name='roster_list_view',
+    ),
+    path(
+        "rosters/",
+        view=rosters_list_view,
+        name='rosters_list_view',
     ),
     path(
         "attendance_statistics/",
