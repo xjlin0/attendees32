@@ -29,60 +29,84 @@ const app = createApp({
     let formInstance = null;
     let gridInstance = null;
 
-    const loadData = async () => {
+    const loadData = () => {
       if (!filterData.meets || !filterData.meets.length) {
         return; // Auto-load skips if no meets selected
       }
 
-      isLoading.value = true;
       if (gridInstance) {
-        gridInstance.beginCustomLoading("Loading rosters...");
-      }
+        gridInstance.option('dataSource', new DevExpress.data.CustomStore({
+          key: 'attending_id',
+          load: async (loadOptions) => {
+            try {
+              const queryParams = new URLSearchParams();
+              filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
+              
+              if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
+              if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
 
-      try {
-        const queryParams = new URLSearchParams();
-        filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
-        
-        if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
-        if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
+              // Pagination Parameters
+              queryParams.set('skip', loadOptions.skip || 0);
+              queryParams.set('take', loadOptions.take || 40);
 
-        const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        
-        const data = await response.json();
-        
-        // Re-configure the grid columns based on the dynamic gatherings
-        if (gridInstance) {
-          const columns = [
-            {
-              dataField: 'attendee_name',
-              caption: 'Attendee',
-              fixed: true,
-              fixedPosition: 'left',
-              width: 200,
-              cellTemplate: attendeeCellTemplate
+              const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
+              if (!response.ok) throw new Error('Network response was not ok');
+              
+              const data = await response.json();
+              
+              // Only update columns on the first page or if they changed, to avoid re-render loops
+              if (loadOptions.skip === 0 || loadOptions.skip == null) {
+                const currentCols = gridInstance.option('columns');
+                let colsChanged = false;
+                
+                if (!currentCols || currentCols.length !== data.columns.length + 1) {
+                  colsChanged = true;
+                } else {
+                  for (let i = 0; i < data.columns.length; i++) {
+                    if (currentCols[i + 1].name !== String(data.columns[i].id)) {
+                      colsChanged = true;
+                      break;
+                    }
+                  }
+                }
+
+                if (colsChanged) {
+                  const columns = [
+                    {
+                      dataField: 'attendee_name',
+                      caption: 'Attendee',
+                      fixed: true,
+                      fixedPosition: 'left',
+                      width: 200,
+                      cellTemplate: attendeeCellTemplate
+                    }
+                  ];
+
+                  data.columns.forEach(gathering => {
+                    columns.push({
+                      name: String(gathering.id),
+                      caption: formatDate(gathering.start),
+                      alignment: 'center',
+                      cellTemplate: attendanceCellTemplate
+                    });
+                  });
+
+                  gridInstance.option('columns', columns);
+                }
+              }
+
+              return {
+                data: data.rows,
+                totalCount: data.totalCount
+              };
+
+            } catch (error) {
+              DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
+              console.error(error);
+              throw error; // Let DevExtreme handle the failure UI
             }
-          ];
-
-          data.columns.forEach(gathering => {
-            columns.push({
-              name: String(gathering.id),
-              caption: formatDate(gathering.start),
-              alignment: 'center',
-              cellTemplate: attendanceCellTemplate
-            });
-          });
-
-          gridInstance.option('columns', columns);
-          gridInstance.option('dataSource', data.rows);
-        }
-
-      } catch (error) {
-        DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
-        console.error(error);
-      } finally {
-        isLoading.value = false;
-        if (gridInstance) gridInstance.endCustomLoading();
+          }
+        }));
       }
     };
 
@@ -355,7 +379,6 @@ const app = createApp({
       // 2. Initialize DataGrid
       gridInstance = new DevExpress.ui.dxDataGrid(dataGridRef.value, {
         dataSource: [],
-        keyExpr: 'attending_id',
         showBorders: true,
         columnAutoWidth: true,
         hoverStateEnabled: true,

@@ -54,14 +54,28 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         )
 
         # 3. Query Attendings (Rows)
-        attendings = Attending.objects.filter(
+        attendings_qs = Attending.objects.filter(
             meets__slug__in=meet_slugs,
             is_removed=False
         ).select_related('attendee').prefetch_related(attendance_prefetch).distinct()
 
+        # Pagination
+        try:
+            skip = int(request.query_params.get("skip", 0))
+        except ValueError:
+            skip = 0
+            
+        try:
+            take = int(request.query_params.get("take", 40))
+        except ValueError:
+            take = 40
+
+        total_count = attendings_qs.count()
+        attendings_page = attendings_qs[skip: skip + take]
+
         # 4. In-Memory Pivot
         rows = []
-        for attending in attendings:
+        for attending in attendings_page:
             attendance_map = {}
             actual_attendance_count = 0
             for att in attending.recent_attendances:
@@ -90,6 +104,7 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             })
 
         return Response({
+            "totalCount": total_count,
             "columns": gathering_list,
             "rows": rows
         })
