@@ -5,53 +5,12 @@
   Rosters (Multi-Date)
 {% endblock title %}
 
-{% block extra_css %}
-  <style>
-    /* Custom styling for compact roster buttons */
-    .roster-btn {
-      padding: 2px 8px;
-      font-size: 0.85rem;
-      border: 1px solid #28a745;
-      border-radius: 4px;
-      background-color: transparent;
-      color: #28a745;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-right: 4px;
-    }
-    .roster-btn:hover {
-      background-color: #28a745;
-      color: white;
-    }
-    .roster-btn.checked-in {
-      background-color: #28a745;
-      color: white;
-    }
-    .roster-btn-out {
-      border-color: #dc3545;
-      color: #dc3545;
-    }
-    .roster-btn-out:hover {
-      background-color: #dc3545;
-      color: white;
-    }
-    .attendee-photo {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 8px;
-    }
-    .attendee-info {
-      display: flex;
-      align-items: center;
-    }
-  </style>
-{% endblock extra_css %}
-
 {% block extra_head %}
   <!-- DevExtreme 23.2 CSS -->
   <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.2.4/css/dx.light.compact.css">
+
+  <!-- Roster Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/rosters_list_view.css' %}">
 
   <!-- Vue 3 Core (Pinned to 3.3.4 for stability) -->
   <script defer src="https://unpkg.com/vue@3.3.4/dist/vue.global.prod.js"></script>

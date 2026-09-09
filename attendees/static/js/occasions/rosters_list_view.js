@@ -1,37 +1,67 @@
-const { createApp, ref, reactive, onMounted, watch } = Vue;
+const { createApp, ref, reactive, watch, onMounted } = Vue;
 
-let endpoints = {};
-document.addEventListener('DOMContentLoaded', () => {
-  const container = document.getElementById('app');
-  endpoints = {
-    rosters: container.dataset.rostersEndpoint,
-    meets: container.dataset.meetsEndpointBySlug,
-  };
-});
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+};
+
+const getAttendanceRecord = (rowData, gatheringId) => {
+  return rowData.attendances.find(a => String(a.gathering_id) === String(gatheringId));
+};
+
+const isCheckedIn = (rowData, gatheringId) => {
+  const record = getAttendanceRecord(rowData, gatheringId);
+  return record && record.category_id !== 1;
+};
+
+const isCheckedOut = (rowData, gatheringId) => {
+  const record = getAttendanceRecord(rowData, gatheringId);
+  return record && record.finish;
+};
+
+const isAttendingValid = (rowData, gathering) => {
+  if (!rowData.attendingmeets) return true; // Fallback just in case
+  const am = rowData.attendingmeets.find(m => String(m.meet_id) === String(gathering.meet_id));
+  if (!am) return false;
+  
+  const gStart = new Date(gathering.start);
+  const amStart = am.start ? new Date(am.start) : new Date('1970-01-01');
+  const amFinish = am.finish ? new Date(am.finish) : new Date('2099-12-31');
+  
+  return gStart >= amStart && gStart <= amFinish;
+};
+
+const openAttendeeEdit = (attendeeId) => {
+  window.open(`/persons/attendee/${attendeeId}`, '_blank');
+};
 
 const app = createApp({
-  delimiters: ['[[', ']]'],
   setup() {
-    // DOM Refs
     const filterFormRef = ref(null);
     const dataGridRef = ref(null);
 
-    // State
-    const isLoading = ref(false);
+    // Endpoints pulled from DOM dataset
+    const appEl = document.getElementById('app');
+    const endpoints = {
+      rosters: appEl.dataset.rostersEndpoint,
+      meets: appEl.dataset.meetsEndpointBySlug,
+      attendances: '/occasions/api/organization_meet_character_attendances/'
+    };
+
     const filterData = reactive({
       meets: [],
-      startDate: new Date(new Date().setDate(new Date().getDate() - 30)),
-      endDate: new Date(),
-      showPhotos: false,
+      startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)), // 1 month ago
+      endDate: new Date(new Date().setMonth(new Date().getMonth() + 4)),   // 1 month ahead
+      showPhotos: false
     });
-    
-    // DevExtreme Component Instances
+
     let formInstance = null;
     let gridInstance = null;
 
     const loadData = () => {
       if (!filterData.meets || !filterData.meets.length) {
-        return; // Auto-load skips if no meets selected
+        return; 
       }
 
       if (gridInstance) {
@@ -45,7 +75,6 @@ const app = createApp({
               if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
               if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
 
-              // Pagination Parameters
               queryParams.set('skip', loadOptions.skip || 0);
               queryParams.set('take', loadOptions.take || 40);
 
@@ -54,45 +83,8 @@ const app = createApp({
               
               const data = await response.json();
               
-              // Only update columns on the first page or if they changed, to avoid re-render loops
               if (loadOptions.skip === 0 || loadOptions.skip == null) {
-                const currentCols = gridInstance.option('columns');
-                let colsChanged = false;
-                
-                if (!currentCols || currentCols.length !== data.columns.length + 1) {
-                  colsChanged = true;
-                } else {
-                  for (let i = 0; i < data.columns.length; i++) {
-                    if (currentCols[i + 1].name !== String(data.columns[i].id)) {
-                      colsChanged = true;
-                      break;
-                    }
-                  }
-                }
-
-                if (colsChanged) {
-                  const columns = [
-                    {
-                      dataField: 'attendee_name',
-                      caption: 'Attendee',
-                      fixed: true,
-                      fixedPosition: 'left',
-                      width: 200,
-                      cellTemplate: attendeeCellTemplate
-                    }
-                  ];
-
-                  data.columns.forEach(gathering => {
-                    columns.push({
-                      name: String(gathering.id),
-                      caption: formatDate(gathering.start),
-                      alignment: 'center',
-                      cellTemplate: attendanceCellTemplate
-                    });
-                  });
-
-                  gridInstance.option('columns', columns);
-                }
+                updateGridColumns(data.columns);
               }
 
               return {
@@ -103,92 +95,113 @@ const app = createApp({
             } catch (error) {
               DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
               console.error(error);
-              throw error; // Let DevExtreme handle the failure UI
+              throw error; 
             }
           }
         }));
       }
     };
 
-    const formatDate = (isoString) => {
-      if (!isoString) return '';
-      const date = new Date(isoString);
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    };
+    const updateGridColumns = (serverColumns) => {
+      const currentCols = gridInstance.option('columns');
+      let colsChanged = false;
+      
+      // +2 because 1 for Attendee name (left), 1 for dummy column (right)
+      if (!currentCols || currentCols.length !== serverColumns.length + 2) {
+        colsChanged = true;
+      } else {
+        for (let i = 0; i < serverColumns.length; i++) {
+          if (currentCols[i + 1].name !== String(serverColumns[i].id)) {
+            colsChanged = true;
+            break;
+          }
+        }
+      }
 
-    const getAttendanceRecord = (rowData, gatheringId) => {
-      // The backend now returns an array of attendances instead of a dictionary
-      return rowData.attendances.find(a => String(a.gathering_id) === String(gatheringId));
-    };
+      if (colsChanged) {
+        const columns = [
+          {
+            dataField: 'attendee_name',
+            caption: 'Attendee (attendance)',
+            fixed: true,
+            fixedPosition: 'left',
+            width: 200,
+            cellTemplate: attendeeCellTemplate
+          }
+        ];
 
-    const isCheckedIn = (rowData, gatheringId) => {
-      const record = getAttendanceRecord(rowData, gatheringId);
-      // Category 1 is 'scheduled'. Anything else (like 9 'attended') means they are checked in or handled.
-      return record && record.category_id !== 1;
+        serverColumns.forEach(gathering => {
+          columns.push({
+            name: String(gathering.id),
+            caption: formatDate(gathering.start),
+            alignment: 'center',
+            gatheringMeta: gathering, // Pass gathering details to cell template
+            cellTemplate: attendanceCellTemplate
+          });
+        });
+
+        // Add a dummy column at the end to absorb remaining horizontal space
+        // so that the gathering columns don't stretch out of proportion.
+        columns.push({
+          caption: '',
+          cssClass: 'dummy-column'
+        });
+
+        gridInstance.option('columns', columns);
+      }
     };
 
     const toggleAttendance = async (rowData, gatheringId) => {
       const record = getAttendanceRecord(rowData, gatheringId);
       const isCurrentlyCheckedIn = isCheckedIn(rowData, gatheringId);
       const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-      const apiEndpoint = '/occasions/api/organization_meet_character_attendances/';
+      const apiEndpoint = endpoints.attendances;
 
       let rowUpdated = false;
 
-      if (isCurrentlyCheckedIn) {
-        // Revert to 'scheduled' (category 1) and remove start time
-        if (!confirm(`Remove the time-in record of ${rowData.attendee_name} and revert status?`)) return;
-
-        try {
+      try {
+        if (isCurrentlyCheckedIn) {
+          // Check-out / Undo (Setting back to category 1)
           const response = await fetch(`${apiEndpoint}${record.attendance_id}/`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
               'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify({
-              category: 1, // scheduled
-              start: null
-            })
+            body: JSON.stringify({ category: 1, start: null, finish: null })
           });
 
-          if (!response.ok) throw new Error('Failed to revert attendance');
-          
+          if (!response.ok) throw new Error('Failed to undo check-in');
           record.category_id = 1;
           record.category_name = 'scheduled';
-          rowData.total_attendances = Math.max(0, rowData.total_attendances - 1);
+          record.start = null;
+          record.finish = null;
+          rowData.total_attendances -= 1;
           rowUpdated = true;
-          DevExpress.ui.notify('Reverted to scheduled.', 'info', 1500);
 
-        } catch (err) {
-          DevExpress.ui.notify(err.message, 'error', 3000);
-        }
-
-      } else {
-        // Check in: set category 9 (attended) and start time
-        try {
-          if (record && record.attendance_id) {
-            // Update existing scheduled record
+        } else {
+          const nowIso = new Date().toISOString();
+          if (record) {
+            // PATCH existing scheduled record
             const response = await fetch(`${apiEndpoint}${record.attendance_id}/`, {
               method: 'PATCH',
               headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
               },
-              body: JSON.stringify({
-                category: 9, // attended
-                start: new Date().toISOString()
-              })
+              body: JSON.stringify({ category: 9, start: nowIso, finish: null })
             });
 
             if (!response.ok) throw new Error('Failed to check in');
             record.category_id = 9;
             record.category_name = 'attended';
+            record.start = nowIso;
+            record.finish = null;
             rowData.total_attendances += 1;
             rowUpdated = true;
 
           } else {
-            // Walk-in (No scheduled record exists)
+            // POST new walk-in record
             const response = await fetch(apiEndpoint, {
               method: 'POST',
               headers: {
@@ -198,9 +211,9 @@ const app = createApp({
               body: JSON.stringify({
                 gathering: gatheringId,
                 attending: rowData.attending_id,
-                character: 1, // Defaulting to 1 for walk-ins
+                character: 1, 
                 category: 9,
-                start: new Date().toISOString()
+                start: nowIso
               })
             });
 
@@ -211,17 +224,19 @@ const app = createApp({
               attendance_id: newAtt.id,
               gathering_id: gatheringId,
               category_id: 9,
-              category_name: 'attended'
+              category_name: 'attended',
+              start: nowIso,
+              finish: null
             });
             rowData.total_attendances += 1;
             rowUpdated = true;
           }
-
-          DevExpress.ui.notify('Checked in successfully!', 'success', 1500);
-
-        } catch (err) {
-          DevExpress.ui.notify(err.message, 'error', 3000);
         }
+
+        DevExpress.ui.notify('Updated successfully!', 'success', 1500);
+
+      } catch (err) {
+        DevExpress.ui.notify(err.message, 'error', 3000);
       }
 
       if (rowUpdated && gridInstance) {
@@ -229,7 +244,7 @@ const app = createApp({
         if (rowIndex >= 0) {
           gridInstance.repaintRows([rowIndex]);
         } else {
-          gridInstance.repaint(); // fallback
+          gridInstance.repaint(); 
         }
       }
     };
@@ -239,7 +254,9 @@ const app = createApp({
       if (!record || !record.attendance_id) return;
       
       const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-      const apiEndpoint = '/occasions/api/organization_meet_character_attendances/';
+      const apiEndpoint = endpoints.attendances;
+      const isAlreadyOut = !!record.finish;
+      const newFinish = isAlreadyOut ? null : new Date().toISOString();
 
       try {
         const response = await fetch(`${apiEndpoint}${record.attendance_id}/`, {
@@ -248,21 +265,26 @@ const app = createApp({
             'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken
           },
-          body: JSON.stringify({
-            finish: new Date().toISOString()
-          })
+          body: JSON.stringify({ finish: newFinish })
         });
 
         if (!response.ok) throw new Error('Failed to checkout');
-        DevExpress.ui.notify('Marked out.', 'success', 1500);
+        
+        record.finish = newFinish;
+        DevExpress.ui.notify(isAlreadyOut ? 'Checkout undone.' : 'Marked out.', 'success', 1500);
+
+        if (gridInstance) {
+          const rowIndex = gridInstance.getRowIndexByKey(rowData.attending_id);
+          if (rowIndex >= 0) {
+            gridInstance.repaintRows([rowIndex]);
+          } else {
+            gridInstance.repaint(); 
+          }
+        }
 
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 3000);
       }
-    };
-
-    const openAttendeeEdit = (attendeeId) => {
-      window.open(`/persons/attendee/${attendeeId}`, '_blank');
     };
 
     // --- DevExtreme Templates ---
@@ -296,12 +318,20 @@ const app = createApp({
 
     const attendanceCellTemplate = (container, options) => {
       const data = options.data;
+      const gatheringMeta = options.column.gatheringMeta;
       const gatheringId = options.column.name;
-      const checkedIn = isCheckedIn(data, gatheringId);
-
+      
       const wrapper = document.createElement('div');
       wrapper.className = 'text-center';
 
+      // Validation: Is this attending valid for this gathering's time?
+      if (!isAttendingValid(data, gatheringMeta)) {
+        wrapper.innerHTML = `<span class="not-attending-text">Not Attending</span>`;
+        container.append(wrapper);
+        return;
+      }
+
+      const checkedIn = isCheckedIn(data, gatheringId);
       const checkInBtn = document.createElement('button');
       checkInBtn.className = `roster-btn ${checkedIn ? 'checked-in' : ''}`;
       checkInBtn.innerText = checkedIn ? 'Checked In' : 'Check In';
@@ -309,9 +339,10 @@ const app = createApp({
       wrapper.appendChild(checkInBtn);
 
       if (checkedIn) {
+        const checkedOut = isCheckedOut(data, gatheringId);
         const outBtn = document.createElement('button');
-        outBtn.className = 'roster-btn roster-btn-out';
-        outBtn.innerText = 'Out';
+        outBtn.className = `roster-btn roster-btn-out ${checkedOut ? 'checked-out' : ''}`;
+        outBtn.innerText = checkedOut ? 'Checked Out' : 'Out';
         outBtn.addEventListener('click', () => markOut(data, gatheringId));
         wrapper.appendChild(outBtn);
       }
@@ -319,15 +350,7 @@ const app = createApp({
       container.append(wrapper);
     };
 
-    // Re-render grid when showPhotos is toggled
-    watch(() => filterData.showPhotos, () => {
-      if (gridInstance) {
-        gridInstance.repaint();
-      }
-    });
-
-    onMounted(() => {
-      // 1. Initialize Form
+    const initFilterForm = () => {
       formInstance = new DevExpress.ui.dxForm(filterFormRef.value, {
         formData: filterData,
         colCount: 4,
@@ -342,32 +365,44 @@ const app = createApp({
             dataField: 'startDate',
             editorType: 'dxDateBox',
             label: { text: 'From' },
-            editorOptions: { type: 'date', displayFormat: 'shortDate' }
+            editorOptions: { type: 'datetime', displayFormat: 'shortDateShortTime' }
           },
           {
             dataField: 'endDate',
             editorType: 'dxDateBox',
             label: { text: 'To' },
-            editorOptions: { type: 'date', displayFormat: 'shortDate' }
+            editorOptions: { type: 'datetime', displayFormat: 'shortDateShortTime' }
           },
           {
             dataField: 'meets',
             editorType: 'dxTagBox',
             label: { text: 'Meets' },
             editorOptions: {
-              dataSource: new DevExpress.data.CustomStore({
-                key: 'slug',
-                loadMode: 'raw',
-                load: async () => {
-                  const response = await fetch(endpoints.meets + '?take=9999');
-                  if (!response.ok) throw new Error('Failed to load meets');
-                  const json = await response.json();
-                  return json.data || json; 
-                }
-              }),
+              grouped: true,
               displayExpr: 'display_name',
               valueExpr: 'slug',
-              placeholder: 'Select Meets...'
+              placeholder: 'Select Meets...',
+              dataSource: new DevExpress.data.DataSource({
+                store: new DevExpress.data.CustomStore({
+                  key: 'slug',
+                  load: async () => {
+                    const queryParams = new URLSearchParams({
+                      take: 9999,
+                      grouping: 'assembly_name',
+                      model: 'attendance'
+                    });
+                    
+                    if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
+                    if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
+
+                    const response = await fetch(`${endpoints.meets}?${queryParams.toString()}`);
+                    if (!response.ok) throw new Error('Failed to load meets');
+                    const json = await response.json();
+                    return json.data || json;
+                  }
+                }),
+                key: 'slug'
+              })
             }
           },
           {
@@ -377,11 +412,15 @@ const app = createApp({
           }
         ]
       });
+    };
 
-      // 2. Initialize DataGrid
+    const initDataGrid = () => {
       gridInstance = new DevExpress.ui.dxDataGrid(dataGridRef.value, {
         dataSource: [],
         showBorders: true,
+        rowAlternationEnabled: true,
+        allowColumnResizing: true,
+        columnResizingMode: 'widget',
         columnAutoWidth: true,
         hoverStateEnabled: true,
         noDataText: "No data found. Please select a meet to load.",
@@ -406,6 +445,17 @@ const app = createApp({
           }
         ]
       });
+    };
+
+    watch(() => filterData.showPhotos, () => {
+      if (gridInstance) {
+        gridInstance.repaint();
+      }
+    });
+
+    onMounted(() => {
+      initFilterForm();
+      initDataGrid();
     });
 
     return {

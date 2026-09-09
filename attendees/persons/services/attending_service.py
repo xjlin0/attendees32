@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
 
-from django.db.models import Q
+from django.db.models import Q, Value, Count, Func, JSONField
 from django.db.models.expressions import F
+from django.db.models.functions import Coalesce
+from django.contrib.postgres.aggregates import JSONBAgg
 
-from attendees.occasions.models import Attendance
+from attendees.occasions.models import Attendance, Gathering
 from attendees.persons.models import Attending
 
 
@@ -145,20 +147,88 @@ class AttendingService:
     #         filters.add((Q(attendingmeet__start__isnull=True) | Q(attendingmeet__start__lte=finish)), Q.AND)
     #     return Attending.objects.annotate(assembly=F("meet__assembly")).filter(filters).order_by(*orderby_list)
     #
-    # @staticmethod
-    # def orderby_parser(orderbys):
-    #     """
-    #     generates sorter (column) based on user's choice
-    #     :param orderbys: list of search params
-    #     :return: a List of sorter for order_by()
-    #     """
-    #     orderby_list = (
-    #         []
-    #     )  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
-    #
-    #     for orderby_dict in orderbys:
-    #         field = orderby_dict.get("selector", "id").replace(".", "__")
-    #         direction = "-" if orderby_dict.get("desc", False) else ""
-    #         orderby_list.append(direction + field)
-    #
-    #     return orderby_list
+    @staticmethod
+    def get_roster_data(organization, meet_slugs, start, finish, skip, take):
+        # 1. Query Gatherings (Columns)
+        gatherings = Gathering.objects.filter(
+            meet__slug__in=meet_slugs,
+            meet__assembly__division__organization=organization,
+            start__gte=start,
+            finish__lte=finish,
+            is_removed=False
+        ).order_by('start')
+
+        gathering_list = [
+            {
+                "id": g.id,
+                "display_name": g.display_name,
+                "start": g.start.isoformat() if g.start else None,
+                "meet_id": g.meet_id
+            }
+            for g in gatherings
+        ]
+
+        # 2. Query Attendings (Rows) with Database Aggregation
+        attendings_qs = Attending.objects.filter(
+            meets__slug__in=meet_slugs,
+            is_removed=False
+        ).annotate(
+            total_attendances=Count(
+                'attendance',
+                filter=Q(
+                    attendance__gathering__in=gatherings,
+                    attendance__is_removed=False
+                ) & ~Q(attendance__category_id=1),
+                distinct=True
+            ),
+            attendances=Coalesce(JSONBAgg(
+                Func(
+                    Value('attendance_id'), 'attendance__id',
+                    Value('category_id'), 'attendance__category__id',
+                    Value('category_name'), 'attendance__category__display_name',
+                    Value('gathering_id'), 'attendance__gathering__id',
+                    Value('start'), 'attendance__start',
+                    Value('finish'), 'attendance__finish',
+                    function='jsonb_build_object',
+                ),
+                filter=Q(attendance__gathering__in=gatherings, attendance__is_removed=False),
+                distinct=True,
+                default=[],
+            ), Value('[]'), output_field=JSONField()),
+            attendingmeets=Coalesce(JSONBAgg(
+                Func(
+                    Value('meet_id'), 'attendingmeet__meet_id',
+                    Value('start'), 'attendingmeet__start',
+                    Value('finish'), 'attendingmeet__finish',
+                    function='jsonb_build_object',
+                ),
+                filter=Q(attendingmeet__meet__slug__in=meet_slugs, attendingmeet__is_removed=False),
+                distinct=True,
+                default=[],
+            ), Value('[]'), output_field=JSONField()),
+        ).select_related('attendee').distinct().order_by('attendee__first_name', 'attendee__last_name')
+
+        total_count = attendings_qs.count()
+        attendings_page = attendings_qs[skip: skip + take]
+
+        # 3. Build Response
+        rows = []
+        for attending in attendings_page:
+            photo_url = None
+            if attending.attendee.photo:
+                try:
+                    photo_url = attending.attendee.photo.url
+                except ValueError:
+                    pass
+
+            rows.append({
+                "attending_id": attending.id,
+                "attendee_id": attending.attendee.id,
+                "attendee_name": attending.attendee.display_label,
+                "photo_url": photo_url,
+                "attendances": attending.attendances,
+                "attendingmeets": attending.attendingmeets,
+                "total_attendances": attending.total_attendances,
+            })
+            
+        return gathering_list, rows, total_count
