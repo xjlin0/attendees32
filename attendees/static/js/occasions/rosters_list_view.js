@@ -78,6 +78,10 @@ const app = createApp({
               queryParams.set('skip', loadOptions.skip || 0);
               queryParams.set('take', loadOptions.take || 40);
 
+              if (loadOptions.sort) {
+                queryParams.set('sort', JSON.stringify(loadOptions.sort));
+              }
+
               const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
               if (!response.ok) throw new Error('Network response was not ok');
               
@@ -106,12 +110,12 @@ const app = createApp({
       const currentCols = gridInstance.option('columns');
       let colsChanged = false;
       
-      // +2 because 1 for Attendee name (left), 1 for dummy column (right)
-      if (!currentCols || currentCols.length !== serverColumns.length + 2) {
+      // +3 because 1 for Attendee name, 1 for Attendances, 1 for dummy column
+      if (!currentCols || currentCols.length !== serverColumns.length + 3) {
         colsChanged = true;
       } else {
         for (let i = 0; i < serverColumns.length; i++) {
-          if (currentCols[i + 1].name !== String(serverColumns[i].id)) {
+          if (currentCols[i + 2].name !== String(serverColumns[i].id)) {
             colsChanged = true;
             break;
           }
@@ -122,11 +126,21 @@ const app = createApp({
         const columns = [
           {
             dataField: 'attendee_name',
-            caption: 'Attendee (attendance)',
+            caption: 'Attendee',
             fixed: true,
             fixedPosition: 'left',
             width: 200,
-            cellTemplate: attendeeCellTemplate
+            cellTemplate: attendeeCellTemplate,
+            allowSorting: true
+          },
+          {
+            dataField: 'total_attendances',
+            caption: 'Attendances',
+            fixed: true,
+            fixedPosition: 'left',
+            width: 100,
+            alignment: 'center',
+            allowSorting: true
           }
         ];
 
@@ -304,7 +318,6 @@ const app = createApp({
         ${photoHtml}
         <span>
           <a href="#" class="attendee-link">${data.attendee_name}</a> 
-          <span style="color: #17a2b8; font-weight: bold; margin-left: 5px;" title="Total actual attendances">(${data.total_attendances || 0})</span>
         </span>
       `;
       
@@ -424,6 +437,7 @@ const app = createApp({
         columnAutoWidth: true,
         hoverStateEnabled: true,
         noDataText: "No data found. Please select a meet to load.",
+        remoteOperations: { paging: true, sorting: true },
         paging: {
           pageSize: 40
         },

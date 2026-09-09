@@ -35,13 +35,32 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         except ValueError:
             take = 40
 
+        # Sorting
+        sort_list = []
+        sort_param = request.query_params.get("sort")
+        if sort_param:
+            import json
+            try:
+                sort_parsed = json.loads(sort_param)
+                for s in sort_parsed:
+                    selector = s.get("selector")
+                    desc = s.get("desc", False)
+                    if selector == "attendee_name":
+                        sort_list.append("-attendee__first_name" if desc else "attendee__first_name")
+                        sort_list.append("-attendee__last_name" if desc else "attendee__last_name")
+                    elif selector == "total_attendances":
+                        sort_list.append("-total_attendances" if desc else "total_attendances")
+            except (ValueError, TypeError):
+                pass
+
         columns, rows, total_count = AttendingService.get_roster_data(
             organization=current_user_organization,
             meet_slugs=meet_slugs,
             start=start,
             finish=finish,
             skip=skip,
-            take=take
+            take=take,
+            sort_list=sort_list
         )
 
         serializer = RosterResponseSerializer({

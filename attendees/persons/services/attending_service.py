@@ -148,7 +148,10 @@ class AttendingService:
     #     return Attending.objects.annotate(assembly=F("meet__assembly")).filter(filters).order_by(*orderby_list)
     #
     @staticmethod
-    def get_roster_data(organization, meet_slugs, start, finish, skip, take):
+    def get_roster_data(organization, meet_slugs, start, finish, skip, take, sort_list=None):
+        if not sort_list:
+            sort_list = ['attendee__first_name', 'attendee__last_name']
+            
         # 1. Query Gatherings (Columns)
         gatherings = Gathering.objects.filter(
             meet__slug__in=meet_slugs,
@@ -206,7 +209,7 @@ class AttendingService:
                 distinct=True,
                 default=[],
             ), Value('[]'), output_field=JSONField()),
-        ).select_related('attendee').distinct().order_by('attendee__first_name', 'attendee__last_name')
+        ).select_related('attendee').distinct().order_by(*sort_list)
 
         total_count = attendings_qs.count()
         attendings_page = attendings_qs[skip: skip + take]
