@@ -47,7 +47,7 @@
   "model": "django_celery_beat.periodictasks",
   "pk": 1,
   "fields": {
-    "last_update": "2026-06-19T07:28:35.196Z"
+    "last_update": "2026-09-08T04:06:17.231Z"
   }
 },
 {
@@ -130,7 +130,7 @@
     "enabled": true,
     "last_run_at": null,
     "total_run_count": 0,
-    "date_changed": "2026-06-19T07:28:35.191Z",
+    "date_changed": "2026-09-08T04:06:17.226Z",
     "description": ""
   }
 },
@@ -1939,7 +1939,7 @@
     "raw": "3 great rd, Hayward, CA 94541",
     "formatted": "admin's place: 3 great rd, Hayward, CA 94541",
     "latitude": 33.156032221,
-    "longitude": -136.75450040
+    "longitude": -136.7545004
   }
 },
 {
@@ -2145,7 +2145,7 @@
       "data-bs-toggle": "dropdown"
     },
     "lft": 1,
-    "rght": 24,
+    "rght": 26,
     "tree_id": 14,
     "level": 0
   }
@@ -2218,8 +2218,8 @@
       "class": "dropdown-item",
       "title": "Leader List"
     },
-    "lft": 10,
-    "rght": 11,
+    "lft": 12,
+    "rght": 13,
     "tree_id": 14,
     "level": 1
   }
@@ -2296,7 +2296,7 @@
     },
     "lft": 1,
     "rght": 6,
-    "tree_id": 15,
+    "tree_id": 16,
     "level": 0
   }
 },
@@ -2321,7 +2321,7 @@
     },
     "lft": 4,
     "rght": 5,
-    "tree_id": 15,
+    "tree_id": 16,
     "level": 1
   }
 },
@@ -2346,7 +2346,7 @@
     },
     "lft": 2,
     "rght": 3,
-    "tree_id": 15,
+    "tree_id": 16,
     "level": 1
   }
 },
@@ -2721,8 +2721,8 @@
       "class": "dropdown-item",
       "title": "directory pdf"
     },
-    "lft": 16,
-    "rght": 17,
+    "lft": 18,
+    "rght": 19,
     "tree_id": 14,
     "level": 1
   }
@@ -2746,8 +2746,8 @@
       "class": "dropdown-item",
       "title": "directory print"
     },
-    "lft": 12,
-    "rght": 13,
+    "lft": 14,
+    "rght": 15,
     "tree_id": 14,
     "level": 1
   }
@@ -2870,8 +2870,8 @@
       "class": "dropdown-item",
       "title": "attendingmeet print"
     },
-    "lft": 14,
-    "rght": 15,
+    "lft": 16,
+    "rght": 17,
     "tree_id": 14,
     "level": 1
   }
@@ -2895,8 +2895,8 @@
       "class": "dropdown-item",
       "title": "attendingmeet pdf"
     },
-    "lft": 18,
-    "rght": 19,
+    "lft": 20,
+    "rght": 21,
     "tree_id": 14,
     "level": 1
   }
@@ -2920,8 +2920,8 @@
       "class": "dropdown-item",
       "title": "attendingmeet envelopes"
     },
-    "lft": 20,
-    "rght": 21,
+    "lft": 22,
+    "rght": 23,
     "tree_id": 14,
     "level": 1
   }
@@ -2945,8 +2945,33 @@
       "class": "dropdown-item",
       "title": "attandance statistics"
     },
-    "lft": 22,
-    "rght": 23,
+    "lft": 24,
+    "rght": 25,
+    "tree_id": 14,
+    "level": 1
+  }
+},
+{
+  "model": "users.menu",
+  "pk": 43,
+  "fields": {
+    "created": "2026-09-08T04:11:24.888Z",
+    "modified": "2026-09-08T04:12:16.521Z",
+    "is_removed": false,
+    "organization": 1,
+    "category": "main",
+    "parent": 4,
+    "html_type": "a",
+    "urn": "/occasions/rosters/",
+    "url_name": "rosters_list_view",
+    "display_name": "Rosters 點名表格",
+    "display_order": 2450,
+    "infos": {
+      "class": "dropdown-item",
+      "title": "Roster"
+    },
+    "lft": 10,
+    "rght": 11,
     "tree_id": 14,
     "level": 1
   }
@@ -21504,69 +21529,6 @@
   }
 },
 {
-  "model": "users.user",
-  "fields": {
-    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$d0ZMcjZaYXA4Y2JZVGlwbVQ5ZTFVeg$36yZhbLp4HFBP2G+nawJ7LCS0HQMdyDsR7Ml5UKBQVE",
-    "last_login": "2026-06-19T07:31:59.589Z",
-    "is_superuser": true,
-    "username": "jack",
-    "email": "jack@email.com",
-    "is_staff": true,
-    "is_active": true,
-    "date_joined": "2026-06-19T07:26:38Z",
-    "name": "",
-    "organization": 1,
-    "infos": {
-      "settings": {}
-    },
-    "groups": [
-      [
-        "organization_participant"
-      ],
-      [
-        "children_coworker"
-      ],
-      [
-        "children_organizer"
-      ],
-      [
-        "conference_organizer"
-      ],
-      [
-        "data_organizer"
-      ],
-      [
-        "data_counselor"
-      ]
-    ],
-    "user_permissions": []
-  }
-},
-{
-  "model": "users.user",
-  "fields": {
-    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$M1RLVlIybGJ2NEtFbEVmZlBOWEYweg$9NaMlK+CyWWSeyMVwOGzpUSR0AgkxQbUXrS8Ej63tMI",
-    "last_login": "2026-06-19T07:32:25.173Z",
-    "is_superuser": true,
-    "username": "hagar",
-    "email": "hagar@email.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2026-06-19T07:27:06Z",
-    "name": "",
-    "organization": 1,
-    "infos": {
-      "settings": {}
-    },
-    "groups": [
-      [
-        "children_coworker"
-      ]
-    ],
-    "user_permissions": []
-  }
-},
-{
   "model": "users.menuauthgroup",
   "pk": 1,
   "fields": {
@@ -23577,6 +23539,81 @@
   }
 },
 {
+  "model": "users.menuauthgroup",
+  "pk": 157,
+  "fields": {
+    "created": "2026-09-08T04:11:24.892Z",
+    "modified": "2026-09-08T04:11:24.892Z",
+    "is_removed": false,
+    "auth_group": [
+      "children_coworker"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 158,
+  "fields": {
+    "created": "2026-09-08T04:11:24.892Z",
+    "modified": "2026-09-08T04:11:24.892Z",
+    "is_removed": false,
+    "auth_group": [
+      "children_organizer"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 159,
+  "fields": {
+    "created": "2026-09-08T04:11:24.893Z",
+    "modified": "2026-09-08T04:11:24.893Z",
+    "is_removed": false,
+    "auth_group": [
+      "conference_organizer"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 160,
+  "fields": {
+    "created": "2026-09-08T04:11:24.893Z",
+    "modified": "2026-09-08T04:11:24.893Z",
+    "is_removed": false,
+    "auth_group": [
+      "data_counselor"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 161,
+  "fields": {
+    "created": "2026-09-08T04:11:24.894Z",
+    "modified": "2026-09-08T04:11:24.894Z",
+    "is_removed": false,
+    "auth_group": [
+      "data_organizer"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
   "model": "whereabouts.division",
   "pk": 0,
   "fields": {
@@ -25258,30 +25295,6 @@
     "end_recurring_period": null,
     "calendar": 1,
     "color_event": "#D85504"
-  }
-},
-{
-  "model": "account.emailaddress",
-  "pk": 1,
-  "fields": {
-    "user": [
-      "jack"
-    ],
-    "email": "jack@email.com",
-    "verified": true,
-    "primary": true
-  }
-},
-{
-  "model": "account.emailaddress",
-  "pk": 2,
-  "fields": {
-    "user": [
-      "hagar"
-    ],
-    "email": "hagar@email.com",
-    "verified": true,
-    "primary": true
   }
 }
 ]
