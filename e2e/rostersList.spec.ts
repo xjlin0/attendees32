@@ -43,7 +43,19 @@ test.describe('Rosters List Page', () => {
     const appContainer = page.locator('#app');
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
-    // 3. Select a meet from the dxTagBox
+    // 3. Set a very wide date range to ensure seed data is included
+    const fromInput = page.locator('.dx-datebox input.dx-texteditor-input').nth(0);
+    await fromInput.fill('01/01/2000, 12:00 AM');
+    await fromInput.press('Enter');
+
+    const toInput = page.locator('.dx-datebox input.dx-texteditor-input').nth(1);
+    await toInput.fill('12/31/2040, 11:59 PM');
+    await toInput.press('Enter');
+
+    // Wait briefly for Vue reactive state to settle
+    await page.waitForTimeout(500);
+
+    // 4. Select a meet from the dxTagBox
     // Wait for the tag box input to be ready
     const tagBox = page.locator('.dx-tagbox').first();
     await tagBox.click();
