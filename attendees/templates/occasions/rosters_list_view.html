@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+  Rosters (Multi-Date)
+{% endblock title %}
+
+{% block extra_head %}
+  <!-- DevExtreme 23.2 CSS -->
+  <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.2.4/css/dx.light.compact.css">
+
+  <!-- Roster Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/rosters_list_view.css' %}">
+
+  <!-- Vue 3 Core (Pinned to 3.3.4 for stability) -->
+  <script defer src="https://unpkg.com/vue@3.3.4/dist/vue.global.prod.js"></script>
+
+  <!-- DevExtreme 23.2 Core (Web only, excludes charts/maps to save size) -->
+  <script defer src="https://cdn3.devexpress.com/jslib/23.2.4/js/dx.web.js"></script>
+
+  <!-- Application Logic -->
+  <script defer src="{% static 'js/occasions/rosters_list_view.js' %}"></script>
+{% endblock extra_head %}
+
+{% block content %}
+<div class="rosters-container" id="app"
+     data-assemblies-endpoint="{{ assemblies_endpoint }}"
+     data-categories-endpoint="{{ categories_endpoint }}"
+     data-meets-endpoint-by-slug="{{ meets_endpoint_by_slug }}"
+     data-rosters-endpoint="{{ rosters_endpoint }}">
+  {% csrf_token %}
+  
+  <div class="d-flex justify-content-between mb-3">
+    <div class="d-flex">
+      <h3>Rosters Table</h3>
+    </div>
+  </div>
+
+  <!-- DevExtreme Filters Form -->
+  <div ref="filterFormRef"></div>
+
+  <!-- DevExtreme DataGrid -->
+  <div ref="dataGridRef" class="mt-3"></div>
+</div>
+{% endblock content %}

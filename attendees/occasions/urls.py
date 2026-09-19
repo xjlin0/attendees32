@@ -21,12 +21,14 @@ from attendees.occasions.views import (
     datagrid_user_organization_attendances_list_view,
     api_organization_meet_character_attendances_viewset,
     api_organization_meet_character_attendance_stats_viewset,
+    api_organization_meet_rosters_viewset,
     gatherings_list_view,
     organization_meets_viewset,
     organization_characters_viewset,
     series_gatherings_viewset,
     series_attendances_viewset,
     roster_list_view,
+    rosters_list_view,
     attendance_statistics_list_view,
     calendars_list_view,
     api_organization_calendars_viewset,
@@ -117,6 +119,11 @@ router.register(
     basename="organization_meet_character_attendance_stats",
 )
 router.register(
+    "api/organization_meet_rosters",
+    api_organization_meet_rosters_viewset,
+    basename="organization_meet_rosters",
+)
+router.register(
     "api/family_organization_characters",
     api_family_organization_characters_viewset,
     basename="family_organization_characters",
@@ -179,6 +186,11 @@ urlpatterns = [
         "roster/",
         view=roster_list_view,
         name='roster_list_view',
+    ),
+    path(
+        "rosters/",
+        view=rosters_list_view,
+        name='rosters_list_view',
     ),
     path(
         "attendance_statistics/",
