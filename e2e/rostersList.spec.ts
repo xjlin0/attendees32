@@ -71,12 +71,16 @@ test.describe('Rosters List Page', () => {
       expect(dataRowCount).toBeGreaterThan(0);
     }).toPass({ timeout: 15000 });
 
-    // 6. Test the check-in button behavior
-    // Look for a check-in button (that is not checked-in) OR a checked-in button
+    // 6. Test the check-in button and attendance count behavior
     const rosterBtn = page.locator('.roster-btn').first();
     await expect(rosterBtn).toBeVisible();
-
-    const isCheckedIn = await rosterBtn.evaluate(el => el.classList.contains('checked-in'));
+    
+    // DevExtreme creates multiple tables for fixed columns, so we must pick the visible cell globally
+    // We just find the first visible cell in column 2, which corresponds to the first row
+    const attendanceCell = page.locator('td[role="gridcell"][aria-colindex="2"]:not(.dx-hidden-cell)').first();
+    
+    let isCheckedIn = await rosterBtn.evaluate(el => el.classList.contains('checked-in'));
+    let initialCount = parseInt(await attendanceCell.innerText(), 10) || 0;
 
     if (!isCheckedIn) {
         // If not checked in, click Check In
@@ -85,6 +89,24 @@ test.describe('Rosters List Page', () => {
         // Should now have 'checked-in' class and say 'Checked In'
         await expect(rosterBtn).toHaveClass(/checked-in/);
         await expect(rosterBtn).toHaveText('Checked In');
+        
+        // Verify count incremented
+        await expect(attendanceCell).toHaveText(String(initialCount + 1));
+    } else {
+        // If already checked in, click to Undo Check In
+        await rosterBtn.click();
+        
+        // Should now NOT have 'checked-in' class and say 'Check In'
+        await expect(rosterBtn).not.toHaveClass(/checked-in/);
+        await expect(rosterBtn).toHaveText('Check In');
+        
+        // Verify count decremented
+        await expect(attendanceCell).toHaveText(String(Math.max(0, initialCount - 1)));
+        
+        // Click again to check back in so we can test the Out button
+        await rosterBtn.click();
+        await expect(rosterBtn).toHaveClass(/checked-in/);
+        await expect(attendanceCell).toHaveText(String(initialCount)); // Back to initial
     }
 
     // Now an 'Out' button should be present

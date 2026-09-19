@@ -201,6 +201,7 @@ class AttendingService:
             attendingmeets=Coalesce(JSONBAgg(
                 Func(
                     Value('meet_id'), 'attendingmeet__meet_id',
+                    Value('character_id'), 'attendingmeet__character_id',
                     Value('start'), 'attendingmeet__start',
                     Value('finish'), 'attendingmeet__finish',
                     function='jsonb_build_object',
