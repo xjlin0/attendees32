@@ -1078,6 +1078,6 @@ Attendees.roster = {
 
 };
 
-(document).ready$(() => {
+$(document).ready(() => {
   Attendees.roster.init();
 });
