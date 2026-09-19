@@ -356,7 +356,7 @@
   // ==========================================================
   // 4. Filters Form Logic
   // ==========================================================
-  function useRosterFilter(endpoints, filterData, reloadCallback) {
+  function useRosterFilter(endpoints, filterData, reloadCallback, gridInstanceRef) {
     let formInstance = null;
 
     const initFilterForm = (filterFormEl) => {
@@ -376,6 +376,8 @@
 
           if (['meets', 'startDate', 'endDate'].includes(e.dataField)) {
             reloadCallback();
+          } else if (e.dataField === 'showPhotos' && gridInstanceRef.value) {
+            gridInstanceRef.value.repaint();
           }
         },
         items: [
@@ -468,7 +470,7 @@
       const { endpoints, initEndpoints } = useEndpoints();
       const attendanceLogic = useAttendanceLogic(endpoints, gridInstanceRef);
       const { initDataGrid, loadData } = useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic);
-      const { initFilterForm } = useRosterFilter(endpoints, filterData, loadData);
+      const { initFilterForm } = useRosterFilter(endpoints, filterData, loadData, gridInstanceRef);
 
       // Lifecycle
       onMounted(() => {
