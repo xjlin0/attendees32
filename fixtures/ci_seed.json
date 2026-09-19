@@ -21529,6 +21529,69 @@
   }
 },
 {
+  "model": "users.user",
+  "fields": {
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$d0ZMcjZaYXA4Y2JZVGlwbVQ5ZTFVeg$36yZhbLp4HFBP2G+nawJ7LCS0HQMdyDsR7Ml5UKBQVE",
+    "last_login": "2026-06-19T07:31:59.589Z",
+    "is_superuser": true,
+    "username": "jack",
+    "email": "jack@email.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-06-19T07:26:38Z",
+    "name": "",
+    "organization": 1,
+    "infos": {
+      "settings": {}
+    },
+    "groups": [
+      [
+        "organization_participant"
+      ],
+      [
+        "children_coworker"
+      ],
+      [
+        "children_organizer"
+      ],
+      [
+        "conference_organizer"
+      ],
+      [
+        "data_organizer"
+      ],
+      [
+        "data_counselor"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "fields": {
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$M1RLVlIybGJ2NEtFbEVmZlBOWEYweg$9NaMlK+CyWWSeyMVwOGzpUSR0AgkxQbUXrS8Ej63tMI",
+    "last_login": "2026-06-19T07:32:25.173Z",
+    "is_superuser": true,
+    "username": "hagar",
+    "email": "hagar@email.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-06-19T07:27:06Z",
+    "name": "",
+    "organization": 1,
+    "infos": {
+      "settings": {}
+    },
+    "groups": [
+      [
+        "children_coworker"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
   "model": "users.menuauthgroup",
   "pk": 1,
   "fields": {
@@ -25295,6 +25358,30 @@
     "end_recurring_period": null,
     "calendar": 1,
     "color_event": "#D85504"
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "jack"
+    ],
+    "email": "jack@email.com",
+    "verified": true,
+    "primary": true
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "hagar"
+    ],
+    "email": "hagar@email.com",
+    "verified": true,
+    "primary": true
   }
 }
 ]
