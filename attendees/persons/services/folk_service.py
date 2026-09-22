@@ -199,6 +199,7 @@ class FolkService:
                     division__slug__in=division_slugs,
                     deathday=None,
                     attendings__in=meets_attendings,
+                    folkattendee__is_removed=False,
                 ).exclude(
                     folkattendee__finish__lte=datetime.now(timezone.utc)
                 )
@@ -300,7 +301,9 @@ class FolkService:
                 householder_last_name=Subquery(attendee_subquery.values_list('last_name')[:1]),
                 householder_first_name=Subquery(attendee_subquery.values_list('first_name')[:1]),
                 householder_first_name2=Subquery(attendee_subquery.values_list('first_name2')[:1]),
+                attendee_count=Count('attendees', filter=Q(folkattendee__is_removed=False)),
             ).filter(
+                attendee_count__gt=0,
                 category=Attendee.FAMILY_CATEGORY,
                 is_removed=False,
                 attendees__in=Attendee.objects.filter(
@@ -316,6 +319,7 @@ class FolkService:
                     division__slug__in=division_slugs,
                     deathday=None,
                     attendings__in=meets_attendings,
+                    folkattendee__is_removed=False,
                 ).exclude(
                     folkattendee__finish__lte=datetime.now(timezone.utc)
                 )
