@@ -1,6 +1,6 @@
 # Attendees
 
-Attendees in Django 3.2
+Attendees in Django 4.2
 ## An app for general event management
 - Tracking who/when/where/what of any activities with attendance records.
 - Monolith architecture on docker [![Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/) and Javascript([DevExtreme](https://js.devexpress.com/Licensing/#NonCommercial)) with Postgres/PostGIS & Redis
