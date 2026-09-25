@@ -150,7 +150,7 @@ class FolkService:
         """
         Returns a list of not-paused unique attendingmeet of a meet limited by user_organization and divisions, grouped
         by families for print. If an Attendee belongs to many families, only 1) lowest display order 2) the last created
-        folkattendee will be shown (unless meet.infos.can_multi_participate is True). Attendees will NOT be shown if the category of the attendingmeet is "paused".
+        folkattendee will be shown (unless meet.infos.show_in_all_families is True). Attendees will NOT be shown if the category of the attendingmeet is "paused".
         For cache computation final results may contain empty families so template need to filter them out. It does
         NOT provide attendee counting, as view/template does css-counter
         """
@@ -158,7 +158,7 @@ class FolkService:
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
-            allow_multiple = meet.infos.get('can_multi_participate', False) if meet.infos else False
+            allow_multiple = meet.infos.get('show_in_all_families', False) if meet.infos else False
             original_meets_attendings = meet.attendings.filter(
                                         attendingmeet__is_removed=False,
                                         attendingmeet__finish__gte=Utility.now_with_timezone(),
@@ -215,7 +215,7 @@ class FolkService:
                 attendingmeet_category=Max('attendee__attendings__attendingmeet__category', filter=Q(attendee__attendings__attendingmeet__meet=meet)),
                 attendingmeet_note=ArrayAgg('attendee__attendings__attendingmeet__infos__note',
                                              filter=(Q(attendee__attendings__attendingmeet__meet=meet) & Q(attendee__attendings__attendingmeet__infos__note__isnull=False)),
-                                             distinct=True),
+                                             distinct=True, default=None),
             )
 
             attendees_by_family = {}
@@ -281,14 +281,14 @@ class FolkService:
         """
 
         Because attendee may be in multiple families and envelopes only needs the lowest display order ones, iteration
-        of attendee is required (unless meet.infos.can_multi_participate is True).
+        of attendee is required (unless meet.infos.show_in_all_families is True).
         It's mostly copy from families_in_participations.
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
-            allow_multiple = meet.infos.get('can_multi_participate', False) if meet.infos else False
+            allow_multiple = meet.infos.get('show_in_all_families', False) if meet.infos else False
             original_meets_attendings = meet.attendings.filter(
                                         attendingmeet__is_removed=False,
                                         attendingmeet__finish__gte=Utility.now_with_timezone(),

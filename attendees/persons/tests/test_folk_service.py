@@ -264,7 +264,7 @@ class TestFolkService:
             assembly=assembly, display_name="Test Meet 4", slug="test-meet-4",
             site_type_id=1, site_id=1,
             start=now, finish=now + datetime.timedelta(days=365),
-            infos={"can_multi_participate": True}
+            infos={"show_in_all_families": True}
         )
         character = Character.objects.create(
             assembly=assembly, display_name="Test Character 4", slug="test-char-4"
@@ -299,7 +299,7 @@ class TestFolkService:
             division_slugs=[self.division.slug]
         ))
 
-        # Since can_multi_participate is True, AdultSon should appear in BOTH families
+        # Since show_in_all_families is True, AdultSon should appear in BOTH families
         assert len(report_families) == 2
 
     def test_families_in_participations_multi_participate_false(self):
@@ -349,7 +349,7 @@ class TestFolkService:
             division_slugs=[self.division.slug]
         ))
 
-        # Since can_multi_participate is False, AdultSon should only appear in ONE family (the one with rank 1)
+        # Since show_in_all_families is False, AdultSon should only appear in ONE family (the one with rank 1)
         assert len(report_families) == 1
         family_dict = report_families[0]
         # Verify it's AdultSon's own family (rank 1), which means family_name should match AdultSon's last name
@@ -463,7 +463,7 @@ class TestFolkService:
             assembly=assembly, display_name="Test Meet Addr 1", slug="test-meet-addr-1",
             site_type_id=1, site_id=1,
             start=now, finish=now + datetime.timedelta(days=365),
-            infos={"can_multi_participate": True}
+            infos={"show_in_all_families": True}
         )
         character = Character.objects.create(
             assembly=assembly, display_name="Test Character Addr 1", slug="test-char-addr-1"
