@@ -49,8 +49,7 @@ window.Attendees = {
         target.style.backgroundColor = 'Green';
         let message = null;
         if (note){
-          const action = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'unpausing' : 'pausing';
-          message = prompt(`Please enter the optional participation note for ${action}, click cancel to abort changing.`, target.title);
+          message = prompt(`Please enter the participation note, click cancel to abort.`, target.title);
           if (message === null) {
             target.style.backgroundColor = null;
             return;
@@ -59,7 +58,7 @@ window.Attendees = {
 
         const url =  endpoint + target.id + '/';
         const currentCategory = target.dataset.category;
-        const nextCategory = currentCategory === Attendees.attendingmeetReportListView.PausedCategory ? target.dataset.previousCategory : Attendees.attendingmeetReportListView.PausedCategory;
+        const nextCategory = note ? currentCategory : (currentCategory === Attendees.attendingmeetReportListView.PausedCategory ? target.dataset.previousCategory : Attendees.attendingmeetReportListView.PausedCategory);
         const body = {category: nextCategory};
         if (message) body.infos = {note: message};
         const params = {
@@ -77,15 +76,17 @@ window.Attendees = {
           .then(result => {
             target.dataset.previousCategory = currentCategory;
             target.dataset.category = result.category;
-            target.title = result.infos.note || '';
-//            target.style['text-decoration'] = Attendees.attendingmeetReportListView.textStyleFlipper[target.style['text-decoration']];
-//            target.style.color = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'SlateGrey' : 'black';
-//            target.firstChild.style.display = target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory ? 'None' : 'inline';
+            target.title = (result.infos && result.infos.note) ? result.infos.note : '';
+            
             if (target.dataset.category === Attendees.attendingmeetReportListView.PausedCategory) {
-              target.firstChild.style.display = 'None';
+              target.style.textDecoration = 'line-through';
+              target.style.color = 'SlateGrey';
+              target.querySelector('span.count').style.display = 'None';
               target.classList.add('paused');
             } else {
-              target.firstChild.style.display = 'inline';
+              target.style.textDecoration = '';
+              target.style.color = 'black';
+              target.querySelector('span.count').style.display = 'inline';
               target.classList.remove('paused');
             }
             target.style.backgroundColor = null;
