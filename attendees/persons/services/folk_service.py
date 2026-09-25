@@ -4,7 +4,7 @@ from django.contrib.postgres.aggregates.general import  ArrayAgg
 from django.db.models import Max, OuterRef, Q, Subquery, Count
 
 from attendees.occasions.models import Meet
-from attendees.persons.models import Attendee, Folk, Utility, AttendingMeet
+from attendees.persons.models import Attendee, Folk, FolkAttendee, Utility, AttendingMeet
 from attendees.whereabouts.services import PlaceService
 
 
@@ -56,25 +56,28 @@ class FolkService:
 
             for family in families_in_directory:
                 attrs = {}
-                attendees = family.attendees.filter(
-                    deathday=None,
-                    attendings__in=directory_meet.attendings.filter(
+                
+                folk_attendees = family.folkattendee_set.filter(
+                    is_removed=False,
+                    attendee__deathday__isnull=True,
+                    attendee__is_removed=False,
+                    attendee__attendings__in=directory_meet.attendings.filter(
                         attendingmeet__is_removed=False,
                         attendingmeet__finish__gte=Utility.now_with_timezone()
-                    ),  # only for attendees join the meet
+                    )
                 ).exclude(
-                    folkattendee__role__title="masked",  # for joined attendees not to be shown in certain families
+                    role__title="masked"
                 ).exclude(
-                    folkattendee__finish__lte=datetime.now(timezone.utc)
-                ).distinct().order_by('folkattendee__display_order')
+                    finish__lte=datetime.now(timezone.utc)
+                ).select_related('attendee').order_by('display_order')
+
+                attendees = [fa.attendee for fa in folk_attendees]
 
                 if attendees:
-                    parents = attendees.filter(
-                        folkattendee__role__title__in=['self', 'spouse', 'husband', 'wife', 'father', 'mother', 'parent']  # no father/mother-in-law
-                    )
-                    attrs['household_last_name'] = attendees.first().last_name
+                    parents = [fa.attendee for fa in folk_attendees if fa.role.title in ['self', 'spouse', 'husband', 'wife', 'father', 'mother', 'parent']]
+                    attrs['household_last_name'] = attendees[0].last_name
 
-                    householder = parents.first() or attendees.first()
+                    householder = parents[0] if parents else attendees[0]
                     phone1 = householder and householder.infos.get('contacts', {}).get('phone1')  # only phone1 published in directory
                     phone2 = None
                     if phone1:
@@ -83,9 +86,9 @@ class FolkService:
                     if email1:
                         attrs['email1'] = email1
 
-                    is_householder_member = member_meet and AttendingMeet.check_participation_of(attendees.first(), member_meet)
-                    householder_title = f'{attendees.first().last_name}, {attendees.first().first_name}{"*" if is_householder_member else ""}'
-                    name2_title = f'{attendees.first().name2()}'
+                    is_householder_member = member_meet and AttendingMeet.check_participation_of(attendees[0], member_meet)
+                    householder_title = f'{attendees[0].last_name}, {attendees[0].first_name}{"*" if is_householder_member else ""}'
+                    name2_title = f'{attendees[0].name2()}'
                     if len(parents) > 1:
                         name2_title += f' {parents[1].name2()}'
                         is_parent1_member = member_meet and AttendingMeet.check_participation_of(parents[1], member_meet)
@@ -147,7 +150,7 @@ class FolkService:
         """
         Returns a list of not-paused unique attendingmeet of a meet limited by user_organization and divisions, grouped
         by families for print. If an Attendee belongs to many families, only 1) lowest display order 2) the last created
-        folkattendee will be shown.  Attendees will NOT be shown if the category of the attendingmeet is "paused".
+        folkattendee will be shown (unless meet.infos.can_multi_participate is True). Attendees will NOT be shown if the category of the attendingmeet is "paused".
         For cache computation final results may contain empty families so template need to filter them out. It does
         NOT provide attendee counting, as view/template does css-counter
         """
@@ -155,6 +158,7 @@ class FolkService:
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
+            allow_multiple = meet.infos.get('can_multi_participate', False) if meet.infos else False
             original_meets_attendings = meet.attendings.filter(
                                         attendingmeet__is_removed=False,
                                         attendingmeet__finish__gte=Utility.now_with_timezone(),
@@ -194,65 +198,74 @@ class FolkService:
                 ),
             ).distinct().order_by('householder_last_name', 'householder_first_name', 'householder_first_name2')
 
-            for family in families_in_directory:
-                candidates_qs = family.attendees.select_related('division', 'attendings', 'folkattendee_set').filter(
-                    division__slug__in=division_slugs,
-                    deathday=None,
-                    attendings__in=meets_attendings,
-                    folkattendee__is_removed=False,
-                ).exclude(
-                    folkattendee__finish__lte=datetime.now(timezone.utc)
-                )
+            folk_attendees = FolkAttendee.objects.filter(
+                is_removed=False,
+                attendee__division__slug__in=division_slugs,
+                attendee__deathday__isnull=True,
+                attendee__attendings__in=meets_attendings,
+                attendee__is_removed=False,
+                folk__in=families_in_directory,
+            ).exclude(
+                finish__lte=datetime.now(timezone.utc)
+            ).order_by('folk_id', 'display_order').values(
+                'folk_id', 'attendee__id', 'attendee__first_name', 'attendee__last_name', 'attendee__first_name2', 'attendee__last_name2', 
+                'display_order', 'created', 'attendee__division__infos__acronym'
+            ).annotate(
+                attendingmeet_id=Max('attendee__attendings__attendingmeet__id', filter=Q(attendee__attendings__attendingmeet__meet=meet)),
+                attendingmeet_category=Max('attendee__attendings__attendingmeet__category', filter=Q(attendee__attendings__attendingmeet__meet=meet)),
+                attendingmeet_note=ArrayAgg('attendee__attendings__attendingmeet__infos__note',
+                                             filter=(Q(attendee__attendings__attendingmeet__meet=meet) & Q(attendee__attendings__attendingmeet__infos__note__isnull=False)),
+                                             distinct=True),
+            )
 
-                attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
-                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created', 'division__infos__acronym'
-                ).annotate(
-                    attendingmeet_id=Max('attendings__attendingmeet__id', filter=Q(attendings__attendingmeet__meet=meet)),
-                    attendingmeet_category=Max('attendings__attendingmeet__category', filter=Q(attendings__attendingmeet__meet=meet)),
-                    attendingmeet_note=ArrayAgg('attendings__attendingmeet__infos__note',
-                                                 filter=(Q(attendings__attendingmeet__meet=meet) & Q(attendings__attendingmeet__infos__note__isnull=False)),
-                                                 distinct=True),
-                )
+            attendees_by_family = {}
+            for fa in folk_attendees:
+                attendees_by_family.setdefault(fa['folk_id'], []).append(fa)
+
+            for family in families_in_directory:
+                attendee_candidates = attendees_by_family.get(family.id, [])
 
                 family_attrs = {"families": {}, 'family_name': 'no last names!'}
 
-                if attendee_candidates[0]:
-                    family_attrs['family_name'] = attendee_candidates[0].get('last_name') or attendee_candidates[0].get('last_name2')
+                if attendee_candidates:
+                    family_attrs['family_name'] = attendee_candidates[0].get('attendee__last_name') or attendee_candidates[0].get('attendee__last_name2')
 
                 for attendee in attendee_candidates:
-                    attendee_id = attendee.get('id')
-                    attendee_last_record = attendees_cache.get(attendee_id)
-                    if attendee_last_record:
-                        current_rank = attendee.get('folkattendee__display_order')
-                        last_rank = attendee_last_record.get('rank')
-                        current_created = attendee.get('created')
-                        last_created = attendee_last_record.get('created')
-                        last_family = attendee_last_record.get('family_id')
-                        if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
-                            continue  # unique by 1) lowest display order 2) the last created folkattendee
-                        else:  # current one will replace last one
-                            del families[last_family]['families'][attendee_id]
-                            if len(families[last_family]['families']) < 1:
-                                del families[last_family]
-                            elif str(attendee_id) == families[last_family].get('first_attendee_id'):
-                                first_attendee = next(iter(families[last_family]['families'].items()))[1]
-                                families[last_family]['first_attendee_id'] = str(first_attendee.get('id', ''))
+                    attendee_id = attendee.get('attendee__id')
 
-                    attendees_cache[attendee_id] = {
-                        'rank': attendee.get('folkattendee__display_order'),
-                        'created': attendee.get('created'),
-                        'family_id': family.id,
-                    }
+                    if not allow_multiple:
+                        attendee_last_record = attendees_cache.get(attendee_id)
+                        if attendee_last_record:
+                            current_rank = attendee.get('display_order')
+                            last_rank = attendee_last_record.get('rank')
+                            current_created = attendee.get('created')
+                            last_created = attendee_last_record.get('created')
+                            last_family = attendee_last_record.get('family_id')
+                            if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
+                                continue  # unique by 1) lowest display order 2) the last created folkattendee
+                            else:  # current one will replace last one
+                                del families[last_family]['families'][attendee_id]
+                                if len(families[last_family]['families']) < 1:
+                                    del families[last_family]
+                                elif str(attendee_id) == families[last_family].get('first_attendee_id'):
+                                    first_attendee = next(iter(families[last_family]['families'].items()))[1]
+                                    families[last_family]['first_attendee_id'] = str(first_attendee.get('id', ''))
+
+                        attendees_cache[attendee_id] = {
+                            'rank': attendee.get('display_order'),
+                            'created': attendee.get('created'),
+                            'family_id': family.id,
+                        }
 
                     family_attrs['families'][attendee_id] = {
-                        'id': attendee.get('id'),
-                        'first_name': attendee.get('first_name'),
-                        'first_name2': attendee.get('first_name2'),
-                        'last_name2': attendee.get('last_name2'),
-                        'division': attendee.get('division__infos__acronym'),
+                        'id': attendee.get('attendee__id'),
+                        'first_name': attendee.get('attendee__first_name'),
+                        'first_name2': attendee.get('attendee__first_name2'),
+                        'last_name2': attendee.get('attendee__last_name2'),
+                        'division': attendee.get('attendee__division__infos__acronym'),
                         'attendingmeet_id': attendee.get('attendingmeet_id'),
                         'attendingmeet_category': attendee.get('attendingmeet_category'),
-                        'attendingmeet_note': ''.join(attendee.get('attendingmeet_note')),
+                        'attendingmeet_note': ''.join(attendee.get('attendingmeet_note') or []),
                         'paused': attendee.get('attendingmeet_category') == Attendee.PAUSED_CATEGORY,
                     }
 
@@ -268,13 +281,14 @@ class FolkService:
         """
 
         Because attendee may be in multiple families and envelopes only needs the lowest display order ones, iteration
-        of attendee is required.
+        of attendee is required (unless meet.infos.can_multi_participate is True).
         It's mostly copy from families_in_participations.
         """
         families = {}   # {family_pk: {family_name: "AAA", families: {attendee_pk: {first_name: 'XYZ', name2: 'ABC', rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}}}
         attendees_cache = {}  # {attendee_pk: {last_family_pk: last_family_pk, rank: last_folkattendee_display_order, created_at: last_folkattendee_created_at}}
         meet = Meet.objects.filter(slug=meet_slug, assembly__division__organization=user_organization).first()
         if meet:
+            allow_multiple = meet.infos.get('can_multi_participate', False) if meet.infos else False
             original_meets_attendings = meet.attendings.filter(
                                         attendingmeet__is_removed=False,
                                         attendingmeet__finish__gte=Utility.now_with_timezone(),
@@ -314,59 +328,68 @@ class FolkService:
                 ),
             ).distinct().order_by('householder_last_name', 'householder_first_name', 'householder_first_name2')
 
-            for family in families_in_directory:
-                candidates_qs = family.attendees.select_related('division', 'attendings', 'folkattendee_set').filter(
-                    division__slug__in=division_slugs,
-                    deathday=None,
-                    attendings__in=meets_attendings,
-                    folkattendee__is_removed=False,
-                ).exclude(
-                    folkattendee__finish__lte=datetime.now(timezone.utc)
-                )
+            folk_attendees = FolkAttendee.objects.filter(
+                is_removed=False,
+                attendee__division__slug__in=division_slugs,
+                attendee__deathday__isnull=True,
+                attendee__attendings__in=meets_attendings,
+                attendee__is_removed=False,
+                folk__in=families_in_directory,
+            ).exclude(
+                finish__lte=datetime.now(timezone.utc)
+            ).order_by('folk_id', 'display_order').values(
+                'folk_id', 'attendee__id', 'attendee__first_name', 'attendee__last_name', 'attendee__first_name2', 'attendee__last_name2',
+                'display_order', 'created'
+            ).annotate(
+                attendingmeet_category=Max('attendee__attendings__attendingmeet__category', filter=Q(attendee__attendings__attendingmeet__meet=meet)),
+            )
 
-                attendee_candidates = candidates_qs.distinct().order_by('folkattendee__display_order').values(
-                    'id', 'first_name', 'last_name', 'first_name2', 'last_name2', 'folkattendee__display_order', 'created',
-                ).annotate(
-                    attendingmeet_category=Max('attendings__attendingmeet__category', filter=Q(attendings__attendingmeet__meet=meet)),
-                )
+            attendees_by_family = {}
+            for fa in folk_attendees:
+                attendees_by_family.setdefault(fa['folk_id'], []).append(fa)
+
+            for family in families_in_directory:
+                attendee_candidates = attendees_by_family.get(family.id, [])
 
                 family_attrs = {'families': {}}
 
                 for attendee in attendee_candidates:
-                    attendee_id = attendee.get('id')
-                    attendee_last_record = attendees_cache.get(attendee_id)
-                    if attendee_last_record:
-                        current_rank = attendee.get('folkattendee__display_order')
-                        last_rank = attendee_last_record.get('rank')
-                        current_created = attendee.get('created')
-                        last_created = attendee_last_record.get('created')
-                        last_family = attendee_last_record.get('family_id')
-                        if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
-                            continue  # unique by 1) lowest display order 2) the last created folkattendee
-                        else:  # current one will replace last one
-                            del families[last_family]['families'][attendee_id]
-                            families_count = len(families[last_family]['families'])
-                            if families_count < 1:
-                                del families[last_family]
-                            else:
-                                families_iter = iter(families[last_family]['families'].items())
-                                home_head = next(families_iter)[1]
-                                families[last_family]['recipient_attendee_id'] = str(home_head.get('id', ''))
-                                families[last_family]['recipient_paused'] = home_head.get('paused')
-                                families[last_family]['recipient_name'] = FolkService.get_recipient(home_head, None if families_count < 2 else next(families_iter)[1])
+                    attendee_id = attendee.get('attendee__id')
 
-                    attendees_cache[attendee_id] = {
-                        'rank': attendee.get('folkattendee__display_order'),
-                        'created': attendee.get('created'),
-                        'family_id': family.id,
-                    }
+                    if not allow_multiple:
+                        attendee_last_record = attendees_cache.get(attendee_id)
+                        if attendee_last_record:
+                            current_rank = attendee.get('display_order')
+                            last_rank = attendee_last_record.get('rank')
+                            current_created = attendee.get('created')
+                            last_created = attendee_last_record.get('created')
+                            last_family = attendee_last_record.get('family_id')
+                            if current_rank > last_rank or (current_rank == last_rank and current_created < last_created):
+                                continue  # unique by 1) lowest display order 2) the last created folkattendee
+                            else:  # current one will replace last one
+                                del families[last_family]['families'][attendee_id]
+                                families_count = len(families[last_family]['families'])
+                                if families_count < 1:
+                                    del families[last_family]
+                                else:
+                                    families_iter = iter(families[last_family]['families'].items())
+                                    home_head = next(families_iter)[1]
+                                    families[last_family]['recipient_attendee_id'] = str(home_head.get('id', ''))
+                                    families[last_family]['recipient_paused'] = home_head.get('paused')
+                                    families[last_family]['recipient_name'] = FolkService.get_recipient(home_head, None if families_count < 2 else next(families_iter)[1])
+
+                        attendees_cache[attendee_id] = {
+                            'rank': attendee.get('display_order'),
+                            'created': attendee.get('created'),
+                            'family_id': family.id,
+                        }
 
                     family_attrs['families'][attendee_id] = {
-                        'id': attendee.get('id'),
-                        'first_name': attendee.get('first_name') or '',
-                        'first_name2': attendee.get('first_name2') or '',
-                        'last_name': attendee.get('last_name') or '',
-                        'last_name2': attendee.get('last_name2') or '',
+                        'id': attendee.get('attendee__id'),
+                        'first_name': attendee.get('attendee__first_name') or '',
+                        'first_name2': attendee.get('attendee__first_name2') or '',
+                        'last_name': attendee.get('attendee__last_name') or '',
+                        'last_name2': attendee.get('attendee__last_name2') or '',
                         'paused': attendee.get('attendingmeet_category') == Attendee.PAUSED_CATEGORY,
                     }
 
