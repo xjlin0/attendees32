@@ -66,7 +66,7 @@ class FolkService:
                         attendingmeet__finish__gte=Utility.now_with_timezone()
                     )
                 ).exclude(
-                    role__title="masked"
+                    role__title="masked"  # for joined attendees not to be shown in certain families
                 ).exclude(
                     finish__lte=datetime.now(timezone.utc)
                 ).select_related('attendee').order_by('display_order')
