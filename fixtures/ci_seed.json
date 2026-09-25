@@ -11130,7 +11130,7 @@
     "slug": "d7c8Fd_cfcch_congregation_directory",
     "infos": {
       "attendance": {},
-      "can_multi_participate": true,
+      "show_in_all_families": true,
       "preview_url": "/persons/directory_preview/",
       "allowed_groups": [
         "data_counselor",
