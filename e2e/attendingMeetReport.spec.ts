@@ -28,10 +28,12 @@ test.describe('AttendingMeet Report List View', () => {
     test.setTimeout(60000); // give it plenty of time
     
     // 1. Navigate to the report
+    // The report wires up its click handler only once Paged.js has laid it
+    // out, and says so with a count alert; a click before then is lost.
+    const counted = page.waitForEvent('dialog');
     await page.goto('/persons/attendingmeet_report/?meet=d7c8Fd_cfcch_congregation_member&showPaused=true&divisions=cfcch_children_ministry&divisions=cfcch_crossing_ministry&divisions=cfcch_chinese_ministry&divisions=cfcch_unspecified&divisions=cfcch_special_conference&divisions=cfcch_data_management');
     
-    // Wait for the body to be fully loaded
-    await page.waitForSelector('body', { state: 'visible' });
+    await (await counted).dismiss();
     
     // 2. Locate David's member div
     const davidAttendeeId = '0498c414-abd3-4173-add1-5e42053760e4';

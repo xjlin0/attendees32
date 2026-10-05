@@ -29,8 +29,9 @@ test.describe('Directory Report List View', () => {
     // Navigate to the directory report with specific divisions
     await page.goto('/persons/directory_report/?divisionSelector=0&divisionSelector=1&divisionSelector=2&divisionSelector=3&divisionSelector=5&divisionSelector=6');
     
-    // Wait for the body to be fully loaded
-    await page.waitForSelector('body', { state: 'visible' });
+    // The page is laid out by Paged.js, which moves the content into
+    // .pagedjs_pages; wait for the first laid-out page rather than for <body>.
+    await page.waitForSelector('.pagedjs_pages .pagedjs_page');
     
     // Wait until "Isaac" or "Isaac" appears in the DOM
     await page.waitForFunction(() => document.body.innerText.includes('Isaac'));
