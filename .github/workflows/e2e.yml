@@ -37,11 +37,27 @@ jobs:
         # Load your natural key fixture
         docker compose -f local.yml run --rm django python manage.py loaddata fixtures/ci_seed.json
 
+    # The specs sign in as `jack` from ci_seed.json. Set his password here
+    # rather than relying on the C_PASSWORD secret alone: GitHub does not give
+    # secrets to pull requests from forks, so without this every spec that
+    # signs in fails on any outside contribution. The secret is still used
+    # when it is there; otherwise a throwaway password is made for this run.
+    - name: Give jack a password for this run
+      env:
+        C_PASSWORD_SECRET: ${{ secrets.C_PASSWORD }}
+      run: |
+        C_PASSWORD="${C_PASSWORD_SECRET:-$(openssl rand -hex 24)}"
+        echo "::add-mask::$C_PASSWORD"
+        echo "C_PASSWORD=$C_PASSWORD" >> "$GITHUB_ENV"
+        export C_PASSWORD
+        docker compose -f local.yml run --rm -e C_PASSWORD django python manage.py shell -c \
+          "import os; from attendees.users.models import User; u = User.objects.get(username='jack'); u.set_password(os.environ['C_PASSWORD']); u.save()"
+
     - name: Run Playwright tests
       run: timeout 500 npx playwright test --workers=1
       env:
         BASE_URL: http://127.0.0.1:8008
-        C_PASSWORD: ${{ secrets.C_PASSWORD }}
+        # C_PASSWORD comes from the step above, through $GITHUB_ENV.
 
     - uses: actions/upload-artifact@v4
       if: always()
