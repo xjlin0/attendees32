@@ -59,7 +59,10 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
                     assembly_name=F("assembly__display_name"),
                 )
                 .order_by(
-                    'assembly_name',
+                    # The target attendee's own meets come first: the attendee
+                    # page's participation grid reads only the first page of
+                    # this endpoint to name its rows, so a meet missing from
+                    # it shows as a blank row.
                     Case(
                         When(
                             id__in=AttendingMeet.objects.filter(
@@ -71,6 +74,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
                         ),
                         default=1,
                     ),
+                    'assembly_name',
                 )
             )
 
