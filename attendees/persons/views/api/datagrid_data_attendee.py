@@ -102,6 +102,8 @@ class ApiDatagridDataAttendeeViewSet(
             qs = Attendee.objects.filter(
                 infos__icontains=querying_term,
             )
+        else:  # a bare list: the whole organization, ordered so pages are stable
+            qs = Attendee.objects.order_by("id")
 
         return qs.filter(division__organization=current_user.organization)
 

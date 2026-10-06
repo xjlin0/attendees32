@@ -35,6 +35,18 @@ class TestApiDatagridDataAttendeeViewSet:
         mock_filter.assert_called_once()
         mock_qs.filter.assert_called_once()
 
+    @patch('attendees.persons.views.api.datagrid_data_attendee.Attendee.objects.order_by')
+    def test_get_queryset_without_pk_or_term(self, mock_order_by):
+        view = ApiDatagridDataAttendeeViewSet()
+        view.request = MagicMock()
+        view.kwargs = {}
+        view.request.query_params = {}
+
+        view.get_queryset()  # used to raise UnboundLocalError
+
+        mock_order_by.assert_called_once_with("id")
+        mock_order_by.return_value.filter.assert_called_once()
+
     @patch('attendees.persons.views.api.datagrid_data_attendee.Meet.objects.filter')
     @patch('attendees.persons.views.api.datagrid_data_attendee.Folk.objects.create')
     @patch('attendees.persons.views.api.datagrid_data_attendee.FolkAttendee.objects.create')

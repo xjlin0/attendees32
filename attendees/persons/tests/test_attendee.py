@@ -71,3 +71,19 @@ class TestAttendee:
         )
         attendee.save()
         assert attendee.division_label == "Test Division"
+
+    def test_renaming_through_update_or_create_updates_searchable_names(self):
+        """The datagrid serializer saves edits with update_or_create(defaults=...),
+        which since Django 4.2 passes update_fields=set(defaults). The names in
+        infos are derived in save() and must still be written."""
+        attendee = Attendee.objects.create(
+            first_name="John",
+            last_name="Doe",
+            gender=GenderEnum.UNSPECIFIED.value,
+            division=self.division
+        )
+
+        Attendee.objects.update_or_create(id=attendee.id, defaults={"first_name": "Jonathan"})
+
+        attendee.refresh_from_db()
+        assert attendee.infos["names"]["original"] == "Jonathan Doe"
