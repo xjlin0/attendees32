@@ -445,7 +445,7 @@ SHELL_PLUS_DONT_LOAD = [
 
 # allauth MFA Settings
 MFA_TOTP_ISSUER = "Attendees"
-MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
+MFA_SUPPORTED_TYPES = ["webauthn", "totp", "recovery_codes"]
 MFA_PASSCODE_LENGTH = 6
 MFA_ENFORCED = env.bool("DJANGO_MFA_ENFORCED", False)  # enforce 2026
 MFA_PASSKEY_LOGIN_ENABLED = True
