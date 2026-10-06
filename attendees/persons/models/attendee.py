@@ -336,6 +336,14 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
             t2s_converter = opencc.OpenCC("t2s.json")
             self.infos["names"]["traditional"] = s2t_converter.convert(both_names)
             self.infos["names"]["simplified"] = t2s_converter.convert(both_names)
+
+        # infos["names"] is derived above on every save, so it must be written
+        # even when the caller limits update_fields -- as update_or_create()
+        # does since Django 4.2 -- or the searchable names keep the old spelling.
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "infos" not in update_fields:
+            kwargs["update_fields"] = {*update_fields, "infos"}
+
         super(Attendee, self).save(*args, **kwargs)
 
     def all_names(self):
