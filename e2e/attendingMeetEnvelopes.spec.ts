@@ -21,8 +21,11 @@ test.describe('AttendingMeet Envelopes List View', () => {
     test.setTimeout(90000);
     
     // 0. Go to report page and ENSURE David is paused
+    // The report wires up its click handler only once Paged.js has laid it
+    // out, and says so with a count alert; a click before then is lost.
+    const counted = page.waitForEvent('dialog');
     await page.goto('/persons/attendingmeet_report/?meet=d7c8Fd_cfcch_congregation_member&divisions=cfcch_children_ministry&divisions=cfcch_crossing_ministry&divisions=cfcch_chinese_ministry&divisions=cfcch_unspecified&divisions=cfcch_special_conference&divisions=cfcch_data_management&showPaused=true');
-    await page.waitForSelector('body', { state: 'visible' });
+    await (await counted).dismiss();
     
     const davidAttendeeId = '0498c414-abd3-4173-add1-5e42053760e4';
     const davidLocator = page.locator(`div.member[data-attendee-id="${davidAttendeeId}"]`);
@@ -41,8 +44,9 @@ test.describe('AttendingMeet Envelopes List View', () => {
     // 1. Navigate to the envelopes report WITHOUT showPaused=true
     await page.goto('/persons/attendingmeet_envelopes/?meet=d7c8Fd_cfcch_congregation_member&divisions=cfcch_children_ministry&divisions=cfcch_crossing_ministry&divisions=cfcch_chinese_ministry&divisions=cfcch_unspecified&divisions=cfcch_special_conference&divisions=cfcch_data_management');
     
-    // Wait for the body to be fully loaded
-    await page.waitForSelector('body', { state: 'visible' });
+    // The page is laid out by Paged.js, which moves the content into
+    // .pagedjs_pages; wait for the first laid-out page rather than for <body>.
+    await page.waitForSelector('.pagedjs_pages .pagedjs_page');
     
     // 2. We expect to see Abigail and Chileab together in one recipient name block
     const recipients = page.locator('div.recipient span');
@@ -65,8 +69,11 @@ test.describe('AttendingMeet Envelopes List View', () => {
     expect(found).toBe(true);
     
     // Clean up: Restore David to active
+    // The report wires up its click handler only once Paged.js has laid it
+    // out, and says so with a count alert; a click before then is lost.
+    const recounted = page.waitForEvent('dialog');
     await page.goto('/persons/attendingmeet_report/?meet=d7c8Fd_cfcch_congregation_member&divisions=cfcch_children_ministry&divisions=cfcch_crossing_ministry&divisions=cfcch_chinese_ministry&divisions=cfcch_unspecified&divisions=cfcch_special_conference&divisions=cfcch_data_management&showPaused=true');
-    await page.waitForSelector('body', { state: 'visible' });
+    await (await recounted).dismiss();
     const davidLoc = page.locator(`div.member[data-attendee-id="${davidAttendeeId}"]`);
     await expect(davidLoc).toBeVisible();
     const stillPaused = await davidLoc.evaluate(el => el.classList.contains('paused'));
