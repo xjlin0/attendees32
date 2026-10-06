@@ -357,8 +357,12 @@ ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_ADAPTER = "attendees.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "attendees.users.adapters.SocialAccountAdapter"
+# Three failed sign-ins per IP per ten minutes. Overridable so that a browser
+# test run — which signs in dozens of times from one address, and deliberately
+# gets the password wrong once — does not spend the rest of its session locked
+# out. Production and development keep the default.
 ACCOUNT_RATE_LIMITS = {
-    "login_failed": "3/10m",
+    "login_failed": env("DJANGO_LOGIN_FAILED_RATE_LIMIT", default="3/10m"),
 }
 ACCOUNT_UNIQUE_EMAIL = True
 

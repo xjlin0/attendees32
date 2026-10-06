@@ -54,7 +54,9 @@ jobs:
           "import os; from attendees.users.models import User; u = User.objects.get(username='jack'); u.set_password(os.environ['C_PASSWORD']); u.save()"
 
     - name: Run Playwright tests
-      run: timeout 500 npx playwright test --workers=1
+      # Only the specs written against fixtures/ci_seed.json; the golden
+      # congregation's specs run in playwright.yml against their own data.
+      run: timeout 500 npx playwright test --project=ci-seed --workers=1
       env:
         BASE_URL: http://127.0.0.1:8008
         # C_PASSWORD comes from the step above, through $GITHUB_ENV.
