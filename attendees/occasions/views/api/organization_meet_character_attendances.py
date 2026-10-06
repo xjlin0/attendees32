@@ -1,9 +1,7 @@
 import time
 
-from django.contrib.auth.decorators import login_required
 from django.db.models.aggregates import Count
 from django.db.models import Q
-from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
@@ -15,11 +13,10 @@ from attendees.occasions.services import AttendanceService
 from attendees.persons.models import Utility
 
 
-@method_decorator([login_required], name="dispatch")
 class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Team to be viewed or edited.
-    Todo 20220514: replace LoginRequiredMixin with SpyGuard and needed seeds json
+    Todo 20220514: add DrfSpyGuard and needed seeds json
     Todo 20220514: make API returns only current users attendances if not admin
     """
 

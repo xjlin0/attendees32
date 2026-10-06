@@ -64,3 +64,12 @@ class TestOrganizationMeetCharacterAttendances:
             f"/occasions/api/organization_meet_character_attendances/{created.pk}/"
         )
         assert deleted.status_code in (200, 204), deleted.content
+
+    def test_a_token_authenticated_client_is_served(self, golden, token_client):
+        client = token_client("golden_data_organizer")
+        response = client.get("/occasions/api/organization_meet_character_attendances/", {"meets[]": MeetSlugs.CHINESE_SERVICE, "characters[]": CONGREGATION_SLUG, **window(), "take": 10})
+        assert response.status_code == 200, response.content
+
+    def test_an_anonymous_call_is_refused_rather_than_redirected(self, golden, client):
+        response = client.get("/occasions/api/organization_meet_character_attendances/", {"meets[]": MeetSlugs.CHINESE_SERVICE, "characters[]": CONGREGATION_SLUG, **window(), "take": 10})
+        assert response.status_code == 403

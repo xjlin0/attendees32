@@ -1,19 +1,17 @@
 from datetime import datetime, timezone
 
-from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 
 from attendees.persons.models import Attendee, FolkAttendee, Utility, Past
 from attendees.persons.serializers import FolkAttendeeSerializer
 from attendees.persons.services import AttendingMeetService
-from attendees.users.authorization.route_guard import SpyGuard
+from attendees.users.authorization.drf_guards import DrfSpyGuard
 
 
-@method_decorator([login_required], name='dispatch')
-class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
+class ApiDatagridDataFolkAttendeesViewsSet(viewsets.ModelViewSet
 ):
     """
     API endpoint that allows FamiliesAttendees of a single Attendee in headers to be viewed or edited.
@@ -26,6 +24,7 @@ class ApiDatagridDataFolkAttendeesViewsSet(SpyGuard, viewsets.ModelViewSet
     Note: If Dick is not in the family, passing Dick's attendee id in headers plus Bob's FamilyAttendee
     id at the end of the endpoint will return nothing.
     """
+    permission_classes = [IsAuthenticated, DrfSpyGuard]
 
     serializer_class = FolkAttendeeSerializer
 

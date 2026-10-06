@@ -31,38 +31,49 @@ class RouteGuard(UserPassesTestMixin):
         )
 
 
+def spy_guard_allows(user, targeting_attendee_id, url_name):
+    """
+    The SpyGuard rules, shared by SpyGuard (pages) and DrfSpyGuard (API), so the
+    two cannot drift apart. Raises Http404 for a deleted or unknown attendee.
+    """
+    current_attendee = user.attendee if hasattr(user, 'attendee') else None
+
+    if targeting_attendee_id == "new":
+        return Menu.user_can_create_attendee(
+            user
+        )  # create nonfamily attendee is attendee_create_view
+    if targeting_attendee_id:
+        if not Attendee.objects.filter(pk=targeting_attendee_id).exists():
+            raise Http404("Attendee does not exist or has been deleted.")
+
+        if current_attendee:
+            if str(current_attendee.id) == targeting_attendee_id:
+                return True  # self.request.resolver_match.url_name == Menu.ATTENDEE_UPDATE_VIEW # for make spy guard only allows self/new at certian view
+            if current_attendee.under_same_org_with(targeting_attendee_id):
+                return (
+                    user.can_see_all_organizational_meets_attendees()
+                    or current_attendee.can_schedule_attendee(targeting_attendee_id)
+                )
+    else:
+        return url_name == Menu.ATTENDEE_UPDATE_SELF
+
+    time.sleep(2)
+    return False
+
+
 class SpyGuard(UserPassesTestMixin):
     """
     check if the user can visit urls for checking other attendee's data
     """
 
     def test_func(self):  # Superusers can still access such attendee in admin UI
-        targeting_attendee_id = self.request.META.get(
-            "HTTP_X_TARGET_ATTENDEE_ID", self.kwargs.get("attendee_id")
+        return spy_guard_allows(
+            self.request.user,
+            self.request.META.get(
+                "HTTP_X_TARGET_ATTENDEE_ID", self.kwargs.get("attendee_id")
+            ),
+            self.request.resolver_match.url_name,
         )
-        current_attendee = self.request.user.attendee if hasattr(self.request.user, 'attendee') else None
-
-        if targeting_attendee_id == "new":
-            return Menu.user_can_create_attendee(
-                self.request.user
-            )  # create nonfamily attendee is attendee_create_view
-        if targeting_attendee_id:
-            if not Attendee.objects.filter(pk=targeting_attendee_id).exists():
-                raise Http404("Attendee does not exist or has been deleted.")
-
-            if current_attendee:
-                if str(current_attendee.id) == targeting_attendee_id:
-                    return True  # self.request.resolver_match.url_name == Menu.ATTENDEE_UPDATE_VIEW # for make spy guard only allows self/new at certian view
-                if current_attendee.under_same_org_with(targeting_attendee_id):
-                    return (
-                        self.request.user.can_see_all_organizational_meets_attendees()
-                        or current_attendee.can_schedule_attendee(targeting_attendee_id)
-                    )
-        else:
-            return self.request.resolver_match.url_name == Menu.ATTENDEE_UPDATE_SELF
-
-        time.sleep(2)
-        return False
 
     def handle_no_permission(self):
         """Show warning info so user can know what happened"""

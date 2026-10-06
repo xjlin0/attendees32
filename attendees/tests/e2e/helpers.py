@@ -31,7 +31,14 @@ def attendee_content_type_id():
 
 
 def target(api_client, attendee):
-    api_client.credentials(HTTP_X_TARGET_ATTENDEE_ID=str(attendee.id))
+    """Point ``api_client`` at ``attendee`` via the X-Target-Attendee-Id header.
+
+    ``APIClient.credentials()`` replaces every header it holds, so the ones
+    already set (a token client's Authorization) are carried over.
+    """
+    api_client.credentials(
+        **{**api_client._credentials, "HTTP_X_TARGET_ATTENDEE_ID": str(attendee.id)}
+    )
     return api_client
 
 
