@@ -445,6 +445,8 @@ EMAIL_HOST=mailhog
 * upadte content types after migration by `docker compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker compose -f local.yml run --rm django python manage.py createsuperuser`
 * import the seed data by `docker compose -f local.yml run django python manage.py loaddata fixtures/db_seed`, data were created by:
+* optionally load the golden test congregation — 350 people, families, statuses, participations and eight weeks of attendance — by `docker compose -f local.yml run django python manage.py load_golden_data --seed`, see [docs/golden_test_data.md](docs/golden_test_data.md)
+* run the browser end-to-end suite (Chromium and WebKit, TypeScript/Playwright) by `npm ci && npx playwright install --with-deps chromium webkit && npm run test:e2e:chromium` (or `:webkit`) against a running stack loaded with the golden congregation; `npm run test:e2e:ci-seed` runs the specs written against `fixtures/ci_seed.json`
 * start the Debian based local machine by `docker compose -f local.yml up -d`, your site will be at http://localhost:8008/
 * to see django log: `docker compose -f local.yml logs django`
 * enter the Bash shell of running container `docker compose -f local.yml run django bash`
