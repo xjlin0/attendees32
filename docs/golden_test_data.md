@@ -179,13 +179,14 @@ to Grace Chen.
 | module | covers |
 | --- | --- |
 | `test_golden_dataset.py` | the census itself, and the four signals |
-| `test_pages.py` | every page × every persona, against the seed's permission matrix |
-| `test_persons_api.py` | every `/persons/api/…` endpoint, read and write |
-| `test_occasions_api.py` | meets, characters, teams, gatherings, attendances, statistics, calendars |
-| `test_whereabouts_api.py` | organizations, divisions, sites and addresses |
-| `test_reports.py` | the printed directory, participation lists, envelopes |
-| `test_permissions.py` | SpyGuard, privileged pages, confidential notes |
-| `test_registrations_and_admin.py` | retreat registrations written as well as read, the Django admin, and the pghistory trail behind it |
+| `test_route_guard.py` | every page × every persona, against the seed's permission matrix |
+| `api/<app>/test_api_<endpoint>.py` | one file per API endpoint: what it returns, who may call it, writes, scoping |
+| `pages/test_page_<page>.py` | one file per page: what it renders, and the per-person guard where it has one |
+| `test_admin.py` | the Django admin |
+| `test_models.py` | the checks that go through no endpoint: constraints, history, content types |
+| `helpers.py` | constants and small helpers the files above share |
+
+New tests for an endpoint go in that endpoint's file; a new endpoint gets a new file.
 
 The congregation is built once per session and committed, because rebuilding it
 costs about a minute. `pytest_collection_modifyitems` in `attendees/conftest.py`
