@@ -947,7 +947,7 @@ Attendees.datagridUpdate = {
           elementAttr: {
             class: 'attendee-form-delete',  // for toggling editing mode
           },
-          disabled: !Attendees.utilities.editingEnabled && Attendees.datagridUpdate.attendeeRemoved,
+          disabled: !Attendees.utilities.editingEnabled || Attendees.datagridUpdate.attendeeRemoved,
           text: "Delete attendee",
           icon: 'trash',
           hint: "delete attendee's all data in the page",
