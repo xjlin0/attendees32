@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load account socialaccount %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block head_title %}{% translate "Sign In" %}{% endblock %}
 
@@ -19,6 +20,7 @@
             <i class="fas fa-fingerprint"></i>
             {% translate "Sign in with Biometrics" %}
         </button>
+        <small class="form-text text-muted d-block text-center mt-1">If using a phone to scan, please ensure Bluetooth is turned ON on both devices.</small>
     </div>
     {% include "mfa/webauthn/snippets/login_script.html" %}
 {% endif %}
@@ -83,3 +85,8 @@
 </form>
 
 {% endblock %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script src="{% static 'js/users/allauth_keyname_default.js' %}"></script>
+{% endblock javascript %}
