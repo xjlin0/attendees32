@@ -163,3 +163,43 @@ class TestAttendingService:
         # the registration should also be soft-deleted.
         self.registration.refresh_from_db()
         assert self.registration.is_removed is True
+
+    def test_get_roster_data(self):
+        meet_slugs = [self.meet.slug]
+        start_date = self.now - timedelta(days=1)
+        finish_date = self.now + timedelta(days=1)
+        
+        # We need a category for the attendance for the JSONBAgg
+        if not self.attendance.category:
+            self.attendance.category = self.category_1
+            self.attendance.save()
+            
+        columns, rows, total_count = AttendingService.get_roster_data(
+            organization=self.organization,
+            meet_slugs=meet_slugs,
+            start=start_date,
+            finish=finish_date,
+            skip=0,
+            take=40
+        )
+        
+        assert total_count == 1
+        
+        # Verify columns includes gathering info
+        assert len(columns) == 1
+        assert columns[0]['id'] == self.gathering.id
+        
+        # Verify rows includes attending info and JSON aggregations
+        assert len(rows) == 1
+        row = rows[0]
+        assert row['attending_id'] == self.attending.id
+        assert row['attendee_id'] == self.attendee.id
+        assert row['attendances'] is not None
+        assert len(row['attendances']) == 1
+        assert row['attendances'][0]['gathering_id'] == self.gathering.id
+        assert 'start' in row['attendances'][0]
+        assert 'finish' in row['attendances'][0]
+        
+        assert row['attendingmeets'] is not None
+        assert len(row['attendingmeets']) == 1
+        assert row['attendingmeets'][0]['meet_id'] == self.meet.id
