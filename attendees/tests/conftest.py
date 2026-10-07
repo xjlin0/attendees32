@@ -11,6 +11,7 @@ first, which keeps a reused database from accumulating a second congregation.
 
 import pytest
 from django.core.management import call_command
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from attendees.tests.golden import PERSONA_PASSWORD, PERSONAS, build_golden_dataset
@@ -71,6 +72,22 @@ def api_login(golden, db):
         return api_client
 
     return _api_login
+
+
+@pytest.fixture
+def token_client(golden, db):
+    """``token_client("golden_member")`` -> a DRF ``APIClient`` authenticated by
+    ``Authorization: Token``, the way a server-to-server client calls the API."""
+
+    def _token_client(username):
+        user = golden.user(username)
+        token, _ = Token.objects.get_or_create(user=user)
+        api_client = APIClient()
+        api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+        api_client.user = user
+        return api_client
+
+    return _token_client
 
 
 @pytest.fixture

@@ -1,6 +1,5 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
@@ -12,7 +11,7 @@ from attendees.persons.serializers.attending_minimal_serializer import (
 from attendees.persons.services import AttendingService
 
 
-class ApiAttendeeAttendingsViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
+class ApiAttendeeAttendingsViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Attending of a target attendee to be viewed or edited.
     Target attendee is specified by http header x-target-attendee-id or current user's attendee

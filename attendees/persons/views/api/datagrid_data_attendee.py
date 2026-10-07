@@ -1,6 +1,5 @@
 import time, pytz
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.aggregates.general import JSONBAgg
 from django.db.models import Func, Value
 from django.db.models.expressions import F
@@ -20,9 +19,7 @@ from attendees.persons.serializers import AttendeeMinimalSerializer
 from attendees.persons.services import AttendeeService, AttendingMeetService
 
 
-class ApiDatagridDataAttendeeViewSet(
-    LoginRequiredMixin, ModelViewSet
-):  # from GenericAPIView
+class ApiDatagridDataAttendeeViewSet(ModelViewSet):  # from GenericAPIView
     """
     API endpoint that allows single attendee to be viewed or edited.
     """

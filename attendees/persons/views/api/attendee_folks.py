@@ -1,23 +1,22 @@
 import time
 
-from django.contrib.auth.decorators import login_required
 from django.db.models import F, Q, Value
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 
 from attendees.persons.models import Attendee, Category, Folk
 from attendees.persons.serializers import FolkSerializer
 from attendees.persons.services import FolkService, AttendingMeetService
-from attendees.users.authorization.route_guard import SpyGuard
+from attendees.users.authorization.drf_guards import DrfSpyGuard
 
 
-@method_decorator([login_required], name='dispatch')
-class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
+class ApiAttendeeFolksViewsSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Folks(families) of an Attendee (in header) to be viewed or edited.
     """
+    permission_classes = [IsAuthenticated, DrfSpyGuard]
 
     serializer_class = FolkSerializer
 

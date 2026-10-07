@@ -1,21 +1,20 @@
 from datetime import timedelta
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 
 from attendees.occasions.models import Meet
 from attendees.persons.models import AttendingMeet, Utility, Attending, Attendee, Category
-from attendees.users.authorization.route_guard import SpyGuard
+from attendees.users.authorization.drf_guards import DrfSpyGuard
 
 
-@method_decorator([login_required], name='dispatch')
-class ApiDefaultAttendingmeetsViewSet(SpyGuard, ModelViewSet):  # from GenericAPIView
+class ApiDefaultAttendingmeetsViewSet(ModelViewSet):  # from GenericAPIView
     """
     API endpoint that allows AttendingMeet to be created/modified by the default character and attending https://stackoverflow.com/a/70128273/4257237
     """
+    permission_classes = [IsAuthenticated, DrfSpyGuard]
 
     def put(self, request, *args, **kwargs):
         is_join = request.data.get('action') == 'join'

@@ -43,3 +43,20 @@ class TestDefaultAttendingmeets:
             meet__slug=MeetSlugs.DIRECTORY, attending__attendee=zhiming
         ).order_by("created").last()
         assert participation.finish <= Utility.now_with_timezone()
+
+    def test_the_spy_guard_holds_for_a_token_client(self, golden, token_client):
+        """A token client is held to the same rules as a session: an ordinary
+        member may not reach a stranger's record, and a deleted attendee is a 404."""
+        stranger = target(token_client("golden_crossing_member"), golden.attendee("chen_grace"))
+        assert stranger.put("/persons/api/default_attendingmeets/", {"action": "join", "meet": MeetSlugs.LIBRARY}, format="json").status_code == 403
+
+        deleted = target(token_client("golden_data_organizer"), golden.attendee("peng_jinlong"))
+        assert deleted.put("/persons/api/default_attendingmeets/", {"action": "join", "meet": MeetSlugs.LIBRARY}, format="json").status_code == 404
+
+    def test_an_anonymous_call_is_refused_rather_than_redirected(self, golden, client):
+        response = client.put(
+            "/persons/api/default_attendingmeets/",
+            {"action": "join", "meet": MeetSlugs.LIBRARY},
+            content_type="application/json",
+        )
+        assert response.status_code == 403

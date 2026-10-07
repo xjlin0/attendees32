@@ -156,3 +156,12 @@ class TestDatagridDataAttendee:
         assert response.status_code in (200, 204), response.content
         assert not Attendee.objects.filter(pk=leaving.id).exists()
         assert Attendee.all_objects.filter(pk=leaving.id).exists()
+
+    def test_a_token_authenticated_client_is_served(self, golden, token_client):
+        client = token_client("golden_data_organizer")
+        response = client.get("/persons/api/datagrid_data_attendee/")
+        assert response.status_code == 200, response.content
+
+    def test_an_anonymous_call_is_refused_rather_than_redirected(self, golden, client):
+        response = client.get("/persons/api/datagrid_data_attendee/")
+        assert response.status_code == 403
