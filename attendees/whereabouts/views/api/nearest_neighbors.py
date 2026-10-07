@@ -48,7 +48,7 @@ class NearestNeighborsAPIView(SpyGuard, APIView):
         try:
             target_place, neighbors = CoordinatesService.get_nearest_neighbors(pk, self.request.user.organization, take=take, skip=skip, meets=meets)
         except Exception as e:
-            logger.error(f"Error fetching nearest neighbors: {e}")
+            logger.error(f"Error fetching nearest neighbors: {e}", exc_info=True)
             return Response(
                 {"detail": f"Error fetching nearest neighbors: {e}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

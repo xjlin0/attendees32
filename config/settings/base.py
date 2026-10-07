@@ -455,3 +455,24 @@ MFA_PASSCODE_LENGTH = 6
 MFA_ENFORCED = env.bool("DJANGO_MFA_ENFORCED", False)  # enforce 2026
 MFA_PASSKEY_LOGIN_ENABLED = True
 MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = env.bool("DJANGO_MFA_WEBAUTHN_INSECURE", False)
+
+# Sentry Configuration
+import sentry_sdk
+import logging
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+SENTRY_DSN = env("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    sentry_logging = LoggingIntegration(
+        level=logging.INFO,  # Capture info and above as breadcrumbs
+        event_level=logging.ERROR  # Send errors as events
+    )
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), sentry_logging],
+        send_default_pii=True,
+        traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=1.0),
+        environment=env("DJANGO_SETTINGS_MODULE", default="development").split('.')[-1],
+    )
+SENTRY_ARTIFICIAL_API_DEBUG = env.bool("SENTRY_ARTIFICIAL_API_DEBUG", default=False)

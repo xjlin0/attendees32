@@ -205,6 +205,12 @@ REDIS_URL=redis://redis:6379/0
 CELERY_FLOWER_USER=<<YOUR CELERY_FLOWER_USER NAME>>
 CELERY_FLOWER_PASSWORD=<<YOUR CELERY_FLOWER_PASSWORD>>
 GOOGLE_MAPS_API_KEY=<<Your Google map API key>>
+
+# Sentry
+SENTRY_DSN="<<your sentry DSN>>"
+SENTRY_TRACES_SAMPLE_RATE=1.0
+SENTRY_ARTIFICIAL_API_DEBUG=False   # The API to artificially create an error to see if Sentry catch the log.
+# visit https://<<your server domain name>>/sentry-debug/ to see created error monitored by Sentry
 ```
 * double check user id of your web user in production.yml:
 ```
