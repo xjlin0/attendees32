@@ -8,6 +8,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import ModelViewSet
 from urllib import parse
+import logging
+
+logger = logging.getLogger(__name__)
+
 from attendees.occasions.models import Gathering, Meet
 from attendees.persons.models import (  # , Relationship
     Attendee,
@@ -154,12 +158,16 @@ class ApiDatagridDataAttendeeViewSet(ModelViewSet):  # from GenericAPIView
         if self.request.user.privileged_to_edit(
             target_attendee.id
         ):  # intentionally forbid user delete him/herself
-            instance = serializer.save()
-            if self.request.META.get("HTTP_X_END_ALL_ATTENDEE_ACTIVITIES"):  # passed away
-                AttendeeService.end_all_activities(instance, self.request.user.attendee_uuid_str())
+            try:
+                instance = serializer.save()
+                if self.request.META.get("HTTP_X_END_ALL_ATTENDEE_ACTIVITIES"):  # passed away
+                    AttendeeService.end_all_activities(instance, self.request.user.attendee_uuid_str())
 
-            if self.request.META.get("HTTP_X_ADD_PAST"):
-                AttendeeService.add_past(instance, self.request.META.get("HTTP_X_ADD_PAST"), pytz.timezone(parse.unquote(tzname)))
+                if self.request.META.get("HTTP_X_ADD_PAST"):
+                    AttendeeService.add_past(instance, self.request.META.get("HTTP_X_ADD_PAST"), pytz.timezone(parse.unquote(tzname)))
+            except Exception as e:
+                logger.error(f"Error updating attendee {target_attendee.id}: {e}", exc_info=True)
+                raise
 
         else:
             time.sleep(2)
