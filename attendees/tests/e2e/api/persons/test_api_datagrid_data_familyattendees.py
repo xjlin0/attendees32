@@ -3,6 +3,8 @@
 import json
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from attendees.persons.models import FolkAttendee
 from attendees.tests.golden.constants import FolkCategory
@@ -30,6 +32,23 @@ class TestDatagridDataFamilyattendees:
         assert any(
             row["folk"]["display_name"].startswith("陳志明家") for row in rows
         )
+
+    def test_the_listing_reads_the_folks_in_one_query(self, golden, api_login):
+        """Every row nests its folk; the queryset select_relates it rather than
+        fetching one folk per membership."""
+        grace = golden.attendee("chen_grace")
+        client = target(api_login("golden_data_organizer"), grace)
+        with CaptureQueriesContext(connection) as queries:
+            response = client.get("/persons/api/datagrid_data_familyattendees/", {"categoryId": FolkCategory.FAMILY})
+        assert response.status_code == 200
+        assert len(response.json()["data"]) >= 6
+        # The list and its count query may each subselect folks; what must not
+        # appear is a folk fetched by id for every row.
+        per_row = [
+            q["sql"] for q in queries.captured_queries
+            if 'FROM "persons_folks"' in q["sql"] and '"persons_folks"."id" = ' in q["sql"]
+        ]
+        assert per_row == []
 
     def test_a_token_authenticated_client_is_served(self, golden, token_client):
         client = target(token_client("golden_data_organizer"), golden.attendee("chen_grace"))
