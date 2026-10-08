@@ -1,7 +1,10 @@
 """``/persons/api/datagrid_data_familyattendees/`` against the golden congregation."""
 
+import json
+
 import pytest
 
+from attendees.persons.models import FolkAttendee
 from attendees.tests.golden.constants import FolkCategory
 from attendees.tests.golden.constants import Relations
 from attendees.tests.e2e.helpers import target
@@ -45,3 +48,71 @@ class TestDatagridDataFamilyattendees:
 
         deleted = target(token_client("golden_data_organizer"), golden.attendee("peng_jinlong"))
         assert deleted.get("/persons/api/datagrid_data_familyattendees/", {"categoryId": FolkCategory.FAMILY}).status_code == 404
+
+    def test_a_member_is_added_to_a_family_by_folk_id(self, golden, api_login):
+        """A write names the folk by id and reads it back nested, the shape the
+        family grid and API clients both use."""
+        grace = golden.attendee("chen_grace")
+        kevin = golden.attendee("xu_kevin")
+        family = golden.folk("HH_CHEN_THREE_GEN")
+        client = target(api_login("golden_data_organizer"), grace)
+        response = client.post(
+            "/persons/api/datagrid_data_familyattendees/",
+            {"folk": str(family.id), "attendee": str(kevin.id), "role": Relations.FRIEND, "infos": {}},
+            format="json",
+        )
+        assert response.status_code == 201, response.content
+        row = response.json()
+        assert row["folk"]["id"] == str(family.id)
+        assert row["folk"]["display_name"].startswith("陳志明家")
+        assert FolkAttendee.objects.filter(folk=family, attendee=kevin, role=Relations.FRIEND).exists()
+
+    def test_the_family_grid_posts_a_multipart_row(self, golden, api_login):
+        """The attendee page submits FormData: folk=<id>, infos as a JSON string."""
+        grace = golden.attendee("chen_grace")
+        kevin = golden.attendee("xu_kevin")
+        family = golden.folk("HH_CHEN_THREE_GEN")
+        client = target(api_login("golden_data_organizer"), grace)
+        response = client.post(
+            "/persons/api/datagrid_data_familyattendees/",
+            {
+                "folk": str(family.id),
+                "attendee": str(kevin.id),
+                "role": Relations.FRIEND,
+                "display_order": 9,
+                "infos": json.dumps({"show_secret": {}, "updating_attendees": {}, "comment": None, "body": None}),
+            },
+            format="multipart",
+        )
+        assert response.status_code == 201, response.content
+        assert response.json()["folk"]["category"] == FolkCategory.FAMILY
+
+    def test_a_membership_is_moved_by_patching_the_folk_id(self, golden, api_login):
+        grace = golden.attendee("chen_grace")
+        kevin = golden.attendee("xu_kevin")
+        chens = golden.folk("HH_CHEN_THREE_GEN")
+        membership = FolkAttendee.objects.get(attendee=kevin, folk__category=FolkCategory.FAMILY)
+        client = target(api_login("golden_data_organizer"), kevin)
+        response = client.patch(
+            f"/persons/api/datagrid_data_familyattendees/{membership.id}/",
+            {"folk": str(chens.id), "role": Relations.FRIEND},
+            format="json",
+        )
+        assert response.status_code == 200, response.content
+        assert response.json()["folk"]["id"] == str(chens.id)
+        membership.refresh_from_db()
+        assert membership.folk == chens
+        assert membership.role_id == Relations.FRIEND
+        assert grace.folks.filter(pk=chens.pk).exists()  # the family itself is untouched
+
+    def test_a_second_row_for_the_same_pair_is_refused(self, golden, api_login):
+        grace = golden.attendee("chen_grace")
+        family = golden.folk("HH_CHEN_THREE_GEN")
+        client = target(api_login("golden_data_organizer"), grace)
+        response = client.post(
+            "/persons/api/datagrid_data_familyattendees/",
+            {"folk": str(family.id), "attendee": str(grace.id), "role": Relations.DAUGHTER, "infos": {}},
+            format="json",
+        )
+        assert response.status_code == 400
+        assert "non_field_errors" in response.json()
