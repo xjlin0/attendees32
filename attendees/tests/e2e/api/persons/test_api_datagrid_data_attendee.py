@@ -101,6 +101,28 @@ class TestDatagridDataAttendee:
         assert created.infos["names"]["original"] == "Newcomer Yeh 葉新來"
         assert created.families.count() == 1
 
+    def test_an_api_client_may_send_only_the_infos_it_knows(self, golden, api_login):
+        """A server-to-server client (Tally) sends fixed and contacts and nothing
+        else; the server completes the sections it derives or indexes itself."""
+        client = api_login("golden_data_organizer")
+        client.credentials(HTTP_X_TARGET_ATTENDEE_ID="new")
+        response = client.post(
+            "/persons/api/datagrid_data_attendee/",
+            {
+                "first_name": "Visitor",
+                "last_name": "Lam",
+                "gender": "UNSPECIFIED",
+                "division": 1,
+                "infos": {"fixed": {"grade": 15}, "contacts": {}},
+            },
+            format="json",
+        )
+        assert response.status_code in (200, 201), response.content
+        created = Attendee.objects.get(pk=response.json()["id"])
+        assert created.infos["names"]["original"] == "Visitor Lam"
+        assert created.infos["fixed"] == {"grade": 15}
+        assert set(created.infos) >= {"names", "fixed", "contacts", "emergency_contacts", "progressions", "schedulers", "updating_attendees"}
+
     def test_updating_an_attendee_rewrites_the_derived_names(self, golden, api_login):
         """A partial edit must still refresh the searchable name.
 

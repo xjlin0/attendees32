@@ -72,6 +72,32 @@ class TestAttendee:
         attendee.save()
         assert attendee.division_label == "Test Division"
 
+    def test_a_partial_infos_is_completed_on_save(self):
+        attendee = Attendee.objects.create(
+            first_name="Jane",
+            last_name="Doe",
+            gender=GenderEnum.UNSPECIFIED.value,
+            division=self.division,
+            infos={"fixed": {"grade": 9}},
+        )
+        attendee.refresh_from_db()
+        assert attendee.infos["fixed"] == {"grade": 9}
+        assert attendee.infos["names"]["original"] == "Jane Doe"
+        assert attendee.infos["schedulers"] == {}
+        assert attendee.infos["emergency_contacts"] == {}
+
+    def test_a_null_infos_becomes_the_default(self):
+        attendee = Attendee.objects.create(
+            first_name="Jane",
+            last_name="Doe",
+            gender=GenderEnum.UNSPECIFIED.value,
+            division=self.division,
+            infos=None,
+        )
+        attendee.refresh_from_db()
+        assert attendee.infos["names"]["original"] == "Jane Doe"
+        assert attendee.infos["fixed"] == {"mobility": 2}
+
     def test_renaming_through_update_or_create_updates_searchable_names(self):
         """The datagrid serializer saves edits with update_or_create(defaults=...),
         which since Django 4.2 passes update_fields=set(defaults). The names in
