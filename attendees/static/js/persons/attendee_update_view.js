@@ -3134,13 +3134,14 @@ Attendees.datagridUpdate = {
             return d.promise();
           },
           update: (key, values) => {
-            values.category = categoryId;
             const folkAttendeeFormData = new FormData();
             const fileRemoverCheckBox = document.querySelector('input#folkattendee-file-clear');
 
             if (values && typeof(values) === 'object'){
               for ([formKey, formValue] of Object.entries(values)){
-                if (formKey !== 'file') {
+                if (formKey === 'folk') {
+                  folkAttendeeFormData.append('folk', formValue.id);  // the grid edits folk.id; the API takes the folk's id
+                } else if (formKey !== 'file') {
                   folkAttendeeFormData.append(formKey, ['start', 'finish'].includes(formKey) ? (formValue === null ? '' : formValue) : JSON.stringify(formValue));
                 }
               }
@@ -3192,7 +3193,6 @@ Attendees.datagridUpdate = {
             });
           },
           insert: (values) => {
-            values.category = categoryId;  // somehow backend can't receive it if nested in folk object
             const folkAttendeeFormData = new FormData();
             const fileUploaded = Attendees.datagridUpdate.folkAttendeeFileUploader && Attendees.datagridUpdate.folkAttendeeFileUploader.option('value')[0];
             if (values && typeof(values) === 'object'){
@@ -3202,8 +3202,7 @@ Attendees.datagridUpdate = {
                     folkAttendeeFormData.set(formKey, JSON.stringify(formValue));
                     break;
                   case 'folk':
-                    folkAttendeeFormData.set("folk", formValue.id);  // this work with below line! somehow folk[id] didn't work
-                    folkAttendeeFormData.set("folk.category", categoryId);  // somehow needed with the above "folk" in formdata but will generate 'folk.category': ['25'],
+                    folkAttendeeFormData.set("folk", formValue.id);
                     break;
                   case 'file':
                     if (fileUploaded) {

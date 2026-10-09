@@ -64,6 +64,8 @@ class ApiDatagridDataFolkAttendeesViewsSet(viewsets.ModelViewSet
                ).exclude(  # Todo 20230502 optimize to exclude rows in other attendee's other folks
                 ~Q(attendee=target_attendee),
                 folk__in=target_attendee_in_others_other_folks,
+               ).select_related(  # the serializer nests each row's folk
+                "folk",
                ).order_by(
                 "folk",
                 "folk__display_order",
