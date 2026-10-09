@@ -322,6 +322,14 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
 
     def save(self, *args, **kwargs):
         self.estimated_birthday = Utility.presence(self.estimated_birthday)
+        # Every section of infos is read somewhere (names below, schedulers and
+        # emergency_contacts in AttendeeService), so an infos that arrived
+        # without some of them, or as null, is completed here rather than
+        # failing in each of those places.
+        infos = self.infos if self.infos is not None else {}
+        for section, default in Utility.attendee_infos().items():
+            infos.setdefault(section, default)
+        self.infos = infos
         name = self.name1()
         name2 = self.name2()
         both_names = f"{name} {name2}".strip()
