@@ -1,5 +1,7 @@
 """``/persons/api/datagrid_data_attendee/`` against the golden congregation."""
 
+from datetime import date
+
 import pytest
 
 from attendees.persons.models import Attendee, Attending
@@ -278,8 +280,58 @@ class TestMergedAttendees:
         assert response.status_code == 403
         assert Attendee.all_objects.get(pk=duplicate.pk).merged_into_id is None
 
+    def test_a_soft_deleted_duplicate_can_still_be_merged(self, golden, token_client):
+        """The edit guard only sees live attendees; a merge is guarded by the groups alone."""
+        primary, duplicate = self._twins(golden)
+        duplicate.is_removed = True
+        duplicate.save(update_fields=["is_removed"])
+        client = token_client("golden_data_organizer")
+        assert self._merge(client, duplicate, primary).status_code == 200
+        assert client.get(f"/persons/api/datagrid_data_attendee/{duplicate.id}/").status_code == 410
+
     def _unmerge(self, client, duplicate):
         return client.post(f"/persons/api/datagrid_data_attendee/{duplicate.id}/unmerge/", format="json")
+
+    def test_the_merge_keeps_what_the_screen_chose_and_unmerge_puts_it_back(self, golden, token_client):
+        primary, duplicate = self._twins(golden)
+        primary.actual_birthday = date(2008, 6, 22)
+        primary.infos["contacts"] = {"phone1": "+15105550107"}
+        primary.save()
+        duplicate.actual_birthday = date(2008, 6, 23)
+        duplicate.infos["contacts"] = {"phone1": "+15105550199"}
+        duplicate.save()
+        client = token_client("golden_data_organizer")
+
+        response = client.post(
+            f"/persons/api/datagrid_data_attendee/{duplicate.id}/merge/",
+            {
+                "primary": str(primary.id),
+                "keep": {"actual_birthday": "duplicate", "phones": ["+15105550199", "+15105550107"]},
+            },
+            format="json",
+        )
+        assert response.status_code == 200, response.content
+        row = client.get(f"/persons/api/datagrid_data_attendee/{primary.id}/").json()
+        assert row["actual_birthday"] == "2008-06-23"
+        assert row["infos"]["contacts"] == {"phone1": "+15105550199", "phone2": "+15105550107"}
+
+        assert self._unmerge(client, duplicate).status_code == 200
+        row = client.get(f"/persons/api/datagrid_data_attendee/{primary.id}/").json()
+        assert row["actual_birthday"] == "2008-06-22"
+        assert row["infos"]["contacts"] == {"phone1": "+15105550107"}
+
+    def test_a_keep_the_records_cannot_answer_is_refused(self, golden, token_client):
+        primary, duplicate = self._twins(golden)
+        client = token_client("golden_data_organizer")
+        url = f"/persons/api/datagrid_data_attendee/{duplicate.id}/merge/"
+
+        response = client.post(url, {"primary": str(primary.id), "keep": {"deathday": "duplicate"}}, format="json")
+        assert response.status_code == 400
+        assert "deathday" in response.json()["detail"]
+        response = client.post(url, {"primary": str(primary.id), "keep": "deathday"}, format="json")
+        assert response.status_code == 400
+        assert "keep" in response.json()
+        assert Attendee.all_objects.get(pk=duplicate.pk).merged_into_id is None
 
     def test_an_unmerge_puts_the_duplicate_back_once(self, golden, token_client):
         primary, duplicate = self._twins(golden)

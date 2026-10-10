@@ -100,14 +100,20 @@ class ApiDatagridDataAttendeeViewSet(ModelViewSet):  # from GenericAPIView
 
     @action(detail=True, methods=["post"], url_path="merge")
     def merge(self, request, pk=None):
-        """``POST .../<duplicate>/merge/`` with ``{"primary": "<uuid>"}``.
+        """``POST .../<duplicate>/merge/`` with ``{"primary": "<uuid>", "keep": {...}}``.
 
         Posted to the duplicate because that is the record being changed.
-        Same ``privileged_to_edit`` guard as an edit.
+        ``keep`` is what the merge screen chose, see ``AttendeeMergeService.merge``;
+        without it the primary's details stay and every phone and email is kept.
+        Guarded like unmerge: the organization's ``groups_see_all_meets_attendees``.
+        ``privileged_to_edit`` would refuse a duplicate that is soft-deleted.
         """
         primary_id = request.data.get("primary")
         if not primary_id:
             raise ValidationError({"primary": "Name the attendee to merge into."})
+        keep = request.data.get("keep")
+        if keep is not None and not isinstance(keep, dict):
+            raise ValidationError({"keep": "Send the details to keep as an object."})
 
         organization = request.user.organization
         duplicate = get_object_or_404(
@@ -117,14 +123,18 @@ class ApiDatagridDataAttendeeViewSet(ModelViewSet):  # from GenericAPIView
             Attendee.all_objects, pk=primary_id, division__organization=organization
         )
 
-        if not request.user.privileged_to_edit(duplicate.id):
+        if not request.user.belongs_to_groups_of(
+            organization.infos.get("groups_see_all_meets_attendees", [])
+        ):
             time.sleep(2)
             raise PermissionDenied(detail="Not allowed to merge that attendee.")
 
         try:
-            AttendeeMergeService.merge(duplicate, primary, by=request.user.attendee_uuid_str() or None)
+            AttendeeMergeService.merge(
+                duplicate, primary, by=request.user.attendee_uuid_str() or None, keep=keep
+            )
         except MergeRefused as refusal:
-            raise ValidationError({"primary": str(refusal)})
+            raise ValidationError({"detail": str(refusal)})
 
         return Response(
             {"merged_into": str(primary.pk)}, status=status.HTTP_200_OK

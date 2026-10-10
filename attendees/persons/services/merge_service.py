@@ -1,14 +1,20 @@
 """Merging one attendee into another, and undoing it.
 
 The duplicate is soft-deleted and keeps a forwarding address; what it held
-moves to the primary; the primary's own fields always win. What moved is
-written on the tombstone (``infos["merge"]``), so ``unmerge`` can put it back
-once. Merging B into C also re-points everything already merged into B, so a
-chain only exists in hand-edited data and walking one is a bounded guard.
+moves to the primary. The primary's own details stay unless the primary has
+none or ``keep`` names the duplicate's; phones and emails from both are kept.
+What moved and what the primary's details were is written on the tombstone
+(``infos["merge"]``), so ``unmerge`` can put it all back once. Merging B into
+C also re-points everything already merged into B, so a chain only exists in
+hand-edited data and walking one is a bounded guard.
 """
+
+from datetime import date
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.db.models.fields.files import FieldFile
+from partial_date import PartialDate
 
 from attendees.occasions.models import Attendance
 from attendees.persons.models import (
@@ -30,6 +36,26 @@ MAX_MERGE_HOPS = 5
 #: ``Attendee.infos`` sections keyed by other attendees' ids.
 REFERENCE_KEYS = ("schedulers", "emergency_contacts")
 
+#: An attendee's own single-value details, by the name ``keep`` uses. The
+#: keys of ``infos["fixed"]`` are ``fixed.<key>`` and contacts other than
+#: phones and emails are ``contacts.<key>``.
+COLUMNS = (
+    "first_name",
+    "last_name",
+    "first_name2",
+    "last_name2",
+    "gender",
+    "actual_birthday",
+    "estimated_birthday",
+    "deathday",
+    "photo",
+    "division",
+)
+ATTRIBUTES = {"division": "division_id"}
+
+#: Contacts held as numbered slots: phone1, phone2, ... and email1, email2, ...
+SLOTS = {"phones": "phone", "emails": "email"}
+
 
 class MergeRefused(Exception):
     """A merge or unmerge that must not happen, with the reason."""
@@ -48,6 +74,58 @@ def _repoint_or_retire(row, field, target, clash, moved, retired):
         setattr(row, field, target)
         row.save(update_fields=[field])
         moved.append(row.pk)
+
+
+def _plain(value):
+    # JSON-safe, so a value can be written on the tombstone and compared.
+    if isinstance(value, FieldFile):
+        return value.name or None
+    if isinstance(value, (date, PartialDate)):
+        return str(value)
+    return value
+
+
+def _blank(value):
+    # An unspecified gender is a blank, not a value to keep.
+    return value in (None, "") or str(value).upper().endswith("UNSPECIFIED")
+
+
+def _is_slot(key, kind):
+    return key.lower().startswith(SLOTS[kind])
+
+
+def _details(attendee):
+    """``{name: value}`` of the attendee's own single-value details, blanks left out."""
+    details = {}
+    for column in COLUMNS:
+        value = _plain(getattr(attendee, ATTRIBUTES.get(column, column)))
+        if not _blank(value):
+            details[column] = value
+    for key, value in (attendee.infos.get("fixed") or {}).items():
+        if not _blank(value):
+            details[f"fixed.{key}"] = value
+    for key, value in (attendee.infos.get("contacts") or {}).items():
+        if not _blank(value) and not any(_is_slot(key, kind) for kind in SLOTS):
+            details[f"contacts.{key}"] = value
+    return details
+
+
+def _slot_values(attendee, kind):
+    """The phones (or emails) an attendee holds, in slot order."""
+    contacts = attendee.infos.get("contacts") or {}
+    return [
+        contacts[key]
+        for key in sorted(contacts)
+        if _is_slot(key, kind) and not _blank(contacts[key])
+    ]
+
+
+def _set_detail(attendee, name, value):
+    section, _, key = name.partition(".")
+    if key:
+        attendee.infos.setdefault(section, {})[key] = value
+    else:
+        setattr(attendee, ATTRIBUTES.get(name, name), value)
 
 
 class AttendeeMergeService:
@@ -88,12 +166,19 @@ class AttendeeMergeService:
 
     @staticmethod
     @transaction.atomic
-    def merge(duplicate, primary, by=None):
+    def merge(duplicate, primary, by=None, keep=None):
         """Merges ``duplicate`` into ``primary`` and returns the primary.
+
+        ``keep`` is what the merge screen chose: ``{"actual_birthday":
+        "duplicate"}`` takes the duplicate's value where both records have
+        one, ``{"phones": [...]}`` and ``{"emails": [...]}`` list the ones to
+        keep, in slot order. Without it the primary's values stay, the
+        duplicate's fill the blanks, and every phone and email is kept.
 
         Refused: into itself, across organizations, into a record that is
         deleted or itself merged away, when the duplicate is already merged,
-        or when both have a login. ``by`` names who did it, for the record.
+        when both have a login, or when ``keep`` names a detail that is not
+        there. ``by`` names who did it, for the record.
         """
         given = (duplicate, primary)
         duplicate, primary = AttendeeMergeService._locked(duplicate, primary)
@@ -118,7 +203,10 @@ class AttendeeMergeService:
             raise MergeRefused("Both attendees have a login; remove one first.")
 
         was_removed = duplicate.is_removed
+        # The primary is saved here, before anything below re-reads its row.
         moved = {
+            "details": AttendeeMergeService._merge_details(duplicate, primary, keep),
+            "own_references": AttendeeMergeService._merge_own_references(duplicate, primary),
             "attendings": AttendeeMergeService._fold_attendings(duplicate, primary),
             "memberships": AttendeeMergeService._move_memberships(duplicate, primary),
             "pasts": AttendeeMergeService._move_linked(Past, duplicate, primary),
@@ -148,6 +236,7 @@ class AttendeeMergeService:
     def unmerge(duplicate):
         """Puts back what the merge moved and revives the duplicate, once.
 
+        The primary's own details go back to what they were before the merge.
         Rows the primary gained since the merge stay with it. A login that
         moved and has changed hands since is refused rather than guessed.
         """
@@ -174,6 +263,10 @@ class AttendeeMergeService:
             primary.save(update_fields=["user"])
             duplicate.user_id = moved["user"]
 
+        if primary is not None:
+            AttendeeMergeService._restore_details(primary, moved.get("details") or {})
+            AttendeeMergeService._restore_own_references(primary, moved.get("own_references") or {})
+            primary.save()
         AttendeeMergeService._restore_references(duplicate, record)
         Registration.all_objects.filter(pk__in=moved["registrations"]).update(
             registrant=duplicate
@@ -239,6 +332,96 @@ class AttendeeMergeService:
             return rows[duplicate.pk], rows[primary.pk]
         except KeyError:
             raise MergeRefused("That attendee no longer exists.")
+
+    @staticmethod
+    def _merge_details(duplicate, primary, keep):
+        """Writes the merged record's own details on the primary and returns
+        what they were, for ``unmerge``.
+
+        A detail keeps the primary's value; the duplicate's fills a blank, and
+        wins where ``keep`` says ``"duplicate"``. Phones and emails are the
+        primary's then the duplicate's new ones, or the ones ``keep`` lists,
+        laid into phone1, phone2, ... and email1, email2, ...
+        """
+        keep = dict(keep or {})
+        chosen_slots = {kind: keep.pop(kind, None) for kind in SLOTS}
+        for kind, chosen in chosen_slots.items():
+            if chosen is not None and not isinstance(chosen, list):
+                raise MergeRefused(f"keep must list the {kind} to keep.")
+
+        theirs, mine = _details(primary), _details(duplicate)
+        for name, who in keep.items():
+            if who not in ("primary", "duplicate"):
+                raise MergeRefused(f"keep must say primary or duplicate for {name}.")
+            if name not in theirs and name not in mine:
+                raise MergeRefused(f"Neither record has {name}.")
+            if who == "duplicate" and name not in mine:
+                raise MergeRefused(f"The duplicate has no {name} to keep.")
+
+        before = {"columns": {}}
+        for name, value in mine.items():
+            if name in theirs and keep.get(name) != "duplicate":
+                continue
+            if theirs.get(name) == value:
+                continue
+            section, _, _ = name.partition(".")
+            if section in ("fixed", "contacts"):
+                before.setdefault(section, dict(primary.infos.get(section) or {}))
+            else:
+                before["columns"][name] = _plain(getattr(primary, ATTRIBUTES.get(name, name)))
+            _set_detail(primary, name, value)
+
+        for kind, prefix in SLOTS.items():
+            held = _slot_values(primary, kind)
+            held += [value for value in _slot_values(duplicate, kind) if value not in held]
+            chosen = held if chosen_slots[kind] is None else list(dict.fromkeys(chosen_slots[kind]))
+            for value in chosen:
+                if value not in held:
+                    raise MergeRefused(f"Neither record has {value} among its {kind}.")
+            if chosen == _slot_values(primary, kind):
+                continue
+            before.setdefault("contacts", dict(primary.infos.get("contacts") or {}))
+            contacts = primary.infos.setdefault("contacts", {})
+            for key in [key for key in contacts if _is_slot(key, kind)]:
+                del contacts[key]
+            for number, value in enumerate(chosen, start=1):
+                contacts[f"{prefix}{number}"] = value
+
+        primary.save()
+        return before
+
+    @staticmethod
+    def _restore_details(primary, before):
+        for name, value in before.get("columns", {}).items():
+            _set_detail(primary, name, value)
+        for section in ("fixed", "contacts"):
+            if section in before:
+                primary.infos[section] = before[section]
+
+    @staticmethod
+    def _merge_own_references(duplicate, primary):
+        """The people the duplicate's own schedulers and emergency_contacts
+        name are added to the primary's; an entry the primary already has,
+        or one naming either record, is left alone."""
+        added = {}
+        for key in REFERENCE_KEYS:
+            ours = duplicate.infos.get(key) or {}
+            theirs = primary.infos.setdefault(key, {})
+            added[key] = [
+                other
+                for other in ours
+                if other not in theirs and other not in (str(duplicate.pk), str(primary.pk))
+            ]
+            for other in added[key]:
+                theirs[other] = ours[other]
+        primary.save(update_fields=["infos"])
+        return added
+
+    @staticmethod
+    def _restore_own_references(primary, added):
+        for key, others in added.items():
+            for other in others:
+                (primary.infos.get(key) or {}).pop(other, None)
 
     @staticmethod
     def _fold_attendings(duplicate, primary):
