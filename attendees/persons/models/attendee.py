@@ -74,6 +74,16 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
     photo = PrivateFileField(
         "Photo", blank=True, null=True, upload_to="attendee_portrait"
     )  # https://github.com/edoburu/django-private-storage
+    merged_into = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.SET_NULL,
+        related_name="merged_from",
+        help_text="Set when this attendee was merged into another; the row "
+        "stays as a tombstone so the old id can still be followed.",
+    )
     infos = models.JSONField(
         null=True,
         blank=True,
