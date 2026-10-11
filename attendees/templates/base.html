@@ -12,6 +12,14 @@
 
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
 
+    {% if settings.SENTRY_FRONTEND_LIB %}
+    <!-- Sentry JavaScript SDK -->
+    <script
+      src="{{ settings.SENTRY_FRONTEND_LIB }}"
+      crossorigin="anonymous"
+    ></script>
+    {% endif %}
+
     {% block css %}
     <!-- Latest compiled and minified Bootstrap CSS -->
 
