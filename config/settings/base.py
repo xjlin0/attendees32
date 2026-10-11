@@ -419,7 +419,13 @@ REST_FRAMEWORK = {
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
+from corsheaders.defaults import default_headers
+
 CORS_URLS_REGEX = r"^/api/.*$"
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "sentry-trace",
+    "baggage",
+]
 # Your stuff...
 # ------------------------------------------------------------------------------
 CLIENT_DEFAULT_TIME_ZONE = "America/Los_Angeles"
@@ -476,3 +482,4 @@ if SENTRY_DSN:
         environment=env("DJANGO_SETTINGS_MODULE", default="development").split('.')[-1],
     )
 SENTRY_ARTIFICIAL_API_DEBUG = env.bool("SENTRY_ARTIFICIAL_API_DEBUG", default=False)
+SENTRY_FRONTEND_LIB = env("SENTRY_FRONTEND_LIB", default="")

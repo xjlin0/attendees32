@@ -207,10 +207,11 @@ CELERY_FLOWER_PASSWORD=<<YOUR CELERY_FLOWER_PASSWORD>>
 GOOGLE_MAPS_API_KEY=<<Your Google map API key>>
 
 # Sentry
-SENTRY_DSN="<<your sentry DSN>>"
+SENTRY_FRONTEND_LIB=https://js.sentry-cdn.com/<<your sentry JS frontend library>>.min.js
+SENTRY_DSN="<<your backend sentry DSN>>"
 SENTRY_TRACES_SAMPLE_RATE=1.0
 SENTRY_ARTIFICIAL_API_DEBUG=False   # The API to artificially create an error to see if Sentry catch the log.
-# visit https://<<your server domain name>>/sentry-debug/ to see created error monitored by Sentry
+# visit https://<<your server domain name>>/sentry-debug/ or type `Sentry.captureException(new Error("successfully triggered frontend error"));` to see created error monitored by Sentry
 ```
 * double check user id of your web user in production.yml:
 ```
