@@ -1,5 +1,5 @@
 """Merging one attendee into another: attendance moves, clashing rows retire,
-chains terminate, the merged record's details are what ``keep`` says."""
+chains terminate, details and contacts are kept from both."""
 
 import pytest
 from datetime import date, datetime, timedelta, timezone
@@ -326,14 +326,14 @@ class TestAttendeeMergeService:
         # The primary's own entry wins over the duplicate's.
         assert parent.infos["emergency_contacts"] == {str(self.primary.id): False}
 
-    def test_retires_the_duplicates_hidden_folk(self):
+    def test_moves_the_duplicates_hidden_folk_like_any_other(self):
         hidden = self.duplicate.folks.get(category_id=Attendee.NON_FAMILY_CATEGORY)
 
         AttendeeMergeService.merge(self.duplicate, self.primary)
 
-        assert Folk.all_objects.get(pk=hidden.pk).is_removed
-        assert not FolkAttendee.objects.filter(attendee=self.primary, folk=hidden).exists()
-        assert self.primary.folks.filter(category_id=Attendee.NON_FAMILY_CATEGORY).count() == 1
+        assert not Folk.all_objects.get(pk=hidden.pk).is_removed
+        assert FolkAttendee.objects.filter(attendee=self.primary, folk=hidden, role_id=Attendee.HIDDEN_ROLE).exists()
+        assert self.primary.folks.filter(category_id=Attendee.NON_FAMILY_CATEGORY).count() == 2
 
     def test_records_what_moved(self):
         ours = self.duplicate.attendings.get()
@@ -379,7 +379,7 @@ class TestAttendeeMergeService:
         assert attendance.attending_id == ours.id and not attendance.is_removed
         assert not ours.is_removed
         assert membership.attendee_id == self.duplicate.id and not membership.is_removed
-        assert not Folk.all_objects.get(pk=hidden.pk).is_removed
+        assert FolkAttendee.objects.filter(attendee=self.duplicate, folk=hidden, role_id=Attendee.HIDDEN_ROLE).exists()
         assert past.object_id == str(self.duplicate.id)
         assert registration.registrant_id == self.duplicate.id
         self.primary.refresh_from_db()
@@ -400,9 +400,12 @@ class TestAttendeeMergeService:
 
     def _twins_with_details(self):
         self.primary.actual_birthday = date(2008, 6, 22)
-        self.primary.deathday = None
         self.primary.infos["fixed"]["grade"] = 17
-        self.primary.infos["contacts"] = {"phone1": "+15105550107", "email1": "ava@example.org"}
+        self.primary.infos["contacts"] = {
+            "phone1": "+15105550107",
+            "email1": "ava@example.org",
+            "WeChat1": "ava_chen",
+        }
         self.primary.save()
         self.duplicate.actual_birthday = date(2008, 6, 23)
         self.duplicate.gender = "FEMALE"
@@ -428,70 +431,45 @@ class TestAttendeeMergeService:
         assert self.primary.gender == "FEMALE"
         assert self.primary.photo.name == "attendee_portrait/ava.jpg"
         assert self.primary.infos["fixed"]["food_pref"] == "peanut allergy"
-        # Every phone and email from both, the primary's first.
+        # Every contact from both, by kind, the primary's first.
         assert self.primary.infos["contacts"] == {
             "phone1": "+15105550107",
             "phone2": "+15105550199",
             "email1": "ava@example.org",
             "email2": "ava2@example.org",
-            "wechat": "ava_c",
+            "wechat1": "ava_chen",
+            "wechat2": "ava_c",
         }
         # The duplicate's own details stay on the tombstone.
         assert Attendee.all_objects.get(pk=self.duplicate.pk).actual_birthday == date(2008, 6, 23)
 
-    def test_keep_takes_the_duplicates_value_and_lists_the_phones_and_emails(self):
-        self._twins_with_details()
-
-        AttendeeMergeService.merge(
-            self.duplicate,
-            self.primary,
-            keep={
-                "actual_birthday": "duplicate",
-                "fixed.grade": "duplicate",
-                "phones": ["+15105550199"],
-                "emails": ["ava2@example.org", "ava@example.org"],
-            },
-        )
-
-        self.primary.refresh_from_db()
-        assert self.primary.actual_birthday == date(2008, 6, 23)
-        assert self.primary.infos["fixed"]["grade"] == 16
-        assert self.primary.infos["contacts"] == {
-            "phone1": "+15105550199",
-            "email1": "ava2@example.org",
-            "email2": "ava@example.org",
-            "wechat": "ava_c",
-        }
-
-    def test_keep_is_refused_when_it_names_what_is_not_there(self):
-        self._twins_with_details()
-        self.primary.deathday = date(2026, 1, 1)
+    def test_the_slots_are_rewritten_on_every_merge(self):
+        self.primary.infos["contacts"] = {"phone2": "+15105550107", "Email1": "ava@example.org"}
         self.primary.save()
 
-        for keep, reason in (
-            ({"first_name": "theirs"}, "primary or duplicate"),
-            ({"estimated_birthday": "duplicate"}, "Neither record has"),
-            ({"deathday": "duplicate"}, "duplicate has no deathday"),
-            ({"phones": ["+10000000000"]}, "among its phones"),
-            ({"emails": "ava@example.org"}, "list the emails"),
-        ):
-            with pytest.raises(MergeRefused, match=reason):
-                AttendeeMergeService.merge(self.duplicate, self.primary, keep=keep)
-        assert Attendee.all_objects.get(pk=self.duplicate.pk).merged_into_id is None
+        AttendeeMergeService.merge(self.duplicate, self.primary)
+
         self.primary.refresh_from_db()
         assert self.primary.infos["contacts"] == {"phone1": "+15105550107", "email1": "ava@example.org"}
 
     def test_unmerge_puts_the_primarys_details_back(self):
         self._twins_with_details()
-        AttendeeMergeService.merge(
-            self.duplicate, self.primary, keep={"actual_birthday": "duplicate", "phones": ["+15105550199"]}
-        )
-        record = Attendee.all_objects.get(pk=self.duplicate.pk).infos["merge"]
-        assert record["moved"]["details"] == {
-            "columns": {"actual_birthday": "2008-06-22", "gender": "unspecified", "photo": None},
-            "fixed": {"mobility": 2, "grade": 17},
-            "contacts": {"phone1": "+15105550107", "email1": "ava@example.org"},
+        AttendeeMergeService.merge(self.duplicate, self.primary)
+        details = Attendee.all_objects.get(pk=self.duplicate.pk).infos["merge"]["moved"]["details"]
+        assert details["columns"]["actual_birthday"] == "2008-06-22"
+        assert details["columns"]["gender"] == "unspecified"
+        assert details["columns"]["photo"] is None
+        assert details["fixed"] == {"mobility": 2, "grade": 17}
+        assert details["contacts"] == {
+            "phone1": "+15105550107",
+            "email1": "ava@example.org",
+            "WeChat1": "ava_chen",
         }
+        # An edit made after the merge goes back too: undo means as it was before.
+        self.primary.refresh_from_db()
+        self.primary.actual_birthday = date(2009, 1, 1)
+        self.primary.infos["fixed"]["grade"] = 18
+        self.primary.save()
 
         AttendeeMergeService.unmerge(self.duplicate)
 
@@ -500,7 +478,11 @@ class TestAttendeeMergeService:
         assert self.primary.gender == "unspecified"
         assert not self.primary.photo
         assert self.primary.infos["fixed"] == {"mobility": 2, "grade": 17}
-        assert self.primary.infos["contacts"] == {"phone1": "+15105550107", "email1": "ava@example.org"}
+        assert self.primary.infos["contacts"] == {
+            "phone1": "+15105550107",
+            "email1": "ava@example.org",
+            "WeChat1": "ava_chen",
+        }
         restored = Attendee.objects.get(pk=self.duplicate.pk)
         assert restored.actual_birthday == date(2008, 6, 23)
         assert restored.infos["contacts"]["wechat"] == "ava_c"

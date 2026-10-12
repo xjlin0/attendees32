@@ -100,20 +100,18 @@ class ApiDatagridDataAttendeeViewSet(ModelViewSet):  # from GenericAPIView
 
     @action(detail=True, methods=["post"], url_path="merge")
     def merge(self, request, pk=None):
-        """``POST .../<duplicate>/merge/`` with ``{"primary": "<uuid>", "keep": {...}}``.
+        """``POST .../<duplicate>/merge/`` with ``{"primary": "<uuid>"}``.
 
         Posted to the duplicate because that is the record being changed.
-        ``keep`` is what the merge screen chose, see ``AttendeeMergeService.merge``;
-        without it the primary's details stay and every phone and email is kept.
+        The merge takes no choices: the primary's details stay, the
+        duplicate's fill its blanks, contacts are kept from both; anything
+        else is an ordinary edit of the merged record afterwards.
         Guarded like unmerge: the organization's ``groups_see_all_meets_attendees``.
         ``privileged_to_edit`` would refuse a duplicate that is soft-deleted.
         """
         primary_id = request.data.get("primary")
         if not primary_id:
             raise ValidationError({"primary": "Name the attendee to merge into."})
-        keep = request.data.get("keep")
-        if keep is not None and not isinstance(keep, dict):
-            raise ValidationError({"keep": "Send the details to keep as an object."})
 
         organization = request.user.organization
         duplicate = get_object_or_404(
@@ -130,9 +128,7 @@ class ApiDatagridDataAttendeeViewSet(ModelViewSet):  # from GenericAPIView
             raise PermissionDenied(detail="Not allowed to merge that attendee.")
 
         try:
-            AttendeeMergeService.merge(
-                duplicate, primary, by=request.user.attendee_uuid_str() or None, keep=keep
-            )
+            AttendeeMergeService.merge(duplicate, primary, by=request.user.attendee_uuid_str() or None)
         except MergeRefused as refusal:
             raise ValidationError({"detail": str(refusal)})
 

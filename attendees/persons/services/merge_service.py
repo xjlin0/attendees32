@@ -1,9 +1,9 @@
 """Merging one attendee into another, and undoing it.
 
 The duplicate is soft-deleted and keeps a forwarding address; what it held
-moves to the primary. The primary's own details stay unless the primary has
-none or ``keep`` names the duplicate's; phones and emails from both are kept.
-What moved and what the primary's details were is written on the tombstone
+moves to the primary. The primary's own details stay, the duplicate's fill
+its blanks, and contacts of every kind are kept from both. What moved, and
+what all of the primary's details were, is written on the tombstone
 (``infos["merge"]``), so ``unmerge`` can put it all back once. Merging B into
 C also re-points everything already merged into B, so a chain only exists in
 hand-edited data and walking one is a bounded guard.
@@ -21,7 +21,6 @@ from attendees.persons.models import (
     Attendee,
     Attending,
     AttendingMeet,
-    Folk,
     FolkAttendee,
     Note,
     Past,
@@ -36,9 +35,8 @@ MAX_MERGE_HOPS = 5
 #: ``Attendee.infos`` sections keyed by other attendees' ids.
 REFERENCE_KEYS = ("schedulers", "emergency_contacts")
 
-#: An attendee's own single-value details, by the name ``keep`` uses. The
-#: keys of ``infos["fixed"]`` are ``fixed.<key>`` and contacts other than
-#: phones and emails are ``contacts.<key>``.
+#: An attendee's own single-value details: these columns, and every key of
+#: ``infos["fixed"]`` as ``fixed.<key>``. Contacts are handled by kind below.
 COLUMNS = (
     "first_name",
     "last_name",
@@ -52,9 +50,6 @@ COLUMNS = (
     "division",
 )
 ATTRIBUTES = {"division": "division_id"}
-
-#: Contacts held as numbered slots: phone1, phone2, ... and email1, email2, ...
-SLOTS = {"phones": "phone", "emails": "email"}
 
 
 class MergeRefused(Exception):
@@ -90,8 +85,11 @@ def _blank(value):
     return value in (None, "") or str(value).upper().endswith("UNSPECIFIED")
 
 
-def _is_slot(key, kind):
-    return key.lower().startswith(SLOTS[kind])
+def _kind(key):
+    # A contact key is a kind and a number: phone1, email2, wechat1. The form
+    # lets people type any key, so the kind is whatever is left without the
+    # trailing digits, and case does not count.
+    return key.lower().rstrip("0123456789") or key.lower()
 
 
 def _details(attendee):
@@ -104,20 +102,17 @@ def _details(attendee):
     for key, value in (attendee.infos.get("fixed") or {}).items():
         if not _blank(value):
             details[f"fixed.{key}"] = value
-    for key, value in (attendee.infos.get("contacts") or {}).items():
-        if not _blank(value) and not any(_is_slot(key, kind) for kind in SLOTS):
-            details[f"contacts.{key}"] = value
     return details
 
 
-def _slot_values(attendee, kind):
-    """The phones (or emails) an attendee holds, in slot order."""
+def _contacts(attendee):
+    """``{kind: [values]}`` of the attendee's contacts, in key order, blanks left out."""
     contacts = attendee.infos.get("contacts") or {}
-    return [
-        contacts[key]
-        for key in sorted(contacts)
-        if _is_slot(key, kind) and not _blank(contacts[key])
-    ]
+    by_kind = {}
+    for key in sorted(contacts):
+        if not _blank(contacts[key]):
+            by_kind.setdefault(_kind(key), []).append(contacts[key])
+    return by_kind
 
 
 def _set_detail(attendee, name, value):
@@ -166,19 +161,17 @@ class AttendeeMergeService:
 
     @staticmethod
     @transaction.atomic
-    def merge(duplicate, primary, by=None, keep=None):
+    def merge(duplicate, primary, by=None):
         """Merges ``duplicate`` into ``primary`` and returns the primary.
 
-        ``keep`` is what the merge screen chose: ``{"actual_birthday":
-        "duplicate"}`` takes the duplicate's value where both records have
-        one, ``{"phones": [...]}`` and ``{"emails": [...]}`` list the ones to
-        keep, in slot order. Without it the primary's values stay, the
-        duplicate's fill the blanks, and every phone and email is kept.
+        The primary's own details stay, the duplicate's fill its blanks, and
+        contacts of every kind are kept from both. Anything else the merged
+        record should carry is an ordinary edit afterwards; ``unmerge`` puts
+        the primary's details back as they were either way.
 
         Refused: into itself, across organizations, into a record that is
         deleted or itself merged away, when the duplicate is already merged,
-        when both have a login, or when ``keep`` names a detail that is not
-        there. ``by`` names who did it, for the record.
+        or when both have a login. ``by`` names who did it, for the record.
         """
         given = (duplicate, primary)
         duplicate, primary = AttendeeMergeService._locked(duplicate, primary)
@@ -205,7 +198,7 @@ class AttendeeMergeService:
         was_removed = duplicate.is_removed
         # The primary is saved here, before anything below re-reads its row.
         moved = {
-            "details": AttendeeMergeService._merge_details(duplicate, primary, keep),
+            "details": AttendeeMergeService._merge_details(duplicate, primary),
             "own_references": AttendeeMergeService._merge_own_references(duplicate, primary),
             "attendings": AttendeeMergeService._fold_attendings(duplicate, primary),
             "memberships": AttendeeMergeService._move_memberships(duplicate, primary),
@@ -236,9 +229,10 @@ class AttendeeMergeService:
     def unmerge(duplicate):
         """Puts back what the merge moved and revives the duplicate, once.
 
-        The primary's own details go back to what they were before the merge.
-        Rows the primary gained since the merge stay with it. A login that
-        moved and has changed hands since is refused rather than guessed.
+        The primary's own details go back to what they were before the merge,
+        edits made since included. Rows the primary gained since stay with it.
+        A login that moved and has changed hands since is refused rather than
+        guessed.
         """
         given = (duplicate,)
         duplicate = Attendee.all_objects.select_for_update().get(pk=duplicate.pk)
@@ -280,7 +274,6 @@ class AttendeeMergeService:
         memberships = moved["memberships"]
         FolkAttendee.all_objects.filter(pk__in=memberships["moved"]).update(attendee=duplicate)
         FolkAttendee.all_objects.filter(pk__in=memberships["retired"]).update(is_removed=False)
-        Folk.all_objects.filter(pk__in=memberships["folks_retired"]).update(is_removed=False)
 
         attendings = moved["attendings"]
         Attending.all_objects.filter(pk__in=attendings["moved"]).update(attendee=duplicate)
@@ -334,58 +327,37 @@ class AttendeeMergeService:
             raise MergeRefused("That attendee no longer exists.")
 
     @staticmethod
-    def _merge_details(duplicate, primary, keep):
+    def _merge_details(duplicate, primary):
         """Writes the merged record's own details on the primary and returns
-        what they were, for ``unmerge``.
+        what all of them were, for ``unmerge``.
 
-        A detail keeps the primary's value; the duplicate's fills a blank, and
-        wins where ``keep`` says ``"duplicate"``. Phones and emails are the
-        primary's then the duplicate's new ones, or the ones ``keep`` lists,
-        laid into phone1, phone2, ... and email1, email2, ...
+        A detail keeps the primary's value; the duplicate's fills a blank.
+        Contacts are kept from both: per kind, the primary's values then the
+        duplicate's new ones, written as kind1, kind2, ...
         """
-        keep = dict(keep or {})
-        chosen_slots = {kind: keep.pop(kind, None) for kind in SLOTS}
-        for kind, chosen in chosen_slots.items():
-            if chosen is not None and not isinstance(chosen, list):
-                raise MergeRefused(f"keep must list the {kind} to keep.")
+        before = {
+            "columns": {
+                column: _plain(getattr(primary, ATTRIBUTES.get(column, column)))
+                for column in COLUMNS
+            },
+            "fixed": dict(primary.infos.get("fixed") or {}),
+            "contacts": dict(primary.infos.get("contacts") or {}),
+        }
 
-        theirs, mine = _details(primary), _details(duplicate)
-        for name, who in keep.items():
-            if who not in ("primary", "duplicate"):
-                raise MergeRefused(f"keep must say primary or duplicate for {name}.")
-            if name not in theirs and name not in mine:
-                raise MergeRefused(f"Neither record has {name}.")
-            if who == "duplicate" and name not in mine:
-                raise MergeRefused(f"The duplicate has no {name} to keep.")
+        theirs = _details(primary)
+        for name, value in _details(duplicate).items():
+            if name not in theirs:
+                _set_detail(primary, name, value)
 
-        before = {"columns": {}}
-        for name, value in mine.items():
-            if name in theirs and keep.get(name) != "duplicate":
-                continue
-            if theirs.get(name) == value:
-                continue
-            section, _, _ = name.partition(".")
-            if section in ("fixed", "contacts"):
-                before.setdefault(section, dict(primary.infos.get(section) or {}))
-            else:
-                before["columns"][name] = _plain(getattr(primary, ATTRIBUTES.get(name, name)))
-            _set_detail(primary, name, value)
-
-        for kind, prefix in SLOTS.items():
-            held = _slot_values(primary, kind)
-            held += [value for value in _slot_values(duplicate, kind) if value not in held]
-            chosen = held if chosen_slots[kind] is None else list(dict.fromkeys(chosen_slots[kind]))
-            for value in chosen:
-                if value not in held:
-                    raise MergeRefused(f"Neither record has {value} among its {kind}.")
-            if chosen == _slot_values(primary, kind):
-                continue
-            before.setdefault("contacts", dict(primary.infos.get("contacts") or {}))
-            contacts = primary.infos.setdefault("contacts", {})
-            for key in [key for key in contacts if _is_slot(key, kind)]:
-                del contacts[key]
-            for number, value in enumerate(chosen, start=1):
-                contacts[f"{prefix}{number}"] = value
+        merged = _contacts(primary)
+        for kind, values in _contacts(duplicate).items():
+            held = merged.setdefault(kind, [])
+            held += [value for value in values if value not in held]
+        primary.infos["contacts"] = {
+            f"{kind}{number}": value
+            for kind, values in merged.items()
+            for number, value in enumerate(values, start=1)
+        }
 
         primary.save()
         return before
@@ -476,25 +448,17 @@ class AttendeeMergeService:
 
     @staticmethod
     def _move_memberships(duplicate, primary):
-        """Moved unless the primary is already in that folk. The duplicate's
-        own auto-created hidden folk is retired with it when nobody else is in it."""
-        record = {"moved": [], "retired": [], "folks_retired": []}
+        """Every membership moves, whatever the folk; one in a folk the
+        primary is already in is retired and the primary's row stays."""
+        record = {"moved": [], "retired": []}
         for membership in FolkAttendee.objects.filter(attendee=duplicate):
-            folk = membership.folk
-            own_hidden = (
-                folk.category_id == Attendee.NON_FAMILY_CATEGORY
-                and membership.role_id == Attendee.HIDDEN_ROLE
-                and not FolkAttendee.objects.filter(folk=folk).exclude(pk=membership.pk).exists()
-            )
-            clash = FolkAttendee.objects.filter(attendee=primary, folk=folk).exists()
-            if own_hidden or clash:
+            clash = FolkAttendee.objects.filter(
+                attendee=primary, folk_id=membership.folk_id
+            ).exists()
+            if clash:
                 membership.is_removed = True
                 membership.save(update_fields=["is_removed"])
                 record["retired"].append(membership.pk)
-                if own_hidden:
-                    folk.is_removed = True
-                    folk.save(update_fields=["is_removed"])
-                    record["folks_retired"].append(str(folk.pk))
             else:
                 membership.attendee = primary
                 membership.save(update_fields=["attendee"])
