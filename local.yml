@@ -67,6 +67,8 @@ services:
     platform: linux/amd64
     image: redis:6
     container_name: redis
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-6380}:6379"
 
   celeryworker:
     <<: *django
