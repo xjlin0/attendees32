@@ -2,9 +2,8 @@
 # ------------------------------------------------------------------------------
 USE_DOCKER=yes
 IPYTHONDIR=/app/.ipython
-# Redis in docker is exposed to Host in the port REDIS_HOST_PORT, change it if your host already installed Redis
+# Redis in docker is exposed to Host in the port REDIS_HOST_PORT from the repo root .env file
 # ------------------------------------------------------------------------------
-REDIS_HOST_PORT=6380
 REDIS_URL=redis://redis:6379/0
 
 # Email
