@@ -194,8 +194,9 @@ DJANGO_ACCOUNT_ALLOW_REGISTRATION=True
 WEB_CONCURRENCY=4
 
 
-# Redis
+# Redis in docker is exposed to Host in the port REDIS_HOST_PORT, change it if your host already installed Redis
 # ------------------------------------------------------------------------------
+REDIS_HOST_PORT=6379
 REDIS_URL=redis://redis:6379/0
 
 # Celery
@@ -350,6 +351,7 @@ EMAIL_HOST=mailgun
 * collect static file: `docker-compose -f local.yml run django python /app/manage.py collectstatic`
 * Ensure the MailHog is not publicly available such as https://your.domain.name:8025
 * Ensure the db password in .envs/.local/.postgres changed
+* If you have Redis in local, please ensure REDIS_HOST_PORT in .envs/.local/.django not overlapped with your local Redis port.
 * Ensure using a non-default ADMIN_URL
 * update content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker-compose -f local.yml run django python manage.py createsuperuser`
@@ -452,6 +454,7 @@ EMAIL_HOST=mailhog
 * upadte content types after migration by `docker compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker compose -f local.yml run --rm django python manage.py createsuperuser`
 * import the seed data by `docker compose -f local.yml run django python manage.py loaddata fixtures/db_seed`, data were created by:
+* If you have Redis in local, please ensure REDIS_HOST_PORT in .envs/.local/.django not overlapped with your local Redis port.
 * optionally load the golden test congregation — 350 people, families, statuses, participations and eight weeks of attendance — by `docker compose -f local.yml run django python manage.py load_golden_data --seed`, see [docs/golden_test_data.md](docs/golden_test_data.md)
 * run the browser end-to-end suite (Chromium and WebKit, TypeScript/Playwright) by `npm ci && npx playwright install --with-deps chromium webkit && npm run test:e2e:chromium` (or `:webkit`) against a running stack loaded with the golden congregation; `npm run test:e2e:ci-seed` runs the specs written against `fixtures/ci_seed.json`
 * start the Debian based local machine by `docker compose -f local.yml up -d`, your site will be at http://localhost:8008/
