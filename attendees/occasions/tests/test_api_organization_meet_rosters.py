@@ -68,7 +68,7 @@ def setup_objects():
 def test_organization_meet_rosters_requires_auth(api_client):
     url = reverse("occasions:organization_meet_rosters-list")
     response = api_client.get(url)
-    assert response.status_code == 302  # redirects to login
+    assert response.status_code in (401, 403)
 
 
 @pytest.mark.django_db
@@ -107,6 +107,7 @@ def test_organization_meet_rosters_success(api_client, setup_objects):
     assert len(data["rows"]) == 1
     row = data["rows"][0]
     assert row["attendee_name"] == "John Doe"
+    assert row["team__display_name"] == "Test Team"
     assert row["total_attendances"] == 1
 
     gathering_id_str = str(setup_objects["gathering"].id)

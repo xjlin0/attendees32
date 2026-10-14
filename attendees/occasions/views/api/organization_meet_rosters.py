@@ -50,6 +50,8 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                         sort_list.append("-attendee__last_name" if desc else "attendee__last_name")
                     elif selector == "total_attendances":
                         sort_list.append("-total_attendances" if desc else "total_attendances")
+                    elif selector in ("team__display_name", "team"):
+                        sort_list.append("-team__display_name" if desc else "team__display_name")
             except (ValueError, TypeError):
                 pass
 

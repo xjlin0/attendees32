@@ -231,11 +231,14 @@
       const currentCols = gridInstanceRef.value.option('columns');
       let colsChanged = false;
       
-      if (!currentCols || currentCols.length !== serverColumns.length + 3) {
+      const FIXED_PREFIX_COUNT = 3;
+      const TOTAL_EXTRA_COLS = FIXED_PREFIX_COUNT + 1; // plus 1 dummy-column
+
+      if (!currentCols || currentCols.length !== serverColumns.length + TOTAL_EXTRA_COLS) {
         colsChanged = true;
       } else {
         for (let i = 0; i < serverColumns.length; i++) {
-          if (currentCols[i + 2].name !== String(serverColumns[i].id)) {
+          if (currentCols[i + FIXED_PREFIX_COUNT].name !== String(serverColumns[i].id)) {
             colsChanged = true;
             break;
           }
@@ -251,6 +254,14 @@
             fixedPosition: 'left',
             width: 200,
             cellTemplate: attendeeCellTemplate,
+            allowSorting: true
+          },
+          {
+            dataField: 'team__display_name',
+            caption: 'Team',
+            fixed: true,
+            fixedPosition: 'left',
+            width: 140,
             allowSorting: true
           },
           {
@@ -283,50 +294,93 @@
       }
     };
 
-    const loadData = () => {
+    const loadData = async () => {
       if (!filterData.meets || !filterData.meets.length) {
+        if (gridInstanceRef.value) {
+          gridInstanceRef.value.option('dataSource', []);
+        }
         return; 
       }
 
       if (gridInstanceRef.value) {
-        gridInstanceRef.value.option('dataSource', new DevExpress.data.CustomStore({
-          key: 'attending_id',
-          load: async (loadOptions) => {
-            try {
-              const queryParams = new URLSearchParams();
-              filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
-              
-              if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
-              if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
-
-              queryParams.set('skip', loadOptions.skip || 0);
-              queryParams.set('take', loadOptions.take || 40);
-
-              if (loadOptions.sort) {
-                queryParams.set('sort', JSON.stringify(loadOptions.sort));
-              }
-
-              const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
-              if (!response.ok) throw new Error('Network response was not ok');
-              
-              const data = await response.json();
-              
-              if (loadOptions.skip === 0 || loadOptions.skip == null) {
-                updateGridColumns(data.columns);
-              }
-
-              return {
-                data: data.rows,
-                totalCount: data.totalCount
-              };
-
-            } catch (error) {
-              DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
-              console.error(error);
-              throw error; 
-            }
+        try {
+          if (typeof gridInstanceRef.value.beginCustomLoading === 'function') {
+            gridInstanceRef.value.beginCustomLoading();
           }
-        }));
+
+          const queryParams = new URLSearchParams();
+          filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
+          
+          if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
+          if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
+
+          queryParams.set('skip', 0);
+          queryParams.set('take', 40);
+
+          const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
+          if (!response.ok) throw new Error('Network response was not ok');
+          
+          const initialData = await response.json();
+          let preloadedData = initialData;
+
+          const customStore = new DevExpress.data.CustomStore({
+            key: 'attending_id',
+            load: async (loadOptions) => {
+              try {
+                // If initial load with skip=0 and no sort, consume preloaded data without extra network request
+                if (preloadedData && (!loadOptions.skip || loadOptions.skip === 0) && !loadOptions.sort) {
+                  const cached = preloadedData;
+                  preloadedData = null;
+                  return {
+                    data: cached.rows,
+                    totalCount: cached.totalCount
+                  };
+                }
+
+                const pageParams = new URLSearchParams();
+                filterData.meets.forEach(meet => pageParams.append('meets[]', meet));
+                
+                if (filterData.startDate) pageParams.set('start', filterData.startDate.toISOString());
+                if (filterData.endDate) pageParams.set('finish', filterData.endDate.toISOString());
+
+                pageParams.set('skip', loadOptions.skip || 0);
+                pageParams.set('take', loadOptions.take || 40);
+
+                if (loadOptions.sort) {
+                  pageParams.set('sort', JSON.stringify(loadOptions.sort));
+                }
+
+                const pageResponse = await fetch(`${endpoints.rosters}?${pageParams.toString()}`);
+                if (!pageResponse.ok) throw new Error('Network response was not ok');
+                
+                const pageData = await pageResponse.json();
+                
+                return {
+                  data: pageData.rows,
+                  totalCount: pageData.totalCount
+                };
+
+              } catch (error) {
+                DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
+                console.error(error);
+                throw error; 
+              }
+            }
+          });
+
+          gridInstanceRef.value.beginUpdate();
+          updateGridColumns(initialData.columns);
+          gridInstanceRef.value.option('dataSource', customStore);
+          gridInstanceRef.value.endUpdate();
+
+        } catch (error) {
+          DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
+          console.error(error);
+        } finally {
+          if (typeof gridInstanceRef.value.endCustomLoading === 'function') {
+            gridInstanceRef.value.endCustomLoading();
+          }
+        }
       }
     };
 

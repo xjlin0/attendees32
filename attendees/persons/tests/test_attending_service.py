@@ -194,6 +194,7 @@ class TestAttendingService:
         row = rows[0]
         assert row['attending_id'] == self.attending.id
         assert row['attendee_id'] == self.attendee.id
+        assert 'team__display_name' in row
         assert row['attendances'] is not None
         assert len(row['attendances']) == 1
         assert row['attendances'][0]['gathering_id'] == self.gathering.id

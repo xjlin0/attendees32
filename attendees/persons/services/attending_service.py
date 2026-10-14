@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from django.db.models import Q, Value, Count, Func, JSONField
 from django.db.models.expressions import F
 from django.db.models.functions import Coalesce
-from django.contrib.postgres.aggregates import JSONBAgg
+from django.contrib.postgres.aggregates import JSONBAgg, StringAgg
 
 from attendees.occasions.models import Attendance, Gathering
 from attendees.persons.models import Attending
@@ -172,10 +172,24 @@ class AttendingService:
         ]
 
         # 2. Query Attendings (Rows) with Database Aggregation
+        attendingmeet_filter = (
+            Q(attendingmeet__meet__slug__in=meet_slugs) &
+            Q(attendingmeet__is_removed=False) &
+            (Q(attendingmeet__finish__isnull=True) | Q(attendingmeet__finish__gte=start)) &
+            (Q(attendingmeet__start__isnull=True) | Q(attendingmeet__start__lte=finish))
+        )
+
         attendings_qs = Attending.objects.filter(
-            meets__slug__in=meet_slugs,
+            attendingmeet_filter,
             is_removed=False
         ).annotate(
+            team__display_name=StringAgg(
+                'attendingmeet__team__display_name',
+                delimiter=', ',
+                distinct=True,
+                filter=attendingmeet_filter,
+                default=None,
+            ),
             total_attendances=Count(
                 'attendance',
                 filter=Q(
@@ -206,7 +220,7 @@ class AttendingService:
                     Value('finish'), 'attendingmeet__finish',
                     function='jsonb_build_object',
                 ),
-                filter=Q(attendingmeet__meet__slug__in=meet_slugs, attendingmeet__is_removed=False),
+                filter=attendingmeet_filter,
                 distinct=True,
                 default=[],
             ), Value('[]'), output_field=JSONField()),
@@ -230,6 +244,7 @@ class AttendingService:
                 "attendee_id": attending.attendee.id,
                 "attendee_name": attending.attendee.display_label,
                 "photo_url": photo_url,
+                "team__display_name": attending.team__display_name,
                 "attendances": attending.attendances,
                 "attendingmeets": attending.attendingmeets,
                 "total_attendances": attending.total_attendances,
