@@ -7,7 +7,7 @@ from attendees.users.models import User
 from attendees.whereabouts.models import Organization, Division
 from attendees.persons.models import Attendee, Attending, AttendingMeet, Category, Registration, Relation, Folk, FolkAttendee, Past
 from attendees.persons.models.enum import GenderEnum
-from attendees.occasions.models import Meet, Character, Assembly
+from attendees.occasions.models import Meet, Character, Assembly, Gathering, Attendance
 from attendees.persons.services.attendee_service import AttendeeService
 
 @pytest.mark.django_db
@@ -142,3 +142,57 @@ class TestAttendeeService:
         
         # Pasts should be soft-deleted or deleted depending on logic
         assert not Past.objects.filter(object_id=self.attendee.id, is_removed=False).exists()
+
+    def test_get_roster_data(self):
+        meet_slugs = [self.meet.slug]
+        start_date = self.now - timedelta(days=1)
+        finish_date = self.now + timedelta(days=1)
+
+        gathering = Gathering.objects.create(
+            meet=self.meet,
+            start=self.now,
+            finish=self.now + timedelta(hours=2),
+            display_name="Test Gathering",
+            site_type=self.site_type,
+            site_id=str(self.assembly.id),
+        )
+
+        attendance = Attendance.objects.create(
+            gathering=gathering,
+            attending=self.attending,
+            character=self.character,
+            category=self.category_1,
+            start=self.now,
+            finish=self.now + timedelta(hours=2),
+        )
+
+        columns, rows, total_count = AttendeeService.get_roster_data(
+            organization=self.organization,
+            meet_slugs=meet_slugs,
+            start=start_date,
+            finish=finish_date,
+            skip=0,
+            take=40
+        )
+
+        assert total_count == 1
+
+        # Verify columns includes gathering info
+        assert len(columns) == 1
+        assert columns[0]['id'] == gathering.id
+
+        # Verify rows includes attending info and JSON aggregations
+        assert len(rows) == 1
+        row = rows[0]
+        assert row['attending_id'] == self.attending.id
+        assert row['attendee_id'] == self.attendee.id
+        assert 'team__display_name' in row
+        assert row['attendances'] is not None
+        assert len(row['attendances']) == 1
+        assert row['attendances'][0]['gathering_id'] == gathering.id
+        assert 'start' in row['attendances'][0]
+        assert 'finish' in row['attendances'][0]
+
+        assert row['attendingmeets'] is not None
+        assert len(row['attendingmeets']) == 1
+        assert row['attendingmeets'][0]['meet_id'] == self.meet.id

@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from attendees.persons.services import AttendingService
+from attendees.persons.services import AttendeeService
 from attendees.occasions.serializers.roster_serializer import RosterResponseSerializer
 
 
@@ -74,7 +74,7 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                 except (ValueError, TypeError):
                     pass
 
-        columns, rows, total_count = AttendingService.get_roster_data(
+        columns, rows, total_count = AttendeeService.get_roster_data(
             organization=current_user_organization,
             meet_slugs=meet_slugs,
             start=start,
