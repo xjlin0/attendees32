@@ -1,6 +1,6 @@
 # Attendees
 
-Attendees in Django 3.2
+Attendees in Django 4.2
 ## An app for general event management
 - Tracking who/when/where/what of any activities with attendance records.
 - Monolith architecture on docker [![Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/) and Javascript([DevExtreme](https://js.devexpress.com/Licensing/#NonCommercial)) with Postgres/PostGIS & Redis
@@ -194,7 +194,7 @@ DJANGO_ACCOUNT_ALLOW_REGISTRATION=True
 WEB_CONCURRENCY=4
 
 
-# Redis
+# Redis in docker is exposed to Host in the port REDIS_HOST_PORT from the repo root .env file
 # ------------------------------------------------------------------------------
 REDIS_URL=redis://redis:6379/0
 
@@ -205,6 +205,13 @@ REDIS_URL=redis://redis:6379/0
 CELERY_FLOWER_USER=<<YOUR CELERY_FLOWER_USER NAME>>
 CELERY_FLOWER_PASSWORD=<<YOUR CELERY_FLOWER_PASSWORD>>
 GOOGLE_MAPS_API_KEY=<<Your Google map API key>>
+
+# Sentry
+SENTRY_FRONTEND_LIB=https://js.sentry-cdn.com/<<your sentry JS frontend library>>.min.js
+SENTRY_DSN="<<your backend sentry DSN>>"
+SENTRY_TRACES_SAMPLE_RATE=1.0
+SENTRY_ARTIFICIAL_API_DEBUG=False   # The API to artificially create an error to see if Sentry catch the log.
+# visit https://<<your server domain name>>/sentry-debug/ or type `Sentry.captureException(new Error("successfully triggered frontend error"));` to see created error monitored by Sentry
 ```
 * double check user id of your web user in production.yml:
 ```
@@ -343,6 +350,7 @@ EMAIL_HOST=mailgun
 * collect static file: `docker-compose -f local.yml run django python /app/manage.py collectstatic`
 * Ensure the MailHog is not publicly available such as https://your.domain.name:8025
 * Ensure the db password in .envs/.local/.postgres changed
+* If you have Redis in local, please ensure REDIS_HOST_PORT in repo root .envs not overlapped with your local Redis port.
 * Ensure using a non-default ADMIN_URL
 * update content types after migration by `docker-compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker-compose -f local.yml run django python manage.py createsuperuser`
@@ -445,6 +453,9 @@ EMAIL_HOST=mailhog
 * upadte content types after migration by `docker compose -f local.yml run django python manage.py update_content_types`
 * create 2 superusers by `docker compose -f local.yml run --rm django python manage.py createsuperuser`
 * import the seed data by `docker compose -f local.yml run django python manage.py loaddata fixtures/db_seed`, data were created by:
+* If you have Redis in local, please ensure REDIS_HOST_PORT in repo root .envs not overlapped with your local Redis port.
+* optionally load the golden test congregation — 350 people, families, statuses, participations and eight weeks of attendance — by `docker compose -f local.yml run django python manage.py load_golden_data --seed`, see [docs/golden_test_data.md](docs/golden_test_data.md)
+* run the browser end-to-end suite (Chromium and WebKit, TypeScript/Playwright) by `npm ci && npx playwright install --with-deps chromium webkit && npm run test:e2e:chromium` (or `:webkit`) against a running stack loaded with the golden congregation; `npm run test:e2e:ci-seed` runs the specs written against `fixtures/ci_seed.json`
 * start the Debian based local machine by `docker compose -f local.yml up -d`, your site will be at http://localhost:8008/
 * to see django log: `docker compose -f local.yml logs django`
 * enter the Bash shell of running container `docker compose -f local.yml run django bash`

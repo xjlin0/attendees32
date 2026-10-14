@@ -1,6 +1,5 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -8,9 +7,12 @@ from attendees.whereabouts.models import Organization
 from attendees.whereabouts.serializers import OrganizationSerializer
 
 
-class ApiUserOrganizationViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
+class ApiUserOrganizationViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    API endpoint that allows Division to be viewed or edited.
+    API endpoint that returns the caller's own organization (its infos carry the
+    grade_converter and settings), to a browser session or a DRF token alike.
+    Read-only: the organization is edited in the admin, and letting any member
+    write infos here would let them grant themselves its privilege groups.
     """
 
     serializer_class = OrganizationSerializer

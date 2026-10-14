@@ -4,67 +4,30 @@ from attendees.persons.models import Folk, FolkAttendee
 from attendees.persons.serializers import FolkSerializer
 
 
+class FolkField(serializers.PrimaryKeyRelatedField):
+    """
+    Written as a folk id, read back as the nested folk.
+
+    Every writer (the attendee page's family grid, API clients) names the folk
+    by id, while readers take folk.display_name and folk.category straight off
+    each row, so the field is a plain primary key on the way in and the
+    FolkSerializer's output on the way out.
+    """
+
+    def use_pk_only_optimization(self):
+        return False
+
+    def to_representation(self, value):
+        return FolkSerializer(value, context=self.context).data
+
+
 class FolkAttendeeSerializer(serializers.ModelSerializer):
-    folk = FolkSerializer(many=False)
+    folk = FolkField(queryset=Folk.objects.all())
     file_path = serializers.SerializerMethodField(required=False, read_only=True)
-    # attendee = AttendeeSerializer(many=False)
 
     class Meta:
         model = FolkAttendee
         fields = "__all__"
-        # fields = [f.name for f in model._meta.fields if f.name not in ['is_removed']] + [
-        #     'family',
-        # ]
 
     def get_file_path(self, obj):
         return obj.file.url if obj.file else ""
-
-    def create(self, validated_data):
-        """
-        Create or update `FolkAttendee` instance, given the validated data.
-        """
-        folkattendee_id = self._kwargs.get("data", {}).get("id")
-        new_folk = Folk.objects.filter(
-            pk=self._kwargs.get("data", {}).get("folk", {})
-        ).first()
-        if new_folk:
-            validated_data["folk"] = new_folk
-
-        obj, created = FolkAttendee.objects.update_or_create(
-            id=folkattendee_id,
-            defaults=validated_data,
-        )
-        return obj
-
-    def update(self, instance, validated_data):
-        """
-        Update and return an existing `FolkAttendee` instance, given the validated data.
-
-        """
-        new_folk = Folk.objects.filter(
-            pk=self._kwargs.get("data", {}).get("folk", {}).get("id")
-        ).first()
-        # new_attendee_id = validated_data.get('attendee', {})
-        # print("hi 49 here is validated_data: ", validated_data)
-        if new_folk:
-            # instance.folk = new_folk
-            validated_data["folk"] = new_folk
-        # else:
-        #     validated_data['folk'] = instance.folk
-
-        # if new_attendee_id:
-        #     # attendee, attendee_created = Attendee.objects.update_or_create(
-        #     #     id=instance.attendee.id,
-        #     #     defaults=new_attendee_data,
-        #     # )
-        #     attendee = Attendee.objects.get(pk=new_attendee_id)
-        #     validated_data['attendee'] = attendee
-        # else:
-        #     validated_data['attendee'] = instance.attendee
-        # Todo: 20210517  update relationships among families such as siblings, etc
-        obj, created = FolkAttendee.objects.update_or_create(
-            id=instance.id,
-            defaults=validated_data,
-        )
-
-        return obj

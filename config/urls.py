@@ -21,6 +21,10 @@ try:
 except ValueError:
     sha = "no sha"
 
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 urlpatterns = [
     re_path("^private-media/", include(private_storage.urls)),
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
@@ -136,3 +140,6 @@ if settings.DEBUG:
 
         urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
 
+
+if getattr(settings, "SENTRY_ARTIFICIAL_API_DEBUG", False):
+    urlpatterns = [path("sentry-debug/", trigger_error)] + urlpatterns

@@ -1,6 +1,5 @@
 import ast, json
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework import viewsets
 
@@ -9,7 +8,7 @@ from attendees.persons.serializers import RelationSerializer
 from attendees.persons.services import AttendeeService
 
 
-class ApiAllRelationsViewsSet(LoginRequiredMixin, viewsets.ModelViewSet):
+class ApiAllRelationsViewsSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Relation(Role) to be viewed or edited. It's public and not org limited.
     Note: 0 (hidden, by server) and 38(passenger, by UI) are not exposed to avoid duplicating relationships

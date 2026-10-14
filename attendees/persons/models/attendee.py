@@ -74,6 +74,16 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
     photo = PrivateFileField(
         "Photo", blank=True, null=True, upload_to="attendee_portrait"
     )  # https://github.com/edoburu/django-private-storage
+    merged_into = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.SET_NULL,
+        related_name="merged_from",
+        help_text="Set when this attendee was merged into another; the row "
+        "stays as a tombstone so the old id can still be followed.",
+    )
     infos = models.JSONField(
         null=True,
         blank=True,
@@ -322,6 +332,14 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
 
     def save(self, *args, **kwargs):
         self.estimated_birthday = Utility.presence(self.estimated_birthday)
+        # Every section of infos is read somewhere (names below, schedulers and
+        # emergency_contacts in AttendeeService), so an infos that arrived
+        # without some of them, or as null, is completed here rather than
+        # failing in each of those places.
+        infos = self.infos if self.infos is not None else {}
+        for section, default in Utility.attendee_infos().items():
+            infos.setdefault(section, default)
+        self.infos = infos
         name = self.name1()
         name2 = self.name2()
         both_names = f"{name} {name2}".strip()
@@ -336,6 +354,14 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
             t2s_converter = opencc.OpenCC("t2s.json")
             self.infos["names"]["traditional"] = s2t_converter.convert(both_names)
             self.infos["names"]["simplified"] = t2s_converter.convert(both_names)
+
+        # infos["names"] is derived above on every save, so it must be written
+        # even when the caller limits update_fields -- as update_or_create()
+        # does since Django 4.2 -- or the searchable names keep the old spelling.
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "infos" not in update_fields:
+            kwargs["update_fields"] = {*update_fields, "infos"}
+
         super(Attendee, self).save(*args, **kwargs)
 
     def all_names(self):

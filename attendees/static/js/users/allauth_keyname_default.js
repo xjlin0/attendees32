@@ -41,7 +41,7 @@ document.addEventListener('allauth.error', (event) => {
     if (ex.name === 'InvalidStateError' || msg.includes('already registered') || msg.includes('contains one of the credentials')) {
       msg = 'This security key or device is already registered to your account. You do not need to add it again. Just use the existing key.';
     } else if (ex.name === 'NotAllowedError' || msg.includes('timed out') || msg.includes('cancelled') || msg.includes('canceled')) {
-      msg = 'The security key operation was cancelled or timed out. Please try again. On windows you can check if Bluetooth Support, Device Association and Windows Biometric Service are running in services.msc';
+      msg = 'The security key operation was cancelled, timed out, or Bluetooth was disabled. If you are using a phone to scan, please ensure Bluetooth is turned ON on both your computer and phone. On Windows, you can also check if Bluetooth Support, Device Association and Windows Biometric Service are running in services.msc.';
     }
 
     let alertContainer = document.getElementById('webauthn-error-alert');

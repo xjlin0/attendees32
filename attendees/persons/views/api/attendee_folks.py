@@ -1,23 +1,24 @@
 import time
 
-from django.contrib.auth.decorators import login_required
-from django.db.models import F, Q, Value
+from django.db import models
+from django.db.models import Case, F, OuterRef, Q, Subquery, Value, When
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 
-from attendees.persons.models import Attendee, Category, Folk
+from attendees.persons.models import Attendee, Category, Folk, FolkAttendee
 from attendees.persons.serializers import FolkSerializer
 from attendees.persons.services import FolkService, AttendingMeetService
-from attendees.users.authorization.route_guard import SpyGuard
+from attendees.users.authorization.drf_guards import DrfSpyGuard
 
 
-@method_decorator([login_required], name='dispatch')
-class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
+class ApiAttendeeFolksViewsSet(viewsets.ModelViewSet):
     """
     API endpoint that allows Folks(families) of an Attendee (in header) to be viewed or edited.
     """
+    permission_classes = [IsAuthenticated, DrfSpyGuard]
 
     serializer_class = FolkSerializer
 
@@ -46,13 +47,37 @@ class ApiAttendeeFolksViewsSet(SpyGuard, viewsets.ModelViewSet):
 
         if current_user.privileged_to_edit(attendee and attendee.id):
             if folk_id:
-                return Folk.objects.filter(extra_filter)
+                return Folk.objects.filter(extra_filter).prefetch_related("places__address", "attendees")
             else:
-                attendees_folks = attendee.folks.annotate(relative_order=Value(1), role_order=F('folkattendee__role')).filter(extra_filter)
-                other_folks = Folk.objects.annotate(relative_order=Value(10), role_order=Value(9999)).filter(extra_filter)
-                return attendees_folks.union(other_folks).order_by('relative_order', 'role_order')
+                role_subquery = Subquery(
+                    FolkAttendee.objects.filter(
+                        folk=OuterRef("pk"),
+                        attendee=attendee,
+                        is_removed=False,
+                    ).values("role_id")[:1],
+                    output_field=models.IntegerField(),
+                )
+                return (
+                    Folk.objects.filter(extra_filter)
+                    .annotate(
+                        role_order=Coalesce(role_subquery, Value(9999), output_field=models.IntegerField()),
+                    )
+                    .annotate(
+                        relative_order=Case(
+                            When(role_order__lt=9999, then=Value(1)),
+                            default=Value(10),
+                            output_field=models.IntegerField(),
+                        )
+                    )
+                    .order_by("relative_order", "role_order", "display_order")
+                    .prefetch_related("places__address", "attendees")
+                )
         else:
-            return attendee.folks.filter(extra_filter)
+            return (
+                attendee.folks.filter(extra_filter).prefetch_related("places__address", "attendees")
+                if attendee
+                else Folk.objects.none()
+            )
 
     def perform_create(
         self, serializer
