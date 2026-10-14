@@ -66,6 +66,8 @@ Attendees.datagridUpdate = {
   init: () => {
     console.log('attendees/static/js/persons/attendee_update_view.js');
     Attendees.datagridUpdate.displayNotifierFromSearchParam('success');
+    // The merge notice is in the page already, before the record is fetched.
+    $("div.attendee-merge-notices").on('click', 'button.attendee-unmerge-button', e => Attendees.merge.undo(e.currentTarget.dataset.duplicateId, Attendees.datagridUpdate.showUnmerged));
     Attendees.datagridUpdate.initAttendeeForm();
   },
 
@@ -74,6 +76,7 @@ Attendees.datagridUpdate = {
     $("div.form-container").on('click', 'button.attending-button', e => Attendees.datagridUpdate.initAttendingPopupDxForm(e));
     $("div.form-container").on('click', 'button.place-button', e => Attendees.datagridUpdate.initPlacePopupDxForm(e));
     $("div.form-container").on('click', 'button.family-button', e => Attendees.datagridUpdate.initFamilyAttrPopupDxForm(e));
+    $("div.nav-buttons").on('click', 'button.attendee-merge-button', () => Attendees.merge.pick(Attendees.datagridUpdate.attendeeFormConfigs.formData, Attendees.datagridUpdate.showMerged));
     Attendees.datagridUpdate.attachContactAddButton();
 
     $(window).keydown((event) => {
@@ -92,6 +95,14 @@ Attendees.datagridUpdate = {
       } // prevent user to submit form by hitting enter
     });
     // add listeners for Family, counselling, etc.
+  },
+
+  showMerged: (primaryId) => {
+    window.location = `${Attendees.datagridUpdate.attendeeUrn}${primaryId}?success=${encodeURIComponent('Merged into one record')}`;
+  },
+
+  showUnmerged: () => {
+    window.location = `${window.location.pathname}?success=${encodeURIComponent('Merge undone, both records are back')}`;
   },
 
   toggleEditing: (enabled) => {

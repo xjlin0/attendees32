@@ -3,6 +3,7 @@ Attendees.attendingmeets = {
   meetScheduleRules: {},
   selectedMeetHasRule: false,
   allowEditingAttending: false,
+  mergeButton: null,  // shown when two rows of two people are selected
   filterMeetCheckbox: null,
   attendingIds: null,
   gradeConverter: [],
@@ -574,8 +575,36 @@ Attendees.attendingmeets = {
     },
     onCellPrepared: e => e.rowType === "header" && e.column.dataHtmlTitle && e.cellElement.attr("title", e.column.dataHtmlTitle),
 
+    onSelectionChanged: (e) => {
+      if (Attendees.attendingmeets.mergeButton) {
+        const people = new Set(e.selectedRowsData.map(row => row.attendee_id));
+        Attendees.attendingmeets.mergeButton.option('visible', e.selectedRowsData.length === 2 && people.size === 2);
+      }
+    },
     onToolbarPreparing: (e) => {
       const toolbarItems = e.toolbarOptions.items;
+      if (document.querySelector('form.filters-dxform').dataset.canMerge) {
+        toolbarItems.unshift({
+          location: 'after',
+          widget: 'dxButton',
+          options: {
+            text: 'Merge 2 selected…',
+            icon: 'group',
+            visible: false,
+            hint: 'Merge the two selected rows into one record of one person',
+            onInitialized: (args) => { Attendees.attendingmeets.mergeButton = args.component; },
+            onClick: () => {
+              const grid = Attendees.attendingmeets.attendingmeetsDatagrid;
+              const people = [...new Set(grid.getSelectedRowsData().map(row => row.attendee_id))];
+              Attendees.merge.confirm(people[0], people[1], () => {
+                grid.clearSelection();
+                grid.refresh();
+                Attendees.merge.notify('Merged into one record', 'success');
+              });
+            },
+          },
+        });
+      }
       toolbarItems.unshift({
         location: 'after',
         widget: 'dxButton',

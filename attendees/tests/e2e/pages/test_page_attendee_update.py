@@ -2,7 +2,17 @@
 
 import pytest
 
+from attendees.persons.models import Attendee
+from attendees.persons.services import AttendeeMergeService
+
 pytestmark = pytest.mark.django_db
+
+
+def _twins(golden):
+    division = golden.attendee("chen_grace").division
+    primary = Attendee.objects.create(first_name="Ava", last_name="Chen", division=division, gender="unspecified")
+    duplicate = Attendee.objects.create(first_name="Ava", last_name="Chen", division=division, gender="unspecified")
+    return primary, duplicate
 
 
 class TestAttendeeUpdate:
@@ -46,3 +56,41 @@ class TestAttendeeUpdate:
         # organization.infos.settings.past_category_to_attendingmeet_meet
         assert "已受洗 baptized" in response.context["pasts_to_add"]
         assert response.context["family_category_id"] == 0
+
+    def test_a_link_to_a_merged_away_record_opens_the_one_that_holds_it(self, golden, login):
+        primary, duplicate = _twins(golden)
+        AttendeeMergeService.merge(duplicate, primary)
+        client = login("golden_data_organizer")
+
+        response = client.get(f"/persons/attendee/{duplicate.id}")
+
+        assert response.status_code == 302
+        assert response.url == f"/persons/attendee/{primary.id}?merged_from={duplicate.id}"
+
+    def test_the_merged_record_says_who_was_merged_in(self, golden, login):
+        primary, duplicate = _twins(golden)
+        AttendeeMergeService.merge(duplicate, primary, by=str(golden.attendee("chen_grace").id))
+        client = login("golden_data_organizer")
+
+        response = client.get(f"/persons/attendee/{primary.id}?merged_from={duplicate.id}")
+
+        assert response.status_code == 200
+        [record] = response.context["merged_from"]
+        assert record["id"] == str(duplicate.id)
+        assert record["followed"] is True
+        assert response.context["can_merge"] is True
+        html = response.content.decode()
+        assert "You followed a link to a record that was merged into this one." in html
+        assert "Merged with Ava Chen" in html
+        assert "Undo merge" in html
+        assert "Merge with another record" in html
+
+    def test_a_member_gets_no_merge_controls(self, golden, login):
+        client = login("golden_member")
+
+        response = client.get(f"/persons/attendee/{golden.attendee('chen_zhiming').id}")
+
+        assert response.status_code == 200
+        assert response.context["can_merge"] is False
+        assert response.context["merged_from"] == []
+        assert "Merge with another record" not in response.content.decode()
