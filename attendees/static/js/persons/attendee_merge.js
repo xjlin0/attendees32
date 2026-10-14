@@ -6,7 +6,6 @@
 // What the coworker picks here is an ordinary edit of the merged record after.
 Attendees.merge = {
   endpoint: '/persons/api/datagrid_data_attendee/',
-  searchEndpoint: '/persons/api/datagrid_data_attendees/',
   divisionsEndpoint: '/whereabouts/api/user_divisions/',
   pageUrn: '/persons/attendee/',
   divisions: {},  // {id: display_name}, fetched once
@@ -54,10 +53,13 @@ Attendees.merge = {
   pick: (record, afterwards) => {
     const name = record.infos.names.original;
     const $items = $('<div>');
+    let latest = 0;  // searches answer out of order; only the newest one is shown
     const search = (term) => {
+      const request = ++latest;
       if (!term) { $items.empty(); return; }
-      const filter = JSON.stringify(['infos', 'contains', term]);
-      $.get(Attendees.merge.searchEndpoint, {include_dead: true, take: 10, filter: filter}).done((result) => {
+      // The organization's live records whose names or contacts contain the words.
+      $.get(Attendees.merge.endpoint, {searchValue: term, take: 10}).done((result) => {
+        if (request !== latest) { return; }
         const others = result.data.filter((row) => row.id !== record.id);
         $items.empty();
         if (others.length === 0) { $items.append('<div class="text-secondary">No other record matches.</div>'); return; }
