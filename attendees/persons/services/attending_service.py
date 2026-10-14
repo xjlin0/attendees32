@@ -159,7 +159,7 @@ class AttendingService:
             start__gte=start,
             finish__lte=finish,
             is_removed=False
-        ).order_by('start')
+        ).order_by('start', 'meet__display_name', 'id')
 
         gathering_list = [
             {
