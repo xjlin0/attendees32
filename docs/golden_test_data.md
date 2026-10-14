@@ -36,7 +36,7 @@ carry a personal address (a college dorm, a mailing address).
 
 ## Where the shape came from
 
-The distributions are modelled on a real church's Planning Center People export:
+The distributions are modelled on a real church's membership export:
 
 | in the export | in the golden data |
 | --- | --- |

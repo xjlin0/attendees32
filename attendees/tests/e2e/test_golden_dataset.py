@@ -93,7 +93,7 @@ class TestCensus:
         assert grace.infos["names"]["simplified"] == "Grace Chen 陈明恩"
 
     def test_a_surname_is_reachable_by_two_romanisations(self, golden):
-        """陳 turns up as both Chen and Chan, exactly as the PCO exports show."""
+        """陳 turns up as both Chen and Chan, exactly as the church's records show."""
         assert Attendee.objects.filter(last_name="Chen").exists()
         assert Attendee.objects.filter(last_name="Chan").exists()
         assert Attendee.objects.filter(last_name2="陳").count() > 2

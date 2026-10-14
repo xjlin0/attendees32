@@ -23,7 +23,7 @@ carry the ``bilingual`` tag and get an AttendingMeet on both worship meets.
 
 Attribute distributions (membership, grade spread, active/inactive ratio, the
 ``child`` flag, unknown birth years, names that do not equal first+last) are
-modelled on a real church's Planning Center People data:
+modelled on a real church's membership records:
 ~1/3 children, ~14% inactive, membership split across Full Member /
 Regular Attendee / Visitor / none, grades -1 through 12, and the 1885-style
 placeholder birthdate that this codebase spells as the year 1800.
