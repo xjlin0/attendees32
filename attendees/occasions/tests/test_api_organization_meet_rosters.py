@@ -118,3 +118,92 @@ def test_organization_meet_rosters_success(api_client, setup_objects):
     assert attendance_record["attendance_id"] == setup_objects["attendance"].id
     assert attendance_record["category_id"] == setup_objects["category"].id
     assert attendance_record["category_name"] == "Test Category"
+
+
+@pytest.mark.django_db
+def test_organization_meet_rosters_merges_multiple_attendings(api_client, setup_objects):
+    api_client.force_login(setup_objects["user"])
+    url = reverse("occasions:organization_meet_rosters-list")
+    meet = setup_objects["meet"]
+    attendee = setup_objects["attendee"]
+    
+    # Create a SECOND attending for the same attendee
+    second_attending = Attending.objects.create(attendee=attendee)
+    second_am = AttendingMeet.objects.create(
+        attending=second_attending,
+        meet=meet,
+        start=datetime.now(timezone.utc),
+        finish=datetime.now(timezone.utc) + timedelta(days=30),
+        character=setup_objects["attendance"].character,
+        category=setup_objects["category"],
+    )
+    # Create a second gathering and attendance under the second attending
+    second_gathering = Gathering.objects.create(
+        display_name="Gathering 2",
+        meet=meet,
+        start=datetime.now(timezone.utc) + timedelta(days=1),
+        finish=datetime.now(timezone.utc) + timedelta(days=1, hours=2),
+        site_type=setup_objects["gathering"].site_type,
+        site_id=setup_objects["gathering"].site_id,
+    )
+    second_attendance = Attendance.objects.create(
+        gathering=second_gathering,
+        attending=second_attending,
+        character=setup_objects["attendance"].character,
+        category=setup_objects["category"],
+    )
+
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    # Key check: Even though there are 2 attendings, there should be exactly 1 row for the person!
+    assert len(data["rows"]) == 1
+    row = data["rows"][0]
+    assert row["attendee_id"] == str(attendee.id)
+    assert row["attendee_name"] == "John Doe"
+    # Attendances from both attendings are merged!
+    assert row["total_attendances"] == 2
+    assert len(row["attendances"]) == 2
+    assert len(row["attendingmeets"]) == 2
+
+
+@pytest.mark.django_db
+def test_organization_meet_rosters_search(api_client, setup_objects):
+    api_client.force_login(setup_objects["user"])
+    url = reverse("occasions:organization_meet_rosters-list")
+    meet = setup_objects["meet"]
+
+    # Match by name
+    res_match = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "searchValue": "John",
+        },
+    )
+    assert res_match.status_code == 200
+    assert len(res_match.json()["rows"]) == 1
+
+    # Non-matching search
+    res_no_match = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "searchValue": "NobodyHere",
+        },
+    )
+    assert res_no_match.status_code == 200
+    assert len(res_no_match.json()["rows"]) == 0
+

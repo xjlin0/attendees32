@@ -7,7 +7,7 @@ class RosterColumnSerializer(serializers.Serializer):
     meet_id = serializers.IntegerField()
 
 class RosterRowSerializer(serializers.Serializer):
-    attending_id = serializers.IntegerField()
+    attending_id = serializers.IntegerField(allow_null=True, required=False)
     attendee_id = serializers.UUIDField()
     attendee_name = serializers.CharField()
     photo_url = serializers.URLField(allow_null=True, required=False)

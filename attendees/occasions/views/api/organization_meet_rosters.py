@@ -46,14 +46,33 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                     selector = s.get("selector")
                     desc = s.get("desc", False)
                     if selector == "attendee_name":
-                        sort_list.append("-attendee__first_name" if desc else "attendee__first_name")
-                        sort_list.append("-attendee__last_name" if desc else "attendee__last_name")
+                        sort_list.append("-first_name" if desc else "first_name")
+                        sort_list.append("-last_name" if desc else "last_name")
                     elif selector == "total_attendances":
                         sort_list.append("-total_attendances" if desc else "total_attendances")
                     elif selector in ("team__display_name", "team"):
                         sort_list.append("-team__display_name" if desc else "team__display_name")
             except (ValueError, TypeError):
                 pass
+
+        # Search
+        search_value = request.query_params.get("searchValue")
+        if not search_value:
+            filter_param = request.query_params.get("filter")
+            if filter_param:
+                import json
+                try:
+                    filter_parsed = json.loads(filter_param)
+                    if isinstance(filter_parsed, list):
+                        for item in filter_parsed:
+                            if isinstance(item, list) and len(item) == 3 and item[1] == "contains":
+                                search_value = item[2]
+                                break
+                            elif isinstance(item, str) and item not in ("and", "or", "!"):
+                                search_value = item
+                                break
+                except (ValueError, TypeError):
+                    pass
 
         columns, rows, total_count = AttendingService.get_roster_data(
             organization=current_user_organization,
@@ -62,7 +81,8 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             finish=finish,
             skip=skip,
             take=take,
-            sort_list=sort_list
+            sort_list=sort_list,
+            search_value=search_value,
         )
 
         serializer = RosterResponseSerializer({

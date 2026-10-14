@@ -41,22 +41,36 @@
       return record && record.finish;
     };
 
-    const isAttendingValid = (rowData, gathering) => {
-      if (!rowData.attendingmeets) return true; 
-      const am = rowData.attendingmeets.find(m => String(m.meet_id) === String(gathering.meet_id));
-      if (!am) return false;
-      
+    const getActiveAttendingMeet = (rowData, gathering) => {
+      if (!rowData.attendingmeets || !rowData.attendingmeets.length) return null;
+      if (!gathering || !gathering.start) {
+        return rowData.attendingmeets[0];
+      }
       const gStart = new Date(gathering.start);
-      const amStart = am.start ? new Date(am.start) : new Date('1970-01-01');
-      const amFinish = am.finish ? new Date(am.finish) : new Date('2099-12-31');
-      
-      return gStart >= amStart && gStart <= amFinish;
+      return rowData.attendingmeets.find(am => {
+        if (gathering.meet_id && String(am.meet_id) !== String(gathering.meet_id)) {
+          return false;
+        }
+        const amStart = am.start ? new Date(am.start) : new Date('1970-01-01');
+        const amFinish = am.finish ? new Date(am.finish) : new Date('2099-12-31');
+        return gStart >= amStart && gStart <= amFinish;
+      }) || null;
     };
 
-    const toggleAttendance = async (rowData, gatheringId) => {
+    const isAttendingValid = (rowData, gathering) => {
+      if (!rowData.attendingmeets || !rowData.attendingmeets.length) return true; 
+      return !!getActiveAttendingMeet(rowData, gathering);
+    };
+
+    const toggleAttendance = async (rowData, gathering) => {
+      const gatheringId = (gathering && (gathering.id || gathering.gathering_id)) || gathering;
       const record = getAttendanceRecord(rowData, gatheringId);
       const isCurrentlyCheckedIn = isCheckedIn(rowData, gatheringId);
       const newCategory = isCurrentlyCheckedIn ? 1 : 9; 
+
+      const activeAm = getActiveAttendingMeet(rowData, gathering);
+      const attendingId = activeAm ? activeAm.attending_id : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].attending_id : null));
+      const characterId = activeAm ? activeAm.character_id : (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].character_id : 1);
 
       try {
         const recordId = record ? (record.attendance_id || record.id) : '';
@@ -68,8 +82,8 @@
           },
           body: JSON.stringify({
             gathering: gatheringId,
-            attending: rowData.attending_id,
-            character: (rowData.attendingmeets && rowData.attendingmeets.length > 0) ? rowData.attendingmeets[0].character_id : 1, // fallback to 1 if no character found
+            attending: attendingId,
+            character: characterId,
             category: newCategory
           })
         });
@@ -99,7 +113,8 @@
         rowData.total_attendances = newTotal;
 
         if (gridInstanceRef.value) {
-          const rowIndex = gridInstanceRef.value.getRowIndexByKey(rowData.attending_id);
+          const rowKey = rowData.attendee_id || rowData.attending_id;
+          const rowIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
           gridInstanceRef.value.cellValue(rowIndex, 'total_attendances', newTotal);
           gridInstanceRef.value.repaintRows([rowIndex]);
         }
@@ -142,7 +157,8 @@
         Object.assign(record, normalizedRecord);
         
         if (gridInstanceRef.value) {
-          const rowIndex = gridInstanceRef.value.getRowIndexByKey(rowData.attending_id);
+          const rowKey = rowData.attendee_id || rowData.attending_id;
+          const rowIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
           gridInstanceRef.value.repaintRows([rowIndex]);
         }
       } catch (err) {
@@ -212,7 +228,7 @@
       const checkInBtn = document.createElement('button');
       checkInBtn.className = `roster-btn ${checkedIn ? 'checked-in' : ''}`;
       checkInBtn.innerText = checkedIn ? 'Checked In' : 'Check In';
-      checkInBtn.addEventListener('click', () => attendanceLogic.toggleAttendance(data, gatheringId));
+      checkInBtn.addEventListener('click', () => attendanceLogic.toggleAttendance(data, gatheringMeta || gatheringId));
       wrapper.appendChild(checkInBtn);
 
       if (checkedIn) {
@@ -254,7 +270,8 @@
             fixedPosition: 'left',
             width: 200,
             cellTemplate: attendeeCellTemplate,
-            allowSorting: true
+            allowSorting: true,
+            allowHiding: false
           },
           {
             dataField: 'team__display_name',
@@ -262,7 +279,8 @@
             fixed: true,
             fixedPosition: 'left',
             width: 140,
-            allowSorting: true
+            allowSorting: true,
+            allowHiding: true
           },
           {
             dataField: 'total_attendances',
@@ -271,7 +289,8 @@
             fixedPosition: 'left',
             width: 100,
             alignment: 'center',
-            allowSorting: true
+            allowSorting: true,
+            allowHiding: true
           }
         ];
 
@@ -287,7 +306,9 @@
 
         columns.push({
           caption: '',
-          cssClass: 'dummy-column'
+          cssClass: 'dummy-column',
+          allowHiding: false,
+          showInColumnChooser: false
         });
 
         gridInstanceRef.value.option('columns', columns);
@@ -324,11 +345,12 @@
           let preloadedData = initialData;
 
           const customStore = new DevExpress.data.CustomStore({
-            key: 'attending_id',
+            key: 'attendee_id',
             load: async (loadOptions) => {
               try {
-                // If initial load with skip=0 and no sort, consume preloaded data without extra network request
-                if (preloadedData && (!loadOptions.skip || loadOptions.skip === 0) && !loadOptions.sort) {
+                // If initial load with skip=0 and no sort/search/filter, consume preloaded data without extra network request
+                const isInitialOptions = (!loadOptions.skip || loadOptions.skip === 0) && !loadOptions.sort && !loadOptions.searchValue && !loadOptions.filter;
+                if (preloadedData && isInitialOptions) {
                   const cached = preloadedData;
                   preloadedData = null;
                   return {
@@ -348,6 +370,12 @@
 
                 if (loadOptions.sort) {
                   pageParams.set('sort', JSON.stringify(loadOptions.sort));
+                }
+
+                if (loadOptions.searchValue) {
+                  pageParams.set('searchValue', loadOptions.searchValue);
+                } else if (loadOptions.filter) {
+                  pageParams.set('filter', JSON.stringify(loadOptions.filter));
                 }
 
                 const pageResponse = await fetch(`${endpoints.rosters}?${pageParams.toString()}`);
@@ -394,12 +422,21 @@
         columnAutoWidth: true,
         hoverStateEnabled: true,
         noDataText: "No data found. Please select a meet to load.",
-        remoteOperations: { paging: true, sorting: true },
+        remoteOperations: { paging: true, sorting: true, filtering: true },
         paging: { pageSize: 40 },
         pager: {
           showPageSizeSelector: true,
           allowedPageSizes: [20, 40, 80],
           showInfo: true
+        },
+        searchPanel: {
+          visible: true,
+          width: 250,
+          placeholder: 'Search name, contacts, team...',
+        },
+        columnChooser: {
+          enabled: true,
+          mode: 'select',
         }
       });
     };
