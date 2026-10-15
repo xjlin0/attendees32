@@ -1,9 +1,10 @@
 import time
 
-from django.db.models import F, Q
+from django.db.models import F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
+from schedule.models import EventRelation
 
 from attendees.occasions.models import Meet
 from attendees.occasions.serializers.meet import MeetSerializer
@@ -66,12 +67,18 @@ class OrganizationMeetsViewSet(viewsets.ModelViewSet):
             if finish:
                 extra_filter.add(Q(start__lte=finish), Q.AND)
 
+            event_relations_prefetch = Prefetch(
+                'event_relations',
+                queryset=EventRelation.objects.filter(distinction='source').select_related('event__rule'),
+            )
+
             return (
                 Meet.objects.select_related('assembly').filter(extra_filter)
                 .annotate(
                     assembly_name=F("assembly__display_name"),
                 )
                 .order_by('assembly__display_order', 'assembly_name', 'display_name')
+                .prefetch_related(event_relations_prefetch)
             )
 
         else:

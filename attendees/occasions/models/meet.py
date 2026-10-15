@@ -98,14 +98,19 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
 
     @property
     def schedule_rules(self):
+        ers = (
+            [er for er in self.event_relations.all() if er.distinction == 'source']
+            if hasattr(self, '_prefetched_objects_cache') and 'event_relations' in self._prefetched_objects_cache
+            else self.event_relations.filter(distinction='source')
+        )
         return [
             {
-                "rule": er.event.rule.name,
+                "rule": er.event.rule.name if er.event.rule else None,
                 "start": er.event.start,
                 "end": er.event.end,
                 "location": Utility.get_object_name(er.event),
             }
-            for er in self.event_relations.filter(distinction='source')
+            for er in ers
         ]
 
     def schedule_text(self, timezone_name=settings.TIME_ZONE, format='%H:%M%p %a'):
