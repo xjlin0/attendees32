@@ -14,7 +14,7 @@ test.describe('Single Roster Page', () => {
     await page.goto('/accounts/login/');
     
     await page.fill('input[name="login"]', 'jack'); // Try user 'jack'
-    const password = process.env.C_PASSWORD || '5811630';
+    const password = process.env.C_PASSWORD || 'your_password_for_superuser_in_seed';
     
     await page.locator('input[name="password"]').evaluate((el, val) => {
       (el as HTMLInputElement).value = val;
