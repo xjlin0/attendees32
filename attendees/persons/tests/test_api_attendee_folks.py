@@ -25,6 +25,9 @@ class TestApiAttendeeFolksViewsSet:
         
         view.get_queryset()
         mock_folk_filter.assert_called()
+        prefetch_args = mock_folk_filter.return_value.prefetch_related.call_args.args
+        assert any(getattr(arg, 'prefetch_through', None) == 'places' for arg in prefetch_args)
+        assert 'attendees' in prefetch_args
 
     @patch('attendees.persons.views.api.attendee_folks.get_object_or_404')
     def test_perform_create(self, mock_get_object_or_404):

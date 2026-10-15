@@ -24,3 +24,28 @@ def test_target_attendees_own_meets_sort_first(mock_get_object, mock_meet, mock_
     args = order_by.call_args.args
     assert isinstance(args[0], Case)
     assert args[1] == "assembly_name"
+
+    prefetch_related = order_by.return_value.prefetch_related
+    prefetch_related.assert_called_once()
+    prefetch_arg = prefetch_related.call_args.args[0]
+    assert prefetch_arg.prefetch_through == "event_relations"
+
+
+@patch("attendees.occasions.views.api.user_assembly_meets.AttendingMeet")
+@patch("attendees.occasions.views.api.user_assembly_meets.Meet")
+@patch("attendees.occasions.views.api.user_assembly_meets.get_object_or_404")
+def test_get_queryset_prefetches_event_relations(mock_get_object, mock_meet, mock_am):
+    view = ApiUserAssemblyMeetsViewSet()
+    view.request = MagicMock()
+    view.request.query_params.get.return_value = None
+    view.request.query_params.getlist.return_value = []
+    view.kwargs = {}
+
+    view.get_queryset()
+
+    order_by = mock_meet.objects.filter.return_value.annotate.return_value.order_by
+    prefetch_related = order_by.return_value.prefetch_related
+    prefetch_related.assert_called_once()
+    prefetch_arg = prefetch_related.call_args.args[0]
+    assert prefetch_arg.prefetch_through == "event_relations"
+
