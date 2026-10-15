@@ -1,7 +1,7 @@
 import time
 
 from django.db import models
-from django.db.models import Case, F, OuterRef, Q, Subquery, Value, When
+from django.db.models import Case, F, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +12,7 @@ from attendees.persons.models import Attendee, Category, Folk, FolkAttendee
 from attendees.persons.serializers import FolkSerializer
 from attendees.persons.services import FolkService, AttendingMeetService
 from attendees.users.authorization.drf_guards import DrfSpyGuard
+from attendees.whereabouts.models import Place
 
 
 class ApiAttendeeFolksViewsSet(viewsets.ModelViewSet):
@@ -45,9 +46,16 @@ class ApiAttendeeFolksViewsSet(viewsets.ModelViewSet):
         if folk_id and folk_id != 'new':
             extra_filter.add(Q(pk=folk_id), Q.AND)
 
+        places_prefetch = Prefetch(
+            "places",
+            queryset=Place.objects.filter(is_removed=False).select_related(
+                "content_type", "address__locality__state"
+            ),
+        )
+
         if current_user.privileged_to_edit(attendee and attendee.id):
             if folk_id:
-                return Folk.objects.filter(extra_filter).prefetch_related("places__address", "attendees")
+                return Folk.objects.filter(extra_filter).prefetch_related(places_prefetch, "attendees")
             else:
                 role_subquery = Subquery(
                     FolkAttendee.objects.filter(
@@ -70,11 +78,11 @@ class ApiAttendeeFolksViewsSet(viewsets.ModelViewSet):
                         )
                     )
                     .order_by("relative_order", "role_order", "display_order")
-                    .prefetch_related("places__address", "attendees")
+                    .prefetch_related(places_prefetch, "attendees")
                 )
         else:
             return (
-                attendee.folks.filter(extra_filter).prefetch_related("places__address", "attendees")
+                attendee.folks.filter(extra_filter).prefetch_related(places_prefetch, "attendees")
                 if attendee
                 else Folk.objects.none()
             )
