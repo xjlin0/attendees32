@@ -338,3 +338,46 @@ class TestMergedAttendees:
         self._merge(token_client("golden_data_organizer"), duplicate, primary)
         assert self._unmerge(token_client("golden_member"), duplicate).status_code == 403
         assert Attendee.all_objects.get(pk=duplicate.pk).merged_into_id == primary.id
+
+    def _preview(self, client, one, other):
+        return client.get(
+            "/persons/api/datagrid_data_attendee/merge_preview/",
+            {"a": str(one.id), "b": str(other.id)},
+        )
+
+    def test_the_preview_shows_the_merge_before_it_happens(self, golden, token_client):
+        primary, duplicate = self._twins(golden)
+        duplicate.infos["contacts"] = {"phone1": "+15105550199"}
+        duplicate.save()
+
+        response = self._preview(token_client("golden_data_organizer"), duplicate, primary)
+
+        assert response.status_code == 200, response.content
+        body = response.json()
+        assert body["primary"]["id"] == str(primary.id)
+        assert body["duplicate"]["name"] == "Ava Chen"
+        assert body["contacts"] == {"phone1": {"value": "+15105550199", "from": "duplicate"}}
+        assert body["moves"]["enrollments"] == 0
+        duplicate.refresh_from_db()
+        assert not duplicate.is_removed
+
+    def test_an_ordinary_member_cannot_preview(self, golden, token_client):
+        primary, duplicate = self._twins(golden)
+        assert self._preview(token_client("golden_member"), duplicate, primary).status_code == 403
+
+    def test_a_preview_of_an_impossible_merge_is_refused(self, golden, token_client):
+        primary, duplicate = self._twins(golden)
+        client = token_client("golden_data_organizer")
+        self._merge(client, duplicate, primary)
+
+        response = self._preview(client, duplicate, primary)
+
+        assert response.status_code == 400
+        assert "already been merged" in response.json()["detail"]
+
+    def test_a_preview_needs_both_ids(self, golden, token_client):
+        primary, _ = self._twins(golden)
+        response = token_client("golden_data_organizer").get(
+            "/persons/api/datagrid_data_attendee/merge_preview/", {"a": str(primary.id)}
+        )
+        assert response.status_code == 400

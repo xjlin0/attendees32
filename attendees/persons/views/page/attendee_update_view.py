@@ -4,12 +4,13 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
 
 from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee, Folk
+from attendees.persons.services import AttendeeMergeService
 from attendees.users.authorization import RouteAndSpyGuard
 from attendees.users.models import Menu
 from attendees.utils.view_helpers import get_object_or_delayed_403
@@ -29,11 +30,26 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
         else:
             return None
 
+    def dispatch(self, request, *args, **kwargs):
+        # A link to a record that was merged away opens the record that holds it
+        # now; the guards would only see a deleted record.
+        merged_away = AttendeeMergeService.merged_away(kwargs.get("attendee_id"))
+        if merged_away is not None:
+            primary = AttendeeMergeService.primary_of(merged_away)
+            if primary is not None and not primary.is_removed:
+                return redirect(f"/persons/attendee/{primary.pk}?merged_from={merged_away.pk}")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         targeting_attendee_id = self.kwargs.get(
             "attendee_id", self.request.user.attendee_uuid_str()
         )  # if more logic needed when create new, a new view will be better
+        # The records merged into this one, for the notice under the title; the
+        # one whose link was followed says so.
+        merged_from = AttendeeMergeService.merged_from(targeting_attendee_id)
+        for record in merged_from:
+            record["followed"] = record["id"] == self.request.GET.get("merged_from")
         show_create_attendee = self.kwargs.get(
             "show_create_attendee", Menu.user_can_create_attendee(self.request.user)
         )
@@ -77,6 +93,8 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 ),  # to avoid simultaneous AJAX calls
                 "attendee_search": "/persons/api/datagrid_data_attendees/",
                 "attendee_urn": "/persons/attendee/",
+                "can_merge": self.request.user.can_see_all_organizational_meets_attendees(),
+                "merged_from": merged_from,
             }
         )
         return context

@@ -22,6 +22,7 @@ class DatagridAttendingMeetListView(RouteGuard, ListView):
             {
                 "grade_converter": self.request.user.organization.infos.get('grade_converter', []) if self.request.user.organization else [],
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
+                "can_merge": self.request.user.can_see_all_organizational_meets_attendees(),
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "attendingmeets_endpoint": "/persons/api/organization_meet_character_attendingmeets/",
                 "attendings_endpoint": "/persons/api/organization_meet_character_attendings_for_attendingmeet/",
