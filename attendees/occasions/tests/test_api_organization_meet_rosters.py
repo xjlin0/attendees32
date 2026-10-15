@@ -207,3 +207,120 @@ def test_organization_meet_rosters_search(api_client, setup_objects):
     assert res_no_match.status_code == 200
     assert len(res_no_match.json()["rows"]) == 0
 
+
+@pytest.mark.django_db
+def test_organization_meet_rosters_grouping(api_client, setup_objects):
+    api_client.force_login(setup_objects["user"])
+    url = reverse("occasions:organization_meet_rosters-list")
+    meet = setup_objects["meet"]
+
+    import json
+    group_param = json.dumps([{"selector": "team__display_name", "desc": False}])
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "group": group_param,
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "data" in data
+    assert "rows" in data
+    assert len(data["rows"]) == 1
+    group_item = data["rows"][0]
+    assert group_item["key"] == "Test Team"
+    assert "items" in group_item
+    assert len(group_item["items"]) == 1
+    assert group_item["count"] == 1
+    assert group_item["items"][0]["attendee_name"] == "John Doe"
+
+
+@pytest.mark.django_db
+def test_organization_meet_rosters_contacts_and_search(api_client, setup_objects):
+    api_client.force_login(setup_objects["user"])
+    url = reverse("occasions:organization_meet_rosters-list")
+    meet = setup_objects["meet"]
+    attendee = setup_objects["attendee"]
+
+    attendee.infos = {"contacts": {"phone1": "+15105559999"}}
+    attendee.save()
+
+    # Search by phone number
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "searchValue": "5559999",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["rows"]) == 1
+    assert data["rows"][0]["attendee_name"] == "John Doe"
+    assert "+15105559999" in data["rows"][0]["contacts"]
+
+
+@pytest.mark.django_db
+def test_organization_meet_rosters_grouping_respects_display_order(api_client, setup_objects):
+    api_client.force_login(setup_objects["user"])
+    url = reverse("occasions:organization_meet_rosters-list")
+    meet = setup_objects["meet"]
+    assembly = meet.assembly
+    site_type = setup_objects["meet"].site_type
+    site_id = setup_objects["meet"].site_id
+
+    # Create Team A with display_order 200, Team B with display_order 100
+    # Team B (display_order=100) should appear before Team A (display_order=200)
+    team_a = Team.objects.create(display_name="Alpha Team", display_order=200, slug="alpha-team", meet=meet, site_type=site_type, site_id=site_id)
+    team_b = Team.objects.create(display_name="Beta Team", display_order=100, slug="beta-team", meet=meet, site_type=site_type, site_id=site_id)
+
+    # Attendee 1 in Team A
+    attendee_a = Attendee.objects.create(first_name="Alice", last_name="A", gender=0, division=assembly.division)
+    attending_a = Attending.objects.create(attendee=attendee_a)
+    AttendingMeet.objects.create(
+        attending=attending_a,
+        meet=meet,
+        character=setup_objects["attendance"].character,
+        category=setup_objects["category"],
+        team=team_a,
+        start=datetime.now(timezone.utc),
+        finish=datetime.now(timezone.utc) + timedelta(days=1),
+    )
+
+    # Attendee 2 in Team B
+    attendee_b = Attendee.objects.create(first_name="Bob", last_name="B", gender=0, division=assembly.division)
+    attending_b = Attending.objects.create(attendee=attendee_b)
+    AttendingMeet.objects.create(
+        attending=attending_b,
+        meet=meet,
+        character=setup_objects["attendance"].character,
+        category=setup_objects["category"],
+        team=team_b,
+        start=datetime.now(timezone.utc),
+        finish=datetime.now(timezone.utc) + timedelta(days=1),
+    )
+
+    import json
+    group_param = json.dumps([{"selector": "team__display_name", "desc": False, "isExpanded": True}])
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "group": group_param,
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    group_keys = [g["key"] for g in data["rows"]]
+    # Beta Team (display_order 100) must appear before Alpha Team (display_order 200)
+    assert group_keys.index("Beta Team") < group_keys.index("Alpha Team")
+
+
+

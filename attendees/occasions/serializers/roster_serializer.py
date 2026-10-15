@@ -12,11 +12,14 @@ class RosterRowSerializer(serializers.Serializer):
     attendee_name = serializers.CharField()
     photo_url = serializers.URLField(allow_null=True, required=False)
     team__display_name = serializers.CharField(allow_null=True, required=False)
+    team__display_order = serializers.IntegerField(allow_null=True, required=False)
+    contacts = serializers.CharField(allow_null=True, required=False)
     attendances = serializers.JSONField()
     attendingmeets = serializers.JSONField()
     total_attendances = serializers.IntegerField()
 
 class RosterResponseSerializer(serializers.Serializer):
     totalCount = serializers.IntegerField()
-    columns = RosterColumnSerializer(many=True)
-    rows = RosterRowSerializer(many=True)
+    columns = RosterColumnSerializer(many=True, required=False)
+    rows = serializers.JSONField()
+    data = serializers.JSONField(required=False)

@@ -247,7 +247,7 @@
       const currentCols = gridInstanceRef.value.option('columns');
       let colsChanged = false;
       
-      const FIXED_PREFIX_COUNT = 3;
+      const FIXED_PREFIX_COUNT = 4;
       const TOTAL_EXTRA_COLS = FIXED_PREFIX_COUNT + 1; // plus 1 dummy-column
 
       if (!currentCols || currentCols.length !== serverColumns.length + TOTAL_EXTRA_COLS) {
@@ -281,6 +281,14 @@
             width: 140,
             allowSorting: true,
             allowHiding: true
+          },
+          {
+            dataField: 'contacts',
+            caption: 'Contacts',
+            visible: false,
+            allowHiding: true,
+            allowSorting: false,
+            width: 180
           },
           {
             dataField: 'total_attendances',
@@ -348,13 +356,18 @@
             key: 'attendee_id',
             load: async (loadOptions) => {
               try {
-                // If initial load with skip=0 and no sort/search/filter, consume preloaded data without extra network request
-                const isInitialOptions = (!loadOptions.skip || loadOptions.skip === 0) && !loadOptions.sort && !loadOptions.searchValue && !loadOptions.filter;
+                // If initial load with skip=0 and no custom sort/search/filter/group, consume preloaded data
+                const isInitialOptions = (!loadOptions.skip || loadOptions.skip === 0) 
+                  && !loadOptions.sort 
+                  && !loadOptions.searchValue 
+                  && !loadOptions.filter
+                  && (!loadOptions.group || loadOptions.group.length === 0);
+
                 if (preloadedData && isInitialOptions) {
                   const cached = preloadedData;
                   preloadedData = null;
                   return {
-                    data: cached.rows,
+                    data: cached.data || cached.rows,
                     totalCount: cached.totalCount
                   };
                 }
@@ -372,6 +385,11 @@
                   pageParams.set('sort', JSON.stringify(loadOptions.sort));
                 }
 
+                if (loadOptions.group) {
+                  const adjustedGroup = loadOptions.group.map(g => ({ ...g, isExpanded: true }));
+                  pageParams.set('group', JSON.stringify(adjustedGroup));
+                }
+
                 if (loadOptions.searchValue) {
                   pageParams.set('searchValue', loadOptions.searchValue);
                 } else if (loadOptions.filter) {
@@ -384,7 +402,7 @@
                 const pageData = await pageResponse.json();
                 
                 return {
-                  data: pageData.rows,
+                  data: pageData.data || pageData.rows,
                   totalCount: pageData.totalCount
                 };
 
@@ -422,12 +440,23 @@
         columnAutoWidth: true,
         hoverStateEnabled: true,
         noDataText: "No data found. Please select a meet to load.",
-        remoteOperations: { paging: true, sorting: true, filtering: true },
-        paging: { pageSize: 40 },
+        remoteOperations: { groupPaging: true },
+        paging: {
+          enabled: true,
+          pageSize: 40,
+        },
         pager: {
+          visible: true,
           showPageSizeSelector: true,
-          allowedPageSizes: [20, 40, 80],
-          showInfo: true
+          allowedPageSizes: [20, 40, 100, 9999],
+          showInfo: true,
+          showNavigationButtons: true,
+        },
+        grouping: {
+          autoExpandAll: true,
+        },
+        groupPanel: {
+          visible: true,
         },
         searchPanel: {
           visible: true,
@@ -437,6 +466,22 @@
         columnChooser: {
           enabled: true,
           mode: 'select',
+        },
+        onToolbarPreparing: (e) => {
+          const toolbarItems = e.toolbarOptions.items;
+          toolbarItems.unshift({
+            location: 'after',
+            widget: 'dxButton',
+            options: {
+              hint: 'Reset Sort/Group/Columns settings',
+              icon: 'clearsquare',
+              onClick() {
+                if (gridInstanceRef.value) {
+                  gridInstanceRef.value.state(null);
+                }
+              }
+            }
+          });
         }
       });
     };

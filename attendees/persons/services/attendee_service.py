@@ -3,7 +3,7 @@ from pathlib import Path
 from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import StringAgg, JSONBAgg
-from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count
+from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count, Min
 from django.db.models.functions import Cast, Substr, Coalesce
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
@@ -543,8 +543,11 @@ class AttendeeService:
             search_filter = (
                 Q(first_name__icontains=search_value) |
                 Q(last_name__icontains=search_value) |
+                Q(first_name2__icontains=search_value) |
+                Q(last_name2__icontains=search_value) |
                 Q(infos__names__original__icontains=search_value) |
                 Q(infos__contacts__icontains=search_value) |
+                Q(infos__icontains=search_value) |
                 Q(attendings__attendingmeet__team__display_name__icontains=search_value)
             )
             attendees_qs = attendees_qs.filter(search_filter)
@@ -555,6 +558,12 @@ class AttendeeService:
                 normalized_sort_list.append('-' + s[11:])
             elif s.startswith('attendee__'):
                 normalized_sort_list.append(s[10:])
+            elif s in ('team__display_order', 'team__display_name', 'team'):
+                normalized_sort_list.append(F('team__display_order').asc(nulls_last=True))
+                normalized_sort_list.append('team__display_name')
+            elif s in ('-team__display_order', '-team__display_name', '-team'):
+                normalized_sort_list.append(F('team__display_order').desc(nulls_last=True))
+                normalized_sort_list.append('-team__display_name')
             else:
                 normalized_sort_list.append(s)
 
@@ -565,6 +574,10 @@ class AttendeeService:
                 distinct=True,
                 filter=attendingmeet_filter,
                 default=None,
+            ),
+            team__display_order=Min(
+                'attendings__attendingmeet__team__display_order',
+                filter=attendingmeet_filter,
             ),
             total_attendances=Count(
                 'attendings__attendance',
@@ -620,12 +633,22 @@ class AttendeeService:
 
             primary_attending_id = attendee.attendingmeets[0]['attending_id'] if attendee.attendingmeets else None
 
+            contacts_dict = attendee.infos.get('contacts', {}) if isinstance(attendee.infos, dict) else {}
+            contacts_parts = []
+            if isinstance(contacts_dict, dict):
+                for k, v in contacts_dict.items():
+                    if v:
+                        contacts_parts.append(str(v))
+            contacts_str = ", ".join(contacts_parts)
+
             rows.append({
                 "attending_id": primary_attending_id,
                 "attendee_id": attendee.id,
                 "attendee_name": attendee.display_label,
                 "photo_url": photo_url,
                 "team__display_name": attendee.team__display_name,
+                "team__display_order": attendee.team__display_order,
+                "contacts": contacts_str,
                 "attendances": attendee.attendances,
                 "attendingmeets": attendee.attendingmeets,
                 "total_attendances": attendee.total_attendances,
