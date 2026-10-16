@@ -220,6 +220,7 @@ test.describe('Merging two records', () => {
 
       // 3. Undo the third record's merge only: it comes back, the second stays merged.
       await page.locator(`button.attendee-unmerge-button[data-duplicate-id="${third.id}"]`).click();
+      await expect(page.getByText('Undo this merge?')).toBeVisible();
       await page.locator('.dx-popup-bottom .dx-button', { hasText: 'Undo merge' }).click();
       await page.waitForURL(/success=/);
       await expect(page.locator('.attendee-merge-notices .alert')).toHaveCount(1);
@@ -232,8 +233,9 @@ test.describe('Merging two records', () => {
       expect(merged.actual_birthday).toBe('2010-05-06');
       expect(merged.infos.fixed.food_pref).toBe('no nuts');
     } finally {
-      // Hannah as she was: undo the second record's merge too, then remove both twins.
-      await call(page, 'POST', `${API}${second.id}/unmerge/`);
+      // Hannah as she was: undo whichever merges still stand, newest first,
+      // then remove both twins. A retry then starts from a clean record.
+      for (const id of [third.id, second.id]) await call(page, 'POST', `${API}${id}/unmerge/`);
       for (const id of ids.slice(1)) await remove(page, id);
     }
     const restored = (await record(page, original.id)).body;
