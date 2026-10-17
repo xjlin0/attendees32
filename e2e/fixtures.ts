@@ -75,6 +75,16 @@ export const test = base.extend<{
         });
       },
     );
+    // DevExtreme grows a popup in over 300 ms. A click during that time
+    // presses the button where it was and releases it where it is now, and
+    // the browser drops the click: one CI run lost "Undo merge" that way.
+    // The suite runs with DevExtreme's animations off.
+    await page.context().addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        const dx = (window as any).DevExpress;
+        if (dx && dx.fx) dx.fx.off = true;
+      });
+    });
     await use(page);
   },
 
