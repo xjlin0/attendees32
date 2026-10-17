@@ -1,0 +1,74 @@
+.attendee-info {
+  display: flex;
+  align-items: center;
+}
+.attendee-photo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+.attendee-link {
+  color: blue;
+  text-decoration: none;
+}
+.attendee-link:hover {
+  text-decoration: underline;
+}
+.roster-btn {
+  background-color: transparent;
+  color: green;
+  border: 1px solid green;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+}
+.roster-btn:hover {
+  background-color: green;
+  color: white;
+}
+.roster-btn.checked-in {
+  background-color: green;
+  color: white;
+  border-color: green;
+}
+.roster-btn.checked-in:hover {
+  background-color: darkgreen;
+  border-color: darkgreen;
+}
+.roster-btn-out {
+  background-color: transparent;
+  color: blue;
+  border-color: blue;
+  margin-left: 5px;
+  min-width: 60px;
+}
+.roster-btn-out:hover {
+  background-color: blue;
+  color: white;
+}
+.roster-btn-out.checked-out {
+  background-color: blue;
+  color: white;
+  border-color: blue;
+}
+.roster-btn-out.checked-out:hover {
+  background-color: darkblue;
+  border-color: darkblue;
+}
+.not-attending-text {
+  color: gray;
+  font-size: 0.85em;
+  font-style: italic;
+}
+.dx-datagrid-headers .dx-header-row {
+  background-color: #e9ecef;
+  color: #343a40;
+}
+.dx-datagrid-headers .dx-datagrid-text-content {
+  font-weight: bold;
+}

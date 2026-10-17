@@ -3,13 +3,13 @@ from pathlib import Path
 from partial_date import PartialDate
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import StringAgg, JSONBAgg
-from django.db.models import Case, F, Func, Q, When, CharField, JSONField
+from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count, Min
 from django.db.models.functions import Cast, Substr, Coalesce
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
 from rest_framework.utils import json
 
-from attendees.occasions.models import Meet
+from attendees.occasions.models import Meet, Gathering
 from attendees.persons.models import (  # , Relationship
     Attendee,
     Category,
@@ -500,3 +500,159 @@ class AttendeeService:
             },
         )
         return folk
+
+    @staticmethod
+    def get_roster_data(organization, meet_slugs, start, finish, skip, take, sort_list=None, search_value=None):
+        if not sort_list:
+            sort_list = ['first_name', 'last_name']
+
+        # 1. Query Gatherings (Columns)
+        gatherings = Gathering.objects.filter(
+            meet__slug__in=meet_slugs,
+            meet__assembly__division__organization=organization,
+            start__gte=start,
+            finish__lte=finish,
+            is_removed=False
+        ).order_by('start', 'meet__display_name', 'id')
+
+        gathering_list = [
+            {
+                "id": g.id,
+                "display_name": g.display_name,
+                "start": g.start.isoformat() if g.start else None,
+                "meet_id": g.meet_id
+            }
+            for g in gatherings
+        ]
+
+        # 2. Query Attendees (Rows) with Database Aggregation
+        attendingmeet_filter = (
+            Q(attendings__attendingmeet__meet__slug__in=meet_slugs) &
+            Q(attendings__attendingmeet__is_removed=False) &
+            Q(attendings__is_removed=False) &
+            (Q(attendings__attendingmeet__finish__isnull=True) | Q(attendings__attendingmeet__finish__gte=start)) &
+            (Q(attendings__attendingmeet__start__isnull=True) | Q(attendings__attendingmeet__start__lte=finish))
+        )
+
+        attendees_qs = Attendee.objects.filter(
+            attendingmeet_filter,
+            is_removed=False
+        )
+
+        if search_value:
+            search_filter = (
+                Q(first_name__icontains=search_value) |
+                Q(last_name__icontains=search_value) |
+                Q(first_name2__icontains=search_value) |
+                Q(last_name2__icontains=search_value) |
+                Q(infos__names__original__icontains=search_value) |
+                Q(infos__contacts__icontains=search_value) |
+                Q(infos__icontains=search_value) |
+                Q(attendings__attendingmeet__team__display_name__icontains=search_value)
+            )
+            attendees_qs = attendees_qs.filter(search_filter)
+
+        normalized_sort_list = []
+        for s in sort_list:
+            if s.startswith('-attendee__'):
+                normalized_sort_list.append('-' + s[11:])
+            elif s.startswith('attendee__'):
+                normalized_sort_list.append(s[10:])
+            elif s in ('team__display_order', 'team__display_name', 'team'):
+                normalized_sort_list.append(F('team__display_order').asc(nulls_last=True))
+                normalized_sort_list.append('team__display_name')
+            elif s in ('-team__display_order', '-team__display_name', '-team'):
+                normalized_sort_list.append(F('team__display_order').desc(nulls_last=True))
+                normalized_sort_list.append('-team__display_name')
+            else:
+                normalized_sort_list.append(s)
+
+        attendees_qs = attendees_qs.annotate(
+            team__display_name=StringAgg(
+                'attendings__attendingmeet__team__display_name',
+                delimiter=', ',
+                distinct=True,
+                filter=attendingmeet_filter,
+                default=None,
+            ),
+            team__display_order=Min(
+                'attendings__attendingmeet__team__display_order',
+                filter=attendingmeet_filter,
+            ),
+            total_attendances=Count(
+                'attendings__attendance',
+                filter=Q(
+                    attendings__attendance__gathering__in=gatherings,
+                    attendings__attendance__is_removed=False
+                ) & ~Q(attendings__attendance__category_id=1),
+                distinct=True
+            ),
+            attendances=Coalesce(JSONBAgg(
+                Func(
+                    Value('attendance_id'), 'attendings__attendance__id',
+                    Value('attending_id'), 'attendings__attendance__attending__id',
+                    Value('category_id'), 'attendings__attendance__category__id',
+                    Value('category_name'), 'attendings__attendance__category__display_name',
+                    Value('gathering_id'), 'attendings__attendance__gathering__id',
+                    Value('start'), 'attendings__attendance__start',
+                    Value('finish'), 'attendings__attendance__finish',
+                    function='jsonb_build_object',
+                ),
+                filter=Q(attendings__attendance__gathering__in=gatherings, attendings__attendance__is_removed=False),
+                distinct=True,
+                default=[],
+            ), Value('[]'), output_field=JSONField()),
+            attendingmeets=Coalesce(JSONBAgg(
+                Func(
+                    Value('attending_id'), 'attendings__attendingmeet__attending_id',
+                    Value('attendingmeet_id'), 'attendings__attendingmeet__id',
+                    Value('meet_id'), 'attendings__attendingmeet__meet_id',
+                    Value('character_id'), 'attendings__attendingmeet__character_id',
+                    Value('start'), 'attendings__attendingmeet__start',
+                    Value('finish'), 'attendings__attendingmeet__finish',
+                    function='jsonb_build_object',
+                ),
+                filter=attendingmeet_filter,
+                distinct=True,
+                default=[],
+            ), Value('[]'), output_field=JSONField()),
+        ).distinct().order_by(*normalized_sort_list)
+
+        total_count = attendees_qs.count()
+        attendees_page = attendees_qs[skip: skip + take]
+
+        # 3. Build Response
+        rows = []
+        for attendee in attendees_page:
+            photo_url = None
+            if attendee.photo:
+                try:
+                    photo_url = attendee.photo.url
+                except ValueError:
+                    pass
+
+            primary_attending_id = attendee.attendingmeets[0]['attending_id'] if attendee.attendingmeets else None
+
+            contacts_dict = attendee.infos.get('contacts', {}) if isinstance(attendee.infos, dict) else {}
+            contacts_parts = []
+            if isinstance(contacts_dict, dict):
+                for k, v in contacts_dict.items():
+                    if v:
+                        contacts_parts.append(str(v))
+            contacts_str = ", ".join(contacts_parts)
+
+            rows.append({
+                "attending_id": primary_attending_id,
+                "attendee_id": attendee.id,
+                "attendee_name": attendee.display_label,
+                "photo_url": photo_url,
+                "team__display_name": attendee.team__display_name,
+                "team__display_order": attendee.team__display_order,
+                "contacts": contacts_str,
+                "attendances": attendee.attendances,
+                "attendingmeets": attendee.attendingmeets,
+                "total_attendances": attendee.total_attendances,
+            })
+
+        return gathering_list, rows, total_count
+
