@@ -14,6 +14,7 @@ class RosterRowSerializer(serializers.Serializer):
     photo_url = serializers.URLField(allow_null=True, required=False)
     team__display_name = serializers.CharField(allow_null=True, required=False)
     team__display_order = serializers.IntegerField(allow_null=True, required=False)
+    character__display_name = serializers.CharField(allow_null=True, required=False)
     contacts = serializers.CharField(allow_null=True, required=False)
     attendances = serializers.JSONField()
     attendingmeets = serializers.JSONField()

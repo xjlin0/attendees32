@@ -547,7 +547,8 @@ class AttendeeService:
                 Q(infos__names__original__icontains=search_value) |
                 Q(infos__contacts__icontains=search_value) |
                 Q(infos__icontains=search_value) |
-                Q(attendings__attendingmeet__team__display_name__icontains=search_value)
+                Q(attendings__attendingmeet__team__display_name__icontains=search_value) |
+                Q(attendings__attendingmeet__character__display_name__icontains=search_value)
             )
             attendees_qs = attendees_qs.filter(search_filter)
 
@@ -563,6 +564,10 @@ class AttendeeService:
             elif s in ('-team__display_order', '-team__display_name', '-team'):
                 normalized_sort_list.append(F('team__display_order').desc(nulls_last=True))
                 normalized_sort_list.append('-team__display_name')
+            elif s in ('character__display_name', 'character'):
+                normalized_sort_list.append('character__display_name')
+            elif s in ('-character__display_name', '-character'):
+                normalized_sort_list.append('-character__display_name')
             else:
                 normalized_sort_list.append(s)
 
@@ -577,6 +582,13 @@ class AttendeeService:
             team__display_order=Min(
                 'attendings__attendingmeet__team__display_order',
                 filter=attendingmeet_filter,
+            ),
+            character__display_name=StringAgg(
+                'attendings__attendingmeet__character__display_name',
+                delimiter=', ',
+                distinct=True,
+                filter=attendingmeet_filter,
+                default=None,
             ),
             total_attendances=Count(
                 'attendings__attendance',
@@ -606,7 +618,11 @@ class AttendeeService:
                     Value('attending_id'), 'attendings__attendingmeet__attending_id',
                     Value('attendingmeet_id'), 'attendings__attendingmeet__id',
                     Value('meet_id'), 'attendings__attendingmeet__meet_id',
+                    Value('meet_name'), 'attendings__attendingmeet__meet__display_name',
                     Value('character_id'), 'attendings__attendingmeet__character_id',
+                    Value('character_name'), 'attendings__attendingmeet__character__display_name',
+                    Value('team_id'), 'attendings__attendingmeet__team_id',
+                    Value('team_name'), 'attendings__attendingmeet__team__display_name',
                     Value('start'), 'attendings__attendingmeet__start',
                     Value('finish'), 'attendings__attendingmeet__finish',
                     function='jsonb_build_object',
@@ -647,6 +663,7 @@ class AttendeeService:
                 "photo_url": photo_url,
                 "team__display_name": attendee.team__display_name,
                 "team__display_order": attendee.team__display_order,
+                "character__display_name": attendee.character__display_name,
                 "contacts": contacts_str,
                 "attendances": attendee.attendances,
                 "attendingmeets": attendee.attendingmeets,

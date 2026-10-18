@@ -72,6 +72,12 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                         if group_sort in sort_list:
                             sort_list.remove(group_sort)
                         sort_list.insert(0, group_sort)
+                    elif group_column in ("character__display_name", "character"):
+                        group_column = "character__display_name"
+                        group_sort = "-character__display_name" if group_desc else "character__display_name"
+                        if group_sort in sort_list:
+                            sort_list.remove(group_sort)
+                        sort_list.insert(0, group_sort)
                     elif group_column == "attendee_name":
                         group_sort = "-first_name" if group_desc else "first_name"
                         if group_sort in sort_list:

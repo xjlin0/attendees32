@@ -6,11 +6,13 @@
 {% endblock title %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.2.4/css/dx.light.compact.css">
   <link rel="stylesheet" href="{% static 'css/rosters_list_view.css' %}">
 {% endblock extra_css %}
 
 {% block extra_head %}
+  <!-- DevExtreme 23.2 CSS (external CDN in extra_head to avoid django-compressor) -->
+  <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.2.4/css/dx.light.compact.css">
+
   <!-- JSZip (for Excel export) -->
   <script defer
           src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
@@ -60,7 +62,8 @@
      data-attendingmeets-endpoint="{{ attendingmeets_endpoint }}"
      data-attendings-endpoint="{{ attendings_endpoint }}"
      data-characters-endpoint="{{ characters_endpoint }}"
-     data-teams-endpoint="{{ teams_endpoint }}">
+     data-teams-endpoint="{{ teams_endpoint }}"
+     data-user-can-write="{{ user_can_write|yesno:'true,false' }}">
   {% csrf_token %}
   
   <div class="d-flex justify-content-between mb-3">

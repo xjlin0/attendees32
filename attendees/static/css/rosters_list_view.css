@@ -193,3 +193,53 @@
   font-size: 0.85em;
 }
 
+.roster-cell-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.roster-inline-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: 0.85em;
+  line-height: 1.25;
+}
+
+.roster-meet-label {
+  color: #6c757d;
+  font-weight: 500;
+  font-size: 0.82em;
+  margin-right: 3px;
+  word-break: break-word;
+}
+
+.roster-editable-val {
+  color: #212529;
+  border-bottom: 1px dashed #adb5bd;
+  cursor: pointer;
+  padding: 0 2px;
+  border-radius: 2px;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  word-break: break-word;
+}
+
+.roster-editable-val:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+.roster-editable-val.empty-val {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+.roster-inline-editor-container {
+  display: inline-block;
+  min-width: 60px;
+  width: 100%;
+}
+
+

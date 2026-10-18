@@ -53,7 +53,8 @@
       attendingmeets: '',
       attendings: '',
       characters: '',
-      teams: ''
+      teams: '',
+      userCanWrite: true
     });
 
     const initEndpoints = () => {
@@ -67,6 +68,7 @@
         endpoints.attendings = appEl.dataset.attendingsEndpoint || '';
         endpoints.characters = appEl.dataset.charactersEndpoint || '';
         endpoints.teams = appEl.dataset.teamsEndpoint || '';
+        endpoints.userCanWrite = appEl.dataset.userCanWrite !== 'false';
       }
     };
 
@@ -1025,10 +1027,234 @@
       container.append(wrapper);
     };
 
+    const meetTeamsCache = {};
+    const loadTeamsForMeet = async (meetId) => {
+      if (meetTeamsCache[meetId]) return meetTeamsCache[meetId];
+      try {
+        const res = await fetch(`${endpoints.teams}?meets[]=${meetId}`);
+        if (!res.ok) throw new Error('Failed to fetch teams');
+        const data = await res.json();
+        const list = (data.data || data.results || data || []).map(t => ({ id: t.id, display_name: t.display_name }));
+        list.unshift({ id: null, display_name: '(None)' });
+        meetTeamsCache[meetId] = list;
+        return list;
+      } catch (err) {
+        console.error('Failed to load teams for meet', meetId, err);
+        return [{ id: null, display_name: '(None)' }];
+      }
+    };
+
+    const meetCharactersCache = {};
+    const loadCharactersForMeet = async (meetId) => {
+      if (meetCharactersCache[meetId]) return meetCharactersCache[meetId];
+      try {
+        const res = await fetch(`${endpoints.characters}?meetIds[]=${meetId}`);
+        if (!res.ok) throw new Error('Failed to fetch characters');
+        const data = await res.json();
+        const list = (data.data || data.results || data || []).map(c => ({ id: c.id, display_name: c.display_name }));
+        meetCharactersCache[meetId] = list;
+        return list;
+      } catch (err) {
+        console.error('Failed to load characters for meet', meetId, err);
+        return [];
+      }
+    };
+
+    const renderInlineEditableLine = (lineContainer, field, am, rowData, isMultiMeet) => {
+      lineContainer.innerHTML = '';
+      if (isMultiMeet && am.meet_name) {
+        const meetLabel = document.createElement('span');
+        meetLabel.className = 'roster-meet-label';
+        meetLabel.innerText = `${am.meet_name}:`;
+        lineContainer.appendChild(meetLabel);
+      }
+
+      const valSpan = document.createElement('span');
+      const curValName = field === 'team' ? am.team_name : am.character_name;
+      if (curValName) {
+        valSpan.innerText = curValName;
+      } else {
+        valSpan.innerText = '(None)';
+        valSpan.classList.add('empty-val');
+      }
+
+      if (endpoints.userCanWrite) {
+        valSpan.className += ' roster-editable-val';
+        let isEditing = false;
+        valSpan.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (isEditing) return;
+          isEditing = true;
+
+          const editorContainer = document.createElement('div');
+          editorContainer.className = 'roster-inline-editor-container';
+
+          valSpan.style.display = 'none';
+          lineContainer.appendChild(editorContainer);
+
+          const currentId = field === 'team' ? am.team_id : am.character_id;
+          const dataSource = field === 'team'
+            ? await loadTeamsForMeet(am.meet_id)
+            : await loadCharactersForMeet(am.meet_id);
+
+          let selectBoxInstance = null;
+          let changeHandled = false;
+
+          const cleanup = () => {
+            if (selectBoxInstance) {
+              try {
+                selectBoxInstance.dispose();
+              } catch (ignore) {}
+              selectBoxInstance = null;
+            }
+            if (editorContainer.parentNode) {
+              editorContainer.parentNode.removeChild(editorContainer);
+            }
+            valSpan.style.display = '';
+            isEditing = false;
+          };
+
+          selectBoxInstance = new DevExpress.ui.dxSelectBox(editorContainer, {
+            dataSource: dataSource,
+            valueExpr: 'id',
+            displayExpr: 'display_name',
+            value: currentId || null,
+            searchEnabled: true,
+            width: '100%',
+            dropDownOptions: {
+              minWidth: 150,
+            },
+            onValueChanged: async (event) => {
+              if (event.value === currentId) {
+                cleanup();
+                return;
+              }
+              changeHandled = true;
+              try {
+                const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                const payload = {};
+                payload[field] = event.value;
+
+                const baseEndpoint = (endpoints.attendingmeets || '').endsWith('/')
+                  ? endpoints.attendingmeets
+                  : `${endpoints.attendingmeets}/`;
+                const patchUrl = `${baseEndpoint}${am.attendingmeet_id}/`;
+
+                const response = await fetch(patchUrl, {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf,
+                    'X-Target-Attendee-Id': rowData.attendee_id,
+                  },
+                  body: JSON.stringify(payload)
+                });
+
+              if (!response.ok) {
+                const errJson = await response.json().catch(() => ({}));
+                throw new Error(errJson.detail || errJson.error || 'Failed to update ' + field);
+              }
+
+              const selectedObj = dataSource.find(item => item.id === event.value);
+              const newDisplayName = selectedObj ? selectedObj.display_name : (event.value ? String(event.value) : null);
+
+              if (field === 'team') {
+                am.team_id = event.value;
+                am.team_name = (newDisplayName === '(None)') ? null : newDisplayName;
+                rowData.team__display_name = (rowData.attendingmeets || [])
+                  .map(a => a.team_name)
+                  .filter(Boolean)
+                  .join(', ');
+              } else {
+                am.character_id = event.value;
+                am.character_name = newDisplayName;
+                rowData.character__display_name = (rowData.attendingmeets || [])
+                  .map(a => a.character_name)
+                  .filter(Boolean)
+                  .join(', ');
+              }
+
+              DevExpress.ui.notify(`${field === 'team' ? 'Team' : 'Character'} updated successfully`, 'success', 2000);
+            } catch (err) {
+              console.error('Error patching ' + field, err);
+              DevExpress.ui.notify('Update failed: ' + err.message, 'error', 3000);
+            } finally {
+              cleanup();
+              renderInlineEditableLine(lineContainer, field, am, rowData, isMultiMeet);
+            }
+          },
+          onClosed: () => {
+            setTimeout(() => {
+              if (!changeHandled && isEditing) {
+                cleanup();
+              }
+            }, 100);
+          }
+        });
+
+        setTimeout(() => {
+          if (selectBoxInstance) {
+            selectBoxInstance.open();
+          }
+        }, 50);
+      });
+      }
+
+      lineContainer.appendChild(valSpan);
+    };
+
+    const teamCellTemplate = (container, options) => {
+      const data = options.data;
+      if (!data) return;
+      const ams = data.attendingmeets && data.attendingmeets.length ? data.attendingmeets : [];
+      const isMultiMeet = filterData.meets && filterData.meets.length > 1;
+
+      if (!ams.length) {
+        container.innerHTML = `<span class="text-muted fst-italic">(None)</span>`;
+        return;
+      }
+
+      const linesWrapper = document.createElement('div');
+      linesWrapper.className = 'roster-cell-lines';
+
+      ams.forEach(am => {
+        const line = document.createElement('div');
+        line.className = 'roster-inline-line';
+        renderInlineEditableLine(line, 'team', am, data, isMultiMeet);
+        linesWrapper.appendChild(line);
+      });
+
+      container.append(linesWrapper);
+    };
+
+    const characterCellTemplate = (container, options) => {
+      const data = options.data;
+      if (!data) return;
+      const ams = data.attendingmeets && data.attendingmeets.length ? data.attendingmeets : [];
+      const isMultiMeet = filterData.meets && filterData.meets.length > 1;
+
+      if (!ams.length) {
+        container.innerHTML = `<span class="text-muted fst-italic">(None)</span>`;
+        return;
+      }
+
+      const linesWrapper = document.createElement('div');
+      linesWrapper.className = 'roster-cell-lines';
+
+      ams.forEach(am => {
+        const line = document.createElement('div');
+        line.className = 'roster-inline-line';
+        renderInlineEditableLine(line, 'character', am, data, isMultiMeet);
+        linesWrapper.appendChild(line);
+      });
+
+      container.append(linesWrapper);
+    };
+
     const attendanceCellTemplate = (container, options) => {
       const data = options.data;
       const colName = options.column.name;
-      const colIdx = options.column.colIndex !== undefined ? options.column.colIndex : (options.columnIndex - 4);
+      const colIdx = options.column.colIndex !== undefined ? options.column.colIndex : (options.columnIndex - 5);
       const colMeta = options.column.gatheringMeta;
       const meetStartKey = (colMeta && colMeta.meet_id && colMeta.start) ? `${colMeta.meet_id}_${colMeta.start}` : '';
       const gatheringMeta = gatheringsRegistry.get(colName) || (meetStartKey && gatheringsRegistry.get(meetStartKey)) || colMeta;
@@ -1088,7 +1314,7 @@
       const currentCols = gridInstanceRef.value.option('columns');
       let colsChanged = false;
       
-      const FIXED_PREFIX_COUNT = 4;
+      const FIXED_PREFIX_COUNT = 5;
       const TOTAL_EXTRA_COLS = FIXED_PREFIX_COUNT + 1; // plus 1 dummy-column
 
       if (!currentCols || currentCols.length !== serverColumns.length + TOTAL_EXTRA_COLS) {
@@ -1122,9 +1348,21 @@
             caption: 'Team',
             fixed: true,
             fixedPosition: 'left',
-            width: 140,
+            width: 80,
+            cellTemplate: teamCellTemplate,
             allowSorting: true,
             allowHiding: true
+          },
+          {
+            dataField: 'character__display_name',
+            caption: 'Character',
+            visible: false,
+            allowHiding: true,
+            fixed: true,
+            fixedPosition: 'left',
+            width: 140,
+            cellTemplate: characterCellTemplate,
+            allowSorting: true
           },
           {
             dataField: 'contacts',
@@ -1196,7 +1434,7 @@
               col.visible = visible;
             }
             const width = gridInstanceRef.value.columnOption(col.dataField, 'width');
-            if (width !== undefined && width !== null) {
+            if (width !== undefined && width !== null && !(col.dataField === 'team__display_name' && width > 100)) {
               col.width = width;
             }
           }
@@ -1326,6 +1564,10 @@
           gridInstanceRef.value.beginUpdate();
           gatheringsRegistry.clear();
           updateGridColumns(initialData.columns, initialData.data || initialData.rows || []);
+          const curTeamWidth = gridInstanceRef.value.columnOption('team__display_name', 'width');
+          if (curTeamWidth && curTeamWidth > 100) {
+            gridInstanceRef.value.columnOption('team__display_name', 'width', 80);
+          }
           gridInstanceRef.value.option('dataSource', customStore);
           gridInstanceRef.value.endUpdate();
 
@@ -1441,6 +1683,20 @@
                       excelCell.value = '';
                     }
                   }
+                } else if (gridCell.column && gridCell.column.dataField === 'team__display_name' && gridCell.data && gridCell.data.attendingmeets) {
+                  const isMulti = filterData.meets && filterData.meets.length > 1;
+                  if (isMulti) {
+                    excelCell.value = gridCell.data.attendingmeets
+                      .map(am => `${am.meet_name || 'Meet'}: ${am.team_name || ''}`)
+                      .join('\n');
+                  }
+                } else if (gridCell.column && gridCell.column.dataField === 'character__display_name' && gridCell.data && gridCell.data.attendingmeets) {
+                  const isMulti = filterData.meets && filterData.meets.length > 1;
+                  if (isMulti) {
+                    excelCell.value = gridCell.data.attendingmeets
+                      .map(am => `${am.meet_name || 'Meet'}: ${am.character_name || ''}`)
+                      .join('\n');
+                  }
                 }
               }
             }
@@ -1477,9 +1733,21 @@
             caption: 'Team',
             fixed: true,
             fixedPosition: 'left',
-            width: 140,
+            width: 80,
+            cellTemplate: teamCellTemplate,
             allowSorting: true,
             allowHiding: true
+          },
+          {
+            dataField: 'character__display_name',
+            caption: 'Character',
+            visible: false,
+            allowHiding: true,
+            fixed: true,
+            fixedPosition: 'left',
+            width: 140,
+            cellTemplate: characterCellTemplate,
+            allowSorting: true
           },
           {
             dataField: 'contacts',
@@ -1509,7 +1777,7 @@
         searchPanel: {
           visible: true,
           width: 250,
-          placeholder: 'Search name, contacts, team...',
+          placeholder: 'Search name, contacts, team, character...',
         },
         columnChooser: {
           enabled: true,
