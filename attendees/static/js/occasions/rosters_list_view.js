@@ -182,7 +182,9 @@
           gathering_id: updatedRecord.gathering,
           category_id: updatedRecord.category,
           start: updatedRecord.start,
-          finish: updatedRecord.finish
+          finish: updatedRecord.finish,
+          file_path: updatedRecord.file_path || null,
+          file: updatedRecord.file_path || null
         };
 
         if (!rowData.attendances) {
@@ -309,31 +311,216 @@
       }
     };
 
-    const markOut = async (rowData, gathering, domElements, rowIndex) => {
-      const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
-      const gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
-      const record = getAttendanceRecord(rowData, gatheringId);
-      if (!record) return;
+    let checkOutPopupInstance = null;
+    let signaturePadInstance = null;
+    let currentCheckOutContext = null;
 
-      const isCurrentlyCheckedOut = !!record.finish;
-      const newFinish = isCurrentlyCheckedOut ? null : new Date().toISOString();
+    const ensureSignaturePadLoaded = () => {
+      if (typeof SignaturePad !== 'undefined') {
+        return Promise.resolve();
+      }
+      return new Promise((resolve, reject) => {
+        const existingScript = document.querySelector('script[src*="signature_pad"]');
+        if (existingScript) {
+          if (typeof SignaturePad !== 'undefined') return resolve();
+          existingScript.addEventListener('load', () => resolve());
+          existingScript.addEventListener('error', () => reject(new Error('Failed to load SignaturePad')));
+        } else {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/signature_pad@4.0.9/dist/signature_pad.umd.min.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load SignaturePad'));
+          document.head.appendChild(script);
+        }
+      });
+    };
 
+    const updateGridRowAttendance = (rowData, gatheringId, normalizedRecord, rowIndex) => {
+      if (!gridInstanceRef.value) return;
+      const rowKey = rowData.attendee_id || rowData.attending_id;
+      let rIndex = (typeof rowIndex === 'number' && rowIndex >= 0) ? rowIndex : -1;
+      if (rIndex < 0 && rowKey !== undefined) {
+        rIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
+      }
+      if (rIndex >= 0) {
+        const visibleRows = typeof gridInstanceRef.value.getVisibleRows === 'function' ? gridInstanceRef.value.getVisibleRows() : null;
+        if (visibleRows && visibleRows[rIndex] && visibleRows[rIndex].data) {
+          const gridRowData = visibleRows[rIndex].data;
+          if (!gridRowData.attendances) gridRowData.attendances = [];
+          const existingRec = gridRowData.attendances.find(a => a && String(a.gathering_id) === String(gatheringId));
+          if (existingRec) {
+            Object.assign(existingRec, normalizedRecord);
+          } else {
+            gridRowData.attendances.push(normalizedRecord);
+          }
+        }
+      }
+    };
+
+    const initSignatureCanvas = () => {
+      const canvas = document.querySelector('canvas.signature');
+      if (canvas && typeof SignaturePad !== 'undefined') {
+        canvas.style.width = '100%';
+        canvas.style.height = '100px';
+        const width = canvas.offsetWidth || 378;
+        const height = canvas.offsetHeight || 100;
+        canvas.width = width;
+        canvas.height = height;
+
+        if (signaturePadInstance) {
+          try { signaturePadInstance.off(); } catch (e) {}
+        }
+        signaturePadInstance = new SignaturePad(canvas, {
+          maxWidth: 2,
+          backgroundColor: 'rgb(255,255,255)',
+        });
+        signaturePadInstance.clear();
+      } else {
+        console.warn('[Rosters] Signature canvas or SignaturePad not found!', { canvas, hasSignaturePad: typeof SignaturePad !== 'undefined' });
+      }
+    };
+
+    window.debugRostersSignature = () => {
+      const canvas = document.querySelector('canvas.signature');
+      console.log({
+        hasSignaturePadLib: typeof SignaturePad !== 'undefined',
+        signaturePadInstance,
+        canvas,
+        canvasWidth: canvas ? canvas.width : null,
+        canvasHeight: canvas ? canvas.height : null,
+        canvasOffsetWidth: canvas ? canvas.offsetWidth : null,
+        canvasOffsetHeight: canvas ? canvas.offsetHeight : null,
+        popupInstance: checkOutPopupInstance
+      });
+    };
+
+    const getCheckOutPopup = () => {
+      if (checkOutPopupInstance) return checkOutPopupInstance;
+
+      let popupEl = document.getElementById('signature-canvas-popup');
+      if (!popupEl) {
+        popupEl = document.createElement('div');
+        popupEl.id = 'signature-canvas-popup';
+        const container = document.querySelector('.rosters-container') || document.body;
+        container.appendChild(popupEl);
+      }
+
+      checkOutPopupInstance = $(popupEl).dxPopup({
+        visible: false,
+        contentTemplate: () => {
+          return $('<div style="width: 100%; height: 100px;">').append(
+            $('<canvas class="signature" style="width: 100%; height: 100px;"></canvas>')
+          );
+        },
+        maxWidth: 400,
+        width: '95%',
+        height: 200,
+        container: '.rosters-container',
+        showTitle: true,
+        title: 'Sign here to check out',
+        dragEnabled: false,
+        hideOnOutsideClick: false,
+        showCloseButton: false,
+        position: {
+          at: 'center',
+          my: 'center',
+        },
+        onShown: () => {
+          const canvas = document.querySelector('canvas.signature');
+          if (canvas && (!signaturePadInstance || canvas.width === 0 || canvas.height === 0)) {
+            initSignatureCanvas();
+          }
+        },
+        toolbarItems: [
+          {
+            widget: 'dxButton',
+            toolbar: 'bottom',
+            location: 'before',
+            options: {
+              icon: 'edit',
+              text: 'Sign',
+              type: 'default',
+              onClick: async () => {
+                if (signaturePadInstance && !signaturePadInstance.isEmpty()) {
+                  const encodedFile = signaturePadInstance.toDataURL('image/jpeg', 0.5);
+                  checkOutPopupInstance.hide();
+                  if (currentCheckOutContext) {
+                    await performCheckOut(currentCheckOutContext, encodedFile);
+                  }
+                  if (signaturePadInstance) signaturePadInstance.clear();
+                  currentCheckOutContext = null;
+                } else {
+                  DevExpress.ui.notify({
+                    message: 'Checking out requires signature!',
+                    position: {
+                      my: 'center',
+                      at: 'center',
+                      of: window,
+                    },
+                  }, 'error', 3000);
+                }
+              },
+            },
+          },
+          {
+            widget: 'dxButton',
+            toolbar: 'bottom',
+            location: 'after',
+            options: {
+              icon: 'clear',
+              text: 'Clear signing',
+              stylingMode: 'outlined',
+              onClick: () => {
+                if (signaturePadInstance) {
+                  signaturePadInstance.clear();
+                }
+              },
+            },
+          },
+          {
+            widget: 'dxButton',
+            toolbar: 'bottom',
+            location: 'after',
+            options: {
+              text: 'Cancel',
+              stylingMode: 'text',
+              onClick: () => {
+                checkOutPopupInstance.hide();
+                if (signaturePadInstance) {
+                  signaturePadInstance.clear();
+                }
+                currentCheckOutContext = null;
+              },
+            },
+          },
+        ],
+      }).dxPopup('instance');
+
+      return checkOutPopupInstance;
+    };
+
+    const performCheckOut = async (ctx, encodedFile) => {
+      const { rowData, record, domElements, rowIndex } = ctx;
       try {
         const recordId = record.attendance_id || record.id;
+        const nowIso = new Date().toISOString();
+        const payload = {
+          finish: nowIso,
+          encoded_file: encodedFile
+        };
+
         const response = await fetch(`${endpoints.attendances}${recordId}/`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
           },
-          body: JSON.stringify({
-            finish: newFinish
-          })
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || errData.error || 'Failed to mark out');
+          throw new Error(errData.detail || errData.error || 'Failed to check out');
         }
         const updatedRecord = await response.json();
 
@@ -342,47 +529,120 @@
           gathering_id: updatedRecord.gathering,
           category_id: updatedRecord.category,
           start: updatedRecord.start,
-          finish: updatedRecord.finish
+          finish: updatedRecord.finish,
+          file_path: updatedRecord.file_path || null,
+          file: updatedRecord.file_path || null
         };
 
         Object.assign(record, normalizedRecord);
-        
+
         if (domElements && domElements.outBtn) {
-          if (newFinish) {
-            domElements.outBtn.className = 'roster-btn roster-btn-out checked-out';
-            domElements.outBtn.innerText = 'Checked Out';
-          } else {
-            domElements.outBtn.className = 'roster-btn roster-btn-out';
-            domElements.outBtn.innerText = 'Out';
-          }
+          domElements.outBtn.className = 'roster-btn roster-btn-out checked-out';
+          domElements.outBtn.innerText = 'Checked Out';
         }
 
-        if (gridInstanceRef.value) {
-          const rowKey = rowData.attendee_id || rowData.attending_id;
-          let rIndex = (typeof rowIndex === 'number' && rowIndex >= 0) ? rowIndex : -1;
-          if (rIndex < 0 && rowKey !== undefined) {
-            rIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
-          }
-          if (rIndex >= 0) {
-            const visibleRows = typeof gridInstanceRef.value.getVisibleRows === 'function' ? gridInstanceRef.value.getVisibleRows() : null;
-            if (visibleRows && visibleRows[rIndex] && visibleRows[rIndex].data) {
-              const gridRowData = visibleRows[rIndex].data;
-              if (!gridRowData.attendances) gridRowData.attendances = [];
-              const existingRec = gridRowData.attendances.find(a => a && String(a.gathering_id) === String(updatedRecord.gathering));
-              if (existingRec) {
-                Object.assign(existingRec, normalizedRecord);
-              } else {
-                gridRowData.attendances.push(normalizedRecord);
-              }
-            }
-          }
-        }
+        updateGridRowAttendance(rowData, updatedRecord.gathering, normalizedRecord, rowIndex);
+        DevExpress.ui.notify('Checked out successfully', 'success', 2000);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 3000);
       }
     };
 
-    return { getAttendingMeetStatus, isAttendingValid, isCheckedIn, isCheckedOut, toggleAttendance, markOut };
+    const undoCheckOut = async (rowData, record, domElements, rowIndex) => {
+      const attendeeName = rowData.attendee_name || 'Attendee';
+      let fileImgTag = '';
+      const filePath = record.file_path || record.file;
+      if (filePath) {
+        const fullUrl = (filePath.startsWith('http') || filePath.startsWith('/')) ? filePath : `/media/${filePath}`;
+        fileImgTag = `<br><div style="text-align: center; margin-top: 10px;"><img style="max-width: 100%; max-height: 120px; border: 1px solid #dee2e6; border-radius: 4px;" src="${fullUrl}" alt="Signature"></div>`;
+      }
+
+      const resultPromise = DevExpress.ui.dialog.confirm(
+        `<strong>Clear the time-out record of ${attendeeName} and REMOVE signature?</strong>${fileImgTag}`,
+        "UNDO check-out record?"
+      );
+
+      resultPromise.done(async (dialogResult) => {
+        if (!dialogResult) return;
+
+        try {
+          const recordId = record.attendance_id || record.id;
+          const response = await fetch(`${endpoints.attendances}${recordId}/`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+              finish: null,
+              file: null
+            })
+          });
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.detail || errData.error || 'Failed to undo check out');
+          }
+          const updatedRecord = await response.json();
+
+          const normalizedRecord = {
+            attendance_id: updatedRecord.id,
+            gathering_id: updatedRecord.gathering,
+            category_id: updatedRecord.category,
+            start: updatedRecord.start,
+            finish: null,
+            file_path: null,
+            file: null
+          };
+
+          Object.assign(record, normalizedRecord);
+
+          if (domElements && domElements.outBtn) {
+            domElements.outBtn.className = 'roster-btn roster-btn-out';
+            domElements.outBtn.innerText = 'Out';
+          }
+
+          updateGridRowAttendance(rowData, updatedRecord.gathering, normalizedRecord, rowIndex);
+          DevExpress.ui.notify('Check-out undone', 'info', 2000);
+        } catch (err) {
+          DevExpress.ui.notify(err.message, 'error', 3000);
+        }
+      });
+    };
+
+    const markOut = async (rowData, gathering, domElements, rowIndex) => {
+      const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
+      const gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
+      const record = getAttendanceRecord(rowData, gatheringId);
+      if (!record) return;
+
+      const isCurrentlyCheckedOut = !!record.finish;
+
+      if (isCurrentlyCheckedOut) {
+        await undoCheckOut(rowData, record, domElements, rowIndex);
+      } else {
+        try {
+          await ensureSignaturePadLoaded();
+          const popup = getCheckOutPopup();
+          const attendeeName = rowData.attendee_name || 'Attendee';
+          popup.option('title', `Checking out ${attendeeName}`);
+          currentCheckOutContext = {
+            rowData,
+            gathering,
+            gatheringMeta,
+            domElements,
+            rowIndex,
+            record
+          };
+          popup.show();
+          initSignatureCanvas();
+        } catch (e) {
+          DevExpress.ui.notify(e.message, 'error', 3000);
+        }
+      }
+    };
+
+    return { getAttendingMeetStatus, isAttendingValid, isCheckedIn, isCheckedOut, toggleAttendance, markOut, initCheckOutPopup: getCheckOutPopup };
   }
 
   // ==========================================================
@@ -2026,6 +2286,9 @@
       // Lifecycle
       onMounted(() => {
         initEndpoints();
+        if (attendanceLogic && typeof attendanceLogic.initCheckOutPopup === 'function') {
+          attendanceLogic.initCheckOutPopup();
+        }
         if (dataGridRef.value) initDataGrid(dataGridRef.value);
         if (filterFormRef.value) initFilterForm(filterFormRef.value);
         if (filterData.meets && filterData.meets.length > 0) {

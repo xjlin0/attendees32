@@ -46,6 +46,13 @@
           src="https://cdn3.devexpress.com/jslib/23.2.4/js/dx.web.js">
   </script>
 
+  <!-- Signature Pad (for checkout signature) -->
+  <script defer
+          src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.9/dist/signature_pad.umd.min.js"
+          integrity="sha256-V9L8ML4alT7DUFydZZy5L4hgeRqhv+oj16TmyeMu4m8="
+          crossorigin="anonymous">
+  </script>
+
   <!-- Application Logic -->
   <script defer
           type="text/javascript"
@@ -71,6 +78,8 @@
       <h3>Rosters Table</h3>
     </div>
   </div>
+
+  <div id="signature-canvas-popup"></div>
 
   <!-- DevExtreme Filters Form -->
   <div id="rosters-filter-form-container" ref="filterFormRef"></div>

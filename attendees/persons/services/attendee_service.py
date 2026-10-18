@@ -607,6 +607,7 @@ class AttendeeService:
                     Value('gathering_id'), 'attendings__attendance__gathering__id',
                     Value('start'), 'attendings__attendance__start',
                     Value('finish'), 'attendings__attendance__finish',
+                    Value('file_path'), 'attendings__attendance__file',
                     function='jsonb_build_object',
                 ),
                 filter=Q(attendings__attendance__gathering__in=gatherings, attendings__attendance__is_removed=False),

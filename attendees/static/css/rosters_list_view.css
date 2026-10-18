@@ -242,4 +242,16 @@
   width: 100%;
 }
 
+.dx-popup-content canvas.signature,
+canvas.signature {
+  border: 1px dashed #ced4da;
+  border-radius: 4px;
+  touch-action: none;
+  background-color: #fff;
+  cursor: crosshair;
+  width: 100%;
+  height: 100px;
+  display: block;
+}
+
 
