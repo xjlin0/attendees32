@@ -1,6 +1,7 @@
 Attendees.roster = {
   filtersForm: null,
   currentCheckbox: null,
+  currentSignatureCallback: null,
   meetScheduleRules: {},
   buttonCategories: {},
   allCategories: {},
@@ -11,6 +12,7 @@ Attendees.roster = {
   selectedCharacterSlugs: [],
   selectedMeetSlugs: [],
   meetData: {},
+  meetsMap: new Map(),
   init: () => {
     console.log('static/js/occasions/roster_list_view.js');
     Attendees.roster.initFiltersForm();
@@ -18,60 +20,153 @@ Attendees.roster = {
     Attendees.roster.gradeConverter = JSON.parse(document.getElementById('organization-grade-converter').textContent);
   },
 
+  getCurrentMeetSignatureRequiredAt: () => {
+    let meetSlug = null;
+    if (Attendees.roster.filtersForm) {
+      const meetsEditor = Attendees.roster.filtersForm.getEditor('meets');
+      if (meetsEditor) {
+        meetSlug = meetsEditor.option('value');
+      }
+    }
+    if (!meetSlug) {
+      meetSlug = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs');
+    }
+    if (!meetSlug) return null;
+    const meet = Attendees.roster.meetsMap.get(meetSlug) || Attendees.roster.meetsMap.get(String(meetSlug));
+    return (meet && meet.infos) ? meet.infos.signature_required_at : null;
+  },
+
+  openSignaturePopup: (title, checkboxInput, onSign) => {
+    Attendees.roster.checkOutPopup.option('title', title || 'Sign here');
+    Attendees.roster.currentCheckbox = checkboxInput;
+    Attendees.roster.currentSignatureCallback = onSign;
+    Attendees.roster.checkOutPopup.show();
+    const canvas = document.querySelector("canvas.signature");
+    if (canvas) {
+      canvas.style.width = '100%';
+      canvas.style.height = '100px';
+      canvas.width = canvas.offsetWidth || 378;
+      canvas.height = canvas.offsetHeight || 100;
+
+      if (Attendees.roster.signaturePad) {
+        try { Attendees.roster.signaturePad.off(); } catch (e) {}
+      }
+      Attendees.roster.signaturePad = new SignaturePad(canvas, {
+        maxWidth: 2,
+        backgroundColor: "rgb(255,255,255)",
+      });
+      Attendees.roster.signaturePad.clear();
+    }
+  },
+
   updateAttendance: (event) => {
     const checkboxInput = event.currentTarget;
     const rowIndex = checkboxInput.getAttribute("name");  // $radioInput.prop('name');
     const buttonValue =  checkboxInput.getAttribute("value"); // $radioInput.prop('value');
     const attendeeName = checkboxInput.parentElement.parentElement.querySelector('u.attendee-name').outerText;
+    const signatureRequiredAt = Attendees.roster.getCurrentMeetSignatureRequiredAt();
 
     switch(buttonValue) {
       case "checkIn":
         const checkInCategory = parseInt(checkboxInput.dataset.checkInCategory);
         const scheduledCategory = parseInt(checkboxInput.dataset.scheduledCategory);
         if (checkboxInput.checked) {
-          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', checkInCategory);
-          Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', new Date().toISOString());
-          Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
-        } else {  // maybe user clicking wrong row
-          const resultPromise = DevExpress.ui.dialog.confirm(`Remove the time-in record of ${attendeeName} and revert the status back to "scheduled"?`, "UNDO check-in record?");
-          resultPromise.done(dialogResult => {
-            if (dialogResult) {
-              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', scheduledCategory);
-              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', null);
+          if (signatureRequiredAt === 'check_in') {
+            Attendees.roster.openSignaturePopup(`Checking in ${attendeeName}`, checkboxInput, (encodedFile) => {
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', checkInCategory);
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', new Date().toISOString());
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'encoded_file', encodedFile);
               Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
-            } else {
-              checkboxInput.checked = true;
+              $(checkboxInput).siblings('input[value="checkOut"], label[for^="out-"]').removeClass('d-none');
+            });
+          } else {
+            Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', checkInCategory);
+            Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', new Date().toISOString());
+            Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+            $(checkboxInput).siblings('input[value="checkOut"], label[for^="out-"]').removeClass('d-none');
+          }
+        } else {  // maybe user clicking wrong row (undo check-in)
+          const hasSignature = !!(checkboxInput.dataset.file || (Attendees.roster.attendancesDatagrid && Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file_path')));
+          const needsConfirm = (signatureRequiredAt === 'check_in') || hasSignature;
+
+          if (needsConfirm) {
+            let fileImgTag = '';
+            const filePath = checkboxInput.dataset.file || (Attendees.roster.attendancesDatagrid && Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file_path'));
+            if (filePath) {
+              const fullUrl = (filePath.startsWith('http') || filePath.startsWith('/')) ? filePath : `/media/${filePath}`;
+              fileImgTag = `<br><div style="text-align: center; margin-top: 10px;"><img style="max-width: 100%; max-height: 120px; border: 1px solid #dee2e6; border-radius: 4px;" src="${fullUrl}" alt="Signature"></div>`;
             }
-          });
+            const resultPromise = DevExpress.ui.dialog.confirm(
+              `<strong>Clear check-in record of ${attendeeName} and REMOVE signature?</strong>${fileImgTag}`,
+              "UNDO check-in record?"
+            );
+            resultPromise.done(dialogResult => {
+              if (dialogResult) {
+                Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', scheduledCategory);
+                Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', null);
+                Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
+                Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file', null);
+                checkboxInput.dataset.file = '';
+                Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+                $(checkboxInput).siblings('input[value="checkOut"], label[for^="out-"]').addClass('d-none');
+                const outCheckbox = checkboxInput.parentElement.querySelector('input[value="checkOut"]');
+                if (outCheckbox) outCheckbox.checked = false;
+              } else {
+                checkboxInput.checked = true;
+              }
+            });
+          } else {
+            Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'category', scheduledCategory);
+            Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'start', null);
+            Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
+            Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+            $(checkboxInput).siblings('input[value="checkOut"], label[for^="out-"]').addClass('d-none');
+            const outCheckbox = checkboxInput.parentElement.querySelector('input[value="checkOut"]');
+            if (outCheckbox) outCheckbox.checked = false;
+          }
         }
         break;
       case "checkOut":
         if (checkboxInput.checked) {
-          Attendees.roster.checkOutPopup.option('title', `Checking out ${attendeeName}`);
-          Attendees.roster.currentCheckbox = checkboxInput;
-          Attendees.roster.checkOutPopup.show();
-          const canvas = document.querySelector("canvas.signature");
-          canvas.style.width ='100%';
-          canvas.style.height='100%';
-          canvas.width  = canvas.offsetWidth;  // https://stackoverflow.com/a/10215724/4257237
-          canvas.height = canvas.offsetHeight;
-
-          Attendees.roster.signaturePad = new SignaturePad(canvas, {
-            maxWidth: 2,
-            backgroundColor: "rgb(255,255,255)",  // for jpg
-          });
-
-        } else {  // maybe user clicking wrong row
-          const resultPromise = DevExpress.ui.dialog.confirm(`<strong>Clear the time-out record of ${attendeeName} and REMOVE signature?</strong>${checkboxInput.dataset.file ? '<br><img src="' + checkboxInput.dataset.file + '">' : ''}`, "UNDO check-out record?");
-          resultPromise.done(dialogResult => {
-            if (dialogResult) {
-              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
-              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file', null);  // don't delete files for Audit!!!
+          if (signatureRequiredAt === 'check_out') {
+            Attendees.roster.openSignaturePopup(`Checking out ${attendeeName}`, checkboxInput, (encodedFile) => {
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', new Date().toISOString());
+              Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'encoded_file', encodedFile);
               Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
-            } else {
-              checkboxInput.checked = true;
+            });
+          } else {
+            Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', new Date().toISOString());
+            Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+          }
+        } else {  // maybe user clicking wrong row (undo check-out)
+          const hasSignature = !!(checkboxInput.dataset.file || (Attendees.roster.attendancesDatagrid && Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file_path')));
+          const needsConfirm = (signatureRequiredAt === 'check_out') || (hasSignature && signatureRequiredAt !== 'check_in');
+
+          if (needsConfirm) {
+            let fileImgTag = '';
+            const filePath = checkboxInput.dataset.file || (Attendees.roster.attendancesDatagrid && Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file_path'));
+            if (filePath) {
+              const fullUrl = (filePath.startsWith('http') || filePath.startsWith('/')) ? filePath : `/media/${filePath}`;
+              fileImgTag = `<br><div style="text-align: center; margin-top: 10px;"><img style="max-width: 100%; max-height: 120px; border: 1px solid #dee2e6; border-radius: 4px;" src="${fullUrl}" alt="Signature"></div>`;
             }
-          });
+            const resultPromise = DevExpress.ui.dialog.confirm(
+              `<strong>Clear the time-out record of ${attendeeName} and REMOVE signature?</strong>${fileImgTag}`,
+              "UNDO check-out record?"
+            );
+            resultPromise.done(dialogResult => {
+              if (dialogResult) {
+                Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
+                Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'file', null);
+                checkboxInput.dataset.file = '';
+                Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+              } else {
+                checkboxInput.checked = true;
+              }
+            });
+          } else {
+            Attendees.roster.attendancesDatagrid.cellValue(rowIndex, 'finish', null);
+            Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
+          }
         }
         break;
       default:  // nothing so far
@@ -100,7 +195,7 @@ Attendees.roster = {
     height: 200,
     container: '.roster-container',
     showTitle: true,
-    title: 'Sign here to check out',
+    title: 'Sign here',
     dragEnabled: false,
     hideOnOutsideClick: false,
     showCloseButton: false,
@@ -117,16 +212,18 @@ Attendees.roster = {
           icon: 'edit',
           text: 'Sign',
           onClick() {
-            if (!Attendees.roster.signaturePad.isEmpty()) {
-              const currentRowIndex = Attendees.roster.currentCheckbox.getAttribute("name");
+            if (Attendees.roster.signaturePad && !Attendees.roster.signaturePad.isEmpty()) {
+              const encodedFile = Attendees.roster.signaturePad.toDataURL("image/jpeg", 0.5);
               Attendees.roster.checkOutPopup.hide();
-              Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'encoded_file', Attendees.roster.signaturePad.toDataURL("image/jpeg", 0.5));
-              Attendees.roster.attendancesDatagrid.cellValue(currentRowIndex, 'finish', new Date().toISOString());
-              Attendees.utilities.callOnce(Attendees.roster.attendancesDatagrid.saveEditData, 500);
-              Attendees.roster.signaturePad.clear();
+              const cb = Attendees.roster.currentSignatureCallback;
+              Attendees.roster.currentSignatureCallback = null;
+              if (cb) {
+                cb(encodedFile);
+              }
+              if (Attendees.roster.signaturePad) Attendees.roster.signaturePad.clear();
             } else {
               DevExpress.ui.notify({
-                message: 'Checking out requires signature!',
+                message: 'Signing requires signature!',
                 position: {
                   my: 'center',
                   at: 'center',
@@ -145,7 +242,9 @@ Attendees.roster = {
           icon: 'clear',
           text: 'Clear signing',
           onClick() {
-            Attendees.roster.signaturePad.clear();
+            if (Attendees.roster.signaturePad) {
+              Attendees.roster.signaturePad.clear();
+            }
           },
         },
       },
@@ -156,7 +255,13 @@ Attendees.roster = {
         options: {
           text: 'Cancel',
           onClick() {
-            Attendees.roster.currentCheckbox.checked = false;
+            if (Attendees.roster.currentCheckbox) {
+              Attendees.roster.currentCheckbox.checked = false;
+            }
+            if (Attendees.roster.signaturePad) {
+              Attendees.roster.signaturePad.clear();
+            }
+            Attendees.roster.currentSignatureCallback = null;
             Attendees.roster.checkOutPopup.hide();
           },
         },
@@ -322,12 +427,16 @@ Attendees.roster = {
                 $.get($('form.filters-dxform').data('meets-endpoint-by-slug'), params)
                   .done((result) => {
                     d.resolve(result.data);
-                    if (Object.keys(Attendees.roster.meetScheduleRules).length < 1 && result.data && result.data[0]) {
-                      result.data.forEach( assembly => {
-                        assembly.items.forEach( meet => {
+                    if (result.data) {
+                      result.data.forEach( assemblyOrMeet => {
+                        const items = assemblyOrMeet.items || [assemblyOrMeet];
+                        items.forEach( meet => {
                           Attendees.roster.meetScheduleRules[meet.slug] = {meetStart: meet.start, meetFinish: meet.finish, rules: meet.schedule_rules, assembly: meet.assembly};
                           Attendees.roster.meetData[meet.id] = [meet.finish, meet.major_character];  // cache the every meet's major characters for later use
-                        })
+                          Attendees.roster.meetsMap.set(meet.slug, meet);
+                          Attendees.roster.meetsMap.set(meet.id, meet);
+                          Attendees.roster.meetsMap.set(String(meet.id), meet);
+                        });
                       });
                     }
                     const selectedMeetSlugs = Attendees.utilities.accessItemFromSessionStorage(Attendees.utilities.datagridStorageKeys['rollCallListViewOpts'], 'selectedMeetSlugs');
@@ -518,6 +627,17 @@ Attendees.roster = {
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify(values),
             success: (result) => {
+              if (result && result.file_path) {
+                const inInput = document.getElementById(`in-${key}`);
+                const outInput = document.getElementById(`out-${key}`);
+                if (inInput) inInput.dataset.file = result.file_path;
+                if (outInput) outInput.dataset.file = result.file_path;
+              } else if (values.file === null) {
+                const inInput = document.getElementById(`in-${key}`);
+                const outInput = document.getElementById(`out-${key}`);
+                if (inInput) inInput.dataset.file = '';
+                if (outInput) outInput.dataset.file = '';
+              }
               DevExpress.ui.notify(
                 {
                   message: 'update attendance success',
@@ -781,6 +901,7 @@ Attendees.roster = {
                                  autocomplete="off"
                                  data-check-in-category="9"
                                  data-scheduled-category="1"
+                                 data-file="${cellInfo.data.file_path || ''}"
                                  ${cellInfo.data.category === 9 ? 'checked' : ''}>
                           <label class="btn btn-outline-success"
                                  for="in-${cellInfo.data.id}">
@@ -793,7 +914,7 @@ Attendees.roster = {
                                  value="checkOut"
                                  id="out-${cellInfo.data.id}"
                                  autocomplete="off"
-                                 data-file="${cellInfo.data.file_path}"
+                                 data-file="${cellInfo.data.file_path || ''}"
                                  ${cellInfo.data.finish ? 'checked' : ''}>
                           <label class="btn btn-outline-primary ${cellInfo.data.start ? '' : 'd-none'}"
                                  for="out-${cellInfo.data.id}">

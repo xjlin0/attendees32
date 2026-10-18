@@ -508,6 +508,13 @@ docker compose -f local.yml restart django
 TZ=UTC npx playwright test --project=chromium
 ```
 
+## flags in infos
+
+### meet:
+`signature_required_at`: could be nonexist, "check_out" or "check_in" string.  For check in/out attendance, "check_out" will force users to sign at checking out, "check_in" will force users to sign at checking in.
+`default_attendingmeet_in_weeks`: could be any positive integers. When generating attendingmeet, start will be current, and finish will be current plus that number of weeks.
+`default_time_zone`: used for generating any start/finish of attendingmeet/attendances in that timezone.
+
 ## Todo & progress:
 
 <details>

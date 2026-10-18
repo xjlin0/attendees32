@@ -4,6 +4,13 @@
   // Shared registry of gatherings for columns:
   const gatheringsRegistry = new Map();
   const meetsInfoMap = new Map();
+  const meetsMap = new Map();
+
+  const getMeetSignatureRequiredAt = (meetId) => {
+    if (!meetId) return null;
+    const m = meetsMap.get(meetId) || meetsMap.get(String(meetId));
+    return (m && m.infos) ? m.infos.signature_required_at : null;
+  };
 
   const getColumnIdentifier = (gathering) => {
     return (gathering && gathering.id) ? String(gathering.id) : `future_${gathering ? gathering.meet_id : ''}_${gathering ? gathering.start : ''}`;
@@ -136,18 +143,16 @@
       return getAttendingMeetStatus(rowData, gathering) !== 'not_attending';
     };
 
-    const toggleAttendance = async (rowData, gathering, domElements, rowIndex, colName) => {
+    const executeAttendanceToggle = async (rowData, gathering, domElements, rowIndex, colName, newCategory, encodedFile, clearFile) => {
       const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
       let gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
       let record = getAttendanceRecord(rowData, gatheringId);
       const isCurrentlyCheckedIn = isCheckedIn(rowData, gatheringId);
-      const newCategory = isCurrentlyCheckedIn ? 1 : 9; 
 
       const targetAm = getActiveAttendingMeet(rowData, gatheringMeta || gathering)
                     || getAttendingMeetForGathering(rowData, gatheringMeta || gathering);
       const attendingId = targetAm ? targetAm.attending_id : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].attending_id : null));
       const characterId = targetAm ? targetAm.character_id : (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].character_id : 1);
-
 
       try {
         const recordId = record ? (record.attendance_id || record.id) : '';
@@ -160,6 +165,23 @@
         if (!gatheringId && gatheringMeta) {
           payload.meet = gatheringMeta.meet_id;
           payload.gathering_start = gatheringMeta.start;
+        }
+
+        if (encodedFile) {
+          payload.encoded_file = encodedFile;
+          payload.start = new Date().toISOString();
+        } else if (newCategory !== 1 && (!record || !record.start)) {
+          payload.start = new Date().toISOString();
+        }
+
+        if (newCategory === 1) {
+          payload.finish = null;
+        }
+
+        if (clearFile) {
+          payload.file = null;
+          payload.start = null;
+          payload.finish = null;
         }
 
         const response = await fetch(`${endpoints.attendances}${recordId ? recordId + '/' : ''}`, {
@@ -181,10 +203,10 @@
           attendance_id: updatedRecord.id,
           gathering_id: updatedRecord.gathering,
           category_id: updatedRecord.category,
-          start: updatedRecord.start,
-          finish: updatedRecord.finish,
-          file_path: updatedRecord.file_path || null,
-          file: updatedRecord.file_path || null
+          start: clearFile ? null : updatedRecord.start,
+          finish: (newCategory === 1 || clearFile) ? null : updatedRecord.finish,
+          file_path: clearFile ? null : (updatedRecord.file_path || null),
+          file: clearFile ? null : (updatedRecord.file_path || null)
         };
 
         if (!rowData.attendances) {
@@ -213,7 +235,6 @@
         // Directly update the button & out-button in the cell DOM
         if (domElements) {
           if (newCategory !== 1) { // Checked in!
-            // If attendingmeet was expired, extend finish date locally to end of gathering day
             if (targetAm && gatheringMeta && gatheringMeta.start) {
               const gStart = new Date(gatheringMeta.start);
               const amFinish = targetAm.finish ? new Date(targetAm.finish) : null;
@@ -229,8 +250,13 @@
             }
             if (domElements.outBtn) {
               domElements.outBtn.style.display = 'inline-block';
-              domElements.outBtn.className = 'roster-btn roster-btn-out';
-              domElements.outBtn.innerText = 'Out';
+              if (normalizedRecord.finish) {
+                domElements.outBtn.className = 'roster-btn roster-btn-out checked-out';
+                domElements.outBtn.innerText = 'Checked Out';
+              } else {
+                domElements.outBtn.className = 'roster-btn roster-btn-out';
+                domElements.outBtn.innerText = 'Out';
+              }
             }
           } else { // Undone check in
             if (domElements.checkInBtn) {
@@ -244,7 +270,6 @@
             }
           }
         }
-
 
         // Update the total attendances count dynamically
         const newTotal = isCurrentlyCheckedIn 
@@ -306,14 +331,65 @@
             }
           }
         }
+
+        DevExpress.ui.notify(newCategory !== 1 ? 'Checked in successfully' : 'Check-in undone', 'success', 2000);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 3000);
       }
     };
 
-    let checkOutPopupInstance = null;
+    const toggleAttendance = async (rowData, gathering, domElements, rowIndex, colName) => {
+      const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
+      let gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
+      let record = getAttendanceRecord(rowData, gatheringId);
+      const isCurrentlyCheckedIn = isCheckedIn(rowData, gatheringId);
+      const meetId = (gatheringMeta && gatheringMeta.meet_id) || (gathering && gathering.meet_id) || null;
+      const signatureRequiredAt = getMeetSignatureRequiredAt(meetId);
+
+      if (!isCurrentlyCheckedIn) {
+        // Checking in!
+        if (signatureRequiredAt === 'check_in') {
+          const attendeeName = rowData.attendee_name || 'Attendee';
+          await openSignaturePopup({
+            title: `Checking in ${attendeeName}`,
+            onSign: async (encodedFile) => {
+              await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 9, encodedFile, false);
+            }
+          });
+        } else {
+          await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 9, null, false);
+        }
+      } else {
+        // Undoing check in!
+        const hasSignature = !!(record && (record.file_path || record.file));
+        const needsConfirm = (signatureRequiredAt === 'check_in') || hasSignature;
+
+        if (needsConfirm) {
+          const attendeeName = rowData.attendee_name || 'Attendee';
+          let fileImgTag = '';
+          const filePath = record ? (record.file_path || record.file) : null;
+          if (filePath) {
+            const fullUrl = (filePath.startsWith('http') || filePath.startsWith('/')) ? filePath : `/media/${filePath}`;
+            fileImgTag = `<br><div style="text-align: center; margin-top: 10px;"><img style="max-width: 100%; max-height: 120px; border: 1px solid #dee2e6; border-radius: 4px;" src="${fullUrl}" alt="Signature"></div>`;
+          }
+          const resultPromise = DevExpress.ui.dialog.confirm(
+            `<strong>Clear check-in record of ${attendeeName} and REMOVE signature?</strong>${fileImgTag}`,
+            "UNDO check-in record?"
+          );
+          resultPromise.done(async (dialogResult) => {
+            if (dialogResult) {
+              await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 1, null, true);
+            }
+          });
+        } else {
+          await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 1, null, false);
+        }
+      }
+    };
+
+    let signaturePopupInstance = null;
     let signaturePadInstance = null;
-    let currentCheckOutContext = null;
+    let currentSignatureCallback = null;
 
     const ensureSignaturePadLoaded = () => {
       if (typeof SignaturePad !== 'undefined') {
@@ -390,12 +466,12 @@
         canvasHeight: canvas ? canvas.height : null,
         canvasOffsetWidth: canvas ? canvas.offsetWidth : null,
         canvasOffsetHeight: canvas ? canvas.offsetHeight : null,
-        popupInstance: checkOutPopupInstance
+        popupInstance: signaturePopupInstance
       });
     };
 
-    const getCheckOutPopup = () => {
-      if (checkOutPopupInstance) return checkOutPopupInstance;
+    const getSignaturePopup = () => {
+      if (signaturePopupInstance) return signaturePopupInstance;
 
       let popupEl = document.getElementById('signature-canvas-popup');
       if (!popupEl) {
@@ -405,7 +481,7 @@
         container.appendChild(popupEl);
       }
 
-      checkOutPopupInstance = $(popupEl).dxPopup({
+      signaturePopupInstance = $(popupEl).dxPopup({
         visible: false,
         contentTemplate: () => {
           return $('<div style="width: 100%; height: 100px;">').append(
@@ -417,7 +493,7 @@
         height: 200,
         container: '.rosters-container',
         showTitle: true,
-        title: 'Sign here to check out',
+        title: 'Sign here',
         dragEnabled: false,
         hideOnOutsideClick: false,
         showCloseButton: false,
@@ -443,15 +519,16 @@
               onClick: async () => {
                 if (signaturePadInstance && !signaturePadInstance.isEmpty()) {
                   const encodedFile = signaturePadInstance.toDataURL('image/jpeg', 0.5);
-                  checkOutPopupInstance.hide();
-                  if (currentCheckOutContext) {
-                    await performCheckOut(currentCheckOutContext, encodedFile);
+                  signaturePopupInstance.hide();
+                  const cb = currentSignatureCallback;
+                  currentSignatureCallback = null;
+                  if (cb) {
+                    await cb(encodedFile);
                   }
                   if (signaturePadInstance) signaturePadInstance.clear();
-                  currentCheckOutContext = null;
                 } else {
                   DevExpress.ui.notify({
-                    message: 'Checking out requires signature!',
+                    message: 'Signing requires signature!',
                     position: {
                       my: 'center',
                       at: 'center',
@@ -485,29 +562,45 @@
               text: 'Cancel',
               stylingMode: 'text',
               onClick: () => {
-                checkOutPopupInstance.hide();
+                signaturePopupInstance.hide();
                 if (signaturePadInstance) {
                   signaturePadInstance.clear();
                 }
-                currentCheckOutContext = null;
+                currentSignatureCallback = null;
               },
             },
           },
         ],
       }).dxPopup('instance');
 
-      return checkOutPopupInstance;
+      return signaturePopupInstance;
     };
 
-    const performCheckOut = async (ctx, encodedFile) => {
-      const { rowData, record, domElements, rowIndex } = ctx;
+    const openSignaturePopup = async ({ title, onSign }) => {
+      try {
+        await ensureSignaturePadLoaded();
+        const popup = getSignaturePopup();
+        popup.option('title', title || 'Sign here');
+        currentSignatureCallback = onSign;
+        popup.show();
+        initSignatureCanvas();
+      } catch (e) {
+        DevExpress.ui.notify(e.message, 'error', 3000);
+      }
+    };
+
+    const executeCheckOut = async (rowData, record, domElements, rowIndex, newFinish, encodedFile, clearFile) => {
       try {
         const recordId = record.attendance_id || record.id;
-        const nowIso = new Date().toISOString();
         const payload = {
-          finish: nowIso,
-          encoded_file: encodedFile
+          finish: newFinish,
         };
+        if (encodedFile !== undefined && encodedFile !== null) {
+          payload.encoded_file = encodedFile;
+        }
+        if (clearFile) {
+          payload.file = null;
+        }
 
         const response = await fetch(`${endpoints.attendances}${recordId}/`, {
           method: 'PATCH',
@@ -520,7 +613,7 @@
 
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || errData.error || 'Failed to check out');
+          throw new Error(errData.detail || errData.error || (newFinish ? 'Failed to check out' : 'Failed to undo check out'));
         }
         const updatedRecord = await response.json();
 
@@ -530,84 +623,27 @@
           category_id: updatedRecord.category,
           start: updatedRecord.start,
           finish: updatedRecord.finish,
-          file_path: updatedRecord.file_path || null,
-          file: updatedRecord.file_path || null
+          file_path: clearFile ? null : (updatedRecord.file_path || record.file_path || null),
+          file: clearFile ? null : (updatedRecord.file_path || record.file || null)
         };
 
         Object.assign(record, normalizedRecord);
 
         if (domElements && domElements.outBtn) {
-          domElements.outBtn.className = 'roster-btn roster-btn-out checked-out';
-          domElements.outBtn.innerText = 'Checked Out';
-        }
-
-        updateGridRowAttendance(rowData, updatedRecord.gathering, normalizedRecord, rowIndex);
-        DevExpress.ui.notify('Checked out successfully', 'success', 2000);
-      } catch (err) {
-        DevExpress.ui.notify(err.message, 'error', 3000);
-      }
-    };
-
-    const undoCheckOut = async (rowData, record, domElements, rowIndex) => {
-      const attendeeName = rowData.attendee_name || 'Attendee';
-      let fileImgTag = '';
-      const filePath = record.file_path || record.file;
-      if (filePath) {
-        const fullUrl = (filePath.startsWith('http') || filePath.startsWith('/')) ? filePath : `/media/${filePath}`;
-        fileImgTag = `<br><div style="text-align: center; margin-top: 10px;"><img style="max-width: 100%; max-height: 120px; border: 1px solid #dee2e6; border-radius: 4px;" src="${fullUrl}" alt="Signature"></div>`;
-      }
-
-      const resultPromise = DevExpress.ui.dialog.confirm(
-        `<strong>Clear the time-out record of ${attendeeName} and REMOVE signature?</strong>${fileImgTag}`,
-        "UNDO check-out record?"
-      );
-
-      resultPromise.done(async (dialogResult) => {
-        if (!dialogResult) return;
-
-        try {
-          const recordId = record.attendance_id || record.id;
-          const response = await fetch(`${endpoints.attendances}${recordId}/`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify({
-              finish: null,
-              file: null
-            })
-          });
-
-          if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.detail || errData.error || 'Failed to undo check out');
-          }
-          const updatedRecord = await response.json();
-
-          const normalizedRecord = {
-            attendance_id: updatedRecord.id,
-            gathering_id: updatedRecord.gathering,
-            category_id: updatedRecord.category,
-            start: updatedRecord.start,
-            finish: null,
-            file_path: null,
-            file: null
-          };
-
-          Object.assign(record, normalizedRecord);
-
-          if (domElements && domElements.outBtn) {
+          if (newFinish) {
+            domElements.outBtn.className = 'roster-btn roster-btn-out checked-out';
+            domElements.outBtn.innerText = 'Checked Out';
+          } else {
             domElements.outBtn.className = 'roster-btn roster-btn-out';
             domElements.outBtn.innerText = 'Out';
           }
-
-          updateGridRowAttendance(rowData, updatedRecord.gathering, normalizedRecord, rowIndex);
-          DevExpress.ui.notify('Check-out undone', 'info', 2000);
-        } catch (err) {
-          DevExpress.ui.notify(err.message, 'error', 3000);
         }
-      });
+
+        updateGridRowAttendance(rowData, updatedRecord.gathering, normalizedRecord, rowIndex);
+        DevExpress.ui.notify(newFinish ? 'Checked out successfully' : 'Check-out undone', newFinish ? 'success' : 'info', 2000);
+      } catch (err) {
+        DevExpress.ui.notify(err.message, 'error', 3000);
+      }
     };
 
     const markOut = async (rowData, gathering, domElements, rowIndex) => {
@@ -617,32 +653,64 @@
       if (!record) return;
 
       const isCurrentlyCheckedOut = !!record.finish;
+      const meetId = (gatheringMeta && gatheringMeta.meet_id) || (gathering && gathering.meet_id) || null;
+      const signatureRequiredAt = getMeetSignatureRequiredAt(meetId);
 
-      if (isCurrentlyCheckedOut) {
-        await undoCheckOut(rowData, record, domElements, rowIndex);
-      } else {
-        try {
-          await ensureSignaturePadLoaded();
-          const popup = getCheckOutPopup();
+      if (!isCurrentlyCheckedOut) {
+        // Checking out!
+        if (signatureRequiredAt === 'check_out') {
           const attendeeName = rowData.attendee_name || 'Attendee';
-          popup.option('title', `Checking out ${attendeeName}`);
-          currentCheckOutContext = {
-            rowData,
-            gathering,
-            gatheringMeta,
-            domElements,
-            rowIndex,
-            record
-          };
-          popup.show();
-          initSignatureCanvas();
-        } catch (e) {
-          DevExpress.ui.notify(e.message, 'error', 3000);
+          await openSignaturePopup({
+            title: `Checking out ${attendeeName}`,
+            onSign: async (encodedFile) => {
+              const nowIso = new Date().toISOString();
+              await executeCheckOut(rowData, record, domElements, rowIndex, nowIso, encodedFile, false);
+            }
+          });
+        } else {
+          const nowIso = new Date().toISOString();
+          await executeCheckOut(rowData, record, domElements, rowIndex, nowIso, null, false);
+        }
+      } else {
+        // Undoing check out!
+        const hasSignature = !!(record && (record.file_path || record.file));
+        const needsConfirm = (signatureRequiredAt === 'check_out') || (hasSignature && signatureRequiredAt !== 'check_in');
+
+        if (needsConfirm) {
+          const attendeeName = rowData.attendee_name || 'Attendee';
+          let fileImgTag = '';
+          const filePath = record ? (record.file_path || record.file) : null;
+          if (filePath) {
+            const fullUrl = (filePath.startsWith('http') || filePath.startsWith('/')) ? filePath : `/media/${filePath}`;
+            fileImgTag = `<br><div style="text-align: center; margin-top: 10px;"><img style="max-width: 100%; max-height: 120px; border: 1px solid #dee2e6; border-radius: 4px;" src="${fullUrl}" alt="Signature"></div>`;
+          }
+
+          const resultPromise = DevExpress.ui.dialog.confirm(
+            `<strong>Clear the time-out record of ${attendeeName} and REMOVE signature?</strong>${fileImgTag}`,
+            "UNDO check-out record?"
+          );
+
+          resultPromise.done(async (dialogResult) => {
+            if (dialogResult) {
+              await executeCheckOut(rowData, record, domElements, rowIndex, null, null, true);
+            }
+          });
+        } else {
+          await executeCheckOut(rowData, record, domElements, rowIndex, null, null, false);
         }
       }
     };
 
-    return { getAttendingMeetStatus, isAttendingValid, isCheckedIn, isCheckedOut, toggleAttendance, markOut, initCheckOutPopup: getCheckOutPopup };
+    return {
+      getAttendingMeetStatus,
+      isAttendingValid,
+      isCheckedIn,
+      isCheckedOut,
+      toggleAttendance,
+      markOut,
+      initSignaturePopup: getSignaturePopup,
+      initCheckOutPopup: getSignaturePopup
+    };
   }
 
   // ==========================================================
@@ -686,11 +754,18 @@
           lookupsCache.teams = teamsRes.data || teamsRes.results || teamsRes || [];
 
           lookupsCache.meets.forEach(m => {
-            if (m.id !== undefined && m.id !== null && m.display_name) {
-              lookupsCache.meetNames[m.id] = m.display_name;
-              meetsInfoMap.set(m.id, m.display_name);
-              meetsInfoMap.set(String(m.id), m.display_name);
-              if (m.slug) meetsInfoMap.set(m.slug, m.display_name);
+            if (m.id !== undefined && m.id !== null) {
+              if (m.display_name) {
+                lookupsCache.meetNames[m.id] = m.display_name;
+                meetsInfoMap.set(m.id, m.display_name);
+                meetsInfoMap.set(String(m.id), m.display_name);
+              }
+              meetsMap.set(m.id, m);
+              meetsMap.set(String(m.id), m);
+              if (m.slug) {
+                if (m.display_name) meetsInfoMap.set(m.slug, m.display_name);
+                meetsMap.set(m.slug, m);
+              }
             }
           });
 
@@ -1142,7 +1217,7 @@
       popupInstance.show();
     };
 
-    return { openAttendingMeetsPopup };
+    return { openAttendingMeetsPopup, preloadLookups };
   }
 
   // ==========================================================
@@ -2196,15 +2271,25 @@
                           if (m.id !== undefined) {
                             meetsInfoMap.set(m.id, m.display_name);
                             meetsInfoMap.set(String(m.id), m.display_name);
+                            meetsMap.set(m.id, m);
+                            meetsMap.set(String(m.id), m);
                           }
-                          if (m.slug) meetsInfoMap.set(m.slug, m.display_name);
+                          if (m.slug) {
+                            meetsInfoMap.set(m.slug, m.display_name);
+                            meetsMap.set(m.slug, m);
+                          }
                         });
                       } else {
                         if (groupOrMeet.id !== undefined) {
                           meetsInfoMap.set(groupOrMeet.id, groupOrMeet.display_name);
                           meetsInfoMap.set(String(groupOrMeet.id), groupOrMeet.display_name);
+                          meetsMap.set(groupOrMeet.id, groupOrMeet);
+                          meetsMap.set(String(groupOrMeet.id), groupOrMeet);
                         }
-                        if (groupOrMeet.slug) meetsInfoMap.set(groupOrMeet.slug, groupOrMeet.display_name);
+                        if (groupOrMeet.slug) {
+                          meetsInfoMap.set(groupOrMeet.slug, groupOrMeet.display_name);
+                          meetsMap.set(groupOrMeet.slug, groupOrMeet);
+                        }
                       }
                     });
 
@@ -2286,8 +2371,11 @@
       // Lifecycle
       onMounted(() => {
         initEndpoints();
-        if (attendanceLogic && typeof attendanceLogic.initCheckOutPopup === 'function') {
-          attendanceLogic.initCheckOutPopup();
+        if (attendanceLogic && typeof attendanceLogic.initSignaturePopup === 'function') {
+          attendanceLogic.initSignaturePopup();
+        }
+        if (attendingMeetsEditor && typeof attendingMeetsEditor.preloadLookups === 'function') {
+          attendingMeetsEditor.preloadLookups();
         }
         if (dataGridRef.value) initDataGrid(dataGridRef.value);
         if (filterFormRef.value) initFilterForm(filterFormRef.value);

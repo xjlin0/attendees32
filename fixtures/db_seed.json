@@ -10844,6 +10844,7 @@
         "Gathering": true,
         "Attendance": true
       },
+      "signature_required_at": "check_out",
       "default_attendingmeet_in_weeks": 53
     },
     "site_type": [
@@ -10894,6 +10895,7 @@
         "Gathering": true,
         "Attendance": true
       },
+      "signature_required_at": "check_out",
       "default_attendingmeet_in_weeks": 53
     },
     "site_type": [
