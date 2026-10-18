@@ -85,11 +85,12 @@
   color: green;
   border: 1px solid green;
   border-radius: 4px;
-  padding: 4px 10px;
-  font-size: 0.9em;
+  padding: 2px 7px;
+  font-size: 0.82em;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 80px;
+  min-width: 66px;
+  flex-shrink: 0;
 }
 .roster-btn:hover {
   background-color: green;
@@ -108,8 +109,10 @@
   background-color: transparent;
   color: blue;
   border-color: blue;
-  margin-left: 5px;
-  min-width: 60px;
+  margin-left: 3px;
+  padding: 2px 5px;
+  min-width: 40px;
+  flex-shrink: 0;
 }
 .roster-btn-out:hover {
   background-color: blue;
@@ -123,6 +126,12 @@
 .roster-btn-out.checked-out:hover {
   background-color: darkblue;
   border-color: darkblue;
+}
+.roster-cell-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
 }
 .not-attending-text {
   color: gray;

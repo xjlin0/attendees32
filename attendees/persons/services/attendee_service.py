@@ -515,15 +515,14 @@ class AttendeeService:
             is_removed=False
         ).order_by('start', 'meet__display_name', 'id')
 
-        gathering_list = [
-            {
-                "id": g.id,
-                "display_name": g.display_name,
-                "start": g.start.isoformat() if g.start else None,
-                "meet_id": g.meet_id
-            }
-            for g in gatherings
-        ]
+        from attendees.occasions.services import GatheringService
+
+        gathering_list = GatheringService.get_roster_gatherings(
+            organization=organization,
+            meet_slugs=meet_slugs,
+            start=start,
+            finish=finish,
+        )
 
         # 2. Query Attendees (Rows) with Database Aggregation
         attendingmeet_filter = (

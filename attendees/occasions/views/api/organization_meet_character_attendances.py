@@ -2,7 +2,7 @@ import time
 
 from django.db.models.aggregates import Count
 from django.db.models import Q
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.utils import json
@@ -21,6 +21,16 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = AttendanceEtcSerializer
+
+    def create(self, request, *args, **kwargs):
+        attendance = AttendanceService.create_or_update_attendance(
+            user=request.user,
+            data=request.data,
+            context=self.get_serializer_context(),
+        )
+        serializer = self.get_serializer(attendance)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def list(self, request, *args, **kwargs):
         attendee = self.request.query_params.get("attendee")

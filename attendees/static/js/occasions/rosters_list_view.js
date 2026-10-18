@@ -1,6 +1,41 @@
 ;(() => {
   const { createApp, ref, reactive, onMounted } = Vue;
 
+  // Shared registry of gatherings for columns:
+  const gatheringsRegistry = new Map();
+
+  const getColumnIdentifier = (gathering) => {
+    return (gathering && gathering.id) ? String(gathering.id) : `future_${gathering ? gathering.meet_id : ''}_${gathering ? gathering.start : ''}`;
+  };
+
+  const registerGathering = (gathering) => {
+    if (!gathering) return null;
+    const meetStartKey = (gathering.meet_id && gathering.start) ? `${gathering.meet_id}_${gathering.start}` : '';
+    let existing = (meetStartKey && gatheringsRegistry.get(meetStartKey)) || (gathering.id && gatheringsRegistry.get(String(gathering.id))) || null;
+    if (!existing) {
+      existing = {
+        id: gathering.id || null,
+        meet_id: gathering.meet_id,
+        start: gathering.start,
+        finish: gathering.finish
+      };
+      if (meetStartKey) gatheringsRegistry.set(meetStartKey, existing);
+    } else {
+      if (gathering.id && !existing.id) {
+        existing.id = gathering.id;
+      }
+      if (gathering.meet_id && !existing.meet_id) existing.meet_id = gathering.meet_id;
+      if (gathering.start && !existing.start) existing.start = gathering.start;
+      if (gathering.finish && !existing.finish) existing.finish = gathering.finish;
+    }
+
+    if (existing.id) {
+      gatheringsRegistry.set(String(existing.id), existing);
+    }
+    const colId = getColumnIdentifier(existing);
+    gatheringsRegistry.set(colId, existing);
+    return existing;
+  };
 
   // ==========================================================
   // 1. Endpoints Logic
@@ -40,17 +75,18 @@
   // ==========================================================
   function useAttendanceLogic(endpoints, gridInstanceRef) {
     const getAttendanceRecord = (rowData, gatheringId) => {
-      return rowData.attendances.find(a => String(a.gathering_id) === String(gatheringId));
+      if (!rowData || !rowData.attendances || !gatheringId) return null;
+      return rowData.attendances.find(a => a && String(a.gathering_id) === String(gatheringId));
     };
 
     const isCheckedIn = (rowData, gatheringId) => {
       const record = getAttendanceRecord(rowData, gatheringId);
-      return record && record.category_id !== 1;
+      return !!(record && record.category_id !== 1);
     };
 
     const isCheckedOut = (rowData, gatheringId) => {
       const record = getAttendanceRecord(rowData, gatheringId);
-      return record && record.finish;
+      return !!(record && record.finish);
     };
 
     const getActiveAttendingMeet = (rowData, gathering) => {
@@ -74,33 +110,43 @@
       return !!getActiveAttendingMeet(rowData, gathering);
     };
 
-    const toggleAttendance = async (rowData, gathering) => {
-      const gatheringId = (gathering && (gathering.id || gathering.gathering_id)) || gathering;
-      const record = getAttendanceRecord(rowData, gatheringId);
+    const toggleAttendance = async (rowData, gathering, domElements, rowIndex, colName) => {
+      const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
+      let gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
+      let record = getAttendanceRecord(rowData, gatheringId);
       const isCurrentlyCheckedIn = isCheckedIn(rowData, gatheringId);
       const newCategory = isCurrentlyCheckedIn ? 1 : 9; 
 
-      const activeAm = getActiveAttendingMeet(rowData, gathering);
+      const activeAm = getActiveAttendingMeet(rowData, gatheringMeta || gathering);
       const attendingId = activeAm ? activeAm.attending_id : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].attending_id : null));
       const characterId = activeAm ? activeAm.character_id : (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].character_id : 1);
 
       try {
         const recordId = record ? (record.attendance_id || record.id) : '';
+        const payload = {
+          gathering: gatheringId || null,
+          attending: attendingId,
+          character: characterId,
+          category: newCategory
+        };
+        if (!gatheringId && gatheringMeta) {
+          payload.meet = gatheringMeta.meet_id;
+          payload.gathering_start = gatheringMeta.start;
+        }
+
         const response = await fetch(`${endpoints.attendances}${recordId ? recordId + '/' : ''}`, {
           method: record ? 'PATCH' : 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
           },
-          body: JSON.stringify({
-            gathering: gatheringId,
-            attending: attendingId,
-            character: characterId,
-            category: newCategory
-          })
+          body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error('Failed to update attendance');
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || errData.error || 'Failed to update attendance');
+        }
         const updatedRecord = await response.json();
 
         const normalizedRecord = {
@@ -111,10 +157,52 @@
           finish: updatedRecord.finish
         };
 
+        if (!rowData.attendances) {
+          rowData.attendances = [];
+        }
+        record = getAttendanceRecord(rowData, updatedRecord.gathering);
         if (record) {
           Object.assign(record, normalizedRecord);
         } else {
           rowData.attendances.push(normalizedRecord);
+        }
+
+        // If a new gathering was created, update gatheringMeta and shared registry
+        const newGatheringId = updatedRecord.gathering;
+        if (newGatheringId) {
+          if (gatheringMeta) {
+            gatheringMeta.id = newGatheringId;
+          }
+          registerGathering(gatheringMeta || {
+            id: newGatheringId,
+            meet_id: payload.meet,
+            start: payload.gathering_start
+          });
+        }
+
+        // Directly update the button & out-button in the cell DOM
+        if (domElements) {
+          if (newCategory !== 1) { // Checked in!
+            if (domElements.checkInBtn) {
+              domElements.checkInBtn.className = 'roster-btn checked-in';
+              domElements.checkInBtn.innerText = 'Checked In';
+            }
+            if (domElements.outBtn) {
+              domElements.outBtn.style.display = 'inline-block';
+              domElements.outBtn.className = 'roster-btn roster-btn-out';
+              domElements.outBtn.innerText = 'Out';
+            }
+          } else { // Undone check in
+            if (domElements.checkInBtn) {
+              domElements.checkInBtn.className = 'roster-btn';
+              domElements.checkInBtn.innerText = 'Check In';
+            }
+            if (domElements.outBtn) {
+              domElements.outBtn.style.display = 'none';
+              domElements.outBtn.className = 'roster-btn roster-btn-out';
+              domElements.outBtn.innerText = 'Out';
+            }
+          }
         }
 
         // Update the total attendances count dynamically
@@ -126,16 +214,65 @@
 
         if (gridInstanceRef.value) {
           const rowKey = rowData.attendee_id || rowData.attending_id;
-          const rowIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
-          gridInstanceRef.value.cellValue(rowIndex, 'total_attendances', newTotal);
-          gridInstanceRef.value.repaintRows([rowIndex]);
+          let rIndex = (typeof rowIndex === 'number' && rowIndex >= 0) ? rowIndex : -1;
+          if (rIndex < 0 && rowKey !== undefined) {
+            rIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
+          }
+          if (rIndex >= 0) {
+            const cellEl = gridInstanceRef.value.getCellElement(rIndex, 'total_attendances');
+            if (cellEl) {
+              if (cellEl.text) {
+                cellEl.text(String(newTotal));
+              } else if (cellEl[0]) {
+                cellEl[0].innerText = String(newTotal);
+              }
+            }
+            const visibleRows = typeof gridInstanceRef.value.getVisibleRows === 'function' ? gridInstanceRef.value.getVisibleRows() : null;
+            if (visibleRows && visibleRows[rIndex] && visibleRows[rIndex].data) {
+              const gridRowData = visibleRows[rIndex].data;
+              gridRowData.total_attendances = newTotal;
+              if (!gridRowData.attendances) gridRowData.attendances = [];
+              const existingRec = gridRowData.attendances.find(a => a && String(a.gathering_id) === String(updatedRecord.gathering));
+              if (existingRec) {
+                Object.assign(existingRec, normalizedRecord);
+              } else {
+                gridRowData.attendances.push(normalizedRecord);
+              }
+            }
+          }
+        }
+
+        // Dynamically adjust column width: expand to 150px on check-in, shrink to 100px if all checked out
+        if (gridInstanceRef.value && colName) {
+          if (newCategory !== 1) {
+            const curWidth = gridInstanceRef.value.columnOption(colName, 'width');
+            if (curWidth !== 150) {
+              gridInstanceRef.value.columnOption(colName, 'width', 150);
+              gridInstanceRef.value.columnOption(colName, 'minWidth', 150);
+            }
+          } else {
+            const currentGId = gatheringMeta ? gatheringMeta.id : gatheringId;
+            let anyOtherCheckedIn = false;
+            const visibleRows = typeof gridInstanceRef.value.getVisibleRows === 'function' ? gridInstanceRef.value.getVisibleRows() : null;
+            if (visibleRows && currentGId) {
+              anyOtherCheckedIn = visibleRows.some(vr => 
+                vr.data && vr.data !== rowData && isCheckedIn(vr.data, currentGId)
+              );
+            }
+            if (!anyOtherCheckedIn) {
+              gridInstanceRef.value.columnOption(colName, 'width', 100);
+              gridInstanceRef.value.columnOption(colName, 'minWidth', 100);
+            }
+          }
         }
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 3000);
       }
     };
 
-    const markOut = async (rowData, gatheringId) => {
+    const markOut = async (rowData, gathering, domElements, rowIndex) => {
+      const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
+      const gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
       const record = getAttendanceRecord(rowData, gatheringId);
       if (!record) return;
 
@@ -155,7 +292,10 @@
           })
         });
 
-        if (!response.ok) throw new Error('Failed to mark out');
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || errData.error || 'Failed to mark out');
+        }
         const updatedRecord = await response.json();
 
         const normalizedRecord = {
@@ -168,10 +308,35 @@
 
         Object.assign(record, normalizedRecord);
         
+        if (domElements && domElements.outBtn) {
+          if (newFinish) {
+            domElements.outBtn.className = 'roster-btn roster-btn-out checked-out';
+            domElements.outBtn.innerText = 'Checked Out';
+          } else {
+            domElements.outBtn.className = 'roster-btn roster-btn-out';
+            domElements.outBtn.innerText = 'Out';
+          }
+        }
+
         if (gridInstanceRef.value) {
           const rowKey = rowData.attendee_id || rowData.attending_id;
-          const rowIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
-          gridInstanceRef.value.repaintRows([rowIndex]);
+          let rIndex = (typeof rowIndex === 'number' && rowIndex >= 0) ? rowIndex : -1;
+          if (rIndex < 0 && rowKey !== undefined) {
+            rIndex = gridInstanceRef.value.getRowIndexByKey(rowKey);
+          }
+          if (rIndex >= 0) {
+            const visibleRows = typeof gridInstanceRef.value.getVisibleRows === 'function' ? gridInstanceRef.value.getVisibleRows() : null;
+            if (visibleRows && visibleRows[rIndex] && visibleRows[rIndex].data) {
+              const gridRowData = visibleRows[rIndex].data;
+              if (!gridRowData.attendances) gridRowData.attendances = [];
+              const existingRec = gridRowData.attendances.find(a => a && String(a.gathering_id) === String(updatedRecord.gathering));
+              if (existingRec) {
+                Object.assign(existingRec, normalizedRecord);
+              } else {
+                gridRowData.attendances.push(normalizedRecord);
+              }
+            }
+          }
         }
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 3000);
@@ -720,11 +885,13 @@
 
     const attendanceCellTemplate = (container, options) => {
       const data = options.data;
-      const gatheringMeta = options.column.gatheringMeta;
-      const gatheringId = options.column.name;
+      const colName = options.column.name;
+      const colMeta = options.column.gatheringMeta;
+      const meetStartKey = (colMeta && colMeta.meet_id && colMeta.start) ? `${colMeta.meet_id}_${colMeta.start}` : '';
+      const gatheringMeta = gatheringsRegistry.get(colName) || (meetStartKey && gatheringsRegistry.get(meetStartKey)) || colMeta;
       
       const wrapper = document.createElement('div');
-      wrapper.className = 'text-center';
+      wrapper.className = 'text-center roster-cell-wrapper';
 
       if (!attendanceLogic.isAttendingValid(data, gatheringMeta)) {
         wrapper.innerHTML = `<span class="not-attending-text">Not Attending</span>`;
@@ -732,26 +899,37 @@
         return;
       }
 
-      const checkedIn = attendanceLogic.isCheckedIn(data, gatheringId);
+      const gatheringId = gatheringMeta && gatheringMeta.id;
+      const checkedIn = gatheringId ? attendanceLogic.isCheckedIn(data, gatheringId) : false;
+      const checkedOut = gatheringId ? attendanceLogic.isCheckedOut(data, gatheringId) : false;
+
       const checkInBtn = document.createElement('button');
       checkInBtn.className = `roster-btn ${checkedIn ? 'checked-in' : ''}`;
       checkInBtn.innerText = checkedIn ? 'Checked In' : 'Check In';
-      checkInBtn.addEventListener('click', () => attendanceLogic.toggleAttendance(data, gatheringMeta || gatheringId));
-      wrapper.appendChild(checkInBtn);
 
-      if (checkedIn) {
-        const checkedOut = attendanceLogic.isCheckedOut(data, gatheringId);
-        const outBtn = document.createElement('button');
-        outBtn.className = `roster-btn roster-btn-out ${checkedOut ? 'checked-out' : ''}`;
-        outBtn.innerText = checkedOut ? 'Checked Out' : 'Out';
-        outBtn.addEventListener('click', () => attendanceLogic.markOut(data, gatheringId));
-        wrapper.appendChild(outBtn);
+      const outBtn = document.createElement('button');
+      outBtn.className = `roster-btn roster-btn-out ${checkedOut ? 'checked-out' : ''}`;
+      outBtn.innerText = checkedOut ? 'Checked Out' : 'Out';
+      if (!checkedIn) {
+        outBtn.style.display = 'none';
       }
 
+      const domElements = { wrapper, checkInBtn, outBtn };
+
+      checkInBtn.addEventListener('click', () => {
+        attendanceLogic.toggleAttendance(data, gatheringMeta, domElements, options.rowIndex, colName);
+      });
+
+      outBtn.addEventListener('click', () => {
+        attendanceLogic.markOut(data, gatheringMeta, domElements, options.rowIndex);
+      });
+
+      wrapper.appendChild(checkInBtn);
+      wrapper.appendChild(outBtn);
       container.append(wrapper);
     };
 
-    const updateGridColumns = (serverColumns) => {
+    const updateGridColumns = (serverColumns, rows = []) => {
       const currentCols = gridInstanceRef.value.option('columns');
       let colsChanged = false;
       
@@ -762,7 +940,7 @@
         colsChanged = true;
       } else {
         for (let i = 0; i < serverColumns.length; i++) {
-          if (currentCols[i + FIXED_PREFIX_COUNT].name !== String(serverColumns[i].id)) {
+          if (currentCols[i + FIXED_PREFIX_COUNT].name !== getColumnIdentifier(serverColumns[i])) {
             colsChanged = true;
             break;
           }
@@ -811,11 +989,18 @@
         ];
 
         serverColumns.forEach(gathering => {
+          const registered = registerGathering(gathering);
+          const gid = registered.id;
+          const hasCheckedIn = gid && rows.some(r => attendanceLogic.isCheckedIn(r, gid));
+          const colWidth = hasCheckedIn ? 150 : 100;
+
           columns.push({
-            name: String(gathering.id),
-            caption: formatDate(gathering.start),
+            name: getColumnIdentifier(registered),
+            caption: formatDate(registered.start),
             alignment: 'center',
-            gatheringMeta: gathering,
+            width: colWidth,
+            minWidth: colWidth,
+            gatheringMeta: registered,
             cellTemplate: attendanceCellTemplate
           });
         });
@@ -828,6 +1013,19 @@
         });
 
         gridInstanceRef.value.option('columns', columns);
+      } else if (rows && rows.length) {
+        serverColumns.forEach(gathering => {
+          const registered = registerGathering(gathering);
+          const gid = registered.id;
+          const hasCheckedIn = gid && rows.some(r => attendanceLogic.isCheckedIn(r, gid));
+          const colId = getColumnIdentifier(registered);
+          const targetWidth = hasCheckedIn ? 150 : 100;
+          const curWidth = gridInstanceRef.value.columnOption(colId, 'width');
+          if (curWidth && curWidth !== targetWidth) {
+            gridInstanceRef.value.columnOption(colId, 'width', targetWidth);
+            gridInstanceRef.value.columnOption(colId, 'minWidth', targetWidth);
+          }
+        });
       }
     };
 
@@ -923,7 +1121,8 @@
           });
 
           gridInstanceRef.value.beginUpdate();
-          updateGridColumns(initialData.columns);
+          gatheringsRegistry.clear();
+          updateGridColumns(initialData.columns, initialData.data || initialData.rows || []);
           gridInstanceRef.value.option('dataSource', customStore);
           gridInstanceRef.value.endUpdate();
 

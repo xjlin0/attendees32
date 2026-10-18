@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 class RosterColumnSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(allow_null=True, required=False)
     display_name = serializers.CharField()
     start = serializers.DateTimeField()
     meet_id = serializers.IntegerField()
