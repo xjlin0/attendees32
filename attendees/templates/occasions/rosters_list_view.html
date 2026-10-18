@@ -5,21 +5,52 @@
   Rosters (Multi-Date)
 {% endblock title %}
 
-{% block extra_head %}
-  <!-- DevExtreme 23.2 CSS -->
-  <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.2.4/css/dx.light.compact.css">
-
-  <!-- Roster Custom CSS -->
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/21.2.11/css/dx.light.compact.css">
   <link rel="stylesheet" href="{% static 'css/rosters_list_view.css' %}">
+{% endblock extra_css %}
+
+{% block extra_head %}
+  <!-- JSZip (for Excel export) -->
+  <script defer
+          src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+          integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+  </script>
+
+  <!-- ExcelJS (for DevExtreme Excel export) -->
+  <script defer
+          src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"
+          integrity="sha512-UnrKxsCMN9hFk7M56t4I4ckB4N/2HHi0w/7+B/1JsXIX3DmyBcsGpT3/BsuZMZf+6mAr0vP81syWtfynHJ69JA=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+  </script>
+
+  <!-- FileSaver.js (for saving exported Excel files) -->
+  <script defer
+          src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
+          integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+  </script>
 
   <!-- Vue 3 Core (Pinned to 3.3.4 for stability) -->
   <script defer src="https://unpkg.com/vue@3.3.4/dist/vue.global.prod.js"></script>
 
-  <!-- DevExtreme 23.2 Core (Web only, excludes charts/maps to save size) -->
-  <script defer src="https://cdn3.devexpress.com/jslib/23.2.4/js/dx.web.js"></script>
+  <!-- DevExtreme 21.2 Core -->
+  <script defer
+          type="text/javascript"
+          src="https://cdn3.devexpress.com/jslib/21.2.11/js/dx.web.js"
+          integrity="sha384-209QJH8lCoDrB70trdPkGFr84168dIgFO2IYDKFYUv73DqCa161cBayeTRYdzjSp"
+          crossorigin="anonymous">
+  </script>
 
   <!-- Application Logic -->
-  <script defer src="{% static 'js/occasions/rosters_list_view.js' %}"></script>
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/occasions/rosters_list_view.js' %}">
+  </script>
 {% endblock extra_head %}
 
 {% block content %}

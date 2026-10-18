@@ -1172,7 +1172,8 @@
           caption: '',
           cssClass: 'dummy-column',
           allowHiding: false,
-          showInColumnChooser: false
+          showInColumnChooser: false,
+          allowExporting: false
         });
 
         // Preserve existing column options (groupIndex, sortOrder, sortIndex, visible, width)
@@ -1370,6 +1371,95 @@
           enabled: true,
           type: 'sessionStorage',
           storageKey: Attendees.utilities.datagridStorageKeys['rostersListView'],
+        },
+        export: {
+          enabled: true,
+          allowExportSelectedData: true,  // needs selection mode
+          texts: {
+            exportAll: 'Export data only on viewed pages',
+            exportSelectedRows: 'Export selected rows on viewed pages',
+            exportTo: 'Export data on viewed pages',
+          },
+        },
+        selection: {
+          mode: 'multiple',
+          showCheckBoxesMode: 'onLongTap',
+        },
+        onExporting: async (e) => {
+          const loadScript = (src) => new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+
+          let excelJs = window.ExcelJS || (typeof ExcelJS !== 'undefined' ? ExcelJS : null);
+          if (!excelJs) {
+            try {
+              await loadScript('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js');
+              excelJs = window.ExcelJS;
+            } catch (err) {
+              console.error('Failed to dynamically load ExcelJS:', err);
+            }
+          }
+
+          let fileSaver = window.saveAs || (typeof saveAs !== 'undefined' ? saveAs : null);
+          if (!fileSaver) {
+            try {
+              await loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js');
+              fileSaver = window.saveAs;
+            } catch (err) {
+              console.error('Failed to dynamically load FileSaver:', err);
+            }
+          }
+
+          if (!excelJs || !DevExpress.excelExporter) {
+            DevExpress.ui.notify('ExcelJS library is not loaded', 'error', 3000);
+            return;
+          }
+
+          const workbook = new excelJs.Workbook();
+          const worksheet = workbook.addWorksheet('Rosters');
+
+          DevExpress.excelExporter.exportDataGrid({
+            component: e.component,
+            worksheet,
+            selectedRowsOnly: e.selectedRowsOnly,
+            autoFilterEnabled: true,
+            customizeCell: (options) => {
+              const { gridCell, excelCell } = options;
+              if (gridCell.rowType === 'data') {
+                if (gridCell.column && gridCell.column.gatheringMeta) {
+                  const gid = gridCell.column.gatheringMeta.id;
+                  if (gid && gridCell.data) {
+                    if (attendanceLogic.isCheckedOut(gridCell.data, gid)) {
+                      excelCell.value = 'Checked Out';
+                    } else if (attendanceLogic.isCheckedIn(gridCell.data, gid)) {
+                      excelCell.value = 'Checked In';
+                    } else {
+                      excelCell.value = '';
+                    }
+                  }
+                }
+              }
+            }
+          }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+              const brand = document.querySelector('a.navbar-brand');
+              const title = (brand ? brand.innerText.trim() : 'Rosters') + `_${new Date().toLocaleDateString('sv-SE')}.xlsx`;
+              if (typeof fileSaver === 'function') {
+                fileSaver(new Blob([buffer], { type: 'application/octet-stream' }), title);
+              }
+            }).catch(err => {
+              console.error('Error writing workbook buffer:', err);
+              DevExpress.ui.notify('Export failed: ' + err.message, 'error', 3000);
+            });
+          }).catch(err => {
+            console.error('Error exporting datagrid:', err);
+            DevExpress.ui.notify('Export failed: ' + err.message, 'error', 3000);
+          });
+          e.cancel = true;
         },
         columns: [
           {
