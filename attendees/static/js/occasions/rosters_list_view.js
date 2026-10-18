@@ -3,6 +3,7 @@
 
   // Shared registry of gatherings for columns:
   const gatheringsRegistry = new Map();
+  const meetsInfoMap = new Map();
 
   const getColumnIdentifier = (gathering) => {
     return (gathering && gathering.id) ? String(gathering.id) : `future_${gathering ? gathering.meet_id : ''}_${gathering ? gathering.start : ''}`;
@@ -16,6 +17,7 @@
       existing = {
         id: gathering.id || null,
         meet_id: gathering.meet_id,
+        meet_display_name: gathering.meet_display_name || '',
         start: gathering.start,
         finish: gathering.finish
       };
@@ -25,6 +27,7 @@
         existing.id = gathering.id;
       }
       if (gathering.meet_id && !existing.meet_id) existing.meet_id = gathering.meet_id;
+      if (gathering.meet_display_name && !existing.meet_display_name) existing.meet_display_name = gathering.meet_display_name;
       if (gathering.start && !existing.start) existing.start = gathering.start;
       if (gathering.finish && !existing.finish) existing.finish = gathering.finish;
     }
@@ -389,6 +392,9 @@
           lookupsCache.meets.forEach(m => {
             if (m.id !== undefined && m.id !== null && m.display_name) {
               lookupsCache.meetNames[m.id] = m.display_name;
+              meetsInfoMap.set(m.id, m.display_name);
+              meetsInfoMap.set(String(m.id), m.display_name);
+              if (m.slug) meetsInfoMap.set(m.slug, m.display_name);
             }
           });
 
@@ -853,6 +859,54 @@
       return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
     };
 
+    const getColumnCaption = (gathering) => {
+      const timeStr = formatDate(gathering.start);
+      const isMultiMeet = filterData && filterData.meets && filterData.meets.length > 1;
+      if (isMultiMeet) {
+        const meetName = gathering.meet_display_name
+          || (gathering.meet_id && meetsInfoMap.get(gathering.meet_id))
+          || (gathering.meet_id && meetsInfoMap.get(String(gathering.meet_id)))
+          || '';
+        if (meetName) {
+          return `${meetName}\n${timeStr}`;
+        }
+      }
+      return timeStr;
+    };
+
+    const gatheringHeaderTemplate = (container, options) => {
+      const colMeta = options.column.gatheringMeta || (options.column.name && gatheringsRegistry.get(options.column.name));
+      const isMultiMeet = filterData && filterData.meets && filterData.meets.length > 1;
+      const meetName = (colMeta && colMeta.meet_display_name)
+        || (colMeta && colMeta.meet_id && meetsInfoMap.get(colMeta.meet_id))
+        || (colMeta && colMeta.meet_id && meetsInfoMap.get(String(colMeta.meet_id)))
+        || '';
+      const timeStr = formatDate(colMeta ? colMeta.start : '');
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'text-center roster-header-cell';
+      if (isMultiMeet && meetName) {
+        wrapper.innerHTML = `<div class="roster-header-meet">${meetName}</div><div class="roster-header-time">${timeStr}</div>`;
+      } else {
+        wrapper.innerHTML = `<div class="roster-header-time single">${timeStr}</div>`;
+      }
+
+      if (container.jquery) {
+        container.empty().append(wrapper);
+      } else if (container.length !== undefined && !container.nodeType) {
+        const el = container[0];
+        if (el) {
+          el.innerHTML = '';
+          el.appendChild(wrapper);
+        }
+      } else if (container.innerHTML !== undefined) {
+        container.innerHTML = '';
+        container.appendChild(wrapper);
+      } else if (container.append) {
+        container.append(wrapper);
+      }
+    };
+
     const attendeeCellTemplate = (container, options) => {
       const data = options.data;
       const wrapper = document.createElement('div');
@@ -940,7 +994,9 @@
         colsChanged = true;
       } else {
         for (let i = 0; i < serverColumns.length; i++) {
-          if (currentCols[i + FIXED_PREFIX_COUNT].name !== getColumnIdentifier(serverColumns[i])) {
+          const col = currentCols[i + FIXED_PREFIX_COUNT];
+          const registered = registerGathering(serverColumns[i]);
+          if (col.name !== getColumnIdentifier(registered) || col.caption !== getColumnCaption(registered)) {
             colsChanged = true;
             break;
           }
@@ -996,11 +1052,12 @@
 
           columns.push({
             name: getColumnIdentifier(registered),
-            caption: formatDate(registered.start),
+            caption: getColumnCaption(registered),
             alignment: 'center',
             width: colWidth,
             minWidth: colWidth,
             gatheringMeta: registered,
+            headerCellTemplate: gatheringHeaderTemplate,
             cellTemplate: attendanceCellTemplate
           });
         });
@@ -1024,6 +1081,12 @@
           if (curWidth && curWidth !== targetWidth) {
             gridInstanceRef.value.columnOption(colId, 'width', targetWidth);
             gridInstanceRef.value.columnOption(colId, 'minWidth', targetWidth);
+          }
+          gridInstanceRef.value.columnOption(colId, 'gatheringMeta', registered);
+          const targetCaption = getColumnCaption(registered);
+          const curCaption = gridInstanceRef.value.columnOption(colId, 'caption');
+          if (curCaption && curCaption !== targetCaption) {
+            gridInstanceRef.value.columnOption(colId, 'caption', targetCaption);
           }
         });
       }
@@ -1270,8 +1333,28 @@
                     if (!response.ok) throw new Error('Failed to load meets');
                     const json = await response.json();
 
+                    const rawData = json.data || json.results || json;
+                    const items = Array.isArray(rawData) ? rawData : [];
+                    items.forEach(groupOrMeet => {
+                      if (groupOrMeet.items && Array.isArray(groupOrMeet.items)) {
+                        groupOrMeet.items.forEach(m => {
+                          if (m.id !== undefined) {
+                            meetsInfoMap.set(m.id, m.display_name);
+                            meetsInfoMap.set(String(m.id), m.display_name);
+                          }
+                          if (m.slug) meetsInfoMap.set(m.slug, m.display_name);
+                        });
+                      } else {
+                        if (groupOrMeet.id !== undefined) {
+                          meetsInfoMap.set(groupOrMeet.id, groupOrMeet.display_name);
+                          meetsInfoMap.set(String(groupOrMeet.id), groupOrMeet.display_name);
+                        }
+                        if (groupOrMeet.slug) meetsInfoMap.set(groupOrMeet.slug, groupOrMeet.display_name);
+                      }
+                    });
+
                     // Backend (Utility.transform_result) already formats groups as { key, items }
-                    return json.data || json.results || json;
+                    return rawData;
                   }
                 })
               })

@@ -208,3 +208,4 @@ class TestGatheringService:
         existing_cols = [c for c in cols if c['id'] == self.gathering.id]
         assert len(existing_cols) == 1
         assert existing_cols[0]['meet_id'] == self.meet.id
+        assert existing_cols[0]['meet_display_name'] == self.meet.display_name

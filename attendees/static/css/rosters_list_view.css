@@ -138,10 +138,47 @@
   font-size: 0.85em;
   font-style: italic;
 }
-.dx-datagrid-headers .dx-header-row {
+#rosters-datagrid-container .dx-datagrid-headers .dx-header-row {
   background-color: #e9ecef;
   color: #343a40;
 }
-.dx-datagrid-headers .dx-datagrid-text-content {
-  font-weight: bold;
+#rosters-datagrid-container .dx-datagrid-headers .dx-datagrid-table .dx-row > td,
+#rosters-datagrid-container .dx-datagrid-headers .dx-datagrid-table .dx-row > th,
+#rosters-datagrid-container .dx-datagrid-headers .dx-header-row > td,
+#rosters-datagrid-container .dx-datagrid-headers .dx-header-row > th {
+  white-space: normal;
+  vertical-align: middle;
 }
+#rosters-datagrid-container .dx-datagrid-headers .dx-datagrid-text-content {
+  font-weight: bold;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
+}
+.roster-header-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  line-height: 1.2;
+}
+.roster-header-meet {
+  font-weight: bold;
+  font-size: 0.82em;
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
+  word-break: break-word;
+}
+.roster-header-time {
+  font-size: 0.82em;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+}
+.roster-header-time.single {
+  font-weight: bold;
+  font-size: 0.85em;
+}
+

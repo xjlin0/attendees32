@@ -367,7 +367,7 @@ class GatheringService:
             meet__slug__in=meet_slugs,
             meet__assembly__division__organization=organization,
             is_removed=False,
-        )
+        ).select_related('meet')
         if start_dt:
             existing_gatherings_qs = existing_gatherings_qs.filter(start__gte=start_dt)
         if finish_dt:
@@ -383,6 +383,7 @@ class GatheringService:
                 "display_name": g.display_name,
                 "start": g.start.isoformat() if g.start else None,
                 "meet_id": g.meet_id,
+                "meet_display_name": g.meet.display_name if g.meet else "",
                 "_start_dt": g.start,
             })
             if g.start:
@@ -437,6 +438,7 @@ class GatheringService:
                         "display_name": display_name,
                         "start": occ_start.isoformat(),
                         "meet_id": meet.id,
+                        "meet_display_name": meet.display_name,
                         "_start_dt": occ_start,
                     })
 

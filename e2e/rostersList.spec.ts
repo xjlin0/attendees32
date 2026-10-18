@@ -276,6 +276,39 @@ test.describe('Rosters List Page', () => {
     await expect(outBtn).toHaveText('Out');
     await expect(outBtn).not.toHaveClass(/checked-out/);
   });
+
+  test('Should show meet display name in column header when more than 1 meet is selected', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Select 2 meets from the dxTagBox
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+
+    const listItems = page.locator('.dx-list-item');
+    await listItems.first().waitFor({ state: 'visible' });
+    const itemCount = await listItems.count();
+
+    if (itemCount >= 2) {
+      const meet1Name = (await listItems.nth(0).innerText()).trim();
+      await listItems.nth(0).click();
+      await listItems.nth(1).click();
+      await page.mouse.click(0, 0);
+
+      // Wait for DataGrid to load
+      const gridContainer = page.locator('.dx-datagrid').first();
+      await expect(gridContainer).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.dx-loadpanel').first()).toBeHidden({ timeout: 15000 });
+
+      // Check that at least one gathering column header contains the meet name
+      const headers = page.locator('.dx-datagrid-headers .dx-header-row td');
+      const headerTexts = await headers.allInnerTexts();
+      const hasMeetNameInHeader = headerTexts.some(t => t.includes(meet1Name));
+      expect(hasMeetNameInHeader).toBe(true);
+    }
+  });
 });
 
 
