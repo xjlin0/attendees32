@@ -17,7 +17,10 @@ Attendees.utilities = {
     attendeeListViewOpts: "attendeesListOpts",
     rollCallListView: "rollCallList",
     rollCallListViewOpts: "rollCallListOpts",
+    rostersListView: "rostersListView",
+    rostersListViewOpts: "rostersListViewOpts",
   },
+
 
   init: () => {
     console.log("attendees/static/js/shared/utilities.js");

@@ -886,7 +886,7 @@
   // ==========================================================
   // 4. Grid View Logic
   // ==========================================================
-  function useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic, attendingMeetsEditor) {
+  function useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic, attendingMeetsEditor, onResetCallback) {
     const formatDate = (dateString) => {
       if (!dateString) return '';
       const d = new Date(dateString);
@@ -1175,6 +1175,32 @@
           showInColumnChooser: false
         });
 
+        // Preserve existing column options (groupIndex, sortOrder, sortIndex, visible, width)
+        columns.forEach(col => {
+          if (gridInstanceRef.value && col.dataField) {
+            const groupIndex = gridInstanceRef.value.columnOption(col.dataField, 'groupIndex');
+            if (groupIndex !== undefined && groupIndex !== null && groupIndex !== -1) {
+              col.groupIndex = groupIndex;
+            }
+            const sortOrder = gridInstanceRef.value.columnOption(col.dataField, 'sortOrder');
+            if (sortOrder) {
+              col.sortOrder = sortOrder;
+            }
+            const sortIndex = gridInstanceRef.value.columnOption(col.dataField, 'sortIndex');
+            if (sortIndex !== undefined && sortIndex !== null) {
+              col.sortIndex = sortIndex;
+            }
+            const visible = gridInstanceRef.value.columnOption(col.dataField, 'visible');
+            if (visible !== undefined && visible !== null) {
+              col.visible = visible;
+            }
+            const width = gridInstanceRef.value.columnOption(col.dataField, 'width');
+            if (width !== undefined && width !== null) {
+              col.width = width;
+            }
+          }
+        });
+
         gridInstanceRef.value.option('columns', columns);
       } else if (rows && rows.length) {
         serverColumns.forEach(gathering => {
@@ -1212,6 +1238,11 @@
             gridInstanceRef.value.beginCustomLoading();
           }
 
+          const savedGridState = JSON.parse(window.sessionStorage.getItem(Attendees.utilities.datagridStorageKeys['rostersListView']) || '{}');
+          const currentTake = (savedGridState && typeof savedGridState.pageSize === 'number') 
+            ? savedGridState.pageSize 
+            : (gridInstanceRef.value && typeof gridInstanceRef.value.pageSize === 'function' ? gridInstanceRef.value.pageSize() : 40);
+
           const queryParams = new URLSearchParams();
           filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
           
@@ -1219,7 +1250,7 @@
           if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
 
           queryParams.set('skip', 0);
-          queryParams.set('take', 40);
+          queryParams.set('take', currentTake || 40);
 
           const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
           if (!response.ok) throw new Error('Network response was not ok');
@@ -1241,8 +1272,10 @@
                 if (preloadedData && isInitialOptions) {
                   const cached = preloadedData;
                   preloadedData = null;
+                  const rows = cached.data || cached.rows || [];
+                  const takeCount = loadOptions.take || currentTake || 40;
                   return {
-                    data: cached.data || cached.rows,
+                    data: (takeCount && rows.length > takeCount) ? rows.slice(0, takeCount) : rows,
                     totalCount: cached.totalCount
                   };
                 }
@@ -1254,7 +1287,7 @@
                 if (filterData.endDate) pageParams.set('finish', filterData.endDate.toISOString());
 
                 pageParams.set('skip', loadOptions.skip || 0);
-                pageParams.set('take', loadOptions.take || 40);
+                pageParams.set('take', loadOptions.take || currentTake || 40);
 
                 if (loadOptions.sort) {
                   pageParams.set('sort', JSON.stringify(loadOptions.sort));
@@ -1295,6 +1328,11 @@
           gridInstanceRef.value.option('dataSource', customStore);
           gridInstanceRef.value.endUpdate();
 
+          const targetPageIndex = (savedGridState && typeof savedGridState.pageIndex === 'number') ? savedGridState.pageIndex : null;
+          if (targetPageIndex !== null && targetPageIndex > 0 && gridInstanceRef.value.pageIndex() !== targetPageIndex) {
+            gridInstanceRef.value.pageIndex(targetPageIndex);
+          }
+
         } catch (error) {
           DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
           console.error(error);
@@ -1328,6 +1366,50 @@
           showInfo: true,
           showNavigationButtons: true,
         },
+        stateStoring: {
+          enabled: true,
+          type: 'sessionStorage',
+          storageKey: Attendees.utilities.datagridStorageKeys['rostersListView'],
+        },
+        columns: [
+          {
+            dataField: 'attendee_name',
+            caption: 'Attendee',
+            fixed: true,
+            fixedPosition: 'left',
+            width: 200,
+            cellTemplate: attendeeCellTemplate,
+            allowSorting: true,
+            allowHiding: false
+          },
+          {
+            dataField: 'team__display_name',
+            caption: 'Team',
+            fixed: true,
+            fixedPosition: 'left',
+            width: 140,
+            allowSorting: true,
+            allowHiding: true
+          },
+          {
+            dataField: 'contacts',
+            caption: 'Contacts',
+            visible: false,
+            allowHiding: true,
+            allowSorting: false,
+            width: 180
+          },
+          {
+            dataField: 'total_attendances',
+            caption: 'Attendances',
+            fixed: true,
+            fixedPosition: 'left',
+            width: 100,
+            alignment: 'center',
+            allowSorting: true,
+            allowHiding: true
+          }
+        ],
         grouping: {
           autoExpandAll: true,
         },
@@ -1349,11 +1431,20 @@
             location: 'after',
             widget: 'dxButton',
             options: {
-              hint: 'Reset Sort/Group/Columns settings',
+              hint: 'Reset Sort/Group/Columns/Meets settings',
               icon: 'clearsquare',
               onClick() {
-                if (gridInstanceRef.value) {
-                  gridInstanceRef.value.state(null);
+                if (confirm('Are you sure to reset all settings (Sort/Group/Columns/Meets/Time) in this page?')) {
+                  const optsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
+                  const gridKey = Attendees.utilities.datagridStorageKeys['rostersListView'];
+                  window.sessionStorage.removeItem(optsKey);
+                  window.sessionStorage.removeItem(gridKey);
+                  if (gridInstanceRef.value) {
+                    gridInstanceRef.value.state(null);
+                  }
+                  if (typeof onResetCallback === 'function') {
+                    onResetCallback();
+                  }
                 }
               }
             }
@@ -1370,6 +1461,26 @@
   // ==========================================================
   function useRosterFilter(endpoints, filterData, reloadCallback, gridInstanceRef) {
     let formInstance = null;
+    const storageOptsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
+
+    const resetFilters = () => {
+      const defaultStart = new Date(new Date().setMonth(new Date().getMonth() - 3));
+      const defaultEnd = new Date(new Date().setMonth(new Date().getMonth() + 1));
+      filterData.meets = [];
+      filterData.startDate = defaultStart;
+      filterData.endDate = defaultEnd;
+      filterData.showPhotos = false;
+
+      if (formInstance) {
+        formInstance.getEditor('startDate').option('value', defaultStart);
+        formInstance.getEditor('endDate').option('value', defaultEnd);
+        formInstance.getEditor('showPhotos').option('value', false);
+        formInstance.getEditor('meets').option('value', []);
+      }
+      if (gridInstanceRef.value) {
+        gridInstanceRef.value.option('dataSource', []);
+      }
+    };
 
     const initFilterForm = (filterFormEl) => {
       formInstance = new DevExpress.ui.dxForm(filterFormEl, {
@@ -1378,12 +1489,26 @@
         onFieldDataChanged: (e) => {
           filterData[e.dataField] = e.value;
           
-          // Date Validation constraints
+          // Date Validation constraints & saving to sessionStorage
           if (e.dataField === 'startDate') {
             formInstance.getEditor('endDate').option('min', e.value);
+            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterFromString', e.value ? e.value.toJSON() : null);
+            if (formInstance.getEditor('meets')) {
+              formInstance.getEditor('meets').getDataSource().reload();
+            }
           }
           if (e.dataField === 'endDate') {
             formInstance.getEditor('startDate').option('max', e.value);
+            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterTillString', e.value ? e.value.toJSON() : null);
+            if (formInstance.getEditor('meets')) {
+              formInstance.getEditor('meets').getDataSource().reload();
+            }
+          }
+          if (e.dataField === 'meets') {
+            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'selectedMeetSlugs', e.value || []);
+          }
+          if (e.dataField === 'showPhotos') {
+            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'showPhotos', !!e.value);
           }
 
           if (['meets', 'startDate', 'endDate'].includes(e.dataField)) {
@@ -1400,6 +1525,7 @@
             editorOptions: { 
               type: 'datetime', 
               displayFormat: 'shortDateShortTime',
+              showClearButton: true,
               max: filterData.endDate
             }
           },
@@ -1410,6 +1536,7 @@
             editorOptions: { 
               type: 'datetime', 
               displayFormat: 'shortDateShortTime',
+              showClearButton: true,
               min: filterData.startDate
             }
           },
@@ -1422,9 +1549,13 @@
               displayExpr: 'display_name',
               valueExpr: 'slug',
               placeholder: 'Select Meets...',
+              showClearButton: true,
               dataSource: new DevExpress.data.DataSource({
                 store: new DevExpress.data.CustomStore({
                   key: 'slug',
+                  byKey: (key) => {
+                    return { slug: key, display_name: meetsInfoMap.get(key) || key };
+                  },
                   load: async () => {
                     const queryParams = new URLSearchParams({
                       take: 9999,
@@ -1475,7 +1606,7 @@
       });
     };
 
-    return { initFilterForm };
+    return { initFilterForm, resetFilters };
   }
 
   // ==========================================================
@@ -1484,6 +1615,26 @@
   const RostersApp = {
     setup() {
       console.log('static/js/occasions/rosters_list_view.js Composition API loaded!');
+      Attendees.utilities.clearGridStatesInSessionStorage(Attendees.utilities.datagridStorageKeys['rostersListView']);
+
+      const storageOptsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
+      const storedMeets = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'selectedMeetSlugs');
+      const storedFrom = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterFromString');
+      const storedTill = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterTillString');
+      const storedShowPhotos = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'showPhotos');
+
+      const defaultStartDate = new Date(new Date().setMonth(new Date().getMonth() - 3));
+      const defaultEndDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+      let initialStart = defaultStartDate;
+      if (storedFrom) {
+        const d = new Date(storedFrom);
+        if (!isNaN(d.getTime())) initialStart = d;
+      }
+      let initialEnd = defaultEndDate;
+      if (storedTill) {
+        const d = new Date(storedTill);
+        if (!isNaN(d.getTime())) initialEnd = d;
+      }
 
       // DOM Refs
       const filterFormRef = ref(null);
@@ -1492,24 +1643,36 @@
 
       // Global App State
       const filterData = reactive({
-        meets: [],
-        startDate: new Date(new Date().setMonth(new Date().getMonth() - 3)),
-        endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-        showPhotos: false
+        meets: Array.isArray(storedMeets) ? storedMeets : [],
+        startDate: initialStart,
+        endDate: initialEnd,
+        showPhotos: storedShowPhotos === true || storedShowPhotos === 'true'
       });
 
       // Composables Hookup
       const { endpoints, initEndpoints } = useEndpoints();
       const attendanceLogic = useAttendanceLogic(endpoints, gridInstanceRef);
       const attendingMeetsEditor = useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData);
-      const { initDataGrid, loadData } = useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic, attendingMeetsEditor);
-      const { initFilterForm } = useRosterFilter(endpoints, filterData, loadData, gridInstanceRef);
+      const resetFiltersRef = { current: null };
+      const { initDataGrid, loadData } = useRosterGrid(
+        endpoints, 
+        filterData, 
+        gridInstanceRef, 
+        attendanceLogic, 
+        attendingMeetsEditor,
+        () => { if (resetFiltersRef.current) resetFiltersRef.current(); }
+      );
+      const { initFilterForm, resetFilters } = useRosterFilter(endpoints, filterData, loadData, gridInstanceRef);
+      resetFiltersRef.current = resetFilters;
 
       // Lifecycle
       onMounted(() => {
         initEndpoints();
-        if (filterFormRef.value) initFilterForm(filterFormRef.value);
         if (dataGridRef.value) initDataGrid(dataGridRef.value);
+        if (filterFormRef.value) initFilterForm(filterFormRef.value);
+        if (filterData.meets && filterData.meets.length > 0) {
+          loadData();
+        }
       });
 
       return { 
