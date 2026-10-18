@@ -21,6 +21,10 @@ class RostersListView(RouteGuard, ListView):
                 "categories_endpoint": "/persons/api/all_categories/",
                 "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
                 "rosters_endpoint": "/occasions/api/organization_meet_rosters/",
+                "attendingmeets_endpoint": "/persons/api/datagrid_data_attendingmeet/",
+                "attendings_endpoint": "/persons/api/organization_meet_character_attendings_for_attendingmeet/",
+                "characters_endpoint": "/occasions/api/organization_characters/",
+                "teams_endpoint": "/occasions/api/organization_meet_teams/",
             }
         )
         return context

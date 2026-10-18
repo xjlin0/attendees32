@@ -9,14 +9,26 @@
     const endpoints = reactive({
       rosters: '',
       meets: '',
-      attendances: '/occasions/api/organization_meet_character_attendances/'
+      attendances: '/occasions/api/organization_meet_character_attendances/',
+      assemblies: '',
+      categories: '',
+      attendingmeets: '',
+      attendings: '',
+      characters: '',
+      teams: ''
     });
 
     const initEndpoints = () => {
       const appEl = document.getElementById('app');
       if (appEl) {
-        endpoints.rosters = appEl.dataset.rostersEndpoint;
-        endpoints.meets = appEl.dataset.meetsEndpointBySlug;
+        endpoints.rosters = appEl.dataset.rostersEndpoint || '';
+        endpoints.meets = appEl.dataset.meetsEndpointBySlug || '';
+        endpoints.assemblies = appEl.dataset.assembliesEndpoint || '';
+        endpoints.categories = appEl.dataset.categoriesEndpoint || '';
+        endpoints.attendingmeets = appEl.dataset.attendingmeetsEndpoint || '';
+        endpoints.attendings = appEl.dataset.attendingsEndpoint || '';
+        endpoints.characters = appEl.dataset.charactersEndpoint || '';
+        endpoints.teams = appEl.dataset.teamsEndpoint || '';
       }
     };
 
@@ -170,17 +182,510 @@
   }
 
   // ==========================================================
-  // 3. Grid View Logic
+  // 3. AttendingMeets Editor Logic (dxPopup & dxForm)
   // ==========================================================
-  function useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic) {
+  function useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData) {
+    let popupInstance = null;
+    let popupElement = null;
+    let currentAttendeeData = null;
+    let currentSortedMeets = [];
+    let currentFormInstances = [];
+    let currentActiveIndex = 0;
+
+    const lookupsCache = {
+      loaded: false,
+      loadingPromise: null,
+      meets: [],
+      characters: [],
+      categories: [],
+      teams: [],
+      meetNames: {},
+      attendings: new Map()
+    };
+
+    const preloadLookups = async () => {
+      if (lookupsCache.loaded) return;
+      if (lookupsCache.loadingPromise) return lookupsCache.loadingPromise;
+
+      lookupsCache.loadingPromise = (async () => {
+        try {
+          const [meetsRes, charsRes, catsRes, teamsRes] = await Promise.all([
+            fetch(`${endpoints.meets}?take=9999&model=attendingmeet`).then(r => r.json()).catch(() => ({})),
+            fetch(`${endpoints.characters}?take=9999`).then(r => r.json()).catch(() => ({})),
+            fetch(`${endpoints.categories}?type=attendance&take=9999`).then(r => r.json()).catch(() => ({})),
+            fetch(`${endpoints.teams}?take=9999`).then(r => r.json()).catch(() => ({}))
+          ]);
+
+          lookupsCache.meets = meetsRes.data || meetsRes.results || meetsRes || [];
+          lookupsCache.characters = charsRes.data || charsRes.results || charsRes || [];
+          lookupsCache.categories = catsRes.data || catsRes.results || catsRes || [];
+          lookupsCache.teams = teamsRes.data || teamsRes.results || teamsRes || [];
+
+          lookupsCache.meets.forEach(m => {
+            if (m.id !== undefined && m.id !== null && m.display_name) {
+              lookupsCache.meetNames[m.id] = m.display_name;
+            }
+          });
+
+          lookupsCache.loaded = true;
+        } catch (e) {
+          console.error('Error preloading lookups:', e);
+        } finally {
+          lookupsCache.loadingPromise = null;
+        }
+      })();
+
+      return lookupsCache.loadingPromise;
+    };
+
+    const getSelectedAssemblies = () => {
+      const selectedSlugsOrIds = new Set(filterData && filterData.meets ? filterData.meets : []);
+      const assemblies = new Set();
+      (lookupsCache.meets || []).forEach(m => {
+        if (
+          selectedSlugsOrIds.has(m.slug) ||
+          selectedSlugsOrIds.has(m.id) ||
+          selectedSlugsOrIds.has(String(m.id))
+        ) {
+          if (m.assembly !== undefined && m.assembly !== null) {
+            assemblies.add(m.assembly);
+          }
+        }
+      });
+      return assemblies;
+    };
+
+    const getSelectedMeetIds = () => {
+      const selectedSlugsOrIds = new Set(filterData && filterData.meets ? filterData.meets : []);
+      const allowedIds = new Set();
+      (lookupsCache.meets || []).forEach(m => {
+        if (
+          selectedSlugsOrIds.has(m.slug) ||
+          selectedSlugsOrIds.has(m.id) ||
+          selectedSlugsOrIds.has(String(m.id))
+        ) {
+          allowedIds.add(m.id);
+        }
+      });
+      return allowedIds;
+    };
+
+    const saveCurrentForm = async () => {
+      if (!currentSortedMeets.length || !currentAttendeeData) return;
+      const form = currentFormInstances[currentActiveIndex];
+      if (!form) return;
+
+      const validation = form.validate();
+      if (!validation.isValid) {
+        DevExpress.ui.notify('Please check required fields', 'warning', 2500);
+        return;
+      }
+
+      const formData = form.option('formData');
+      const targetAm = currentSortedMeets[currentActiveIndex];
+
+      const payload = {
+        meet: formData.meet,
+        attending: formData.attending,
+        character: formData.character,
+        team: formData.team || null,
+        category: formData.category,
+        start: formData.start ? (formData.start instanceof Date ? formData.start.toISOString() : new Date(formData.start).toISOString()) : null,
+        finish: formData.finish ? (formData.finish instanceof Date ? formData.finish.toISOString() : new Date(formData.finish).toISOString()) : null,
+        infos: {
+          ...(targetAm.infos || {}),
+          note: formData.note !== undefined ? formData.note : (formData['infos.note'] || '')
+        }
+      };
+
+      try {
+        const updateRes = await fetch(`${endpoints.attendingmeets}${targetAm.id}/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Target-Attendee-Id': String(currentAttendeeData.attendee_id)
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!updateRes.ok) {
+          const errData = await updateRes.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Failed to update attendingmeet');
+        }
+
+        DevExpress.ui.notify(
+          {
+            message: 'Update attendingmeet success',
+            position: { my: 'center', at: 'center', of: window }
+          },
+          'success',
+          2000
+        );
+
+        if (popupInstance) popupInstance.hide();
+        if (gridInstanceRef && gridInstanceRef.value) {
+          gridInstanceRef.value.refresh();
+        }
+      } catch (saveErr) {
+        DevExpress.ui.notify(`Save failed: ${saveErr.message}`, 'error', 3000);
+      }
+    };
+
+    const createFormConfig = (am) => {
+      const isMobile = window.innerWidth < 768;
+      const selectedAssemblies = getSelectedAssemblies();
+
+      // Only show meets belonging to the same assembly as the page's selected meets
+      let availableMeets = selectedAssemblies.size
+        ? lookupsCache.meets.filter(m => selectedAssemblies.has(m.assembly))
+        : lookupsCache.meets;
+      if (am.meet !== undefined && am.meet !== null && !availableMeets.some(m => m.id === am.meet)) {
+        const currentMeetObj = lookupsCache.meets.find(m => m.id === am.meet);
+        if (currentMeetObj) availableMeets = [currentMeetObj, ...availableMeets];
+      }
+
+      // Only show characters belonging to the same assembly as the page's selected meets
+      let availableCharacters = selectedAssemblies.size
+        ? lookupsCache.characters.filter(c => selectedAssemblies.has(c.assembly))
+        : lookupsCache.characters;
+      if (am.character !== undefined && am.character !== null && !availableCharacters.some(c => c.id === am.character)) {
+        const currentCharObj = lookupsCache.characters.find(c => c.id === am.character);
+        if (currentCharObj) availableCharacters = [currentCharObj, ...availableCharacters];
+      }
+
+      // Only show teams belonging to the page's selected meets
+      const selectedMeetIds = getSelectedMeetIds();
+      let availableTeams = selectedMeetIds.size
+        ? lookupsCache.teams.filter(t => selectedMeetIds.has(t.meet))
+        : lookupsCache.teams;
+      if (am.team !== undefined && am.team !== null && !availableTeams.some(t => t.id === am.team)) {
+        const currentTeamObj = lookupsCache.teams.find(t => t.id === am.team);
+        if (currentTeamObj) availableTeams = [currentTeamObj, ...availableTeams];
+      }
+
+      const formData = {
+        meet: am.meet,
+        attending: am.attending,
+        character: am.character,
+        team: am.team || null,
+        category: am.category,
+        start: am.start ? new Date(am.start) : null,
+        finish: am.finish ? new Date(am.finish) : null,
+        note: (am.infos && am.infos.note) || ''
+      };
+
+      const attendingItem = {
+        id: am.attending,
+        attending_label: am.attending__attendee || (currentAttendeeData ? currentAttendeeData.attendee_name : `Attending #${am.attending}`)
+      };
+
+      return {
+        formData: formData,
+        width: '100%',
+        colCount: isMobile ? 1 : 2,
+        colCountByScreen: {
+          xs: 1,
+          sm: 1,
+          md: 2,
+          lg: 2
+        },
+        items: [
+          {
+            dataField: 'meet',
+            editorType: 'dxSelectBox',
+            label: { text: 'Meet' },
+            helpText: "What's the activity?",
+            validationRules: [{ type: 'required' }],
+            editorOptions: {
+              value: am.meet,
+              dataSource: availableMeets,
+              valueExpr: 'id',
+              displayExpr: 'display_name',
+              searchEnabled: true,
+              placeholder: 'Select meet...'
+            }
+          },
+          {
+            dataField: 'attending',
+            editorType: 'dxSelectBox',
+            label: { text: 'Attending' },
+            helpText: "who?",
+            validationRules: [{ type: 'required' }],
+            editorOptions: {
+              value: am.attending,
+              dataSource: [attendingItem],
+              valueExpr: 'id',
+              displayExpr: 'attending_label',
+              readOnly: true,
+              placeholder: 'Select attending...'
+            }
+          },
+          {
+            dataField: 'character',
+            editorType: 'dxSelectBox',
+            label: { text: 'Character' },
+            helpText: 'define participation role',
+            validationRules: [{ type: 'required' }],
+            editorOptions: {
+              value: am.character,
+              dataSource: availableCharacters,
+              valueExpr: 'id',
+              displayExpr: 'display_name',
+              searchEnabled: true,
+              placeholder: 'Select character...'
+            }
+          },
+          {
+            dataField: 'team',
+            editorType: 'dxSelectBox',
+            label: { text: 'Team' },
+            helpText: '(Optional) joining team',
+            editorOptions: {
+              value: am.team || null,
+              dataSource: availableTeams,
+              valueExpr: 'id',
+              displayExpr: 'display_name',
+              showClearButton: true,
+              searchEnabled: true,
+              placeholder: '(Optional) select team...'
+            }
+          },
+          {
+            dataField: 'category',
+            editorType: 'dxSelectBox',
+            label: { text: 'Category' },
+            helpText: 'What type of participation?',
+            validationRules: [{ type: 'required' }],
+            editorOptions: {
+              value: am.category,
+              dataSource: lookupsCache.categories,
+              valueExpr: 'id',
+              displayExpr: 'display_name',
+              showClearButton: true,
+              searchEnabled: true,
+              placeholder: 'Select category...'
+            }
+          },
+          {
+            dataField: 'start',
+            editorType: 'dxDateBox',
+            label: { text: 'Start' },
+            helpText: 'participation start time in browser timezone',
+            validationRules: [{ type: 'required' }],
+            editorOptions: {
+              value: am.start ? new Date(am.start) : null,
+              type: 'datetime',
+              displayFormat: 'yyyy-MM-dd HH:mm',
+              dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss'
+            }
+          },
+          {
+            dataField: 'finish',
+            editorType: 'dxDateBox',
+            label: { text: 'Finish' },
+            helpText: 'participation end time in browser timezone',
+            validationRules: [{ type: 'required' }],
+            editorOptions: {
+              value: am.finish ? new Date(am.finish) : null,
+              type: 'datetime',
+              displayFormat: 'yyyy-MM-dd HH:mm',
+              dateSerializationFormat: 'yyyy-MM-ddTHH:mm:ss'
+            }
+          },
+          {
+            dataField: 'note',
+            editorType: 'dxTextArea',
+            label: { text: 'Note' },
+            helpText: 'special memo',
+            colSpan: isMobile ? 1 : 2,
+            editorOptions: {
+              value: (am.infos && am.infos.note) || '',
+              autoResizeEnabled: true,
+              minHeight: 60,
+              placeholder: 'Special memo or note...'
+            }
+          }
+        ]
+      };
+    };
+
+    const renderPopupContent = (container) => {
+      container.innerHTML = '';
+
+      if (!currentSortedMeets.length) {
+        container.innerHTML = `
+          <div class="alert alert-info" style="margin-top: 15px;">No enrollments (attendingmeets) found for this attendee under the selected meet(s).</div>
+        `;
+        return;
+      }
+
+      // Content Area: Single Form or TabPanel for multiple attendingmeets
+      const contentArea = document.createElement('div');
+      contentArea.className = 'attendingmeets-content-area';
+      container.appendChild(contentArea);
+
+      currentFormInstances = [];
+      currentActiveIndex = 0;
+
+      if (currentSortedMeets.length === 1) {
+        const formEl = document.createElement('div');
+        contentArea.appendChild(formEl);
+        const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(currentSortedMeets[0]));
+        currentFormInstances.push(formInst);
+      } else {
+        // Multiple attendingmeets -> dxTabPanel
+        const tabItems = currentSortedMeets.map((am, i) => {
+          const meetName = lookupsCache.meetNames[am.meet] || am.meet__display_name || `Meet #${am.meet}`;
+          const finishLabel = am.finish ? am.finish.substring(0, 10) : 'Ongoing';
+          return {
+            title: `${meetName} (${finishLabel})`,
+            am: am,
+            index: i
+          };
+        });
+
+        new DevExpress.ui.dxTabPanel(contentArea, {
+          dataSource: tabItems,
+          width: '100%',
+          selectedIndex: 0,
+          deferRendering: false,
+          loop: false,
+          animationEnabled: true,
+          swipeEnabled: false,
+          onSelectionChanged: (e) => {
+            currentActiveIndex = e.component.option('selectedIndex');
+          },
+          itemTemplate: (itemData, itemIndex, itemElement) => {
+            const formEl = document.createElement('div');
+            itemElement.append(formEl);
+            const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(itemData.am));
+            currentFormInstances[itemIndex] = formInst;
+          }
+        });
+      }
+    };
+
+    const openAttendingMeetsPopup = async (attendeeData) => {
+      currentAttendeeData = attendeeData;
+      if (!popupElement) {
+        popupElement = document.createElement('div');
+        popupElement.id = 'attendingmeets-editor-popup';
+        document.body.appendChild(popupElement);
+      }
+
+      await preloadLookups();
+
+      const allowedMeetIds = getSelectedMeetIds();
+      let rawMeets = [];
+      try {
+        const res = await fetch(endpoints.attendingmeets, {
+          headers: {
+            'X-Target-Attendee-Id': String(attendeeData.attendee_id),
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          }
+        });
+        if (!res.ok) throw new Error('Failed to load attendee enrollments');
+        const json = await res.json();
+        rawMeets = json.data || [];
+      } catch (err) {
+        DevExpress.ui.notify(`Error loading enrollments: ${err.message}`, 'error', 3000);
+        return;
+      }
+
+      // Filter: only keep attendingmeets matching the currently selected meets on the page
+      const matchedMeets = rawMeets.filter(am => allowedMeetIds.has(am.meet));
+
+      // Sort by finish descending (ongoing/null finish first, then newest to oldest)
+      currentSortedMeets = matchedMeets.slice().sort((a, b) => {
+        if (!a.finish && !b.finish) return 0;
+        if (!a.finish) return -1;
+        if (!b.finish) return 1;
+        return new Date(b.finish) - new Date(a.finish);
+      });
+
+      const isMobile = window.innerWidth < 768;
+      const popupWidth = isMobile ? '92%' : '70%';
+      const popupHeight = isMobile ? 'auto' : '70%';
+      const popupTitle = `${attendeeData.attendee_name} enrollment`;
+
+      const toolbarItems = [
+        {
+          toolbar: 'top',
+          location: 'after',
+          widget: 'dxButton',
+          options: {
+            text: 'Save',
+            type: 'success',
+            icon: 'save',
+            stylingMode: 'contained',
+            visible: currentSortedMeets.length > 0,
+            onClick: saveCurrentForm
+          }
+        },
+        {
+          toolbar: 'top',
+          location: 'after',
+          widget: 'dxButton',
+          options: {
+            text: 'Cancel',
+            icon: 'close',
+            stylingMode: 'outlined',
+            onClick: () => popupInstance.hide()
+          }
+        }
+      ];
+
+      if (!popupInstance) {
+        popupInstance = new DevExpress.ui.dxPopup(popupElement, {
+          title: popupTitle,
+          width: popupWidth,
+          height: popupHeight,
+          maxHeight: '90vh',
+          fullScreen: false,
+          wrapperAttr: {
+            class: 'attendingmeets-popup-wrapper'
+          },
+          showCloseButton: true,
+          dragEnabled: !isMobile,
+          toolbarItems: toolbarItems,
+          contentTemplate: (container) => {
+            renderPopupContent(container[0]);
+          }
+        });
+      } else {
+        popupInstance.option({
+          title: popupTitle,
+          width: popupWidth,
+          height: popupHeight,
+          maxHeight: '90vh',
+          fullScreen: false,
+          wrapperAttr: {
+            class: 'attendingmeets-popup-wrapper'
+          },
+          dragEnabled: !isMobile,
+          toolbarItems: toolbarItems
+        });
+        const contentEl = popupInstance.content ? popupInstance.content()[0] : null;
+        if (contentEl) {
+          renderPopupContent(contentEl);
+        }
+      }
+
+      popupInstance.show();
+    };
+
+    return { openAttendingMeetsPopup };
+  }
+
+  // ==========================================================
+  // 4. Grid View Logic
+  // ==========================================================
+  function useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic, attendingMeetsEditor) {
     const formatDate = (dateString) => {
       if (!dateString) return '';
       const d = new Date(dateString);
       return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-    };
-
-    const openAttendeeEdit = (attendeeId) => {
-      window.open(`/persons/attendee/${attendeeId}`, '_blank');
     };
 
     const attendeeCellTemplate = (container, options) => {
@@ -197,14 +702,17 @@
 
       wrapper.innerHTML = `
         ${photoHtml}
-        <span>
-          <a href="#" class="attendee-link">${data.attendee_name}</a> 
+        <span class="attendee-links-container">
+          <u><a href="/persons/attendee/${data.attendee_id}" target="_blank" class="attendee-info-link" title="Click to open a new page of attendee info">(Info)</a></u>
+          <u class="attendee-name-link" role="button" title="Click to edit enrollment details">${data.attendee_name}</u>
         </span>
       `;
-      
-      wrapper.querySelector('.attendee-link').addEventListener('click', (e) => {
+
+      wrapper.querySelector('.attendee-name-link').addEventListener('click', (e) => {
         e.preventDefault();
-        openAttendeeEdit(data.attendee_id);
+        if (attendingMeetsEditor) {
+          attendingMeetsEditor.openAttendingMeetsPopup(data);
+        }
       });
 
       container.append(wrapper);
@@ -605,7 +1113,8 @@
       // Composables Hookup
       const { endpoints, initEndpoints } = useEndpoints();
       const attendanceLogic = useAttendanceLogic(endpoints, gridInstanceRef);
-      const { initDataGrid, loadData } = useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic);
+      const attendingMeetsEditor = useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData);
+      const { initDataGrid, loadData } = useRosterGrid(endpoints, filterData, gridInstanceRef, attendanceLogic, attendingMeetsEditor);
       const { initFilterForm } = useRosterFilter(endpoints, filterData, loadData, gridInstanceRef);
 
       // Lifecycle

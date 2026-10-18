@@ -9,12 +9,76 @@
   object-fit: cover;
   margin-right: 10px;
 }
-.attendee-link {
-  color: blue;
-  text-decoration: none;
-}
-.attendee-link:hover {
+.attendee-info-link {
+  color: #0d6efd;
   text-decoration: underline;
+  margin-right: 6px;
+  font-size: 0.9em;
+}
+.attendee-info-link:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+.attendee-name-link {
+  color: #212529;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+.attendee-name-link:hover {
+  color: #0d6efd;
+  text-decoration: underline;
+}
+.attendingmeets-popup-wrapper .dx-overlay-content {
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+}
+
+.attendingmeets-popup-wrapper .dx-popup-content {
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .attendingmeets-popup-wrapper .dx-overlay-content {
+    width: 70vw !important;
+    height: 70vh !important;
+    max-width: 70vw !important;
+    max-height: 70vh !important;
+  }
+  .attendingmeets-popup-wrapper .dx-popup-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .attendingmeets-popup-wrapper .dx-overlay-content {
+    width: 92vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    margin: auto !important;
+  }
+  .attendingmeets-popup-wrapper .dx-popup-content {
+    padding: 12px 14px;
+    max-height: calc(90vh - 55px);
+  }
+  .attendingmeets-popup-wrapper .dx-popup-title {
+    padding: 10px 14px;
+  }
+  .attendingmeets-popup-wrapper .dx-form,
+  .attendingmeets-content-area,
+  .attendingmeets-popup-wrapper .dx-tabpanel {
+    width: 100% !important;
+  }
+  .attendingmeets-popup-wrapper .dx-form .dx-field-item-help-text {
+    font-size: 0.85em;
+    font-style: italic;
+    color: #6c757d;
+  }
+}
+.attendingmeet-tab-title {
+  font-weight: 500;
 }
 .roster-btn {
   background-color: transparent;

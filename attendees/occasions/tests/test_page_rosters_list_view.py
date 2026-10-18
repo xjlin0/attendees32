@@ -54,3 +54,7 @@ def test_rosters_list_view_success(api_client, user_with_org):
     
     # Check context variables (passed via data attributes)
     assert 'data-rosters-endpoint="/occasions/api/organization_meet_rosters/"' in content
+    assert 'data-attendingmeets-endpoint="/persons/api/datagrid_data_attendingmeet/"' in content
+    assert 'data-attendings-endpoint="/persons/api/organization_meet_character_attendings_for_attendingmeet/"' in content
+    assert 'data-characters-endpoint="/occasions/api/organization_characters/"' in content
+    assert 'data-teams-endpoint="/occasions/api/organization_meet_teams/"' in content

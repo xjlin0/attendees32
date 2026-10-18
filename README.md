@@ -487,11 +487,26 @@ docker-compose -f production.yml run django python manage.py populate_coordinate
 ```
 timeout 300 docker compose -f local.yml run django pytest
 ```
-### Playwright (with chromium) e2e test when Django server is up:
+### Playwright (with chromium) e2e test, *empty DB* with ci_seed.json:
 ```
-C_PASSWORD=your_password_for_superuser_in_seed timeout 300 npx playwright test --workers=1
+docker compose -f local.yml run --rm django python manage.py flush --no-input
+docker compose -f local.yml run --rm django python manage.py loaddata fixtures/ci_seed.json
+docker compose -f local.yml restart django
+C_PASSWORD=your_password_for_superuser_in_seed timeout 300 npx playwright test --project=ci-seed --workers=1
 ```
-Please also define the repository secret `C_PASSWORD` in Github for running e2e in CI/CD
+Please also define the repository secret `C_PASSWORD` in Github for running e2e in CI/CD, you can also define your password by:
+```
+docker compose -f local.yml run --rm django python manage.py shell -c \
+"from attendees.users.models import User; u = User.objects.get(username='jack'); u.set_password('any_password'); u.save()"
+```
+
+### e2e with Golden data test (*everything in db will gone!!*):
+```
+docker compose -f local.yml run --rm django python manage.py flush --no-input
+docker compose -f local.yml run --rm django python manage.py load_golden_data --seed --force --manifest e2e/golden-manifest.json
+docker compose -f local.yml restart django
+TZ=UTC npx playwright test --project=chromium
+```
 
 ## Todo & progress:
 

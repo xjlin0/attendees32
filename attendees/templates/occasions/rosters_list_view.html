@@ -27,7 +27,11 @@
      data-assemblies-endpoint="{{ assemblies_endpoint }}"
      data-categories-endpoint="{{ categories_endpoint }}"
      data-meets-endpoint-by-slug="{{ meets_endpoint_by_slug }}"
-     data-rosters-endpoint="{{ rosters_endpoint }}">
+     data-rosters-endpoint="{{ rosters_endpoint }}"
+     data-attendingmeets-endpoint="{{ attendingmeets_endpoint }}"
+     data-attendings-endpoint="{{ attendings_endpoint }}"
+     data-characters-endpoint="{{ characters_endpoint }}"
+     data-teams-endpoint="{{ teams_endpoint }}">
   {% csrf_token %}
   
   <div class="d-flex justify-content-between mb-3">
@@ -37,9 +41,9 @@
   </div>
 
   <!-- DevExtreme Filters Form -->
-  <div ref="filterFormRef"></div>
+  <div id="rosters-filter-form-container" ref="filterFormRef"></div>
 
   <!-- DevExtreme DataGrid -->
-  <div ref="dataGridRef" class="mt-3"></div>
+  <div id="rosters-datagrid-container" ref="dataGridRef" class="mt-3"></div>
 </div>
 {% endblock content %}

@@ -73,7 +73,7 @@ test.describe('Rosters List Page', () => {
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
     
     // Wait for data load panel to hide
-    await expect(page.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+    await expect(page.locator('.dx-loadpanel').first()).toBeHidden({ timeout: 15000 });
 
     // 5. Verify the data grid has rows
     await expect(async () => {
@@ -99,8 +99,8 @@ test.describe('Rosters List Page', () => {
     await expect(rosterBtn).toBeVisible();
     
     // DevExtreme creates multiple tables for fixed columns, so we must pick the visible cell globally
-    // We just find the first visible cell in column 2, which corresponds to the first row
-    const attendanceCell = page.locator('td[role="gridcell"][aria-colindex="2"]:not(.dx-hidden-cell)').first();
+    // Column 1 is Attendee, Column 2 is Team, Column 3 is Attendances count
+    const attendanceCell = page.locator('td[role="gridcell"][aria-colindex="3"]:not(.dx-hidden-cell)').first();
     
     let isCheckedIn = await rosterBtn.evaluate(el => el.classList.contains('checked-in'));
     let initialCount = parseInt(await attendanceCell.innerText(), 10) || 0;
@@ -155,3 +155,5 @@ test.describe('Rosters List Page', () => {
     }
   });
 });
+
+
