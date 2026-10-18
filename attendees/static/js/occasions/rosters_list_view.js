@@ -92,6 +92,12 @@
       return !!(record && record.finish);
     };
 
+    const getAttendingMeetForGathering = (rowData, gathering) => {
+      if (!rowData.attendingmeets || !rowData.attendingmeets.length) return null;
+      if (!gathering || !gathering.meet_id) return rowData.attendingmeets[0];
+      return rowData.attendingmeets.find(am => String(am.meet_id) === String(gathering.meet_id)) || null;
+    };
+
     const getActiveAttendingMeet = (rowData, gathering) => {
       if (!rowData.attendingmeets || !rowData.attendingmeets.length) return null;
       if (!gathering || !gathering.start) {
@@ -108,9 +114,24 @@
       }) || null;
     };
 
+    const getAttendingMeetStatus = (rowData, gathering) => {
+      if (!rowData.attendingmeets || !rowData.attendingmeets.length) return 'not_attending';
+      const am = getAttendingMeetForGathering(rowData, gathering);
+      if (!am) return 'not_attending';
+      if (!gathering || !gathering.start) return 'active';
+
+      const gStart = new Date(gathering.start);
+      const amStart = am.start ? new Date(am.start) : new Date('1970-01-01');
+      const amFinish = am.finish ? new Date(am.finish) : new Date('2099-12-31');
+
+      if (gStart >= amStart && gStart <= amFinish) {
+        return 'active';
+      }
+      return 'expired';
+    };
+
     const isAttendingValid = (rowData, gathering) => {
-      if (!rowData.attendingmeets || !rowData.attendingmeets.length) return true; 
-      return !!getActiveAttendingMeet(rowData, gathering);
+      return getAttendingMeetStatus(rowData, gathering) !== 'not_attending';
     };
 
     const toggleAttendance = async (rowData, gathering, domElements, rowIndex, colName) => {
@@ -120,9 +141,11 @@
       const isCurrentlyCheckedIn = isCheckedIn(rowData, gatheringId);
       const newCategory = isCurrentlyCheckedIn ? 1 : 9; 
 
-      const activeAm = getActiveAttendingMeet(rowData, gatheringMeta || gathering);
-      const attendingId = activeAm ? activeAm.attending_id : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].attending_id : null));
-      const characterId = activeAm ? activeAm.character_id : (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].character_id : 1);
+      const targetAm = getActiveAttendingMeet(rowData, gatheringMeta || gathering)
+                    || getAttendingMeetForGathering(rowData, gatheringMeta || gathering);
+      const attendingId = targetAm ? targetAm.attending_id : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].attending_id : null));
+      const characterId = targetAm ? targetAm.character_id : (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].character_id : 1);
+
 
       try {
         const recordId = record ? (record.attendance_id || record.id) : '';
@@ -186,6 +209,16 @@
         // Directly update the button & out-button in the cell DOM
         if (domElements) {
           if (newCategory !== 1) { // Checked in!
+            // If attendingmeet was expired, extend finish date locally to end of gathering day
+            if (targetAm && gatheringMeta && gatheringMeta.start) {
+              const gStart = new Date(gatheringMeta.start);
+              const amFinish = targetAm.finish ? new Date(targetAm.finish) : null;
+              if (!amFinish || gStart > amFinish) {
+                const endOfDay = new Date(gatheringMeta.start);
+                endOfDay.setHours(23, 59, 59, 999);
+                targetAm.finish = endOfDay.toISOString();
+              }
+            }
             if (domElements.checkInBtn) {
               domElements.checkInBtn.className = 'roster-btn checked-in';
               domElements.checkInBtn.innerText = 'Checked In';
@@ -207,6 +240,7 @@
             }
           }
         }
+
 
         // Update the total attendances count dynamically
         const newTotal = isCurrentlyCheckedIn 
@@ -346,7 +380,7 @@
       }
     };
 
-    return { isAttendingValid, isCheckedIn, isCheckedOut, toggleAttendance, markOut };
+    return { getAttendingMeetStatus, isAttendingValid, isCheckedIn, isCheckedOut, toggleAttendance, markOut };
   }
 
   // ==========================================================
@@ -1002,7 +1036,8 @@
       const wrapper = document.createElement('div');
       wrapper.className = 'text-center roster-cell-wrapper';
 
-      if (!attendanceLogic.isAttendingValid(data, gatheringMeta)) {
+      const status = attendanceLogic.getAttendingMeetStatus(data, gatheringMeta);
+      if (status === 'not_attending') {
         wrapper.innerHTML = `<span class="not-attending-text">Not Attending</span>`;
         container.append(wrapper);
         return;
@@ -1013,8 +1048,17 @@
       const checkedOut = gatheringId ? attendanceLogic.isCheckedOut(data, gatheringId) : false;
 
       const checkInBtn = document.createElement('button');
-      checkInBtn.className = `roster-btn ${checkedIn ? 'checked-in' : ''}`;
-      checkInBtn.innerText = checkedIn ? 'Checked In' : 'Check In';
+      if (checkedIn) {
+        checkInBtn.className = 'roster-btn checked-in';
+        checkInBtn.innerText = 'Checked In';
+      } else if (status === 'expired') {
+        checkInBtn.className = 'roster-btn roster-btn-normal';
+        checkInBtn.innerText = 'Check In';
+      } else {
+        checkInBtn.className = 'roster-btn';
+        checkInBtn.innerText = 'Check In';
+      }
+
 
       const outBtn = document.createElement('button');
       outBtn.className = `roster-btn roster-btn-out ${checkedOut ? 'checked-out' : ''}`;

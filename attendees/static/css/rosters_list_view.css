@@ -105,6 +105,17 @@
   background-color: darkgreen;
   border-color: darkgreen;
 }
+.roster-btn-normal {
+  background-color: #fff;
+  color: #495057;
+  border-color: #ced4da;
+}
+.roster-btn-normal:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
 .roster-btn-out {
   background-color: transparent;
   color: blue;

@@ -32,6 +32,11 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def perform_update(self, serializer):
+        attendance = serializer.save()
+        AttendanceService.extend_attending_meet_if_needed(attendance)
+
+
     def list(self, request, *args, **kwargs):
         attendee = self.request.query_params.get("attendee")
         start = self.request.query_params.get("start")

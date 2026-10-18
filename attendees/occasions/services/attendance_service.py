@@ -481,5 +481,27 @@ class AttendanceService:
 
         serializer.is_valid(raise_exception=True)
         attendance = serializer.save()
+        AttendanceService.extend_attending_meet_if_needed(attendance)
         return attendance
+
+    @staticmethod
+    def extend_attending_meet_if_needed(attendance):
+        """
+        Extends AttendingMeet finish date to end of gathering day if attendingmeet was expired.
+        """
+        if attendance and attendance.category_id != 1:  # Attended / Checked in
+            gathering = attendance.gathering
+            if gathering and gathering.meet and gathering.finish:
+                attending_meet = AttendingMeet.objects.filter(
+                    attending=attendance.attending,
+                    meet=gathering.meet,
+                    is_removed=False,
+                ).order_by('-finish').first()
+                if attending_meet and attending_meet.finish and attending_meet.finish < gathering.finish:
+                    end_of_day = gathering.finish.replace(hour=23, minute=59, second=59, microsecond=999999)
+                    attending_meet.finish = max(gathering.finish, end_of_day)
+                    attending_meet.save(update_fields=['finish', 'modified'])
+                    return attending_meet
+        return None
+
 
