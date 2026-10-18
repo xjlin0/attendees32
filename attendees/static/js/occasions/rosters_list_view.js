@@ -907,6 +907,60 @@
       }
     };
 
+    let activeHighlightedIndex = null;
+    let highlightStyleEl = null;
+
+    const getHighlightStyleEl = () => {
+      if (!highlightStyleEl) {
+        highlightStyleEl = document.getElementById('roster-column-highlight-style');
+        if (!highlightStyleEl) {
+          highlightStyleEl = document.createElement('style');
+          highlightStyleEl.id = 'roster-column-highlight-style';
+          document.head.appendChild(highlightStyleEl);
+        }
+      }
+      return highlightStyleEl;
+    };
+
+    const highlightColumn = (colIndex) => {
+      if (colIndex === undefined || colIndex === null) return;
+      if (activeHighlightedIndex === colIndex) {
+        return;
+      }
+      activeHighlightedIndex = colIndex;
+      const styleTag = getHighlightStyleEl();
+      styleTag.textContent = `
+        #rosters-datagrid-container .dx-datagrid-headers .roster-col-idx-${colIndex} {
+          background-color: #cfe2ff;
+        }
+        #rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row > td.roster-col-idx-${colIndex} {
+          background-color: rgba(13, 110, 253, 0.08);
+        }
+        #rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-row-alt > td.roster-col-idx-${colIndex} {
+          background-color: rgba(13, 110, 253, 0.16);
+        }
+        #rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-state-hover > td.roster-col-idx-${colIndex} {
+          background-color: rgba(13, 110, 253, 0.22);
+        }
+      `;
+    };
+
+    const clearColumnHighlight = () => {
+      if (activeHighlightedIndex === null) return;
+      activeHighlightedIndex = null;
+      const styleTag = getHighlightStyleEl();
+      styleTag.textContent = '';
+    };
+
+    document.addEventListener('click', (e) => {
+      if (activeHighlightedIndex === null) return;
+      const gridContainer = document.getElementById('rosters-datagrid-container');
+      if (gridContainer && !gridContainer.contains(e.target) && !e.target.closest('.dx-overlay-content')) {
+        clearColumnHighlight();
+      }
+    });
+
+
     const attendeeCellTemplate = (container, options) => {
       const data = options.data;
       const wrapper = document.createElement('div');
@@ -940,6 +994,7 @@
     const attendanceCellTemplate = (container, options) => {
       const data = options.data;
       const colName = options.column.name;
+      const colIdx = options.column.colIndex !== undefined ? options.column.colIndex : (options.columnIndex - 4);
       const colMeta = options.column.gatheringMeta;
       const meetStartKey = (colMeta && colMeta.meet_id && colMeta.start) ? `${colMeta.meet_id}_${colMeta.start}` : '';
       const gatheringMeta = gatheringsRegistry.get(colName) || (meetStartKey && gatheringsRegistry.get(meetStartKey)) || colMeta;
@@ -971,10 +1026,12 @@
       const domElements = { wrapper, checkInBtn, outBtn };
 
       checkInBtn.addEventListener('click', () => {
+        highlightColumn(colIdx);
         attendanceLogic.toggleAttendance(data, gatheringMeta, domElements, options.rowIndex, colName);
       });
 
       outBtn.addEventListener('click', () => {
+        highlightColumn(colIdx);
         attendanceLogic.markOut(data, gatheringMeta, domElements, options.rowIndex);
       });
 
@@ -1004,6 +1061,7 @@
       }
 
       if (colsChanged) {
+        clearColumnHighlight();
         const columns = [
           {
             dataField: 'attendee_name',
@@ -1044,23 +1102,27 @@
           }
         ];
 
-        serverColumns.forEach(gathering => {
+        serverColumns.forEach((gathering, idx) => {
           const registered = registerGathering(gathering);
           const gid = registered.id;
           const hasCheckedIn = gid && rows.some(r => attendanceLogic.isCheckedIn(r, gid));
           const colWidth = hasCheckedIn ? 150 : 100;
+          const colId = getColumnIdentifier(registered);
 
           columns.push({
-            name: getColumnIdentifier(registered),
+            name: colId,
+            colIndex: idx,
             caption: getColumnCaption(registered),
             alignment: 'center',
             width: colWidth,
             minWidth: colWidth,
             gatheringMeta: registered,
             headerCellTemplate: gatheringHeaderTemplate,
-            cellTemplate: attendanceCellTemplate
+            cellTemplate: attendanceCellTemplate,
+            cssClass: `roster-col-idx-${idx}`
           });
         });
+
 
         columns.push({
           caption: '',
