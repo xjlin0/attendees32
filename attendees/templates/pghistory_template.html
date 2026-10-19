@@ -25,13 +25,13 @@
       {% for item in object_history %}
         <tr>
           <th scope="row" style="width: 20%;">{{ item.pgh_created_at|date:"DATETIME_FORMAT" }}
-            {% if item.pgh_context%}
-              <br>
-                {% if item.pgh_context.metadata.user %}
-                  by user {{item.pgh_context.metadata.user}}
-                {% elif item.pgh_context.metadata.url and "login" in item.pgh_context.metadata.url %}
-                  login
-                {% endif %}
+            <br>
+            {% if item.context_user %}
+              by {{ item.context_user.username }}{% if item.context_user.email %} ({{ item.context_user.email }}){% endif %}
+            {% elif item.pgh_context.metadata.url and "login" in item.pgh_context.metadata.url %}
+              login
+            {% else %}
+              no records
             {% endif %}
           </th>
           <td style="width: 10%;">{{ item.pgh_label }}</td>
@@ -61,7 +61,19 @@
                 {% for key, value in item.pgh_context.metadata.items %}
                   <tr>
                     <th>{{ key }}</th>
-                    <td>{{ value }}</td>
+                    <td>
+                      {% if key == "user" %}
+                        {% if item.context_user %}
+                          {{ item.context_user.username }}{% if item.context_user.email %} ({{ item.context_user.email }}){% endif %} [ID: {{ value }}]
+                        {% elif value %}
+                          no records [ID: {{ value }}]
+                        {% else %}
+                          no records
+                        {% endif %}
+                      {% else %}
+                        {{ value }}
+                      {% endif %}
+                    </td>
                   </tr>
                 {% endfor %}
                 </table>
