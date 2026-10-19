@@ -25,6 +25,10 @@
           type="text/javascript"
           src="{% static 'js/persons/attendee_update_view.js' %}">
   </script>
+  <script defer
+          type="text/javascript"
+          src="{% static 'js/persons/attendee_merge.js' %}">
+  </script>
 {% endblock extra_head %}
 
 {% block content %}
@@ -62,6 +66,14 @@
           </div>
         </div>
       {% endif %}
+      {% if can_merge and targeting_attendee_id != 'new' %}
+        <button type="button"
+                class="btn btn-outline-secondary btn-xs attendee-merge-button"
+                title="Merge this record with another record of the same person">
+          <span class="fas fa-user-friends" aria-hidden="true"></span>
+          Merge with another record…
+        </button>
+      {% endif %}
       {% if targeting_attendee_id != 'new' %}
         <div class="custom-switch button btn btn-outline-primary"
              title="Click toggle to switch editing modes of the entire page">
@@ -75,6 +87,26 @@
         </div>
       {% endif %}
   </div>
+</div>
+
+<div class="attendee-merge-notices">
+  {% for merge in merged_from %}
+    <div class="alert alert-info d-flex align-items-center justify-content-between py-2"
+         role="status">
+      <div>
+        {% if merge.followed %}You followed a link to a record that was merged into this one.{% endif %}
+        <b>Merged with {{ merge.name }}</b>{% if merge.at %} on {{ merge.at|date:"Y-m-d" }}{% endif %}{% if merge.by %} by {{ merge.by }}{% endif %}.
+      </div>
+      {% if can_merge %}
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm ms-3 text-nowrap attendee-unmerge-button"
+                data-duplicate-id="{{ merge.id }}"
+                title="Put both records back as they were before the merge">
+          Undo merge
+        </button>
+      {% endif %}
+    </div>
+  {% endfor %}
 </div>
 
 <div class="form-container">

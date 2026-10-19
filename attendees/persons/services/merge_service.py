@@ -6,10 +6,12 @@ its blanks, and contacts of every kind are kept from both. What moved, and
 what all of the primary's details were, is written on the tombstone
 (``infos["merge"]``), so ``unmerge`` can put it all back once. Merging B into
 C also re-points everything already merged into B, so a chain only exists in
-hand-edited data and walking one is a bounded guard.
+hand-edited data and walking one is a bounded guard. ``preview`` shows what a
+merge would do, for the merge screen.
 """
 
-from datetime import date
+import uuid
+from datetime import date, datetime, timezone
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
@@ -115,6 +117,35 @@ def _contacts(attendee):
     return by_kind
 
 
+def _uuid(value):
+    # An id from a URL or a query string: a UUID or nothing, never an error.
+    try:
+        return uuid.UUID(str(value))
+    except ValueError:
+        return None
+
+
+def _named(attendee):
+    names = attendee.infos.get("names") or {}
+    name = names.get("original") or f"{attendee.first_name} {attendee.last_name}".strip()
+    return {"id": str(attendee.pk), "name": name, "created": attendee.created.isoformat()}
+
+
+def _merged_contacts(primary, duplicate):
+    """``{key: (value, "primary" | "duplicate")}`` the merge writes: per kind,
+    the primary's values then the duplicate's new ones, as kind1, kind2, ..."""
+    merged = {}
+    for who, attendee in (("primary", primary), ("duplicate", duplicate)):
+        for kind, values in _contacts(attendee).items():
+            held = merged.setdefault(kind, [])
+            held += [(value, who) for value in values if value not in [v for v, _ in held]]
+    return {
+        f"{kind}{number}": entry
+        for kind, entries in merged.items()
+        for number, entry in enumerate(entries, start=1)
+    }
+
+
 def _set_detail(attendee, name, value):
     section, _, key = name.partition(".")
     if key:
@@ -175,25 +206,7 @@ class AttendeeMergeService:
         """
         given = (duplicate, primary)
         duplicate, primary = AttendeeMergeService._locked(duplicate, primary)
-
-        if duplicate.pk == primary.pk:
-            raise MergeRefused("An attendee cannot be merged into themselves.")
-        if duplicate.division.organization_id != primary.division.organization_id:
-            raise MergeRefused(
-                "Those two attendees belong to different organizations, so one "
-                "cannot absorb the other."
-            )
-        if primary.merged_into_id is not None:
-            raise MergeRefused(
-                "That primary has itself been merged away. Merge into whoever "
-                "holds the record now."
-            )
-        if primary.is_removed:
-            raise MergeRefused("That primary is deleted.")
-        if duplicate.merged_into_id is not None:
-            raise MergeRefused("That attendee has already been merged.")
-        if duplicate.user_id and primary.user_id:
-            raise MergeRefused("Both attendees have a login; remove one first.")
+        AttendeeMergeService._refuse_unless_mergeable(duplicate, primary)
 
         was_removed = duplicate.is_removed
         # The primary is saved here, before anything below re-reads its row.
@@ -223,6 +236,99 @@ class AttendeeMergeService:
         duplicate.save(update_fields=["infos", "merged_into", "is_removed"])
         AttendeeMergeService._refresh(given, (duplicate, primary))
         return primary
+
+    @staticmethod
+    def _refuse_unless_mergeable(duplicate, primary):
+        if duplicate.pk == primary.pk:
+            raise MergeRefused("An attendee cannot be merged into themselves.")
+        if duplicate.division.organization_id != primary.division.organization_id:
+            raise MergeRefused(
+                "Those two attendees belong to different organizations, so one "
+                "cannot absorb the other."
+            )
+        if primary.merged_into_id is not None:
+            raise MergeRefused(
+                "That primary has itself been merged away. Merge into whoever "
+                "holds the record now."
+            )
+        if primary.is_removed:
+            raise MergeRefused("That primary is deleted.")
+        if duplicate.merged_into_id is not None:
+            raise MergeRefused("That attendee has already been merged.")
+        if duplicate.user_id and primary.user_id:
+            raise MergeRefused("Both attendees have a login; remove one first.")
+
+    @staticmethod
+    def preview(one, other):
+        """What merging two records would do, without doing it.
+
+        The older record is the primary and keeps its id. Returns both records,
+        every single-value detail either has with both values, the contacts the
+        merge would write and where each came from, and counts of what moves.
+        Refused as ``merge`` would be.
+        """
+        primary, duplicate = sorted((one, other), key=lambda a: (a.created, str(a.pk)))
+        AttendeeMergeService._refuse_unless_mergeable(duplicate, primary)
+        theirs, mine = _details(primary), _details(duplicate)
+        return {
+            "primary": _named(primary),
+            "duplicate": _named(duplicate),
+            "details": {
+                name: {"primary": theirs.get(name), "duplicate": mine.get(name)}
+                for name in sorted(set(theirs) | set(mine))
+            },
+            "contacts": {
+                key: {"value": value, "from": who}
+                for key, (value, who) in _merged_contacts(primary, duplicate).items()
+            },
+            "moves": AttendeeMergeService._counts(duplicate),
+        }
+
+    @staticmethod
+    def _counts(duplicate):
+        """How many rows of each kind the merge would move from the duplicate."""
+        linked = {"content_type": _attendee_type(), "object_id": str(duplicate.pk)}
+        return {
+            "enrollments": AttendingMeet.objects.filter(
+                attending__attendee=duplicate, attending__is_removed=False
+            ).count(),
+            "attendances": Attendance.objects.filter(
+                attending__attendee=duplicate, attending__is_removed=False
+            ).count(),
+            "memberships": FolkAttendee.objects.filter(attendee=duplicate)
+            .exclude(role_id=Attendee.HIDDEN_ROLE)
+            .count(),
+            "addresses": Place.objects.filter(**linked).count(),
+            "notes": Note.objects.filter(**linked).count(),
+            "statuses": Past.objects.filter(**linked).count(),
+            "registrations": Registration.objects.filter(registrant=duplicate).count(),
+        }
+
+    @staticmethod
+    def merged_away(attendee_id):
+        """The tombstone of a merged-away record, or ``None``."""
+        return Attendee.all_objects.filter(
+            pk=_uuid(attendee_id), is_removed=True, merged_into__isnull=False
+        ).first()
+
+    @staticmethod
+    def merged_from(attendee_id):
+        """The records merged into this one, newest first: id, name, when, by whom."""
+        records = []
+        for tombstone in Attendee.all_objects.filter(
+            merged_into_id=_uuid(attendee_id), is_removed=True
+        ):
+            merge = tombstone.infos.get("merge") or {}
+            by = Attendee.all_objects.filter(pk=_uuid(merge.get("by"))).first()
+            records.append(
+                {
+                    "id": str(tombstone.pk),
+                    "name": _named(tombstone)["name"],
+                    "at": datetime.fromisoformat(merge["at"]) if merge.get("at") else None,
+                    "by": _named(by)["name"] if by else None,
+                }
+            )
+        return sorted(records, key=lambda record: record["at"] or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
 
     @staticmethod
     @transaction.atomic
@@ -349,14 +455,8 @@ class AttendeeMergeService:
             if name not in theirs:
                 _set_detail(primary, name, value)
 
-        merged = _contacts(primary)
-        for kind, values in _contacts(duplicate).items():
-            held = merged.setdefault(kind, [])
-            held += [value for value in values if value not in held]
         primary.infos["contacts"] = {
-            f"{kind}{number}": value
-            for kind, values in merged.items()
-            for number, value in enumerate(values, start=1)
+            key: value for key, (value, _) in _merged_contacts(primary, duplicate).items()
         }
 
         primary.save()

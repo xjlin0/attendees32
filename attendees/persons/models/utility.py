@@ -12,6 +12,8 @@ from collections import defaultdict
 import pghistory
 import pytz
 from django.conf import settings
+from django.contrib.admin.utils import unquote
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 
 # from schedule.models.events import EventRelation
@@ -26,15 +28,44 @@ class PgHistoryPage:
         Adds additional context for the custom history template.
         """
         extra_context = extra_context or {}
-        extra_context['object_history'] = (
-            pghistory.models.AggregateEvent.objects
-                .target(self.model(pk=object_id))
-                .order_by('pgh_created_at')
-                .select_related('pgh_context')
-        )
+        try:
+            target_obj = self.model(pk=unquote(object_id))
+            events = list(
+                pghistory.models.AggregateEvent.objects
+                    .target(target_obj)
+                    .order_by('pgh_created_at')
+                    .select_related('pgh_context')
+            )
+            user_ids = {
+                e.pgh_context.metadata.get('user')
+                for e in events
+                if e.pgh_context and e.pgh_context.metadata and e.pgh_context.metadata.get('user')
+            }
+            valid_ids = [int(uid) for uid in user_ids if str(uid).isdigit()]
+            if valid_ids:
+                User = get_user_model()
+                users = {
+                    u.pk: u
+                    for u in User.objects.filter(pk__in=valid_ids)
+                }
+                for e in events:
+                    uid = e.pgh_context.metadata.get('user') if (e.pgh_context and e.pgh_context.metadata) else None
+                    try:
+                        e.context_user = users.get(int(uid)) if uid is not None else None
+                    except (ValueError, TypeError):
+                        e.context_user = None
+            else:
+                for e in events:
+                    e.context_user = None
+
+            extra_context['object_history'] = events
+        except Exception:
+            extra_context.setdefault('object_history', [])
+
         return super().history_view(
             request, object_id, extra_context=extra_context
         )
+
 
 
 class AttendanceBatchCreateResult(object):

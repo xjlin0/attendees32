@@ -528,3 +528,64 @@ class TestAttendeeMergeService:
         with pytest.raises(MergeRefused, match="no record"):
             AttendeeMergeService.unmerge(tombstone)
 
+
+    def test_preview_shows_what_the_merge_would_do_without_doing_it(self):
+        self._twins_with_details()
+        self._enroll(self.duplicate.attendings.get())
+        self._check_in(self.duplicate.attendings.get())
+
+        preview = AttendeeMergeService.preview(self.duplicate, self.primary)
+
+        assert preview["primary"]["id"] == str(self.primary.id)
+        assert preview["duplicate"]["name"] == "Ava Chen"
+        assert preview["details"]["actual_birthday"] == {"primary": "2008-06-22", "duplicate": "2008-06-23"}
+        assert preview["details"]["fixed.food_pref"] == {"primary": None, "duplicate": "peanut allergy"}
+        assert preview["details"]["photo"] == {"primary": None, "duplicate": "attendee_portrait/ava.jpg"}
+        assert preview["contacts"] == {
+            "phone1": {"value": "+15105550107", "from": "primary"},
+            "phone2": {"value": "+15105550199", "from": "duplicate"},
+            "email1": {"value": "ava@example.org", "from": "primary"},
+            "email2": {"value": "ava2@example.org", "from": "duplicate"},
+            "wechat1": {"value": "ava_chen", "from": "primary"},
+            "wechat2": {"value": "ava_c", "from": "duplicate"},
+        }
+        assert preview["moves"] == {
+            "enrollments": 1, "attendances": 1, "memberships": 0, "addresses": 0,
+            "notes": 0, "statuses": 0, "registrations": 0,
+        }
+        self.duplicate.refresh_from_db()
+        assert not self.duplicate.is_removed and self.duplicate.merged_into_id is None
+
+    def test_the_older_record_is_the_primary_whichever_way_round(self):
+        Attendee.objects.filter(pk=self.duplicate.pk).update(created=self.now - timedelta(days=400))
+        self.duplicate.refresh_from_db()
+
+        for one, other in ((self.primary, self.duplicate), (self.duplicate, self.primary)):
+            assert AttendeeMergeService.preview(one, other)["primary"]["id"] == str(self.duplicate.id)
+
+    def test_preview_is_refused_like_the_merge(self):
+        AttendeeMergeService.merge(self.duplicate, self.primary)
+
+        with pytest.raises(MergeRefused):
+            AttendeeMergeService.preview(self.duplicate, self.primary)
+
+    def test_merged_from_names_the_records_merged_into_one(self):
+        organizer = self._attendee("Olive")
+        AttendeeMergeService.merge(self.duplicate, self.primary, by=str(organizer.id))
+
+        [record] = AttendeeMergeService.merged_from(self.primary.id)
+        assert record["id"] == str(self.duplicate.id)
+        assert record["name"] == "Ava Chen"
+        assert record["by"] == "Olive Chen"
+        assert record["at"] is not None
+        assert AttendeeMergeService.merged_from(self.duplicate.id) == []
+        assert AttendeeMergeService.merged_from("nonsense") == []
+
+    def test_merged_away_finds_the_tombstone(self):
+        assert AttendeeMergeService.merged_away(self.duplicate.id) is None
+
+        AttendeeMergeService.merge(self.duplicate, self.primary)
+
+        assert AttendeeMergeService.merged_away(self.duplicate.id).pk == self.duplicate.pk
+        assert AttendeeMergeService.merged_away("nonsense") is None
+        assert AttendeeMergeService.merged_away(None) is None

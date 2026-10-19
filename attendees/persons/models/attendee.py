@@ -411,6 +411,16 @@ class AttendeesHistory(pghistory.get_event_model(
     actual_birthday = models.DateField(blank=True, null=True)
     estimated_birthday = partial_date.fields.PartialDateField(blank=True, help_text='1998, 1998-12 or 1992-12-31, please enter 1800 if year not known', null=True)
     deathday = models.DateField(blank=True, null=True)
+    merged_into = models.ForeignKey(
+        blank=True,
+        db_constraint=False,
+        default=None,
+        help_text="Set when this attendee was merged into another; the row stays as a tombstone so the old id can still be followed.",
+        null=True,
+        on_delete=django.db.models.deletion.DO_NOTHING,
+        related_name="+",
+        to="persons.attendee",
+    )
 
     class Meta:
         db_table = "persons_attendeeshistory"

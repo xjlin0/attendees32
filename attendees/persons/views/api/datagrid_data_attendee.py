@@ -136,6 +136,29 @@ class ApiDatagridDataAttendeeViewSet(ModelViewSet):  # from GenericAPIView
             {"merged_into": str(primary.pk)}, status=status.HTTP_200_OK
         )
 
+    @action(detail=False, methods=["get"], url_path="merge_preview")
+    def merge_preview(self, request):
+        """``GET .../merge_preview/?a=<uuid>&b=<uuid>``: what merging the two
+        would do, for the merge screen; the older record is the primary.
+        Guarded like merge."""
+        organization = request.user.organization
+        if not request.user.belongs_to_groups_of(
+            organization.infos.get("groups_see_all_meets_attendees", [])
+        ):
+            time.sleep(2)
+            raise PermissionDenied(detail="Not allowed to merge attendees.")
+        ids = [request.query_params.get(name) for name in ("a", "b")]
+        if not all(ids):
+            raise ValidationError({"detail": "Name both attendees, as a and b."})
+        records = [
+            get_object_or_404(Attendee.all_objects, pk=pk, division__organization=organization)
+            for pk in ids
+        ]
+        try:
+            return Response(AttendeeMergeService.preview(*records))
+        except MergeRefused as refusal:
+            raise ValidationError({"detail": str(refusal)})
+
     @action(detail=True, methods=["post"], url_path="unmerge")
     def unmerge(self, request, pk=None):
         """``POST .../<duplicate>/unmerge/``: puts back what the merge moved, once."""
