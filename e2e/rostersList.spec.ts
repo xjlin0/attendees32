@@ -294,19 +294,25 @@ test.describe('Rosters List Page', () => {
     if (itemCount >= 2) {
       const meet1Name = (await listItems.nth(0).innerText()).trim();
       await listItems.nth(0).click();
+
+      // DevExtreme dxTagBox closes the popup on selection; wait for it to close, then re-open to select meet 2
+      await expect(listItems.first()).toBeHidden({ timeout: 5000 });
+      await tagBox.click();
+      await expect(listItems.first()).toBeVisible({ timeout: 5000 });
       await listItems.nth(1).click();
       await page.mouse.click(0, 0);
 
       // Wait for DataGrid to load
       const gridContainer = page.locator('.dx-datagrid').first();
       await expect(gridContainer).toBeVisible({ timeout: 10000 });
-      await expect(page.locator('.dx-loadpanel').first()).toBeHidden({ timeout: 15000 });
 
       // Check that at least one gathering column header contains the meet name
       const headers = page.locator('.dx-datagrid-headers .dx-header-row td');
-      const headerTexts = await headers.allInnerTexts();
-      const hasMeetNameInHeader = headerTexts.some(t => t.includes(meet1Name));
-      expect(hasMeetNameInHeader).toBe(true);
+      await expect(async () => {
+        const headerTexts = await headers.allInnerTexts();
+        const hasMeetNameInHeader = headerTexts.some(t => t.includes(meet1Name));
+        expect(hasMeetNameInHeader).toBe(true);
+      }).toPass({ timeout: 15000 });
     }
   });
 });
