@@ -54,3 +54,26 @@ def test_user_permissions_history():
     user.user_permissions.remove(perm)
     assert UserPermissionsHistory.objects.filter(user=user, permission=perm, pgh_label="user_permission.remove").exists()
 
+
+def test_group_history():
+    group = Group.objects.create(name="HistoryTrackingGroup")
+    GroupsHistory = group._meta.apps.get_model('users', 'GroupsHistory')
+
+    # 1. Snapshot created on group creation
+    assert GroupsHistory.objects.filter(pgh_obj=group).exists()
+    assert group.history.count() >= 1
+    assert group.history.first().pgh_label == "group.snapshot"
+
+    # 2. Snapshot created on group update
+    group.name = "HistoryTrackingGroupRenamed"
+    group.save()
+    assert group.history.count() >= 2
+    assert group.history.order_by("pgh_id").last().name == "HistoryTrackingGroupRenamed"
+
+    # 3. BeforeDelete event recorded when group is deleted
+    group_id = group.id
+    group.delete()
+    delete_events = GroupsHistory.objects.filter(pgh_label="group.before_delete")
+    assert delete_events.filter(id=group_id).exists()
+
+
