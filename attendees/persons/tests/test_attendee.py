@@ -113,3 +113,45 @@ class TestAttendee:
 
         attendee.refresh_from_db()
         assert attendee.infos["names"]["original"] == "Jonathan Doe"
+
+    def test_attendee_history(self):
+        attendee = Attendee.objects.create(
+            first_name="HistoryTracking",
+            last_name="Attendee",
+            gender=GenderEnum.UNSPECIFIED.value,
+            division=self.division,
+        )
+        AttendeesHistory = attendee._meta.apps.get_model('persons', 'AttendeesHistory')
+
+        # 1. Snapshot created on attendee creation
+        assert AttendeesHistory.objects.filter(pgh_obj=attendee).exists()
+        assert attendee.history.count() >= 1
+        assert attendee.history.first().pgh_label == "attendee.snapshot"
+
+        # 2. Snapshot created on attendee update
+        attendee.first_name = "Renamed"
+        attendee.save()
+        assert attendee.history.count() >= 2
+        assert attendee.history.order_by("pgh_id").last().first_name == "Renamed"
+
+        # 3. Merged_into field is tracked in history
+        target_attendee = Attendee.objects.create(
+            first_name="Target",
+            last_name="Attendee",
+            gender=GenderEnum.UNSPECIFIED.value,
+            division=self.division,
+        )
+        attendee.merged_into = target_attendee
+        attendee.save()
+        assert attendee.history.order_by("pgh_id").last().merged_into == target_attendee
+
+        # 4. Soft delete sets is_removed=True and creates snapshot
+        attendee.delete()
+        assert attendee.history.order_by("pgh_id").last().is_removed is True
+
+        # 5. BeforeDelete event recorded when attendee is deleted
+        attendee_id = attendee.id
+        attendee.delete(soft=False)
+        delete_events = AttendeesHistory.objects.filter(pgh_label="attendee.before_delete")
+        assert delete_events.filter(id=attendee_id).exists()
+
