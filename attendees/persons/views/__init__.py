@@ -30,3 +30,4 @@ from .page.directory_print_configuration_view import directory_print_configurati
 from .page.attendingmeet_print_configuration_view import attendingmeet_print_configuration_view
 from .page.attendingmeet_envelopes_list_view import attendingmeet_envelopes_list_view
 from .page.person_directory_preview import person_directory_preview
+from .api.search_attendees_for_roster import api_search_attendees_for_roster_viewset

@@ -34,6 +34,7 @@ from attendees.persons.views import (  # api_attendee_relationships_viewset,
     directory_print_configuration_view,
     attendingmeet_print_configuration_view,
     person_directory_preview,
+    api_search_attendees_for_roster_viewset,
 )
 
 app_name = "persons"
@@ -143,6 +144,11 @@ router.register(
     "api/attendee_families",
     api_attendee_folks_viewset,
     basename="attendee_families",
+)
+router.register(
+    "api/search_attendees_for_roster",
+    api_search_attendees_for_roster_viewset,
+    basename="search_attendees_for_roster",
 )
 
 urlpatterns = [
