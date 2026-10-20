@@ -1,0 +1,3 @@
+{# One merge in words. `merge` is one record from AttendeeMergeService.merged_from, with `brought` added by the page view. #}
+<b>{{ merge.name }}</b>, a record made {{ merge.made|date:"Y-m-d" }}{% if merge.contact %} with {{ merge.contact }}{% endif %}, merged{% if merge.at %} on {{ merge.at|date:"Y-m-d" }}{% endif %}{% if merge.by %} by {{ merge.by }}{% endif %}.
+{% if merge.brought %}It brought {{ merge.brought }}.{% else %}It brought nothing else.{% endif %}

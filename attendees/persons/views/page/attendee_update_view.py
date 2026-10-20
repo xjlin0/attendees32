@@ -45,11 +45,14 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
         targeting_attendee_id = self.kwargs.get(
             "attendee_id", self.request.user.attendee_uuid_str()
         )  # if more logic needed when create new, a new view will be better
-        # The records merged into this one, for the notice under the title; the
-        # one whose link was followed says so.
-        merged_from = AttendeeMergeService.merged_from(targeting_attendee_id)
+        can_merge = self.request.user.can_see_all_organizational_meets_attendees()
+        # The records merged into this one, newest first, for the chip by the
+        # title and the list it opens. Only a user who may merge sees them.
+        # The one whose link was followed also gets a notice saying so.
+        merged_from = AttendeeMergeService.merged_from(targeting_attendee_id) if can_merge else []
         for record in merged_from:
             record["followed"] = record["id"] == self.request.GET.get("merged_from")
+            record["brought"] = _brought(record["moved"])
         show_create_attendee = self.kwargs.get(
             "show_create_attendee", Menu.user_can_create_attendee(self.request.user)
         )
@@ -93,7 +96,7 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
                 ),  # to avoid simultaneous AJAX calls
                 "attendee_search": "/persons/api/datagrid_data_attendees/",
                 "attendee_urn": "/persons/attendee/",
-                "can_merge": self.request.user.can_see_all_organizational_meets_attendees(),
+                "can_merge": can_merge,
                 "merged_from": merged_from,
             }
         )
@@ -114,6 +117,31 @@ class AttendeeUpdateView(RouteAndSpyGuard, UpdateView):
         else:
             sleep(2)
             raise Http404("Did you assigned an attendee? Have you registered any events of the organization?")
+
+
+
+# What a merge brought, in words. The plural is the key the service counts by.
+BROUGHT = (
+    ("enrollments", "enrollment"),
+    ("check-ins", "check-in"),
+    ("memberships", "membership"),
+    ("addresses", "address"),
+    ("notes", "note"),
+    ("registrations", "registration"),
+    ("logins", "login"),
+)
+
+
+def _brought(counts):
+    """'2 check-ins, 1 enrollment and 1 note'; empty when nothing moved."""
+    parts = [
+        f"{counts[plural]} {plural if counts[plural] != 1 else singular}"
+        for plural, singular in BROUGHT
+        if counts.get(plural)
+    ]
+    if len(parts) > 1:
+        parts[-2:] = [f"{parts[-2]} and {parts[-1]}"]
+    return ", ".join(parts)
 
 
 attendee_update_view = AttendeeUpdateView.as_view()

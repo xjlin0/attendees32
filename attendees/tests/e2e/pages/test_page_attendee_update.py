@@ -8,11 +8,13 @@ from attendees.persons.services import AttendeeMergeService
 pytestmark = pytest.mark.django_db
 
 
-def _twins(golden):
+def _ava(golden):
     division = golden.attendee("chen_grace").division
-    primary = Attendee.objects.create(first_name="Ava", last_name="Chen", division=division, gender="unspecified")
-    duplicate = Attendee.objects.create(first_name="Ava", last_name="Chen", division=division, gender="unspecified")
-    return primary, duplicate
+    return Attendee.objects.create(first_name="Ava", last_name="Chen", division=division, gender="unspecified")
+
+
+def _twins(golden):
+    return _ava(golden), _ava(golden)
 
 
 class TestAttendeeUpdate:
@@ -80,8 +82,9 @@ class TestAttendeeUpdate:
         assert record["followed"] is True
         assert response.context["can_merge"] is True
         html = response.content.decode()
-        assert "You followed a link to a record that was merged into this one." in html
-        assert "Merged with Ava Chen" in html
+        assert "You followed a link to a record that was merged into this one" in html
+        assert "Ava Chen" in html
+        assert "merged ×1" in html
         assert "Undo merge" in html
         assert "Merge with another record" in html
 
@@ -94,3 +97,52 @@ class TestAttendeeUpdate:
         assert response.context["can_merge"] is False
         assert response.context["merged_from"] == []
         assert "Merge with another record" not in response.content.decode()
+
+    def test_a_member_sees_no_merges(self, golden, login):
+        member = golden.attendee("chen_zhiming")
+        duplicate = _ava(golden)
+        AttendeeMergeService.merge(duplicate, member)
+        client = login("golden_member")
+
+        response = client.get(f"/persons/attendee/{member.id}?merged_from={duplicate.id}")
+
+        assert response.status_code == 200
+        assert response.context["merged_from"] == []
+        html = response.content.decode()
+        assert "merged ×" not in html
+        assert "You followed a link" not in html
+
+    def test_the_new_person_page_carries_no_merges(self, golden, login):
+        # A deleted record that was never merged is not a merge into "new".
+        _ava(golden).delete()
+        client = login("golden_data_organizer")
+
+        response = client.get("/persons/attendee/new")
+
+        assert response.status_code == 200
+        assert response.context["merged_from"] == []
+        assert "merged ×" not in response.content.decode()
+
+    def test_the_chip_counts_the_merges_and_the_list_says_what_each_brought(self, golden, login):
+        primary, first = _twins(golden)
+        second = _ava(golden)
+        second.infos["contacts"] = {"phone1": "+15105550199"}
+        second.save()
+        AttendeeMergeService.merge(first, primary)
+        AttendeeMergeService.merge(second, primary)
+        client = login("golden_data_organizer")
+
+        response = client.get(f"/persons/attendee/{primary.id}")
+
+        html = response.content.decode()
+        assert "merged ×2" in html
+        # No link was followed, so no notice; the list has one Undo per merge.
+        assert "You followed a link" not in html
+        assert html.count("Undo merge") == 2
+        merges = {record["id"]: record for record in response.context["merged_from"]}
+        assert set(merges) == {str(first.id), str(second.id)}
+        assert merges[str(second.id)]["made"] == second.created.date()
+        assert merges[str(second.id)]["contact"] == "+15105550199"
+        assert merges[str(second.id)]["brought"] == ""  # a plain twin brings nothing else
+        assert f"a record made {second.created:%Y-%m-%d} with +15105550199, merged on" in html
+        assert "It brought nothing else." in html
