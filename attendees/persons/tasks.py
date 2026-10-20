@@ -8,7 +8,7 @@ logger = get_task_logger(__name__)
 
 
 @celery_app.task()
-@pghistory.context(modifier="advance grades")
+@pghistory.context(modifier="advancing grades task")
 def advance_grades(organization_infos=None, organization_slug=None, dry_run=False):
     """
     Periodic / on-demand Celery task to advance school grades for attendees.

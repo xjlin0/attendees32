@@ -508,12 +508,35 @@ docker compose -f local.yml restart django
 TZ=UTC npx playwright test --project=chromium
 ```
 
-## flags in infos
+## Flags in infos
 
 ### meet:
 `signature_required_at`: could be nonexist, "check_out" or "check_in" string.  For check in/out attendance, "check_out" will force users to sign at checking out, "check_in" will force users to sign at checking in.
 `default_attendingmeet_in_weeks`: could be any positive integers. When generating attendingmeet, start will be current, and finish will be current plus that number of weeks.
 `default_time_zone`: used for generating any start/finish of attendingmeet/attendances in that timezone.
+
+## Admin tasks
+### Advancing grades of every students in all or one organization based on organization.infos["grade_converter"]
+You can also configure a periodic task to run it, such as every August (0 0 1 8 *). Once you have a Crontab, create a periodic task by selecting `attendees.persons.tasks.advance_grades` task. It will run for all organizations withou arguments or specify some with arguments:
+```
+{
+  "organization_infos": [
+    {"organization_slug": "d7c8Fd_cfcc_hayward"}
+  ]
+}
+```
+* manually execution, the Verbosity `-v 2` option will list students names:
+```
+docker compose -f local.yml run --rm django python manage.py advance_grades　-v 2
+```
+* manually execution with specific organization, the verbosity `-v 2` option will list students names:
+```
+docker compose -f local.yml run --rm django python manage.py advance_grades -o d7c8Fd_cfcc_hayward -v 2
+```
+* Dry-run, list every student to be changed without actually written to DB, the verbosity `-v 2` option will list students names
+```
+docker compose -f local.yml run --rm django python manage.py advance_grades --dry-run -v 2
+```
 
 ## Todo & progress:
 
