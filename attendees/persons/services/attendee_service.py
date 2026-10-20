@@ -1,9 +1,12 @@
 import re
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
 from partial_date import PartialDate
+import pghistory
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import StringAgg, JSONBAgg
+from django.db import transaction
 from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count, Min
 from django.db.models.functions import Cast, Substr, Coalesce
 from django.db.models.expressions import OrderBy, Value
@@ -1060,5 +1063,165 @@ class AttendeeService:
             })
 
         return results
+
+    @staticmethod
+    def get_g12_index(grade_converter):
+        """
+        Locates the 0-based index for G12 in grade_converter list.
+        Returns None if not found.
+        """
+        if not grade_converter or not isinstance(grade_converter, list):
+            return None
+        for idx, item in enumerate(grade_converter):
+            norm = str(item).strip().upper().replace(" ", "").replace("-", "")
+            if norm in ("G12", "GRADE12", "12THGRADE"):
+                return idx
+        return None
+
+    @staticmethod
+    def advance_grades(organization_infos=None, organization_slug=None, dry_run=False):
+        """
+        Advances the school grade of all active attendees in organizations that have
+        infos['grade_converter'] or infos['settings']['grade_converter'].
+        - Skips organizations without grade_converter or with an empty list.
+        - Uses grade_converter as the grade progression source and activation flag.
+        - Strictly caps advancement at G12: students already at or past G12 are NOT incremented.
+        - Preserves and logs pghistory snapshot.
+        - Returns a structured dictionary of results for Celery logs and admin commands.
+        """
+        from attendees.whereabouts.models import Organization
+
+        org_qs = Organization.objects.filter(is_removed=False)
+        if organization_infos and isinstance(organization_infos, list):
+            slugs = [
+                item.get("organization_slug") or item.get("slug")
+                for item in organization_infos
+                if isinstance(item, dict) and (item.get("organization_slug") or item.get("slug"))
+            ]
+            if slugs:
+                org_qs = org_qs.filter(slug__in=slugs)
+        elif organization_slug:
+            if isinstance(organization_slug, int) or (isinstance(organization_slug, str) and organization_slug.isdigit()):
+                org_qs = org_qs.filter(id=int(organization_slug))
+            else:
+                org_qs = org_qs.filter(slug=organization_slug)
+
+        total_updated = 0
+        total_capped = 0
+        orgs_processed = 0
+        orgs_skipped = 0
+        org_summaries = []
+
+        with pghistory.context(modifier="advance grades"):
+            for org in org_qs:
+                raw_converter = (
+                    (org.infos.get("settings") or {}).get("grade_converter")
+                    or org.infos.get("grade_converter")
+                ) if isinstance(org.infos, dict) else None
+                if not raw_converter or not isinstance(raw_converter, list) or len(raw_converter) == 0:
+                    orgs_skipped += 1
+                    org_summaries.append({
+                        "id": org.id,
+                        "slug": org.slug,
+                        "name": org.display_name,
+                        "status": "skipped",
+                        "reason": "No grade_converter configured in organization.infos",
+                        "updated_count": 0,
+                        "capped_count": 0,
+                        "students": [],
+                    })
+                    continue
+
+                g12_idx = AttendeeService.get_g12_index(raw_converter)
+                org_updated = 0
+                org_capped = 0
+                student_details = []
+
+                attendees_qs = Attendee.objects.filter(
+                    division__organization=org,
+                    is_removed=False,
+                    merged_into__isnull=True,
+                    deathday__isnull=True,
+                    infos__fixed__grade__isnull=False,
+                ).order_by("created")
+
+                atomic_ctx = transaction.atomic() if not dry_run else nullcontext()
+                with atomic_ctx:
+                    for attendee in attendees_qs:
+                        if not isinstance(attendee.infos, dict):
+                            continue
+                        fixed = attendee.infos.get("fixed", {})
+                        if not isinstance(fixed, dict):
+                            continue
+
+                        raw_grade = fixed.get("grade")
+                        if raw_grade is None:
+                            continue
+
+                        current_grade = None
+                        if isinstance(raw_grade, (int, float)):
+                            current_grade = int(raw_grade)
+                        elif isinstance(raw_grade, str):
+                            if raw_grade in raw_converter:
+                                current_grade = raw_converter.index(raw_grade)
+                            elif raw_grade.isdigit() or (raw_grade.startswith("-") and raw_grade[1:].isdigit()):
+                                current_grade = int(raw_grade)
+
+                        if current_grade is None:
+                            continue
+
+                        # Check if capped at or past G12
+                        if g12_idx is not None and current_grade >= g12_idx:
+                            org_capped += 1
+                            continue
+                        elif current_grade >= len(raw_converter) - 1:
+                            org_capped += 1
+                            continue
+
+                        new_grade = current_grade + 1
+                        old_grade_name = raw_converter[current_grade] if 0 <= current_grade < len(raw_converter) else str(current_grade)
+                        new_grade_name = raw_converter[new_grade] if 0 <= new_grade < len(raw_converter) else str(new_grade)
+
+                        student_details.append({
+                            "attendee_id": str(attendee.id),
+                            "name": attendee.display_label,
+                            "old_grade": current_grade,
+                            "old_grade_name": old_grade_name,
+                            "new_grade": new_grade,
+                            "new_grade_name": new_grade_name,
+                        })
+
+                        if not dry_run:
+                            fixed["grade"] = new_grade
+                            if "school_grade" in fixed and isinstance(fixed["school_grade"], int):
+                                if fixed["school_grade"] < 12:
+                                    fixed["school_grade"] += 1
+                            attendee.infos["fixed"] = fixed
+                            attendee.save(update_fields=["infos"])
+
+                        org_updated += 1
+
+                orgs_processed += 1
+                total_updated += org_updated
+                total_capped += org_capped
+                org_summaries.append({
+                    "id": org.id,
+                    "slug": org.slug,
+                    "name": org.display_name,
+                    "status": "processed",
+                    "reason": None,
+                    "updated_count": org_updated,
+                    "capped_count": org_capped,
+                    "students": student_details,
+                })
+
+        return {
+            "total_organizations": org_qs.count(),
+            "organizations_processed": orgs_processed,
+            "organizations_skipped": orgs_skipped,
+            "total_updated": total_updated,
+            "total_capped": total_capped,
+            "organizations": org_summaries,
+        }
 
 
