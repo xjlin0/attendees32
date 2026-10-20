@@ -291,3 +291,29 @@ class TestMergingRecordsThatCarryEverything:
         assert r.enrollments(samuel) == sorted([r.meet.display_name, r.sunday_school.display_name])
         assert client.get(f"{API}{r.sammy.id}/").json()["merged_into"] == str(samuel.id)
         assert client.get(f"{API}{r.samuel.id}/").status_code == 200
+
+
+class TestDoubleRegistration:
+    def test_two_records_registered_for_one_assembly_merge_and_unmerge(self, golden, token_client):
+        """A registration is unique per assembly and registrant, so the
+        duplicate's folds into the primary's and comes back on undo."""
+        assembly = golden.meets["youth_group"].assembly
+        division = assembly.division
+        primary = Attendee.objects.create(first_name="Penny", last_name="Tsai", division=division, gender="unspecified")
+        duplicate = Attendee.objects.create(first_name="Penny", last_name="Tsai", division=division, gender="unspecified")
+        theirs = Registration.objects.create(registrant=primary, assembly=assembly)
+        ours = Registration.objects.create(registrant=duplicate, assembly=assembly)
+        client = token_client("golden_data_organizer")
+
+        def live():
+            return set(Registration.objects.filter(assembly=assembly, registrant__in=[primary, duplicate]))
+
+        response = _merge(client, duplicate, primary)
+
+        assert response.status_code == 200, response.content
+        assert live() == {theirs}
+
+        response = _unmerge(client, duplicate)
+
+        assert response.status_code == 200, response.content
+        assert live() == {theirs, ours}
