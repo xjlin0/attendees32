@@ -579,7 +579,40 @@ class TestAttendeeMergeService:
         assert record["by"] == "Olive Chen"
         assert record["at"] is not None
         assert AttendeeMergeService.merged_from(self.duplicate.id) == []
+        # A deleted record that was never merged is nobody's merge, whatever the key.
+        self._attendee("Gone").delete()
         assert AttendeeMergeService.merged_from("nonsense") == []
+        assert AttendeeMergeService.merged_from("new") == []
+        assert AttendeeMergeService.merged_from(None) == []
+
+    def test_merged_from_counts_what_the_merge_brought(self):
+        # A registration both have, so that attending folds; an attending
+        # without one that only the duplicate has, so it moves whole. A
+        # check-in on each.
+        shared = Registration.objects.create(registrant=self.primary, assembly=self.assembly)
+        Attending.objects.create(attendee=self.primary, registration=shared)
+        folding = Attending.objects.create(attendee=self.duplicate, registration=shared)
+        moving = Attending.objects.create(attendee=self.duplicate, registration=None)
+        self._enroll(folding)
+        self._check_in(folding)
+        self._check_in(moving)
+        self.duplicate.infos["contacts"] = {"email1": "ava@example.org", "phone1": "+15105550199"}
+        self.duplicate.save()
+
+        AttendeeMergeService.merge(self.duplicate, self.primary)
+
+        [record] = AttendeeMergeService.merged_from(self.primary.id)
+        assert record["made"] == self.duplicate.created.date()
+        assert record["contact"] == "+15105550199"
+        assert record["moved"] == {
+            "enrollments": 1,
+            "check-ins": 2,
+            "memberships": 0,
+            "addresses": 0,
+            "notes": 0,
+            "registrations": 0,
+            "logins": 0,
+        }
 
     def test_merged_away_finds_the_tombstone(self):
         assert AttendeeMergeService.merged_away(self.duplicate.id) is None
