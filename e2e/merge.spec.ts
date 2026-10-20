@@ -254,6 +254,65 @@ test.describe('Merging two records', () => {
   });
 });
 
+test.describe('Merging registered records', () => {
+  const REGISTRATIONS = '/persons/api/all_registrations/';
+
+  /** Live registrations of one person for one assembly. */
+  async function registrations(page, assemblyId: number, attendeeId: string) {
+    const response = await call(page, 'GET', `${REGISTRATIONS}?assembly=${assemblyId}&registrant=${attendeeId}`);
+    expect(response.ok(), await response.text()).toBeTruthy();
+    const body = await response.json();
+    return (body.data ?? body.results ?? body).length;
+  }
+
+  test('two records registered for one assembly merge from the page and undo from the chip', async ({ page, signIn }) => {
+    await signIn('golden_data_organizer');
+    const original = (await record(page, attendeeId('deng_yaqin'))).body;
+    const assemblies = await (await call(page, 'GET', '/occasions/api/user_assemblies/?take=9999')).json();
+    const youth = (assemblies.data ?? assemblies.results ?? assemblies).find((a) => a.slug === 'cfcch_crossing_youth');
+    expect(youth, 'the youth assembly').toBeTruthy();
+    const twin = await makeTwin(page, original, { infos: { names: {}, fixed: {}, contacts: { phone1: '+15105550401' } } });
+    const made = [];
+    try {
+      // Both registered for the youth assembly, which is unique per assembly and registrant.
+      for (const who of [original, twin]) {
+        const response = await call(page, 'POST', REGISTRATIONS, { assembly: youth.id, registrant: who.id, infos: {} });
+        expect(response.ok(), await response.text()).toBeTruthy();
+        made.push(await response.json());
+      }
+
+      await visit(page, `/persons/attendee/${original.id}`);
+      await expect(page.locator('h3.page-title')).toContainText('Details of');
+      await page.click('button.attendee-merge-button');
+      await page.locator('.dx-popup-content input.dx-texteditor-input').fill(original.infos.names.original);
+      await expect(page.locator('.dx-popup-content .dx-list-item')).toHaveCount(1);
+      await page.locator('.dx-popup-content .dx-list-item').click();
+      await expect(page.getByText('Merge into one record')).toBeVisible();
+      await page.locator('.dx-popup-bottom .dx-button', { hasText: 'Merge' }).first().click();
+      await page.waitForURL(/success=/);
+      await expect(page.locator('button.attendee-merge-chip')).toHaveText('merged ×1');
+      // The twin's registration folded: the original keeps its one, the twin's is retired.
+      expect(await registrations(page, youth.id, original.id)).toBe(1);
+      expect(await registrations(page, youth.id, twin.id)).toBe(0);
+
+      // Undo from the chip's list: both registrations are back.
+      await page.locator('button.attendee-merge-chip').click();
+      await page.locator(`.dx-popup-content button.attendee-unmerge-button[data-duplicate-id="${twin.id}"]`).click();
+      await expect(page.getByText('Undo this merge?')).toBeVisible();
+      await page.locator('.dx-popup-bottom .dx-button', { hasText: 'Undo merge' }).click();
+      await page.waitForURL(/success=/);
+      await expect(page.locator('button.attendee-merge-chip')).toHaveCount(0);
+      expect(await registrations(page, youth.id, original.id)).toBe(1);
+      expect(await registrations(page, youth.id, twin.id)).toBe(1);
+      expect((await record(page, twin.id)).status).toBe(200);
+    } finally {
+      await call(page, 'POST', `${API}${twin.id}/unmerge/`);
+      for (const registration of made) await call(page, 'DELETE', `${REGISTRATIONS}${registration.id}/`);
+      await remove(page, twin.id);
+    }
+  });
+});
+
 test.describe('Merge notices', () => {
   test('the New person page carries no merges', async ({ page, signIn }) => {
     await signIn('golden_data_organizer');
