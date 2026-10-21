@@ -31,3 +31,4 @@ from .page.attendingmeet_print_configuration_view import attendingmeet_print_con
 from .page.attendingmeet_envelopes_list_view import attendingmeet_envelopes_list_view
 from .page.person_directory_preview import person_directory_preview
 from .api.search_attendees_for_roster import api_search_attendees_for_roster_viewset
+from .api.fast_onboard_attendee import api_fast_onboard_attendee_viewset

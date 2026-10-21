@@ -315,6 +315,70 @@ test.describe('Rosters List Page', () => {
       }).toPass({ timeout: 15000 });
     }
   });
+
+  test('Should open + Attendee popup with search-first flow, English UI, and fast onboard form', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Select meet from tagbox
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+    const listItem = page.locator('.dx-list-item').first();
+    await listItem.waitFor({ state: 'visible' });
+    await listItem.click();
+    await page.mouse.click(0, 0);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+
+    // Click "+ Attendee" button
+    const addAttendeeBtn = page.locator('a.add-attendee');
+    await expect(addAttendeeBtn).toBeVisible();
+    await addAttendeeBtn.click();
+
+    // Verify popup title
+    const popupTitle = page.locator('.add-attendee-popup-wrapper .dx-popup-title');
+    await expect(popupTitle).toBeVisible();
+    await expect(popupTitle).toContainText('Add Attendee to Roster');
+
+    // Verify side-by-side meet and gathering selectors
+    await expect(page.locator('.add-attendee-popup-wrapper')).toContainText('Target Meet:');
+    await expect(page.locator('.add-attendee-popup-wrapper')).toContainText('Gathering:');
+    const gatheringDropdown = page.locator('.add-attendee-popup-wrapper .target-gathering-dropdown');
+    await expect(gatheringDropdown).toBeVisible();
+
+    // Verify search view is displayed first (mandatory search)
+    const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
+    await expect(searchInput).toBeVisible();
+    await expect(page.locator('.add-attendee-popup-wrapper')).toContainText('Please search for attendee first');
+
+    // Search for nonexistent person to test fast onboard button
+    await searchInput.fill('NonExistentAttendeeTestXYZ');
+    await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
+
+    // Should display no results and "Register as New Attendee" button
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
+    await switchToOnboardBtn.click();
+
+    // Verify onboard form fields
+    const onboardContainer = page.locator('.add-attendee-popup-wrapper .onboard-view-container');
+    await expect(onboardContainer).toBeVisible();
+    await expect(onboardContainer).toContainText('Attendee Information');
+    await expect(onboardContainer).toContainText('Contact Type');
+
+    // Verify attendee contact type selector
+    const contactTypeSelect = page.locator('.add-attendee-popup-wrapper select.ob-contact-type');
+    await expect(contactTypeSelect).toBeVisible();
+
+    // Verify back to search button
+    const backBtn = page.locator('.add-attendee-popup-wrapper .back-to-search-btn');
+    await expect(backBtn).toBeVisible();
+    await backBtn.click();
+    await expect(searchInput).toBeVisible();
+  });
 });
 
 

@@ -1,4 +1,10 @@
 ;(() => {
+  window.Attendees = window.Attendees || {};
+  window.Attendees.utilities = window.Attendees.utilities || {};
+  if (window.Attendees.utilities.editingEnabled === undefined) {
+    window.Attendees.utilities.editingEnabled = false;
+  }
+
   const { createApp, ref, reactive, onMounted } = Vue;
 
   // Shared registry of gatherings for columns:
@@ -47,6 +53,34 @@
     return existing;
   };
 
+  let gradeConverter = [];
+  const loadGradeConverter = () => {
+    const gradeConverterEl = document.getElementById('organization-grade-converter');
+    if (gradeConverterEl) {
+      try {
+        const parsed = JSON.parse(gradeConverterEl.textContent) || [];
+        gradeConverter = parsed.map((item, index) => {
+          if (typeof item === 'object' && item !== null) return item;
+          return { id: index, label: String(item) };
+        });
+      } catch (e) {
+        gradeConverter = [];
+      }
+    }
+  };
+
+  let organizationDivisions = [];
+  const loadOrganizationDivisions = () => {
+    const divisionsEl = document.getElementById('organization-divisions');
+    if (divisionsEl) {
+      try {
+        organizationDivisions = JSON.parse(divisionsEl.textContent) || [];
+      } catch (e) {
+        organizationDivisions = [];
+      }
+    }
+  };
+
   // ==========================================================
   // 1. Endpoints Logic
   // ==========================================================
@@ -61,6 +95,8 @@
       attendings: '',
       characters: '',
       teams: '',
+      searchAttendees: '/persons/api/search_attendees_for_roster/',
+      fastOnboard: '/persons/api/fast_onboard_attendee/',
       userCanWrite: true
     });
 
@@ -75,8 +111,12 @@
         endpoints.attendings = appEl.dataset.attendingsEndpoint || '';
         endpoints.characters = appEl.dataset.charactersEndpoint || '';
         endpoints.teams = appEl.dataset.teamsEndpoint || '';
+        endpoints.searchAttendees = appEl.dataset.searchAttendeesEndpoint || '/persons/api/search_attendees_for_roster/';
+        endpoints.fastOnboard = appEl.dataset.fastOnboardEndpoint || '/persons/api/fast_onboard_attendee/';
         endpoints.userCanWrite = appEl.dataset.userCanWrite !== 'false';
       }
+      loadGradeConverter();
+      loadOrganizationDivisions();
     };
 
     return { endpoints, initEndpoints };
@@ -153,6 +193,10 @@
                     || getAttendingMeetForGathering(rowData, gatheringMeta || gathering);
       const attendingId = targetAm ? targetAm.attending_id : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].attending_id : null));
       const characterId = targetAm ? targetAm.character_id : (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].character_id : 1);
+
+      if (window.Attendees && window.Attendees.utilities) {
+        window.Attendees.utilities.editingEnabled = true;
+      }
 
       try {
         const recordId = record ? (record.attendance_id || record.id) : '';
@@ -335,6 +379,10 @@
         DevExpress.ui.notify(newCategory !== 1 ? 'Checked in successfully' : 'Check-in undone', 'success', 2000);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 3000);
+      } finally {
+        if (window.Attendees && window.Attendees.utilities) {
+          window.Attendees.utilities.editingEnabled = false;
+        }
       }
     };
 
@@ -484,9 +532,11 @@
       signaturePopupInstance = $(popupEl).dxPopup({
         visible: false,
         contentTemplate: () => {
-          return $('<div style="width: 100%; height: 100px;">').append(
-            $('<canvas class="signature" style="width: 100%; height: 100px;"></canvas>')
-          );
+          const t = document.getElementById('signature-popup-template');
+          if (t && t.content && t.content.firstElementChild) {
+            return $(t.content.firstElementChild.cloneNode(true));
+          }
+          return $('<div style="width: 100%; height: 100px;"><canvas class="signature" style="width: 100%; height: 100px;"></canvas></div>');
         },
         maxWidth: 400,
         width: '95%',
@@ -502,9 +552,17 @@
           my: 'center',
         },
         onShown: () => {
+          if (window.Attendees && window.Attendees.utilities) {
+            window.Attendees.utilities.editingEnabled = true;
+          }
           const canvas = document.querySelector('canvas.signature');
           if (canvas && (!signaturePadInstance || canvas.width === 0 || canvas.height === 0)) {
             initSignatureCanvas();
+          }
+        },
+        onHiding: () => {
+          if (window.Attendees && window.Attendees.utilities) {
+            window.Attendees.utilities.editingEnabled = false;
           }
         },
         toolbarItems: [
@@ -1181,9 +1239,6 @@
       if (!popupInstance) {
         popupInstance = new DevExpress.ui.dxPopup(popupElement, {
           title: popupTitle,
-          width: popupWidth,
-          height: popupHeight,
-          maxHeight: '90vh',
           fullScreen: false,
           wrapperAttr: {
             class: 'attendingmeets-popup-wrapper'
@@ -1191,6 +1246,16 @@
           showCloseButton: true,
           dragEnabled: !isMobile,
           toolbarItems: toolbarItems,
+          onShowing: () => {
+            if (window.Attendees && window.Attendees.utilities) {
+              window.Attendees.utilities.editingEnabled = true;
+            }
+          },
+          onHiding: () => {
+            if (window.Attendees && window.Attendees.utilities) {
+              window.Attendees.utilities.editingEnabled = false;
+            }
+          },
           contentTemplate: (container) => {
             renderPopupContent(container[0]);
           }
@@ -1198,15 +1263,22 @@
       } else {
         popupInstance.option({
           title: popupTitle,
-          width: popupWidth,
-          height: popupHeight,
-          maxHeight: '90vh',
           fullScreen: false,
           wrapperAttr: {
             class: 'attendingmeets-popup-wrapper'
           },
           dragEnabled: !isMobile,
-          toolbarItems: toolbarItems
+          toolbarItems: toolbarItems,
+          onShowing: () => {
+            if (window.Attendees && window.Attendees.utilities) {
+              window.Attendees.utilities.editingEnabled = true;
+            }
+          },
+          onHiding: () => {
+            if (window.Attendees && window.Attendees.utilities) {
+              window.Attendees.utilities.editingEnabled = false;
+            }
+          }
         });
         const contentEl = popupInstance.content ? popupInstance.content()[0] : null;
         if (contentEl) {
@@ -1245,40 +1317,8 @@
       return timeStr;
     };
 
-    const gatheringHeaderTemplate = (container, options) => {
-      const colMeta = options.column.gatheringMeta || (options.column.name && gatheringsRegistry.get(options.column.name));
-      const isMultiMeet = filterData && filterData.meets && filterData.meets.length > 1;
-      const meetName = (colMeta && colMeta.meet_display_name)
-        || (colMeta && colMeta.meet_id && meetsInfoMap.get(colMeta.meet_id))
-        || (colMeta && colMeta.meet_id && meetsInfoMap.get(String(colMeta.meet_id)))
-        || '';
-      const timeStr = formatDate(colMeta ? colMeta.start : '');
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'text-center roster-header-cell';
-      if (isMultiMeet && meetName) {
-        wrapper.innerHTML = `<div class="roster-header-meet">${meetName}</div><div class="roster-header-time">${timeStr}</div>`;
-      } else {
-        wrapper.innerHTML = `<div class="roster-header-time single">${timeStr}</div>`;
-      }
-
-      if (container.jquery) {
-        container.empty().append(wrapper);
-      } else if (container.length !== undefined && !container.nodeType) {
-        const el = container[0];
-        if (el) {
-          el.innerHTML = '';
-          el.appendChild(wrapper);
-        }
-      } else if (container.innerHTML !== undefined) {
-        container.innerHTML = '';
-        container.appendChild(wrapper);
-      } else if (container.append) {
-        container.append(wrapper);
-      }
-    };
-
     let activeHighlightedIndex = null;
+    let lastHighlightedGathering = null;
     let highlightStyleEl = null;
 
     const getHighlightStyleEl = () => {
@@ -1293,8 +1333,9 @@
       return highlightStyleEl;
     };
 
-    const highlightColumn = (colIndex) => {
+    const highlightColumn = (colIndex, gatheringMeta) => {
       if (colIndex === undefined || colIndex === null) return;
+      lastHighlightedGathering = gatheringMeta || null;
       if (activeHighlightedIndex === colIndex) {
         return;
       }
@@ -1319,6 +1360,7 @@
     const clearColumnHighlight = () => {
       if (activeHighlightedIndex === null) return;
       activeHighlightedIndex = null;
+      lastHighlightedGathering = null;
       const styleTag = getHighlightStyleEl();
       styleTag.textContent = '';
     };
@@ -1330,6 +1372,45 @@
         clearColumnHighlight();
       }
     });
+
+    const gatheringHeaderTemplate = (container, options) => {
+      const colMeta = options.column.gatheringMeta || (options.column.name && gatheringsRegistry.get(options.column.name));
+      const colIdx = options.column.colIndex !== undefined ? options.column.colIndex : (options.columnIndex - 5);
+      const isMultiMeet = filterData && filterData.meets && filterData.meets.length > 1;
+      const meetName = (colMeta && colMeta.meet_display_name)
+        || (colMeta && colMeta.meet_id && meetsInfoMap.get(colMeta.meet_id))
+        || (colMeta && colMeta.meet_id && meetsInfoMap.get(String(colMeta.meet_id)))
+        || '';
+      const timeStr = formatDate(colMeta ? colMeta.start : '');
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'text-center roster-header-cell';
+      wrapper.style.cursor = 'pointer';
+      if (isMultiMeet && meetName) {
+        wrapper.innerHTML = `<div class="roster-header-meet">${meetName}</div><div class="roster-header-time">${timeStr}</div>`;
+      } else {
+        wrapper.innerHTML = `<div class="roster-header-time single">${timeStr}</div>`;
+      }
+
+      wrapper.addEventListener('click', () => {
+        highlightColumn(colIdx, colMeta);
+      });
+
+      if (container.jquery) {
+        container.empty().append(wrapper);
+      } else if (container.length !== undefined && !container.nodeType) {
+        const el = container[0];
+        if (el) {
+          el.innerHTML = '';
+          el.appendChild(wrapper);
+        }
+      } else if (container.innerHTML !== undefined) {
+        container.innerHTML = '';
+        container.appendChild(wrapper);
+      } else if (container.append) {
+        container.append(wrapper);
+      }
+    };
 
 
     const attendeeCellTemplate = (container, options) => {
@@ -1344,10 +1425,18 @@
         photoHtml = `<div class="attendee-photo d-flex justify-content-center align-items-center bg-light text-muted"><i class="fas fa-user"></i></div>`;
       }
 
+      const hasSpecialWarning = (data.attendingmeets || []).some(am => am && am.infos && am.infos.special && am.infos.special.check_in);
+      let warningHtml = '';
+      if (hasSpecialWarning) {
+        const specialAm = (data.attendingmeets || []).find(am => am && am.infos && am.infos.special && am.infos.special.check_in);
+        const warningMsg = (specialAm && specialAm.infos && specialAm.infos.special && specialAm.infos.special.check_in) || '⚠無監護人/護送者資料';
+        warningHtml = `<span class="text-danger fw-bold me-1" title="${warningMsg}" style="font-size: 1.1em; cursor: help;">⚠</span>`;
+      }
+
       wrapper.innerHTML = `
         ${photoHtml}
         <span class="attendee-links-container">
-          <u><a href="/persons/attendee/${data.attendee_id}" target="_blank" class="attendee-info-link" title="Click to open a new page of attendee info">(Info)</a></u>
+          ${warningHtml}<u><a href="/persons/attendee/${data.attendee_id}" target="_blank" class="attendee-info-link" title="Click to open a new page of attendee info">(Info)</a></u>
           <u class="attendee-name-link" role="button" title="Click to edit enrollment details">${data.attendee_name}</u>
         </span>
       `;
@@ -1631,13 +1720,19 @@
       const domElements = { wrapper, checkInBtn, outBtn };
 
       checkInBtn.addEventListener('click', () => {
-        highlightColumn(colIdx);
+        highlightColumn(colIdx, gatheringMeta);
         attendanceLogic.toggleAttendance(data, gatheringMeta, domElements, options.rowIndex, colName);
       });
 
       outBtn.addEventListener('click', () => {
-        highlightColumn(colIdx);
+        highlightColumn(colIdx, gatheringMeta);
         attendanceLogic.markOut(data, gatheringMeta, domElements, options.rowIndex);
+      });
+
+      wrapper.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+          highlightColumn(colIdx, gatheringMeta);
+        }
       });
 
       wrapper.appendChild(checkInBtn);
@@ -2146,7 +2241,12 @@
       });
     };
 
-    return { initDataGrid, loadData };
+    return {
+      initDataGrid,
+      loadData,
+      getHighlightedGathering: () => activeHighlightedIndex !== null ? lastHighlightedGathering : null,
+      clearColumnHighlight
+    };
   }
 
   // ==========================================================
@@ -2313,7 +2413,830 @@
   }
 
   // ==========================================================
-  // 5. App Initialization (Main)
+  // 5. Smart Conditional Polling Logic
+  // ==========================================================
+  function useSmartPolling(gridInstanceRef, filterData) {
+    let pollingTimer = null;
+
+    const isAnyGatheringActiveNow = () => {
+      const now = Date.now();
+      const fifteenMinutesMs = 15 * 60 * 1000;
+      for (const g of gatheringsRegistry.values()) {
+        if (!g || !g.start) continue;
+        const gStart = new Date(g.start).getTime();
+        if (isNaN(gStart)) continue;
+        let gFinish = g.finish ? new Date(g.finish).getTime() : NaN;
+        if (isNaN(gFinish)) {
+          gFinish = gStart + 2 * 60 * 60 * 1000;
+        }
+        const windowStart = gStart - fifteenMinutesMs;
+        const windowEnd = gFinish + fifteenMinutesMs;
+        if (now >= windowStart && now <= windowEnd) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const poll = async () => {
+      if (document.hidden) return;
+      if (window.Attendees && window.Attendees.utilities && window.Attendees.utilities.editingEnabled) return;
+      if (!filterData.meets || filterData.meets.length === 0) return;
+      if (!gridInstanceRef.value) return;
+      if (!isAnyGatheringActiveNow()) return;
+
+      try {
+        await gridInstanceRef.value.refresh();
+      } catch (e) {
+        console.warn('Smart polling refresh skipped or failed:', e);
+      }
+    };
+
+    const startPolling = () => {
+      if (pollingTimer) clearInterval(pollingTimer);
+      pollingTimer = setInterval(poll, 15000);
+    };
+
+    const stopPolling = () => {
+      if (pollingTimer) {
+        clearInterval(pollingTimer);
+        pollingTimer = null;
+      }
+    };
+
+    return {
+      startPolling,
+      stopPolling,
+      poll
+    };
+  }
+
+  // ==========================================================
+  // 6. Add Attendee / Fast Onboarding Logic
+  // ==========================================================
+  function useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering) {
+    let popupInstance = null;
+    let selectedMeetSlug = '';
+    let selectedGatheringId = null;
+
+    const escapeHtml = (str) => {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[m]);
+    };
+
+    const getGatheringsForMeet = (meetId) => {
+      if (!meetId) return [];
+      const seen = new Set();
+      const list = [];
+      for (const g of gatheringsRegistry.values()) {
+        if (g && String(g.meet_id) === String(meetId) && g.id && !seen.has(g.id)) {
+          seen.add(g.id);
+          list.push(g);
+        }
+      }
+      list.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+      return list;
+    };
+
+    const getUpcomingOrOngoingGathering = (gatherings) => {
+      if (!gatherings || gatherings.length === 0) return null;
+      const now = Date.now();
+
+      // 1. Check for ongoing gathering: start <= now <= (finish || start + 2 hours)
+      const ongoing = gatherings.find(g => {
+        const s = new Date(g.start).getTime();
+        if (isNaN(s)) return false;
+        let f = g.finish ? new Date(g.finish).getTime() : NaN;
+        if (isNaN(f)) {
+          f = s + 2 * 60 * 60 * 1000;
+        }
+        return s <= now && now <= f;
+      });
+      if (ongoing) return ongoing;
+
+      // 2. Look for the next upcoming gathering in the future:
+      const upcomingList = gatherings
+        .filter(g => {
+          const s = new Date(g.start).getTime();
+          let f = g.finish ? new Date(g.finish).getTime() : NaN;
+          if (!isNaN(f) && f >= now) return true;
+          return !isNaN(s) && s >= now;
+        })
+        .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+      if (upcomingList.length > 0) {
+        return upcomingList[0]; // Earliest upcoming gathering
+      }
+
+      // 3. Fallback: If all gatherings are in the past, pick the most recent past one (latest start)
+      const pastList = gatherings
+        .filter(g => {
+          const s = new Date(g.start).getTime();
+          return !isNaN(s) && s < now;
+        })
+        .sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
+
+      if (pastList.length > 0) {
+        return pastList[0]; // Most recent past gathering
+      }
+
+      return gatherings[0];
+    };
+
+    const formatGatheringOption = (g) => {
+      const d = new Date(g.start);
+      if (isNaN(d.getTime())) return g.display_name || `Gathering #${g.id}`;
+      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayName = daysOfWeek[d.getDay()];
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      const label = `${y}-${m}-${day} (${dayName}) ${hours}:${mins}`;
+      return g.display_name ? `${label} - ${g.display_name}` : label;
+    };
+
+    const getSelectedMeet = () => {
+      if (!selectedMeetSlug && filterData.meets && filterData.meets.length > 0) {
+        selectedMeetSlug = filterData.meets[0];
+      }
+      return (selectedMeetSlug ? (meetsMap.get(selectedMeetSlug) || meetsMap.get(String(selectedMeetSlug))) : null) || null;
+    };
+
+    const getMeetSettings = () => {
+      const meet = getSelectedMeet();
+      const showInfos = meet?.show_attendee_infos || (meet?.infos && meet.infos.show_attendee_infos) || {};
+      const isKidMeet = Boolean(showInfos['infos-grade'] || showInfos['grade']);
+      const showInsurer = Boolean(showInfos['infos-insurer'] || showInfos['insurer']);
+      return { meet, isKidMeet, showInsurer };
+    };
+
+    const renderPopupContent = (container) => {
+      const { meet, isKidMeet, showInsurer } = getMeetSettings();
+      const meetDisplayName = meet ? (meet.display_name || meet.name || selectedMeetSlug) : (selectedMeetSlug || 'Selected Meet');
+      const meetGatherings = meet ? getGatheringsForMeet(meet.id) : [];
+
+      if (!selectedGatheringId || !meetGatherings.some(g => String(g.id) === String(selectedGatheringId))) {
+        const upcoming = getUpcomingOrOngoingGathering(meetGatherings);
+        selectedGatheringId = upcoming ? upcoming.id : (meetGatherings.length > 0 ? meetGatherings[0].id : null);
+      }
+
+      container.innerHTML = '';
+      const template = document.getElementById('add-attendee-popup-template');
+      if (!template || !template.content || !template.content.firstElementChild) {
+        console.error('add-attendee-popup-template not found in DOM');
+        return;
+      }
+      const rootDiv = template.content.firstElementChild.cloneNode(true);
+
+      // 1. Target Meet control
+      const meetContainer = rootDiv.querySelector('.target-meet-container');
+      if (meetContainer) {
+        if (filterData.meets && filterData.meets.length > 1) {
+          const selectEl = document.createElement('select');
+          selectEl.className = 'form-select form-select-sm target-meet-dropdown';
+          filterData.meets.forEach(slug => {
+            const m = meetsMap.get(slug) || meetsMap.get(String(slug));
+            const name = m ? (m.display_name || m.name || slug) : slug;
+            const opt = document.createElement('option');
+            opt.value = slug;
+            opt.textContent = name;
+            if (slug === selectedMeetSlug) opt.selected = true;
+            selectEl.appendChild(opt);
+          });
+          meetContainer.appendChild(selectEl);
+        } else {
+          const strongEl = document.createElement('strong');
+          strongEl.className = 'text-truncate d-inline-block';
+          strongEl.style.maxWidth = '100%';
+          strongEl.title = meetDisplayName;
+          strongEl.textContent = meetDisplayName;
+          meetContainer.appendChild(strongEl);
+        }
+      }
+
+      // 2. Target Gathering dropdown
+      const gatheringSelectEl = rootDiv.querySelector('.target-gathering-dropdown');
+      if (gatheringSelectEl) {
+        gatheringSelectEl.innerHTML = meetGatherings.length > 0
+          ? meetGatherings.map(g => `<option value="${g.id}" ${String(g.id) === String(selectedGatheringId) ? 'selected' : ''}>${escapeHtml(formatGatheringOption(g))}</option>`).join('')
+          : '<option value="">(No gatherings available)</option>';
+      }
+
+      // 3. School Grade dropdown options
+      const gradeSelectEl = rootDiv.querySelector('.ob-grade');
+      if (gradeSelectEl && gradeConverter && gradeConverter.length > 0) {
+        gradeConverter.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.id;
+          opt.textContent = g.label;
+          gradeSelectEl.appendChild(opt);
+        });
+      }
+
+      // 4. Guardian Division dropdown options
+      const divSelectEl = rootDiv.querySelector('.ob-p-division');
+      if (divSelectEl && organizationDivisions) {
+        if (organizationDivisions.length > 1) {
+          const placeholderOpt = document.createElement('option');
+          placeholderOpt.value = '';
+          placeholderOpt.textContent = 'Select Division';
+          divSelectEl.appendChild(placeholderOpt);
+        }
+        organizationDivisions.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.id;
+          opt.textContent = d.display_name;
+          if (organizationDivisions.length === 1) opt.selected = true;
+          divSelectEl.appendChild(opt);
+        });
+      }
+
+      // 5. Birthday badge & Kid/Insurer section visibility
+      const birthdayBadge = rootDiv.querySelector('.ob-birthday-badge');
+      if (birthdayBadge) {
+        birthdayBadge.className = isKidMeet ? 'text-danger' : 'text-muted';
+        birthdayBadge.textContent = isKidMeet ? '* (Required for kids)' : '(Optional for adults)';
+      }
+
+      const kidFields = rootDiv.querySelector('.kid-specific-fields');
+      if (kidFields) {
+        kidFields.style.display = isKidMeet ? '' : 'none';
+      }
+
+      const guardianSection = rootDiv.querySelector('.guardian-section');
+      if (guardianSection) {
+        guardianSection.style.display = isKidMeet ? '' : 'none';
+      }
+
+      const insurerGroup = rootDiv.querySelector('.insurer-field-group');
+      if (insurerGroup) {
+        insurerGroup.style.display = showInsurer ? '' : 'none';
+      }
+
+      container.appendChild(rootDiv);
+
+      // DOM Elements & Views
+      const searchViewEl = rootDiv.querySelector('.search-view-container');
+      const onboardViewEl = rootDiv.querySelector('.onboard-view-container');
+
+      // A. Target Meet & Gathering dropdowns
+      const meetSelectEl = rootDiv.querySelector('.target-meet-dropdown');
+      if (meetSelectEl) {
+        meetSelectEl.addEventListener('change', (e) => {
+          selectedMeetSlug = e.target.value;
+          const newMeet = getSelectedMeet();
+          const newGatherings = newMeet ? getGatheringsForMeet(newMeet.id) : [];
+          const upcoming = getUpcomingOrOngoingGathering(newGatherings);
+          selectedGatheringId = upcoming ? upcoming.id : (newGatherings.length > 0 ? newGatherings[0].id : null);
+          renderPopupContent(container);
+        });
+      }
+
+      if (gatheringSelectEl) {
+        gatheringSelectEl.addEventListener('change', (e) => {
+          selectedGatheringId = e.target.value ? parseInt(e.target.value, 10) : null;
+        });
+      }
+
+      // B. Switch to Onboard function (prefilling names)
+      const switchToOnboard = (query) => {
+        searchViewEl.style.display = 'none';
+        onboardViewEl.style.display = '';
+
+        if (query && typeof query === 'string') {
+          const trimmed = query.trim();
+          const isChinese = /[\u4e00-\u9fa5]/.test(trimmed);
+          if (isChinese) {
+            const fn2Input = rootDiv.querySelector('.ob-first-name2');
+            const ln2Input = rootDiv.querySelector('.ob-last-name2');
+            if (trimmed.length === 2) {
+              if (ln2Input) ln2Input.value = trimmed[0];
+              if (fn2Input) fn2Input.value = trimmed[1];
+            } else if (trimmed.length === 3) {
+              if (ln2Input) ln2Input.value = trimmed[0];
+              if (fn2Input) fn2Input.value = trimmed.slice(1);
+            } else {
+              if (fn2Input) fn2Input.value = trimmed;
+            }
+          } else {
+            const parts = trimmed.split(/\s+/);
+            const fnInput = rootDiv.querySelector('.ob-first-name');
+            const lnInput = rootDiv.querySelector('.ob-last-name');
+            if (parts.length > 1) {
+              if (fnInput) fnInput.value = parts.slice(0, -1).join(' ');
+              if (lnInput) lnInput.value = parts[parts.length - 1];
+            } else {
+              if (fnInput) fnInput.value = trimmed;
+            }
+          }
+        }
+      };
+
+      // C. Back to Search button
+      const backToSearchBtn = rootDiv.querySelector('.back-to-search-btn');
+      if (backToSearchBtn) {
+        backToSearchBtn.addEventListener('click', () => {
+          onboardViewEl.style.display = 'none';
+          searchViewEl.style.display = '';
+        });
+      }
+
+      // D. Unaccompanied Minor Checkbox toggle
+      const unaccompaniedCheck = rootDiv.querySelector('.ob-unaccompanied');
+      const guardianInputsEl = rootDiv.querySelector('.guardian-inputs-container');
+      if (unaccompaniedCheck && guardianInputsEl) {
+        unaccompaniedCheck.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            guardianInputsEl.style.opacity = '0.4';
+            guardianInputsEl.style.pointerEvents = 'none';
+          } else {
+            guardianInputsEl.style.opacity = '1';
+            guardianInputsEl.style.pointerEvents = '';
+          }
+        });
+      }
+
+      // E. Search Execution
+      const searchInput = rootDiv.querySelector('.omni-search-box');
+      const searchBtn = rootDiv.querySelector('.search-submit-btn');
+      const candidatesListEl = rootDiv.querySelector('.search-candidates-list');
+
+      let debounceTimer = null;
+      const doSearch = async () => {
+        const query = (searchInput.value || '').trim();
+        if (!query) {
+          const hintTemplate = document.getElementById('attendee-search-hint-template');
+          if (hintTemplate && hintTemplate.content && hintTemplate.content.firstElementChild) {
+            candidatesListEl.innerHTML = '';
+            candidatesListEl.appendChild(hintTemplate.content.firstElementChild.cloneNode(true));
+          } else {
+            candidatesListEl.innerHTML = `
+              <div class="text-center text-muted p-4 small default-search-hint">
+                <div class="mb-2"><i class="fas fa-search fa-2x text-secondary opacity-50"></i></div>
+                <strong>Please search for attendee first</strong><br>
+                Search by attendee name, phone, email, or guardian to prevent duplicate records. You can register a new attendee if no match is found.
+              </div>
+            `;
+          }
+          return;
+        }
+
+        candidatesListEl.innerHTML = `
+          <div class="text-center p-4 text-secondary">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span> Searching organization directory...
+          </div>
+        `;
+
+        try {
+          const res = await fetch(`${endpoints.searchAttendees}?meet_slug=${selectedMeetSlug}&q=${encodeURIComponent(query)}`);
+          if (!res.ok) throw new Error('Search failed. Please try again.');
+          const results = await res.json();
+          renderSearchResults(results, candidatesListEl, query, switchToOnboard);
+        } catch (err) {
+          candidatesListEl.innerHTML = `
+            <div class="text-center text-danger p-3 small">
+              <i class="fas fa-exclamation-circle me-1"></i> ${escapeHtml(err.message)}
+            </div>
+          `;
+        }
+      };
+
+      if (searchInput) {
+        searchInput.addEventListener('input', () => {
+          if (debounceTimer) clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(doSearch, 400);
+        });
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (debounceTimer) clearTimeout(debounceTimer);
+            doSearch();
+          }
+        });
+      }
+      if (searchBtn) searchBtn.addEventListener('click', doSearch);
+
+      // F. Submit Fast Onboard
+      const submitBtn = rootDiv.querySelector('.ob-submit-btn');
+      if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+          await handleFastOnboardSubmit(rootDiv, submitBtn);
+        });
+      }
+    };
+
+    const renderSearchResults = (results, container, query, onSwitchToOnboard) => {
+      if (!results || results.length === 0) {
+        container.innerHTML = '';
+        const emptyTemplate = document.getElementById('attendee-search-empty-template');
+        if (emptyTemplate && emptyTemplate.content && emptyTemplate.content.firstElementChild) {
+          const emptyEl = emptyTemplate.content.firstElementChild.cloneNode(true);
+          const msgEl = emptyEl.querySelector('.search-empty-message');
+          if (msgEl) {
+            msgEl.textContent = `No attendee records found matching "${query}" in the organization directory.`;
+          }
+          const btn = emptyEl.querySelector('.switch-to-onboard-btn');
+          if (btn && onSwitchToOnboard) btn.addEventListener('click', () => onSwitchToOnboard(query));
+          container.appendChild(emptyEl);
+        }
+        return;
+      }
+
+      container.innerHTML = '';
+      const candTemplate = document.getElementById('attendee-search-candidate-template');
+
+      results.forEach(cand => {
+        let itemEl;
+        if (candTemplate && candTemplate.content && candTemplate.content.firstElementChild) {
+          itemEl = candTemplate.content.firstElementChild.cloneNode(true);
+        } else {
+          itemEl = document.createElement('div');
+          itemEl.className = 'search-candidate-item';
+        }
+
+        if (cand.meet_status === 'enrolled') {
+          itemEl.classList.add('already-enrolled');
+        }
+
+        let badgeHtml = '';
+        let actionBtnHtml = '';
+        let warningNoticeHtml = '';
+
+        if (cand.meet_status === 'enrolled') {
+          badgeHtml = '<span class="badge bg-info text-dark me-2"><i class="fas fa-check-circle me-1"></i> Already Enrolled</span>';
+          actionBtnHtml = '<button class="btn btn-sm btn-outline-primary locate-cand-btn" title="Close popup and locate attendee in roster"><i class="fas fa-search me-1"></i> Locate in Roster</button>';
+          warningNoticeHtml = '<div class="text-primary small mt-1"><i class="fas fa-info-circle me-1"></i> This attendee is already enrolled in this meet (may be on another page). Please check them in directly on the roster table.</div>';
+        } else if (cand.meet_status === 'paused') {
+          badgeHtml = '<span class="badge bg-warning text-dark me-2">Paused</span>';
+          actionBtnHtml = '<span class="text-muted small">Cannot auto-join (Contact administrator)</span>';
+        } else if (cand.can_join) {
+          badgeHtml = `<span class="badge bg-secondary me-2">${cand.meet_status === 'expired' ? 'Expired' : 'Other Meet'}</span>`;
+          actionBtnHtml = '<button class="btn btn-sm btn-primary enroll-cand-btn"><i class="fas fa-user-plus me-1"></i> Join Meet & Check In</button>';
+        } else {
+          badgeHtml = '<span class="badge bg-secondary">Cannot Join</span>';
+        }
+
+        const detailsParts = [];
+        if (cand.gender && cand.gender !== 'unspecified') {
+          const genderText = cand.gender.charAt(0).toUpperCase() + cand.gender.slice(1);
+          detailsParts.push(`Gender: ${genderText}`);
+        }
+        if (cand.grade_name) detailsParts.push(`Grade: ${cand.grade_name}`);
+        if (cand.age !== null && cand.age !== undefined) detailsParts.push(`Age: ${cand.age}`);
+        if (cand.masked_phone) detailsParts.push(`Phone: ${cand.masked_phone}`);
+        if (cand.guardians) detailsParts.push(`Guardian: ${cand.guardians}`);
+
+        const photoContainer = itemEl.querySelector('.attendee-photo-container');
+        if (photoContainer) {
+          photoContainer.innerHTML = cand.photo_url 
+            ? `<img src="${cand.photo_url}" class="attendee-photo" alt="Photo">`
+            : `<div class="attendee-photo d-flex justify-content-center align-items-center bg-light text-muted"><i class="fas fa-user"></i></div>`;
+        }
+
+        const titleEl = itemEl.querySelector('.search-candidate-title');
+        if (titleEl) titleEl.textContent = cand.name;
+
+        const subtitleEl = itemEl.querySelector('.search-candidate-subtitle');
+        if (subtitleEl) subtitleEl.textContent = detailsParts.join(' | ') || 'No additional info';
+
+        const warningEl = itemEl.querySelector('.search-candidate-warning');
+        if (warningEl) warningEl.innerHTML = warningNoticeHtml;
+
+        const actionsEl = itemEl.querySelector('.search-candidate-actions');
+        if (actionsEl) actionsEl.innerHTML = `${badgeHtml}${actionBtnHtml}`;
+
+        const locateBtn = itemEl.querySelector('.locate-cand-btn');
+        if (locateBtn) {
+          locateBtn.addEventListener('click', () => {
+            if (popupInstance) popupInstance.hide();
+            if (gridInstanceRef.value) {
+              if (typeof gridInstanceRef.value.searchByText === 'function') {
+                gridInstanceRef.value.searchByText(cand.name);
+              }
+              DevExpress.ui.notify(`Located in roster: ${cand.name}`, 'info', 3000);
+            }
+          });
+        }
+
+        const enrollBtn = itemEl.querySelector('.enroll-cand-btn');
+        if (enrollBtn) {
+          enrollBtn.addEventListener('click', async () => {
+            await handleCandidateEnrollAndCheckIn(cand);
+          });
+        }
+
+        container.appendChild(itemEl);
+      });
+
+      // Bottom section: Only shown after search results are visible
+      const footerTemplate = document.getElementById('attendee-search-footer-template');
+      if (footerTemplate && footerTemplate.content && footerTemplate.content.firstElementChild) {
+        const footerEl = footerTemplate.content.firstElementChild.cloneNode(true);
+        const footerBtn = footerEl.querySelector('.switch-to-onboard-btn');
+        if (footerBtn && onSwitchToOnboard) footerBtn.addEventListener('click', () => onSwitchToOnboard(query));
+        container.appendChild(footerEl);
+      }
+    };
+
+    const handleCandidateEnrollAndCheckIn = async (cand) => {
+      const meetObj = meetsMap.get(selectedMeetSlug) || meetsMap.get(String(selectedMeetSlug));
+      if (!meetObj) return;
+
+      if (window.Attendees && window.Attendees.utilities) {
+        window.Attendees.utilities.editingEnabled = true;
+      }
+
+      try {
+        // 1. Create or renew AttendingMeet
+        const amPayload = {
+          attending: cand.attending_id,
+          meet: meetObj.id,
+          character: meetObj.major_character || 1,
+          category: 1, // Scheduled
+          finish: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+        };
+
+        const amRes = await fetch(endpoints.attendingmeets, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Target-Attendee-Id': String(cand.id),
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify(amPayload)
+        });
+
+        if (!amRes.ok) {
+          const amErr = await amRes.json().catch(() => ({}));
+          throw new Error(amErr.detail || amErr.error || 'Failed to enroll in meet');
+        }
+
+        // 2. Mark check-in with selected gathering
+        let activeGathering = null;
+        if (selectedGatheringId) {
+          activeGathering = Array.from(gatheringsRegistry.values()).find(g => String(g.id) === String(selectedGatheringId));
+        }
+        if (!activeGathering) {
+          const meetGatherings = getGatheringsForMeet(meetObj.id);
+          activeGathering = getUpcomingOrOngoingGathering(meetGatherings);
+        }
+
+        const attPayload = {
+          gathering: activeGathering ? activeGathering.id : (selectedGatheringId || null),
+          attending: cand.attending_id,
+          character: meetObj.major_character || 1,
+          category: 9,
+          start: new Date().toISOString()
+        };
+        if (!attPayload.gathering && activeGathering) {
+          attPayload.meet = meetObj.id;
+          attPayload.gathering_start = activeGathering.start;
+        }
+
+        await fetch(endpoints.attendances, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify(attPayload)
+        });
+
+        DevExpress.ui.notify(`Enrolled and checked in ${cand.name} successfully!`, 'success', 2500);
+        if (popupInstance) popupInstance.hide();
+        await loadData();
+      } catch (err) {
+        DevExpress.ui.notify(err.message, 'error', 3000);
+      } finally {
+        if (window.Attendees && window.Attendees.utilities) {
+          window.Attendees.utilities.editingEnabled = false;
+        }
+      }
+    };
+
+    const handleFastOnboardSubmit = async (rootDiv, submitBtn) => {
+      const { meet, isKidMeet, showInsurer } = getMeetSettings();
+      if (!meet) {
+        DevExpress.ui.notify('Please select a valid meet.', 'error', 3000);
+        return;
+      }
+
+      const firstName = (rootDiv.querySelector('.ob-first-name').value || '').trim();
+      const lastName = (rootDiv.querySelector('.ob-last-name').value || '').trim();
+      const firstName2 = (rootDiv.querySelector('.ob-first-name2').value || '').trim();
+      const lastName2 = (rootDiv.querySelector('.ob-last-name2').value || '').trim();
+      const gender = rootDiv.querySelector('.ob-gender').value;
+
+      const byear = rootDiv.querySelector('.ob-byear').value.trim();
+      const bmonth = rootDiv.querySelector('.ob-bmonth').value.trim();
+      const bday = rootDiv.querySelector('.ob-bday').value.trim();
+
+      const contactType = rootDiv.querySelector('.ob-contact-type') ? rootDiv.querySelector('.ob-contact-type').value : 'phone';
+      const contactValue = rootDiv.querySelector('.ob-contact-value') ? (rootDiv.querySelector('.ob-contact-value').value || '').trim() : '';
+
+      const grade = isKidMeet ? rootDiv.querySelector('.ob-grade').value : '';
+      const foodPref = isKidMeet ? (rootDiv.querySelector('.ob-food-pref').value || '').trim() : '';
+      const insurer = (isKidMeet && showInsurer) ? (rootDiv.querySelector('.ob-insurer').value || '').trim() : '';
+
+      const isUnaccompanied = isKidMeet && rootDiv.querySelector('.ob-unaccompanied').checked;
+
+      // Validation
+      if (!firstName || !lastName) {
+        DevExpress.ui.notify('First Name and Last Name are required.', 'warning', 3000);
+        return;
+      }
+
+      if (isKidMeet) {
+        if (!byear || !bmonth || !bday) {
+          DevExpress.ui.notify('Year, Month, and Day of birth are all required for kids.', 'warning', 3000);
+          return;
+        }
+        if (grade === '' || grade === undefined || grade === null) {
+          DevExpress.ui.notify('School Grade is required for kids.', 'warning', 3000);
+          return;
+        }
+        if (!foodPref) {
+          DevExpress.ui.notify('Food preference / allergies is required for kids (enter "None" if none).', 'warning', 3000);
+          return;
+        }
+      }
+
+      let parentData = null;
+      if (isKidMeet && !isUnaccompanied) {
+        const pDivisionEl = rootDiv.querySelector('.ob-p-division');
+        const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
+        if (organizationDivisions.length > 0 && !pDivisionVal) {
+          DevExpress.ui.notify('Please select a division for the guardian.', 'warning', 3000);
+          return;
+        }
+
+        const pFirst = (rootDiv.querySelector('.ob-p-first-name').value || '').trim();
+        const pLast = (rootDiv.querySelector('.ob-p-last-name').value || '').trim();
+        const pFirst2 = (rootDiv.querySelector('.ob-p-first-name2').value || '').trim();
+        const pLast2 = (rootDiv.querySelector('.ob-p-last-name2').value || '').trim();
+        const pPhone = (rootDiv.querySelector('.ob-p-phone').value || '').trim();
+        const pEmail = (rootDiv.querySelector('.ob-p-email').value || '').trim();
+        const pRel = rootDiv.querySelector('.ob-p-relationship').value;
+
+        if (!pFirst || !pLast || !pPhone) {
+          DevExpress.ui.notify('Guardian First Name, Last Name, and Phone are required.', 'warning', 3000);
+          return;
+        }
+
+        parentData = {
+          first_name: pFirst,
+          last_name: pLast,
+          first_name2: pFirst2 || null,
+          last_name2: pLast2 || null,
+          division_id: pDivisionVal ? parseInt(pDivisionVal, 10) : null,
+          phone: pPhone,
+          email: pEmail || null,
+          relationship: pRel || 'parent'
+        };
+      }
+
+      const gatheringId = selectedGatheringId || null;
+
+      const payload = {
+        meet_slug: meet.slug,
+        gathering_id: gatheringId,
+        unaccompanied: isUnaccompanied,
+        kid_data: {
+          first_name: firstName,
+          last_name: lastName,
+          first_name2: firstName2 || null,
+          last_name2: lastName2 || null,
+          gender: gender,
+          birthday_year: byear ? parseInt(byear, 10) : null,
+          birthday_month: bmonth ? parseInt(bmonth, 10) : null,
+          birthday_day: bday ? parseInt(bday, 10) : null,
+          contact_type: contactType,
+          contact_value: contactValue || null,
+          grade: grade !== '' ? grade : null,
+          food_pref: foodPref || null,
+          insurer: insurer || null
+        },
+        parent_data: parentData
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Registering...';
+
+      if (window.Attendees && window.Attendees.utilities) {
+        window.Attendees.utilities.editingEnabled = true;
+      }
+
+      try {
+        const response = await fetch(endpoints.fastOnboard, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData.detail || errData.error || (typeof errData === 'object' ? Object.values(errData).flat().join(' ') : 'Registration failed');
+          throw new Error(errMsg);
+        }
+
+        const result = await response.json();
+        DevExpress.ui.notify(`Registered ${result.attendee_name} and checked in successfully!`, 'success', 3000);
+        if (popupInstance) popupInstance.hide();
+        await loadData();
+      } catch (err) {
+        DevExpress.ui.notify(err.message, 'error', 4000);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Register & Check In';
+        if (window.Attendees && window.Attendees.utilities) {
+          window.Attendees.utilities.editingEnabled = false;
+        }
+      }
+    };
+
+    const initAddAttendeePopup = () => {
+      const popupEl = document.getElementById('add-attendee-popup');
+      if (!popupEl) return;
+
+      const isMobile = window.innerWidth < 768;
+      popupInstance = new DevExpress.ui.dxPopup(popupEl, {
+        title: 'Add Attendee to Rosters, Welcome!',
+        showCloseButton: true,
+        dragEnabled: !isMobile,
+        wrapperAttr: {
+          class: 'add-attendee-popup-wrapper'
+        },
+        onShowing: () => {
+          if (window.Attendees && window.Attendees.utilities) {
+            window.Attendees.utilities.editingEnabled = true;
+          }
+        },
+        onHiding: () => {
+          if (window.Attendees && window.Attendees.utilities) {
+            window.Attendees.utilities.editingEnabled = false;
+          }
+        },
+        contentTemplate: (container) => {
+          renderPopupContent(container[0]);
+        }
+      });
+    };
+
+    const openAddAttendeePopup = () => {
+      if (!filterData.meets || filterData.meets.length === 0) {
+        DevExpress.ui.notify('Please select at least one meet in the filter first.', 'warning', 3000);
+        return;
+      }
+
+      const highlighted = (typeof getHighlightedGathering === 'function') ? getHighlightedGathering() : null;
+      let meetFromHighlight = null;
+      if (highlighted && highlighted.meet_id) {
+        meetFromHighlight = Array.from(meetsMap.values()).find(m => String(m.id) === String(highlighted.meet_id));
+      }
+
+      if (meetFromHighlight && filterData.meets.includes(meetFromHighlight.slug)) {
+        selectedMeetSlug = meetFromHighlight.slug;
+        selectedGatheringId = highlighted.id || null;
+      } else {
+        selectedMeetSlug = filterData.meets[0];
+        const currentMeet = meetsMap.get(selectedMeetSlug) || meetsMap.get(String(selectedMeetSlug));
+        const meetGatherings = currentMeet ? getGatheringsForMeet(currentMeet.id) : [];
+        if (highlighted && highlighted.id && meetGatherings.some(g => String(g.id) === String(highlighted.id))) {
+          selectedGatheringId = highlighted.id;
+        } else {
+          const upcoming = getUpcomingOrOngoingGathering(meetGatherings);
+          selectedGatheringId = upcoming ? upcoming.id : (meetGatherings.length > 0 ? meetGatherings[0].id : null);
+        }
+      }
+
+      if (!popupInstance) {
+        initAddAttendeePopup();
+      } else {
+        const contentEl = popupInstance.content ? popupInstance.content()[0] : null;
+        if (contentEl) renderPopupContent(contentEl);
+      }
+      if (popupInstance) popupInstance.show();
+    };
+
+    return {
+      initAddAttendeePopup,
+      openAddAttendeePopup
+    };
+  }
+
+  // ==========================================================
+  // 7. App Initialization (Main)
   // ==========================================================
   const RostersApp = {
     setup() {
@@ -2357,7 +3280,7 @@
       const attendanceLogic = useAttendanceLogic(endpoints, gridInstanceRef);
       const attendingMeetsEditor = useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData);
       const resetFiltersRef = { current: null };
-      const { initDataGrid, loadData } = useRosterGrid(
+      const { initDataGrid, loadData, getHighlightedGathering } = useRosterGrid(
         endpoints, 
         filterData, 
         gridInstanceRef, 
@@ -2368,6 +3291,9 @@
       const { initFilterForm, resetFilters } = useRosterFilter(endpoints, filterData, loadData, gridInstanceRef);
       resetFiltersRef.current = resetFilters;
 
+      const { startPolling, stopPolling } = useSmartPolling(gridInstanceRef, filterData);
+      const { initAddAttendeePopup, openAddAttendeePopup } = useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering);
+
       // Lifecycle
       onMounted(() => {
         initEndpoints();
@@ -2377,11 +3303,23 @@
         if (attendingMeetsEditor && typeof attendingMeetsEditor.preloadLookups === 'function') {
           attendingMeetsEditor.preloadLookups();
         }
+        initAddAttendeePopup();
+
+        const addAttendeeBtn = document.querySelector('a.add-attendee');
+        if (addAttendeeBtn) {
+          addAttendeeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openAddAttendeePopup();
+          });
+        }
+
         if (dataGridRef.value) initDataGrid(dataGridRef.value);
         if (filterFormRef.value) initFilterForm(filterFormRef.value);
         if (filterData.meets && filterData.meets.length > 0) {
           loadData();
         }
+
+        startPolling();
       });
 
       return { 

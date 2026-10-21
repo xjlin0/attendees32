@@ -10,6 +10,7 @@ from attendees.persons.models import (
     Attending,
     AttendingMeet,
     Category,
+    FolkAttendee,
     Past,
     Utility,
 )
@@ -184,4 +185,59 @@ def post_save_handler_for_attendee_to_folk_and_attending(sender, **kwargs):
                 filters={"attendee": created_attendee, "is_removed": False},
                 defaults=defaults,
             )
+
+
+@receiver(post_save, sender=FolkAttendee)
+def post_save_handler_for_folkattendee_to_clear_unaccompanied_warning(sender, **kwargs):
+    """
+    When a parent/guardian is added to a family folk, auto clear the
+    unaccompanied minor warning flag (infos['special']['check_in']) from the
+    active attendingmeets of children in the same family.
+    """
+    if kwargs.get("raw"):
+        return
+
+    instance = kwargs.get("instance")
+    if not instance or instance.is_removed:
+        return
+
+    folk = instance.folk
+    if not folk or folk.category_id != Attendee.FAMILY_CATEGORY:
+        return
+
+    role = instance.role
+    is_guardian = False
+    if role:
+        is_guardian = (
+            getattr(role, "emergency_contact", False)
+            or (role.title and role.title.lower() in ["parent", "father", "mother", "guardian", "caregiver", "emergency_contact"])
+        )
+
+    if not is_guardian:
+        return
+
+    family_attendee_ids = list(
+        FolkAttendee.objects.filter(
+            folk=folk,
+            is_removed=False,
+        ).exclude(
+            attendee_id=instance.attendee_id
+        ).values_list("attendee_id", flat=True)
+    )
+
+    if not family_attendee_ids:
+        return
+
+    active_ams = AttendingMeet.objects.filter(
+        attending__attendee_id__in=family_attendee_ids,
+        is_removed=False,
+    )
+    for am in active_ams:
+        if am.infos and isinstance(am.infos, dict) and "special" in am.infos:
+            if isinstance(am.infos["special"], dict) and "check_in" in am.infos["special"]:
+                del am.infos["special"]["check_in"]
+                if not am.infos["special"]:
+                    del am.infos["special"]
+                am.save(update_fields=["infos"])
+
 

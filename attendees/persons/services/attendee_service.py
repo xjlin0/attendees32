@@ -1,6 +1,6 @@
 import re
 from contextlib import nullcontext
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from partial_date import PartialDate
 import pghistory
@@ -11,10 +11,11 @@ from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count
 from django.db.models.functions import Cast, Substr, Coalesce
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.utils import json
 
-from attendees.occasions.models import Meet, Gathering
+from attendees.occasions.models import Attendance, Character, Gathering, Meet
+from attendees.persons.models.enum import GenderEnum
 from attendees.persons.models import (  # , Relationship
     Attendee,
     Attending,
@@ -26,6 +27,7 @@ from attendees.persons.models import (  # , Relationship
     Relation,
     Utility, Past)
 from attendees.persons.services import AttendingService, FolkService
+from attendees.whereabouts.models import Division
 from attendees.whereabouts.services import PlaceService
 
 
@@ -633,6 +635,7 @@ class AttendeeService:
                     Value('team_name'), 'attendings__attendingmeet__team__display_name',
                     Value('start'), 'attendings__attendingmeet__start',
                     Value('finish'), 'attendings__attendingmeet__finish',
+                    Value('infos'), 'attendings__attendingmeet__infos',
                     function='jsonb_build_object',
                 ),
                 filter=attendingmeet_filter,
@@ -1223,5 +1226,304 @@ class AttendeeService:
             "total_capped": total_capped,
             "organizations": org_summaries,
         }
+
+    @staticmethod
+    def fast_onboard(current_user, meet_slug, kid_data, parent_data=None, unaccompanied=False, gathering_id=None):
+        """
+        Fast onboard an attendee (and optional guardian) into a meet.
+        - Validates current_user organization permissions.
+        - Reads meet.assembly.division.infos["show_attendee_infos"] to check if kid meet.
+        - Enforces strict Birthday rules:
+            - Never asks for age; accepts birthday_year, birthday_month, birthday_day.
+            - If kid meet (infos-grade is true):
+                - All 3 parts required, stored in actual_birthday (YYYY-MM-DD).
+                - Grade and food_pref (allergies) are mandatory.
+                - Insurer optional if infos-insurer is true.
+            - If adult meet:
+                - If Y/M/D complete: actual_birthday.
+                - If partial (missing year): stored in estimated_birthday as '1800-MM-DD'.
+                - If partial (missing day/month): stored in estimated_birthday as 'YYYY' or 'YYYY-MM'.
+        - Guardian / Parent handling:
+            - If unaccompanied: sets attendingmeet.infos['special'] = {'check_in': '⚠無監護人/護送者資料'}.
+            - If accompanied: creates parent Attendee (with names & phone), Family Folk, and FolkAttendee for both.
+        - Enrolls kid in meet (AttendingMeet) and optionally records Attendance for gathering_id.
+        """
+        if not current_user or not current_user.is_authenticated or not getattr(current_user, "organization", None):
+            raise PermissionDenied("Authentication and organization are required.")
+
+        if not meet_slug:
+            raise ValidationError({"meet_slug": "meet_slug is required."})
+
+        meet = (
+            Meet.objects.filter(slug=meet_slug, is_removed=False)
+            .select_related("assembly__division__organization", "major_character")
+            .first()
+        )
+        if not meet:
+            raise Http404("Meet not found.")
+
+        meet_org = (
+            meet.assembly.division.organization
+            if (meet.assembly and meet.assembly.division)
+            else None
+        )
+        if not meet_org or meet_org.id != current_user.organization.id:
+            raise PermissionDenied("User does not have access to this meet's organization.")
+
+        show_attendee_infos = (
+            meet.assembly.division.infos.get("show_attendee_infos", {})
+            if (meet.assembly and meet.assembly.division and meet.assembly.division.infos)
+            else {}
+        )
+        is_kid_meet = bool(show_attendee_infos.get("infos-grade") or show_attendee_infos.get("grade"))
+        show_insurer = bool(show_attendee_infos.get("infos-insurer") or show_attendee_infos.get("insurer"))
+
+        # 1. Validate kid data
+        first_name = (kid_data.get("first_name") or "").strip()
+        last_name = (kid_data.get("last_name") or "").strip()
+        if not first_name or not last_name:
+            raise ValidationError({"name": "First name and last name are required."})
+
+        first_name2 = (kid_data.get("first_name2") or "").strip() or None
+        last_name2 = (kid_data.get("last_name2") or "").strip() or None
+        gender = kid_data.get("gender") or GenderEnum.UNSPECIFIED.value
+
+        byear = kid_data.get("birthday_year")
+        bmonth = kid_data.get("birthday_month")
+        bday = kid_data.get("birthday_day")
+        try:
+            byear = int(byear) if byear is not None and str(byear).strip() != "" else None
+            bmonth = int(bmonth) if bmonth is not None and str(bmonth).strip() != "" else None
+            bday = int(bday) if bday is not None and str(bday).strip() != "" else None
+        except (ValueError, TypeError):
+            raise ValidationError({"birthday": "Birthday year, month, and day must be valid numbers."})
+
+        actual_birthday = None
+        estimated_birthday = None
+
+        if is_kid_meet:
+            if not (byear and bmonth and bday):
+                raise ValidationError({"birthday": "Year, Month, and Day of birth are required for kids."})
+            try:
+                actual_birthday = date(byear, bmonth, bday)
+            except ValueError as e:
+                raise ValidationError({"birthday": f"Invalid birthday date: {e}"})
+
+            grade = kid_data.get("grade")
+            if grade is None or str(grade).strip() == "":
+                raise ValidationError({"grade": "School grade is required for kids."})
+
+            food_pref = (kid_data.get("food_pref") or "").strip()
+            if not food_pref:
+                raise ValidationError({"food_pref": "Food preference / allergies is required for kids (enter 'None' if none)."})
+
+            insurer = (kid_data.get("insurer") or "").strip() if show_insurer else None
+        else:
+            if byear and bmonth and bday:
+                try:
+                    actual_birthday = date(byear, bmonth, bday)
+                except ValueError as e:
+                    raise ValidationError({"birthday": f"Invalid birthday date: {e}"})
+            elif bmonth and bday and not byear:
+                estimated_birthday = f"1800-{bmonth:02d}-{bday:02d}"
+            elif byear and bmonth:
+                estimated_birthday = f"{byear:04d}-{bmonth:02d}"
+            elif byear:
+                estimated_birthday = f"{byear:04d}"
+
+            grade = kid_data.get("grade")
+            food_pref = (kid_data.get("food_pref") or "").strip() or None
+            insurer = (kid_data.get("insurer") or "").strip() if show_insurer else None
+
+        # 2. Validate guardian data
+        special_check_in = None
+        if unaccompanied:
+            special_check_in = "⚠無監護人/護送者資料"
+        else:
+            if parent_data:
+                p_first = (parent_data.get("first_name") or "").strip()
+                p_last = (parent_data.get("last_name") or "").strip()
+                p_phone = (parent_data.get("phone") or "").strip()
+                if not p_first or not p_last or not p_phone:
+                    raise ValidationError({"parent": "Parent/Guardian first name, last name, and phone are required."})
+            elif is_kid_meet:
+                raise ValidationError({"unaccompanied": "Parent/Guardian information is required unless 'Unaccompanied minor' is checked."})
+
+        # 3. Atomic database operations
+        with transaction.atomic():
+            division = meet.assembly.division
+
+            kid_fixed = {}
+            if grade is not None and str(grade).strip() != "":
+                try:
+                    kid_fixed["grade"] = int(grade)
+                except (ValueError, TypeError):
+                    kid_fixed["grade"] = grade
+            if food_pref:
+                kid_fixed["food_pref"] = food_pref
+            if insurer:
+                kid_fixed["insurer"] = insurer
+
+            kid_contacts = {}
+            contact_type = (kid_data.get("contact_type") or "phone").strip().lower()
+            contact_value = (kid_data.get("contact_value") or "").strip()
+            if contact_value:
+                key = contact_type if contact_type.endswith("1") else f"{contact_type}1"
+                kid_contacts[key] = contact_value
+
+            kid_infos = {
+                "fixed": kid_fixed,
+            }
+            if kid_contacts:
+                kid_infos["contacts"] = kid_contacts
+
+            kid = Attendee.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                first_name2=first_name2,
+                last_name2=last_name2,
+                gender=gender,
+                division=division,
+                actual_birthday=actual_birthday,
+                estimated_birthday=estimated_birthday,
+                infos=kid_infos,
+            )
+
+            parent = None
+            if not unaccompanied and parent_data:
+                p_first = (parent_data.get("first_name") or "").strip()
+                p_last = (parent_data.get("last_name") or "").strip()
+                p_first2 = (parent_data.get("first_name2") or "").strip() or None
+                p_last2 = (parent_data.get("last_name2") or "").strip() or None
+                p_gender = parent_data.get("gender") or GenderEnum.UNSPECIFIED.value
+                p_phone = (parent_data.get("phone") or "").strip()
+                p_email = (parent_data.get("email") or "").strip() or None
+
+                parent_contacts = {}
+                if p_phone:
+                    parent_contacts["phone1"] = p_phone
+                    parent_contacts["phone"] = p_phone
+                if p_email:
+                    parent_contacts["email1"] = p_email
+                    parent_contacts["email"] = p_email
+
+                p_division_id = parent_data.get("division_id") or parent_data.get("division")
+                parent_division = None
+                if p_division_id:
+                    parent_division = Division.objects.filter(pk=p_division_id, organization=current_user.organization).first()
+                if not parent_division:
+                    org_divisions = Division.objects.filter(organization=current_user.organization)
+                    if org_divisions.count() == 1:
+                        parent_division = org_divisions.first()
+                    else:
+                        parent_division = division
+
+                parent = Attendee.objects.create(
+                    first_name=p_first,
+                    last_name=p_last,
+                    first_name2=p_first2,
+                    last_name2=p_last2,
+                    gender=p_gender,
+                    division=parent_division,
+                    infos={"contacts": parent_contacts},
+                )
+
+                family_cat, _ = Category.objects.get_or_create(
+                    id=Attendee.FAMILY_CATEGORY,
+                    defaults={"display_name": "Family", "type": "folk"},
+                )
+                family_folk = Folk.objects.create(
+                    category=family_cat,
+                    division=parent_division,
+                    display_name=f"{p_last} family",
+                )
+
+                parent_role = (
+                    Relation.objects.filter(title__iexact="parent").first()
+                    or Relation.objects.filter(emergency_contact=True).first()
+                    or Relation.objects.filter(id=1).first()
+                    or Relation.objects.first()
+                )
+                if not parent_role:
+                    parent_role = Relation.objects.create(id=0, title="unspecified", gender=GenderEnum.UNSPECIFIED.value)
+
+                child_role = (
+                    Relation.objects.filter(title__iexact="child").first()
+                    or Relation.objects.filter(id=2).first()
+                    or Relation.objects.first()
+                )
+                if not child_role:
+                    child_role = Relation.objects.create(id=0, title="unspecified", gender=GenderEnum.UNSPECIFIED.value)
+
+                FolkAttendee.objects.create(
+                    folk=family_folk,
+                    attendee=parent,
+                    role=parent_role,
+                )
+                FolkAttendee.objects.create(
+                    folk=family_folk,
+                    attendee=kid,
+                    role=child_role,
+                )
+
+            # 4. Attending & AttendingMeet
+            attending = kid.attendings.first()
+            if not attending:
+                attending = Attending.objects.create(
+                    attendee=kid,
+                    category="auto-created",
+                    infos={"created_reason": "fast onboarding"},
+                )
+
+            am_infos = {"created_reason": "fast onboarding"}
+            if special_check_in:
+                am_infos["special"] = {"check_in": special_check_in}
+
+            scheduled_cat = (
+                Category.objects.filter(id=Attendee.SCHEDULED_CATEGORY).first()
+                or Category.objects.filter(id=1).first()
+            )
+
+            major_char = meet.major_character or Character.objects.filter(assembly=meet.assembly).first()
+
+            attendingmeet = AttendingMeet.objects.create(
+                attending=attending,
+                meet=meet,
+                character=major_char,
+                category=scheduled_cat,
+                finish=Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999)),
+                infos=am_infos,
+            )
+
+            # 5. Optional check-in for gathering
+            attendance = None
+            if gathering_id:
+                gathering = Gathering.objects.filter(pk=gathering_id, meet=meet, is_removed=False).first()
+                if gathering:
+                    attendance = Attendance.objects.create(
+                        gathering=gathering,
+                        attending=attending,
+                        character=major_char,
+                        start=Utility.now_with_timezone(),
+                    )
+
+            return {
+                "attendee_id": kid.id,
+                "attendee_name": kid.display_label,
+                "first_name": kid.first_name,
+                "last_name": kid.last_name,
+                "first_name2": kid.first_name2,
+                "last_name2": kid.last_name2,
+                "gender": kid.gender,
+                "actual_birthday": str(kid.actual_birthday) if kid.actual_birthday else None,
+                "estimated_birthday": str(kid.estimated_birthday) if kid.estimated_birthday else None,
+                "attending_id": attending.id,
+                "attendingmeet_id": attendingmeet.id,
+                "attendance_id": attendance.id if attendance else None,
+                "warning": special_check_in,
+                "parent_id": parent.id if parent else None,
+                "is_kid_meet": is_kid_meet,
+            }
+
 
 
