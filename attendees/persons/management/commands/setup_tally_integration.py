@@ -159,6 +159,15 @@ class Command(BaseCommand):
         else:
             self.note("meet", meet.slug, False)
 
+        # organization_meets lists a meet only to callers whose group is in
+        # its allowed_groups; without this the history import sees no meets.
+        allowed_groups = meet.infos.get("allowed_groups") or []
+        meet_granted = group.name not in allowed_groups
+        if meet_granted:
+            meet.infos = {**meet.infos, "allowed_groups": [*allowed_groups, group.name]}
+            meet.save(update_fields=["infos"])
+        self.note("meet privilege", group.name, meet_granted)
+
         user, user_created = User.objects.get_or_create(
             username=options["username"],
             defaults={"organization": organization, "is_active": True},

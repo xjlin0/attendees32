@@ -12,6 +12,7 @@ from rest_framework.authtoken.models import Token
 
 from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee, AttendingMeet, Folk, Relation
+from attendees.tests.golden.builder import GOLDEN_MEET_SLUGS
 from attendees.tests.golden.constants import ORGANIZATION_SLUG
 from attendees.users.models import User
 
@@ -53,6 +54,21 @@ class TestProvisioning:
             User.objects.count(),
         )
         assert before == after
+
+    def test_an_existing_meet_is_listed_to_the_token(self, golden):
+        from rest_framework.test import APIClient
+
+        youth_group = GOLDEN_MEET_SLUGS["youth_group"]
+        call_command(
+            "setup_tally_integration", organization_slug=ORGANIZATION_SLUG,
+            meet_slug=youth_group, verbosity=0,
+        )
+        token = Token.objects.get(user__username="tally-integration")
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+        response = client.get("/occasions/api/organization_meets/", {"take": 100, "skip": 0})
+        assert response.status_code == 200
+        assert youth_group in [row["slug"] for row in response.json()["data"]]
 
     def test_it_refuses_an_unknown_organization(self, golden):
         from django.core.management.base import CommandError

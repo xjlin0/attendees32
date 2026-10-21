@@ -104,6 +104,15 @@ class TestSetupCommand:
         org = Organization.objects.get(slug="testorg")
         assert "tally_integration" in org.infos["groups_see_all_meets_attendees"]
         assert "tally_integration" in org.infos["counselor"]
+        assert "tally_integration" in provisioned["meet"].infos["allowed_groups"]
+
+    def test_grants_the_group_on_an_existing_meet(self, provisioned):
+        meet = provisioned["meet"]
+        meet.infos = {**meet.infos, "allowed_groups": ["data_organizer"]}
+        meet.save(update_fields=["infos"])
+        call_command("setup_tally_integration", "--organization-slug", "testorg")
+        meet.refresh_from_db()
+        assert meet.infos["allowed_groups"] == ["data_organizer", "tally_integration"]
 
     def test_is_idempotent(self, provisioned):
         counts = (
@@ -134,6 +143,13 @@ class TestTokenAuthentication:
         body = response.json()
         assert body["totalCount"] >= 1  # at least the integration attendee
         assert isinstance(body["data"], list)
+
+    def test_the_meet_is_listed_to_the_token(self, provisioned):
+        response = token_client(provisioned["token"]).get(
+            "/occasions/api/organization_meets/", {"take": 100, "skip": 0}
+        )
+        assert response.status_code == 200
+        assert provisioned["meet"].slug in [row["slug"] for row in response.json()["data"]]
 
     def test_search_reaches_the_org(self, provisioned):
         response = token_client(provisioned["token"]).get(
