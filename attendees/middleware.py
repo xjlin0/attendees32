@@ -49,6 +49,13 @@ class EarlyApiAuthMiddleware:
 
     def __call__(self, request):
         if self.API_PATH.match(request.path_info) and not self.has_plausible_credentials(request):
+            if request.META.get("HTTP_AUTHORIZATION"):
+                # A header was sent and it is not a token: say so, as DRF would
+                # for a token it looked up, so a client can tell a wrong token
+                # from a missing one.
+                response = JsonResponse({"detail": "Invalid token."}, status=401)
+                response["WWW-Authenticate"] = "Token"
+                return response
             return JsonResponse(
                 {"detail": "Authentication credentials were not provided."}, status=403
             )
