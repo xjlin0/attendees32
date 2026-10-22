@@ -1,24 +1,25 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models.expressions import F
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from attendees.occasions.models import Attendance
 from attendees.persons.models import Attendee, AttendingMeet, Utility
 from attendees.persons.serializers import AttendingMeetEtcSerializer
-from attendees.users.authorization.route_guard import SpyGuard
+from attendees.users.authorization.drf_guards import DrfSpyGuard
 
 
-class ApiDatagridDataAttendingMeetViewSet(
-    LoginRequiredMixin, SpyGuard, ModelViewSet
-):  # from GenericAPIView
+class ApiDatagridDataAttendingMeetViewSet(ModelViewSet):  # from GenericAPIView
     """
     API endpoint that allows AttendingMeet & Meet to be viewed or edited.
     """
 
+    # SpyGuard as a DRF permission: the Django mixin runs before DRF
+    # authenticates and refuses every token-authenticated client.
+    permission_classes = [IsAuthenticated, DrfSpyGuard]
     serializer_class = AttendingMeetEtcSerializer
 
     def get_queryset(self):
