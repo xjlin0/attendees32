@@ -116,7 +116,7 @@ def provisioned(organization, vocabulary, meet):
         "organization": organization,
         "user": user,
         "token": user.auth_token.key,
-        "division": Division.objects.get(slug="testorg_tally_youth"),
+        "division": Division.objects.get(slug="testorg_unspecified"),
         "meet": meet,
         "assembly": meet.assembly,
     }
@@ -158,11 +158,38 @@ class TestSetupCommand:
             call_command("setup_tally_integration", "--organization-slug", "testorg", "--readable-meet", "nope")
         assert not User.objects.filter(username="tally-integration").exists()
 
+    def test_files_people_under_the_unspecified_division(self, provisioned):
+        # Made here because the minimal fixture has none; a real organization
+        # has one already, and the next test shows it is adopted.
+        division = provisioned["division"]
+        assert division.display_name == "Unspecified"
+        assert Attendee.objects.get(user=provisioned["user"]).division == division
+
+    def test_adopts_the_organizations_unspecified_division(self, organization, vocabulary):
+        from django.contrib.auth.models import Group
+
+        audience, _ = Group.objects.get_or_create(name="organization_participant")
+        theirs = Division.objects.create(
+            organization=organization, slug="testorg_unspecified", display_name="未指定", audience_auth_group=audience, infos={}
+        )
+        call_command("setup_tally_integration", "--organization-slug", "testorg")
+        attendee = Attendee.objects.get(user__username="tally-integration")
+        assert attendee.division == theirs
+        assert attendee.infos["tally"]["division_created"] is False
+        assert Division.objects.count() == 1
+
+    def test_refuses_a_division_it_cannot_find(self, organization, vocabulary):
+        from django.core.management.base import CommandError
+
+        with pytest.raises(CommandError, match="No division 'nope'"):
+            call_command("setup_tally_integration", "--organization-slug", "testorg", "--division-slug", "nope")
+        assert not User.objects.filter(username="tally-integration").exists()
+
     def test_remembers_what_it_was_given(self, provisioned):
         attendee = Attendee.objects.get(user=provisioned["user"])
         assert attendee.infos["tally"] == {
             "group": "tally_integration",
-            "division": "testorg_tally_youth",
+            "division": "testorg_unspecified",
             "division_created": True,
             "readable_meets": [provisioned["meet"].slug],
         }

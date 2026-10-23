@@ -25,7 +25,7 @@ It creates, or finds if they already exist:
 
 | Piece | Default | Why |
 |---|---|---|
-| Division | `<org>_tally_youth` | The division created attendees are filed under. Override with `--division-slug` to use one you already have. |
+| Division | the organization's unspecified one | Where the people Tally pushes are filed: division 0 or `<org>_unspecified`, the bucket the app itself falls back to, made only if the organization has none. `--division-slug` names an existing division instead. |
 | Auth group | `tally_integration` | Granted to the integration user; its name is added to the organization's `groups_see_all_meets_attendees` and `counselor` lists, which is what allows editing attendees and reading the relation vocabulary. |
 | User + attendee | `tally-integration` | The API caller. The linked attendee exists because `privileged_to_edit` walks `user.attendee.under_same_org_with(...)`. |
 | DRF token | — | Printed at the end. This is the `A32_TOKEN` value in Tally. |
