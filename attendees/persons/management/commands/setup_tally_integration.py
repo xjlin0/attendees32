@@ -3,33 +3,39 @@ Provision everything the Tally check-in app needs to talk to this server.
 
 Tally is a server-to-server client: it reads the roster over the JSON API with
 a DRF token, creates quick-added visitors as attendees, keeps profile edits in
-sync, and imports attendance history. This command creates (or finds) the
-pieces that integration stands on, idempotently — run it again and it changes
-nothing that already exists, so it doubles as the way to look the values up.
+sync, files parents into families, and imports attendance history. This
+command creates (or finds) the pieces that integration stands on,
+idempotently — run it again and it changes nothing that already exists, so it
+doubles as the way to look the values up.
 
     python manage.py setup_tally_integration --organization-slug cfcch
 
+Tally files nobody into a meet. The only meets it touches are the ones it
+reads history from, and reading a meet takes the group's name in that meet's
+allowed groups: ``--readable-meet <slug>`` grants that on an existing meet, as
+many times as needed. Nothing else about meets is created or changed.
+
 It prints, at the end, exactly the values to copy into Tally's configuration
-(A32_DIVISION_ID, A32_MEET_SLUG, …) plus the token — the token only on the run
-that created it; DRF stores it retrievably, so later runs print it again by
+plus the token — DRF stores it retrievably, so later runs print it again by
 design (it is the *server's* secret store, unlike hashed passwords).
 """
 from django.contrib.auth.models import Group
-from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.utils import timezone
-from datetime import timedelta
 from rest_framework.authtoken.models import Token
 
-from attendees.occasions.models import Assembly, Character, Meet
+from attendees.occasions.models import Meet
 from attendees.persons.models import Attendee, Category, Relation, Utility
 from attendees.users.models import User
 from attendees.whereabouts.models import Division, Organization
 
+# Where the integration remembers what it was set up with: on its own attendee,
+# which lives and dies with the church's data. The lifecycle commands read it.
+PROVENANCE_KEY = "tally"
+
 
 class Command(BaseCommand):
-    help = "Provision the Tally integration: division/assembly/meet/character, integration user, group and DRF token."
+    help = "Provision the Tally integration: division, integration user, group, readable meets and DRF token."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -38,11 +44,15 @@ class Command(BaseCommand):
             help="The organization Tally connects to. Must already exist.",
         )
         parser.add_argument("--division-slug", default=None, help="Created if absent. Default: <org-slug>_tally_youth")
-        parser.add_argument("--assembly-slug", default=None, help="Created if absent. Default: <org-slug>_tally_youth_ministry")
-        parser.add_argument("--meet-slug", default=None, help="Created if absent. Default: <org-slug>_tally_gathering")
-        parser.add_argument("--character-slug", default=None, help="Created if absent. Default: <org-slug>_tally_student")
         parser.add_argument("--username", default="tally-integration", help="The integration user.")
         parser.add_argument("--group", default="tally_integration", help="The auth group granted to the user.")
+        parser.add_argument(
+            "--readable-meet",
+            action="append",
+            default=[],
+            metavar="SLUG",
+            help="An existing meet Tally may read the history of. Repeatable.",
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -68,27 +78,30 @@ class Command(BaseCommand):
                 "The hidden relation (pk 0) is missing. Load the seed vocabulary first: "
                 "python manage.py loaddata fixtures/db_seed.json"
             )
-        if not Category.objects.filter(pk=Attendee.NON_FAMILY_CATEGORY).exists():
-            raise CommandError(
-                "The non-family folk category is missing. Load the seed vocabulary first: "
-                "python manage.py loaddata fixtures/db_seed.json"
-            )
-        if not Category.objects.filter(pk=Attendee.FAMILY_CATEGORY).exists():
-            raise CommandError(
-                "The family folk category is missing. Load the seed vocabulary first: "
-                "python manage.py loaddata fixtures/db_seed.json"
-            )
+        for category_id, name in ((Attendee.NON_FAMILY_CATEGORY, "non-family"), (Attendee.FAMILY_CATEGORY, "family")):
+            if not Category.objects.filter(pk=category_id).exists():
+                raise CommandError(
+                    f"The {name} folk category is missing. Load the seed vocabulary first: "
+                    "python manage.py loaddata fixtures/db_seed.json"
+                )
+
+        # Every meet named must exist in this organization before anything is
+        # made, so a typo leaves the server exactly as it was.
+        readable_meets = []
+        for slug in options["readable_meet"]:
+            meet = Meet.objects.filter(slug=slug, assembly__division__organization=organization).first()
+            if meet is None:
+                raise CommandError(f"No meet with slug '{slug}' in organization '{org_slug}'.")
+            readable_meets.append(meet)
 
         division_slug = options["division_slug"] or f"{org_slug}_tally_youth"
-        assembly_slug = options["assembly_slug"] or f"{org_slug}_tally_youth_ministry"
-        meet_slug = options["meet_slug"] or f"{org_slug}_tally_gathering"
-        character_slug = options["character_slug"] or f"{org_slug}_tally_student"
 
         group, group_created = Group.objects.get_or_create(name=options["group"])
         self.note("auth group", group.name, group_created)
 
         division = Division.objects.filter(slug=division_slug).first()
-        if division is None:
+        division_created = division is None
+        if division_created:
             division = Division.objects.create(
                 organization=organization,
                 slug=division_slug,
@@ -96,77 +109,9 @@ class Command(BaseCommand):
                 audience_auth_group=group,
                 infos={},
             )
-            self.note("division", division.slug, True)
-        else:
-            self.note("division", division.slug, False)
-            if division.organization_id != organization.id:
-                raise CommandError(
-                    f"Division '{division_slug}' belongs to another organization."
-                )
-
-        assembly_category = (
-            Category.objects.filter(type="assembly").order_by("id").first()
-            or Category.objects.create(type="assembly", display_name="public", display_order=0, infos={})
-        )
-        assembly = Assembly.objects.filter(slug=assembly_slug).first()
-        if assembly is None:
-            assembly = Assembly.objects.create(
-                division=division,
-                slug=assembly_slug,
-                display_name="Youth ministry",
-                category=assembly_category,
-                infos={},
-            )
-            self.note("assembly", assembly.slug, True)
-        else:
-            self.note("assembly", assembly.slug, False)
-
-        character = Character.objects.filter(slug=character_slug).first()
-        if character is None:
-            character = Character.objects.create(
-                assembly=assembly,
-                slug=character_slug,
-                display_name="Student",
-                type="normal",
-                infos={},
-            )
-            self.note("character", character.slug, True)
-        else:
-            self.note("character", character.slug, False)
-
-        meet = Meet.objects.filter(slug=meet_slug).first()
-        if meet is None:
-            now = timezone.now()
-            meet = Meet.objects.create(
-                assembly=assembly,
-                major_character=character,
-                slug=meet_slug,
-                display_name="Tally gathering",
-                start=now,
-                finish=now + timedelta(days=365 * 50),
-                shown_audience=True,
-                audience_editable=False,
-                infos={
-                    **Utility.meet_infos(),
-                    "default_time_zone": organization.infos.get(
-                        "default_time_zone", "America/Los_Angeles"
-                    ),
-                },
-                site_type=ContentType.objects.get_for_model(Organization),
-                site_id=str(organization.id),
-            )
-            self.note("meet", meet.slug, True)
-        else:
-            self.note("meet", meet.slug, False)
-
-        # organization_meets lists a meet only to callers whose group is in
-        # its allowed_groups; without this the history import sees no meets.
-        allowed_groups = meet.infos.get("allowed_groups") or []
-        meet_granted = group.name not in allowed_groups
-        if meet_granted:
-            meet.infos = {**meet.infos, "allowed_groups": [*allowed_groups, group.name]}
-            meet.save(update_fields=["infos"])
-        self.note("meet privilege", group.name, meet_granted)
+        elif division.organization_id != organization.id:
+            raise CommandError(f"Division '{division_slug}' belongs to another organization.")
+        self.note("division", division.slug, division_created)
 
         user, user_created = User.objects.get_or_create(
             username=options["username"],
@@ -177,13 +122,18 @@ class Command(BaseCommand):
             user.save()
         elif user.organization_id != organization.id:
             raise CommandError(f"User '{user.username}' belongs to another organization.")
+        if not user.is_active:
+            # A deleted integration, set up again: the same user comes back.
+            user.is_active = True
+            user.save(update_fields=["is_active"])
         self.note("user", user.username, user_created)
         user.groups.add(group)
 
         # privileged_to_edit() walks user.attendee.under_same_org_with(...), so
         # the integration user needs an attendee of its own in this division.
-        attendee = Attendee.objects.filter(user=user).first()
-        if attendee is None:
+        attendee = Attendee.all_objects.filter(user=user).first()
+        attendee_created = attendee is None
+        if attendee_created:
             attendee = Attendee.objects.create(
                 division=division,
                 user=user,
@@ -194,13 +144,16 @@ class Command(BaseCommand):
                 gender="UNSPECIFIED",
                 infos=Utility.attendee_infos(),
             )
-            self.note("attendee", str(attendee.id), True)
-        else:
-            self.note("attendee", str(attendee.id), False)
+        elif attendee.is_removed:
+            attendee.is_removed = False
+            attendee.save(update_fields=["is_removed"])
+        self.note("attendee", str(attendee.id), attendee_created)
 
         # The write-privilege switch this app already uses: group names listed
         # in Organization.infos. Editing other attendees' records requires
-        # membership of a group named in groups_see_all_meets_attendees.
+        # membership of a group named in groups_see_all_meets_attendees;
+        # "counselor" is the app's own word for door-working staff with broad
+        # reads — without it, all_relations hides everything but "driver".
         infos = organization.infos or {}
         granted = False
         for key in ("groups_see_all_meets_attendees", "counselor"):
@@ -211,22 +164,39 @@ class Command(BaseCommand):
         if granted:
             organization.infos = infos
             organization.save(update_fields=["infos"])
-        # groups_see_all_meets_attendees is what privileged_to_edit() checks;
-        # "counselor" is the app's own word for door-working staff with broad
-        # reads — without it, all_relations hides everything but "driver".
         self.note("organization privilege", group.name, granted)
+
+        # organization_meets lists a meet only to callers whose group is in
+        # its allowed_groups; that is what lets the history import see it.
+        for meet in readable_meets:
+            allowed_groups = meet.infos.get("allowed_groups") or []
+            meet_granted = group.name not in allowed_groups
+            if meet_granted:
+                meet.infos = {**meet.infos, "allowed_groups": [*allowed_groups, group.name]}
+                meet.save(update_fields=["infos"])
+            self.note("readable meet", meet.slug, meet_granted)
 
         token, token_created = Token.objects.get_or_create(user=user)
         self.note("DRF token", "(printed below)", token_created)
 
+        # What this run was given, kept where the data is, for backup and delete.
+        previous = (attendee.infos or {}).get(PROVENANCE_KEY) or {}
+        attendee.infos = {
+            **(attendee.infos or {}),
+            PROVENANCE_KEY: {
+                "group": group.name,
+                "division": division.slug,
+                "division_created": previous.get("division_created", division_created),
+                "readable_meets": sorted({*previous.get("readable_meets", []), *(m.slug for m in readable_meets)}),
+            },
+        }
+        attendee.save(update_fields=["infos"])
+
         self.stdout.write("")
         self.stdout.write(self.style.SUCCESS("Copy these into Tally's configuration:"))
-        self.stdout.write(f"  A32_API_BASE_URL=<this server's https root>")
+        self.stdout.write("  A32_API_BASE_URL=<this server's https root>")
         self.stdout.write(f"  A32_TOKEN={token.key}")
         self.stdout.write(f"  A32_DIVISION_ID={division.id}")
-        self.stdout.write(f"  A32_MEET_SLUG={meet.slug}")
-        self.stdout.write(f"  A32_CHARACTER_SLUG={character.slug}")
-        self.stdout.write(f"  A32_ASSEMBLY_SLUG={assembly.slug}")
 
     def note(self, kind, name, created):
         verb = "created" if created else "found"

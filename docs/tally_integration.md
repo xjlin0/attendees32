@@ -25,21 +25,24 @@ It creates, or finds if they already exist:
 
 | Piece | Default | Why |
 |---|---|---|
-| Division | `<org>_tally_youth` | The division created attendees are filed under. |
-| Assembly | `<org>_tally_youth_ministry` | Namespace for the meet and character. |
-| Character | `<org>_tally_student` | The role a created student is enrolled as. |
-| Meet | `<org>_tally_gathering` | The series a created student is enrolled in. |
+| Division | `<org>_tally_youth` | The division created attendees are filed under. Override with `--division-slug` to use one you already have. |
 | Auth group | `tally_integration` | Granted to the integration user; its name is added to the organization's `groups_see_all_meets_attendees` and `counselor` lists, which is what allows editing attendees and reading the relation vocabulary. |
 | User + attendee | `tally-integration` | The API caller. The linked attendee exists because `privileged_to_edit` walks `user.attendee.under_same_org_with(...)`. |
 | DRF token | — | Printed at the end. This is the `A32_TOKEN` value in Tally. |
 
-Every slug is overridable (`--division-slug`, `--meet-slug`, …) — point them
-at existing records to reuse a division or meet you already have. The command
-never moves anything between organizations; it errors instead.
+Tally files nobody into a meet, so no assembly, meet or character is created.
+The one thing it does with meets is read their history, and a meet is readable
+to the token only when the group's name is in that meet's allowed groups.
+`--readable-meet <slug>` grants that on an existing meet of the organization
+(repeat it for several); a slug that does not exist stops the run before
+anything is made. The same grant can be made later from the meet's own
+settings, like for any other group.
 
-The command's final output is exactly the values Tally's configuration wants
-(`A32_API_BASE_URL`, `A32_TOKEN`, `A32_DIVISION_ID`, `A32_MEET_SLUG`,
-`A32_CHARACTER_SLUG`, `A32_ASSEMBLY_SLUG`).
+The command never moves anything between organizations; it errors instead.
+Its final output is exactly the values Tally's configuration wants
+(`A32_API_BASE_URL`, `A32_TOKEN`, `A32_DIVISION_ID`). What the run was given
+is kept on the integration's own attendee, under `infos["tally"]`, so the
+backup and delete commands can tell what the setup made from what it found.
 
 ## What Tally calls
 
@@ -53,9 +56,8 @@ All under token auth (`Authorization: Token …`), all JSON:
 | `GET/POST /persons/api/attendee_families/` | A student's family folks; creating one for a new parent. |
 | `GET/POST /persons/api/datagrid_data_familyattendees/` | Family membership edges. |
 | `GET /persons/api/attendee_attendings/` | Resolving a student's attending id. |
-| `PUT /persons/api/default_attendingmeets/` | Enrolling in / leaving the Tally meet. |
 | `GET /persons/api/all_relations/` | The relation vocabulary (`child`, `parent`). |
-| `GET /occasions/api/organization_meets/?assemblies[]=<id>` | The history-import picker. |
+| `GET /occasions/api/organization_meets/` | The history-import picker: the meets the group may read. |
 | `GET /occasions/api/organization_team_gatherings/?meets[]=<slug>` | Gatherings of a meet, for history import. |
 | `GET /occasions/api/organization_meet_character_attendances/?meets[]=<slug>` | Attendance rows, for history import. |
 
