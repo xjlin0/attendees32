@@ -318,5 +318,30 @@ body div.add-attendee-popup-wrapper div.search-candidate-item.already-enrolled:h
   color: #6c757d;
 }
 
+body div.add-attendee-popup-wrapper .meet-gathering-header label.form-label {
+  font-size: 1rem;
+}
+
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-meet-container,
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-meet-container strong,
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-meet-dropdown,
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-gathering-dropdown {
+  font-size: 1rem;
+}
+
+body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-selection > td {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-selection.dx-row-alt > td {
+  background-color: #c7e2d3;
+  color: #0f5132;
+}
+
+body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-selection.dx-state-hover > td {
+  background-color: #b9dec7;
+}
+
 
 

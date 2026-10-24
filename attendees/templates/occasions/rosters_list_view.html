@@ -61,7 +61,9 @@
 {% endblock extra_head %}
 
 {% block content %}
-<div class="rosters-container" id="app"
+<div id="app"
+     class="rosters-container"
+     data-attendances-endpoint="{{ attendances_endpoint }}"
      data-assemblies-endpoint="{{ assemblies_endpoint }}"
      data-categories-endpoint="{{ categories_endpoint }}"
      data-meets-endpoint-by-slug="{{ meets_endpoint_by_slug }}"
@@ -70,12 +72,13 @@
      data-attendings-endpoint="{{ attendings_endpoint }}"
      data-characters-endpoint="{{ characters_endpoint }}"
      data-teams-endpoint="{{ teams_endpoint }}"
+     data-divisions-endpoint="{{ divisions_endpoint }}"
+     data-gatherings-endpoint="{{ gatherings_endpoint }}"
      data-search-attendees-endpoint="{{ search_attendees_endpoint }}"
      data-fast-onboard-endpoint="{{ fast_onboard_endpoint }}"
+     data-relations-endpoint="{{ relations_endpoint }}"
      data-user-can-write="{{ user_can_write|yesno:'true,false' }}">
   {% csrf_token %}
-  {{ grade_converter|json_script:"organization-grade-converter" }}
-  {{ divisions|json_script:"organization-divisions" }}
   
   <div class="d-flex justify-content-between mb-3 align-items-center">
     <div class="d-flex">
@@ -109,6 +112,9 @@
   <div id="rosters-datagrid-container" ref="dataGridRef" class="mt-3"></div>
 </div>
 
+{{ grade_converter|json_script:"organization-grade-converter" }}
+{{ divisions|json_script:"organization-divisions" }}
+
 <!-- ======================================================================= -->
 <!-- Templates for Popups and Dynamic Views                                  -->
 <!-- (Placed outside #app to avoid Vue template compilation interference)    -->
@@ -124,13 +130,13 @@
     <!-- 1. Target Meet & Gathering side-by-side header -->
     <div class="row g-2 align-items-center mb-3 p-2 bg-light rounded border meet-gathering-header">
       <div class="col-md-6 col-12 d-flex align-items-center">
-        <label class="form-label mb-0 me-2 fw-semibold text-secondary small flex-shrink-0">Target Meet:</label>
+        <label class="form-label mb-0 me-2 fw-semibold text-secondary target-meet-label flex-shrink-0">Target Meet:</label>
         <div class="flex-grow-1 overflow-hidden target-meet-container">
           <!-- Dynamically populated: select dropdown or static meet title -->
         </div>
       </div>
       <div class="col-md-6 col-12 d-flex align-items-center">
-        <label class="form-label mb-0 me-2 fw-semibold text-secondary small flex-shrink-0">Gathering:</label>
+        <label class="form-label mb-0 me-2 fw-semibold text-secondary target-gathering-label flex-shrink-0">Gathering:</label>
         <div class="flex-grow-1">
           <select class="form-select form-select-sm target-gathering-dropdown">
             <!-- Dynamically populated: gathering options -->
@@ -162,56 +168,51 @@
         <button type="button" class="btn btn-outline-secondary btn-sm back-to-search-btn">
           <i class="fas fa-arrow-left me-1"></i> Back to Search
         </button>
-        <span class="badge bg-success py-2 px-3 fw-normal" style="font-size: 0.85rem;">New Attendee Fast Registration</span>
+        <span class="badge bg-success py-2 px-3 fw-normal" style="font-size: 0.85rem; text-wrap: balance;">New Attendee Registration</span>
       </div>
       <form class="onboard-form" onsubmit="return false;">
-        <!-- Attendee Section -->
-        <div class="mb-3">
-          <h6 class="text-primary border-bottom pb-1 mb-2 fw-bold" style="font-size: 0.95rem;">
-            <i class="fas fa-user me-1"></i> Attendee Information
-          </h6>
-          <div class="row g-2 mb-2">
-            <div class="col-6">
-              <label class="form-label small mb-1 fw-semibold">First Name (English) <span class="text-danger">*</span></label>
-              <input type="text" class="form-control form-control-sm ob-first-name" required placeholder="First name">
-            </div>
-            <div class="col-6">
-              <label class="form-label small mb-1 fw-semibold">Last Name (English) <span class="text-danger">*</span></label>
-              <input type="text" class="form-control form-control-sm ob-last-name" required placeholder="Last name">
-            </div>
-          </div>
-          <div class="row g-2 mb-2">
-            <div class="col-6">
-              <label class="form-label small mb-1 text-muted">First Name 2 (Other language)</label>
-              <input type="text" class="form-control form-control-sm ob-first-name2" placeholder="名字 (e.g., 小明)">
-            </div>
-            <div class="col-6">
-              <label class="form-label small mb-1 text-muted">Last Name 2 (Other language)</label>
-              <input type="text" class="form-control form-control-sm ob-last-name2" placeholder="姓氏 (e.g., 李)">
-            </div>
-          </div>
-          <div class="row g-2 mb-2">
-            <div class="col-12">
-              <label class="form-label small mb-1 fw-semibold">Gender</label>
-              <select class="form-select form-select-sm ob-gender">
-                <option value="unspecified" selected>Unspecified</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Strict Birthday Inputs (Year, Month, Day) -->
-          <div class="mb-2">
-            <label class="form-label small mb-1 fw-semibold ob-birthday-label">
-              Birthday (Strictly Y/M/D, No Age) <span class="ob-birthday-badge"></span>
-            </label>
-            <div class="row g-2">
-              <div class="col-4">
-                <input type="number" class="form-control form-control-sm ob-byear" placeholder="Year (YYYY)" min="1900" max="2026">
+          <!-- Attendee Section -->
+          <div class="mb-3">
+            <h6 class="text-primary border-bottom pb-1 mb-2 fw-bold" style="font-size: 0.95rem;">
+              <i class="fas fa-user me-1"></i> Attendee Information
+            </h6>
+            <div class="row g-2 mb-2">
+              <div class="col-md-6 col-12">
+                <label class="form-label small mb-1 fw-semibold">First Name (English)</label>
+                <input type="text" class="form-control form-control-sm ob-first-name" placeholder="First name">
               </div>
-              <div class="col-4">
+              <div class="col-md-6 col-12">
+                <label class="form-label small mb-1 fw-semibold">Last Name (English)</label>
+                <input type="text" class="form-control form-control-sm ob-last-name" placeholder="Last name">
+              </div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-md-6 col-12">
+                <label class="form-label small mb-1 text-muted">Last Name 2 (Other language)</label>
+                <input type="text" class="form-control form-control-sm ob-last-name2" placeholder="姓氏 (e.g., 李)">
+              </div>
+              <div class="col-md-6 col-12">
+                <label class="form-label small mb-1 text-muted">First Name 2 (Other language)</label>
+                <input type="text" class="form-control form-control-sm ob-first-name2" placeholder="名字 (e.g., 小明)">
+              </div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-md-3 col-6">
+                <label class="form-label small mb-1 fw-semibold">Gender</label>
+                <select class="form-select form-select-sm ob-gender">
+                  <option value="unspecified" selected>Unspecified</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              <div class="col-md-3 col-6">
+                <label class="form-label small mb-1 fw-semibold ob-birthday-label">
+                  Birth Year <span class="ob-birthday-badge"></span>
+                </label>
+                <input type="number" class="form-control form-control-sm ob-byear" placeholder="YYYY" min="1900" max="2026">
+              </div>
+              <div class="col-md-3 col-6">
+                <label class="form-label small mb-1 fw-semibold">Birth Month</label>
                 <select class="form-select form-select-sm ob-bmonth">
                   <option value="">Month</option>
                   <option value="1">1</option>
@@ -228,7 +229,8 @@
                   <option value="12">12</option>
                 </select>
               </div>
-              <div class="col-4">
+              <div class="col-md-3 col-6">
+                <label class="form-label small mb-1 fw-semibold">Birth Day</label>
                 <select class="form-select form-select-sm ob-bday">
                   <option value="">Day</option>
                   <option value="1">1</option>
@@ -265,128 +267,222 @@
                 </select>
               </div>
             </div>
-          </div>
 
-          <!-- Flexible Single Contact Selector for Attendee -->
-          <div class="row g-2 mb-2">
-            <div class="col-4">
-              <label class="form-label small mb-1 fw-semibold">Contact Type</label>
-              <select class="form-select form-select-sm ob-contact-type">
-                <option value="phone" selected>Phone</option>
-                <option value="email">Email</option>
-                <option value="wechat">WeChat</option>
-                <option value="line">Line</option>
-                <option value="whatsapp">WhatsApp</option>
-              </select>
-            </div>
-            <div class="col-8">
-              <label class="form-label small mb-1 fw-semibold">Contact Number / Account</label>
-              <input type="text" class="form-control form-control-sm ob-contact-value" placeholder="Phone number, email, or account">
-            </div>
-          </div>
-
-          <!-- Kid-specific fields -->
-          <div class="kid-specific-fields">
+            <!-- Flexible Single Contact Selector for Attendee -->
             <div class="row g-2 mb-2">
-              <div class="col-6">
-                <label class="form-label small mb-1 fw-semibold">School Grade <span class="text-danger">*</span></label>
-                <select class="form-select form-select-sm ob-grade">
-                  <option value="">Select Grade</option>
-                  <!-- Dynamically populated from organization-grade-converter -->
+              <div class="col-md-4 col-12">
+                <label class="form-label small mb-1 fw-semibold">Contact Type</label>
+                <select class="form-select form-select-sm ob-contact-type">
+                  <option value="phone" selected>Phone</option>
+                  <option value="email">Email</option>
+                  <option value="wechat">WeChat</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="line">Line</option>
                 </select>
               </div>
-              <div class="col-6">
-                <label class="form-label small mb-1 fw-semibold">Food Preference / Allergies <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-sm ob-food-pref" placeholder="e.g., None, Peanut allergy">
-              </div>
-            </div>
-            <div class="mb-2 insurer-field-group">
-              <label class="form-label small mb-1 fw-semibold">Medical Insurer <span class="text-muted">(Optional)</span></label>
-              <input type="text" class="form-control form-control-sm ob-insurer" placeholder="Insurance company / Policy #">
-            </div>
-          </div>
-        </div>
-
-        <!-- Guardian Section (Kids Only) -->
-        <div class="guardian-section">
-          <h6 class="text-primary border-bottom pb-1 mb-2 fw-bold" style="font-size: 0.95rem;">
-            <i class="fas fa-user-shield me-1"></i> Guardian/chaperon Information
-          </h6>
-
-          <!-- Unaccompanied Minor Checkbox -->
-          <div class="form-check p-2 bg-light rounded border mb-2">
-            <input class="form-check-input ms-0 me-2 ob-unaccompanied" type="checkbox" id="unaccompaniedMinorCheck">
-            <label class="form-check-label fw-bold text-dark" for="unaccompaniedMinorCheck" role="button">
-              Child arrived alone / Unaccompanied minor
-            </label>
-            <div class="text-danger small ps-4">
-              <i class="fas fa-exclamation-triangle me-1"></i> Will mark a "⚠ Missing guardian/chaperon info" warning on the roster.
-            </div>
-          </div>
-
-          <!-- Guardian Inputs -->
-          <div class="guardian-inputs-container">
-            <!-- Guardian Division Selection -->
-            <div class="row g-2 mb-2">
-              <div class="col-12">
-                <label class="form-label small mb-1 fw-semibold">Guardian Division <span class="text-danger">*</span></label>
-                <select class="form-select form-select-sm ob-p-division">
-                  <!-- Dynamically populated from organization-divisions -->
-                </select>
+              <div class="col-md-8 col-12">
+                <label class="form-label small mb-1 fw-semibold">Contact Value</label>
+                <input type="text" class="form-control form-control-sm ob-contact-value" placeholder="Phone number, email, or account">
               </div>
             </div>
 
-            <div class="row g-2 mb-2">
-              <div class="col-6">
-                <label class="form-label small mb-1 fw-semibold">Guardian First Name (English) <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-sm ob-p-first-name" placeholder="First name">
-              </div>
-              <div class="col-6">
-                <label class="form-label small mb-1 fw-semibold">Guardian Last Name (English) <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-sm ob-p-last-name" placeholder="Last name">
-              </div>
-            </div>
-            <div class="row g-2 mb-2">
-              <div class="col-6">
-                <label class="form-label small mb-1 text-muted">Guardian First Name 2 (Other language)</label>
-                <input type="text" class="form-control form-control-sm ob-p-first-name2" placeholder="Chinese first name">
-              </div>
-              <div class="col-6">
-                <label class="form-label small mb-1 text-muted">Guardian Last Name 2 (Other language)</label>
-                <input type="text" class="form-control form-control-sm ob-p-last-name2" placeholder="Chinese last name">
-              </div>
-            </div>
-            <div class="row g-2 mb-2">
-              <div class="col-6">
-                <label class="form-label small mb-1 fw-semibold">Contact Phone <span class="text-danger">*</span></label>
-                <input type="tel" class="form-control form-control-sm ob-p-phone" placeholder="Contact phone">
-              </div>
-              <div class="col-6">
-                <label class="form-label small mb-1 text-muted">Email (Optional)</label>
-                <input type="email" class="form-control form-control-sm ob-p-email" placeholder="Email address">
-              </div>
-            </div>
-            <div class="row g-2 mb-2">
-              <div class="col-12">
-                <label class="form-label small mb-1 fw-semibold">Relationship</label>
-                <select class="form-select form-select-sm ob-p-relationship">
-                  <option value="parent" selected>Parent</option>
-                  <option value="guardian">Guardian</option>
-                  <option value="grandparent">Grandparent</option>
-                  <option value="relative">Relative</option>
-                  <option value="other">Other</option>
-                </select>
+            <!-- Kid-specific fields -->
+            <div class="kid-specific-fields">
+              <div class="row g-2 mb-2">
+                <div class="col-md-4 col-12">
+                  <label class="form-label small mb-1 fw-semibold">School Grade <span class="text-danger">*</span></label>
+                  <select class="form-select form-select-sm ob-grade">
+                    <option value="">Select Grade</option>
+                    <!-- Dynamically populated from organization-grade-converter -->
+                  </select>
+                </div>
+                <div class="col-md-4 col-12">
+                  <label class="form-label small mb-1 fw-semibold">Food Preference / Allergies <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control form-control-sm ob-food-pref" placeholder="e.g., None, Peanut allergy">
+                </div>
+                <div class="col-md-4 col-12 insurer-field-group">
+                  <label class="form-label small mb-1 fw-semibold">Medical Insurer <span class="text-muted">(Optional)</span></label>
+                  <input type="text" class="form-control form-control-sm ob-insurer" placeholder="Insurance company / Policy #">
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Submit Button -->
-        <div class="mt-3">
-          <button type="button" class="btn btn-success btn-sm w-100 ob-submit-btn fw-bold py-2">
+          <!-- Companion Section -->
+          <div class="guardian-section">
+            <h6 class="text-primary border-bottom pb-1 mb-2 fw-bold" style="font-size: 0.95rem;">
+              <i class="fas fa-user-friends me-1"></i> Companion Information
+            </h6>
+
+            <!-- Unaccompanied Minor Checkbox (Kids Only) -->
+            <div class="form-check p-2 bg-light rounded border mb-2 unaccompanied-minor-container">
+              <input class="form-check-input ms-0 me-2 ob-unaccompanied" type="checkbox" id="unaccompaniedMinorCheck">
+              <label class="form-check-label fw-bold text-dark" for="unaccompaniedMinorCheck" role="button">
+                Child arrived alone / Unaccompanied
+              </label>
+              <div class="text-danger small ps-4">
+                <i class="fas fa-exclamation-triangle me-1"></i> Will mark a "⚠ Missing companion info" warning on the roster.
+              </div>
+            </div>
+
+            <!-- Companion 1 Block -->
+            <div class="guardian-inputs-container companion-block companion-block-1 mb-2">
+              <div class="p-2 bg-light rounded border mb-2 position-relative">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="fw-bold small text-secondary companion-label">
+                    <i class="fas fa-user me-1"></i> <span class="companion-1-label">Companion 1</span>
+                  </div>
+                  <button type="button" class="btn-close btn-sm remove-companion-btn remove-companion-1-btn d-none" aria-label="Remove companion" title="Remove companion"></button>
+                </div>
+
+                <!-- Division & Relationship -->
+                <div class="row g-2 mb-2">
+                  <div class="col-md-6 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-division-label">Companion 1 Division <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm ob-p-division">
+                      <!-- Dynamically populated from divisions endpoint -->
+                    </select>
+                  </div>
+                  <div class="col-md-6 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-relationship-label">Companion 1 Relationship</label>
+                    <select class="form-select form-select-sm ob-p-relationship">
+                      <!-- Dynamically populated from relations-endpoint -->
+                      <option value="parent" selected>Parent</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- English Names -->
+                <div class="row g-2 mb-2">
+                  <div class="col-md-6 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-firstname-label">Companion 1 First Name (English)</label>
+                    <input type="text" class="form-control form-control-sm ob-p-first-name" placeholder="First name">
+                  </div>
+                  <div class="col-md-6 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-lastname-label">Companion 1 Last Name (English)</label>
+                    <input type="text" class="form-control form-control-sm ob-p-last-name" placeholder="Last name">
+                  </div>
+                </div>
+
+                <!-- Other Language Names -->
+                <div class="row g-2 mb-2">
+                  <div class="col-md-6 col-12">
+                    <label class="form-label small mb-1 text-muted comp-lastname2-label">Companion 1 Last Name 2 (Other language)</label>
+                    <input type="text" class="form-control form-control-sm ob-p-last-name2" placeholder="Chinese last name">
+                  </div>
+                  <div class="col-md-6 col-12">
+                    <label class="form-label small mb-1 text-muted comp-firstname2-label">Companion 1 First Name 2 (Other language)</label>
+                    <input type="text" class="form-control form-control-sm ob-p-first-name2" placeholder="Chinese first name">
+                  </div>
+                </div>
+
+                <!-- Contact Selector -->
+                <div class="row g-2">
+                  <div class="col-md-4 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-contacttype-label">Companion 1 Contact Type</label>
+                    <select class="form-select form-select-sm ob-p-contact-type">
+                      <option value="phone" selected>Phone</option>
+                      <option value="email">Email</option>
+                      <option value="wechat">WeChat</option>
+                      <option value="whatsapp">WhatsApp</option>
+                      <option value="line">Line</option>
+                    </select>
+                  </div>
+                  <div class="col-md-8 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-contactval-label">Companion 1 Contact Number / Account <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm ob-p-contact-value" placeholder="Phone number, email, or account">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Companions Container (Appended above buttons) -->
+            <div class="additional-companions-container"></div>
+          </div>
+
+        <!-- Buttons: More Companions + Register & Check In -->
+        <div class="d-flex gap-2 mt-3">
+          <button type="button" class="btn btn-outline-primary btn-sm flex-fill more-companions-btn fw-bold py-2">
+            <i class="fas fa-user-plus me-1"></i> More Companions
+          </button>
+          <button type="button" class="btn btn-success btn-sm flex-fill ob-submit-btn fw-bold py-2">
             <i class="fas fa-check-circle me-1"></i> Register & Check In
           </button>
         </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<!-- Template for Additional Companion Blocks -->
+<template id="companion-block-template">
+  <div class="companion-block companion-block-extra p-2 bg-light rounded border mb-2 position-relative">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="fw-bold small text-secondary companion-label">
+        <i class="fas fa-user me-1"></i> Companion
+      </div>
+      <button type="button" class="btn-close btn-sm remove-companion-btn" aria-label="Remove companion" title="Remove companion"></button>
+    </div>
+
+    <!-- Division & Relationship -->
+    <div class="row g-2 mb-2">
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-division-label">Division <span class="text-danger">*</span></label>
+        <select class="form-select form-select-sm ob-p-division">
+          <!-- Dynamically populated -->
+        </select>
+      </div>
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-relationship-label">Relationship</label>
+        <select class="form-select form-select-sm ob-p-relationship">
+          <!-- Dynamically populated -->
+        </select>
+      </div>
+    </div>
+
+    <!-- English Names -->
+    <div class="row g-2 mb-2">
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-firstname-label">First Name (English)</label>
+        <input type="text" class="form-control form-control-sm ob-p-first-name" placeholder="First name">
+      </div>
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-lastname-label">Last Name (English)</label>
+        <input type="text" class="form-control form-control-sm ob-p-last-name" placeholder="Last name">
+      </div>
+    </div>
+
+    <!-- Other Language Names -->
+    <div class="row g-2 mb-2">
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 text-muted comp-lastname2-label">Last Name 2 (Other language)</label>
+        <input type="text" class="form-control form-control-sm ob-p-last-name2" placeholder="Chinese last name">
+      </div>
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 text-muted comp-firstname2-label">First Name 2 (Other language)</label>
+        <input type="text" class="form-control form-control-sm ob-p-first-name2" placeholder="Chinese first name">
+      </div>
+    </div>
+
+    <!-- Contact Selector -->
+    <div class="row g-2">
+      <div class="col-md-4 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-contacttype-label">Contact Type</label>
+        <select class="form-select form-select-sm ob-p-contact-type">
+          <option value="phone" selected>Phone</option>
+          <option value="email">Email</option>
+          <option value="wechat">WeChat</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="line">Line</option>
+        </select>
+      </div>
+      <div class="col-md-8 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-contactval-label">Contact Number / Account <span class="text-danger">*</span></label>
+        <input type="text" class="form-control form-control-sm ob-p-contact-value" placeholder="Phone number, email, or account">
+      </div>
+    </div>
+  </div>
+</template>
       </form>
     </div>
   </div>

@@ -57,6 +57,10 @@ class TestFastOnboardAttendee:
         self.family_cat, _ = Category.objects.get_or_create(id=0, defaults={"display_name": "Family", "type": "folk"})
         self.other_cat, _ = Category.objects.get_or_create(id=25, defaults={"display_name": "Other", "type": "folk"})
         self.scheduled_cat, _ = Category.objects.get_or_create(id=1, defaults={"display_name": "Scheduled", "type": "attendingmeet"})
+        self.attended_cat, _ = Category.objects.get_or_create(
+            id=Attendee.ATTENDED_CATEGORY,
+            defaults={"display_name": "attended", "type": "attendance"}
+        )
 
         self.relation_default, _ = Relation.objects.get_or_create(
             id=0,
@@ -64,11 +68,11 @@ class TestFastOnboardAttendee:
         )
         self.relation_parent, _ = Relation.objects.get_or_create(
             id=1,
-            defaults={"title": "parent", "gender": "unspecified", "emergency_contact": True}
+            defaults={"title": "parent", "gender": "unspecified", "emergency_contact": True, "consanguinity": True, "relative": True}
         )
         self.relation_child, _ = Relation.objects.get_or_create(
             id=2,
-            defaults={"title": "child", "gender": "unspecified"}
+            defaults={"title": "child", "gender": "unspecified", "consanguinity": True, "relative": True}
         )
 
         # Assemblies
@@ -209,6 +213,7 @@ class TestFastOnboardAttendee:
         attendance = Attendance.objects.get(id=data["attendance_id"])
         assert attendance.gathering == self.kid_gathering
         assert attendance.attending == kid.attendings.first()
+        assert attendance.category_id == Attendee.ATTENDED_CATEGORY
 
     def test_kid_fast_onboard_unaccompanied_minor(self):
         payload = {
@@ -229,11 +234,11 @@ class TestFastOnboardAttendee:
         assert response.status_code == status.HTTP_201_CREATED
 
         data = response.data
-        assert data["warning"] == "⚠無監護人/護送者資料"
+        assert data["warning"] == "⚠Missing companion info"
         assert data["parent_id"] is None
 
         am = AttendingMeet.objects.get(id=data["attendingmeet_id"])
-        assert am.infos["special"]["check_in"] == "⚠無監護人/護送者資料"
+        assert am.infos["special"]["check_in"] == "⚠Missing companion info"
 
     def test_auto_clear_unaccompanied_warning_when_parent_linked(self):
         # 1. Onboard unaccompanied kid
@@ -256,7 +261,7 @@ class TestFastOnboardAttendee:
         am_id = response.data["attendingmeet_id"]
 
         am = AttendingMeet.objects.get(id=am_id)
-        assert am.infos["special"]["check_in"] == "⚠無監護人/護送者資料"
+        assert am.infos["special"]["check_in"] == "⚠Missing companion info"
 
         # 2. Later, parent arrives and is linked to the kid in a family folk
         kid = Attendee.objects.get(id=kid_id)
@@ -383,3 +388,227 @@ class TestFastOnboardAttendee:
         response4 = self.client.post("/persons/api/fast_onboard_attendee/", payload4, format="json")
         assert response4.status_code == status.HTTP_400_BAD_REQUEST
         assert "unaccompanied" in response4.data
+
+    def test_single_name_allowed(self):
+        # Kid with only first_name
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "kid_data": {
+                "first_name": "Prince",
+                "birthday_year": 2018,
+                "birthday_month": 1,
+                "birthday_day": 1,
+                "grade": 1,
+                "food_pref": "None",
+            },
+            "unaccompanied": True,
+        }
+        response = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["first_name"] == "Prince"
+        assert response.data["last_name"] is None
+
+        # Kid with only last_name2
+        payload2 = {
+            "meet_slug": self.kid_meet.slug,
+            "kid_data": {
+                "last_name2": "王",
+                "birthday_year": 2018,
+                "birthday_month": 1,
+                "birthday_day": 1,
+                "grade": 1,
+                "food_pref": "None",
+            },
+            "unaccompanied": True,
+        }
+        response2 = self.client.post("/persons/api/fast_onboard_attendee/", payload2, format="json")
+        assert response2.status_code == status.HTTP_201_CREATED
+        assert response2.data["last_name2"] == "王"
+
+    def test_custom_relationship_assignment(self):
+        guardian_rel, _ = Relation.objects.get_or_create(
+            id=15,
+            defaults={"title": "guardian", "gender": "unspecified", "reciprocal_ids": [16]}
+        )
+        ward_rel, _ = Relation.objects.get_or_create(
+            id=16,
+            defaults={"title": "ward", "gender": "unspecified", "reciprocal_ids": [15]}
+        )
+
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "kid_data": {
+                "first_name": "Oliver",
+                "last_name": "Twist",
+                "birthday_year": 2017,
+                "birthday_month": 3,
+                "birthday_day": 15,
+                "grade": 2,
+                "food_pref": "None",
+            },
+            "parent_data": {
+                "first_name": "John",
+                "last_name": "Brown",
+                "phone": "555-1234",
+                "division_id": self.adult_division.id,
+                "relationship": guardian_rel.id,
+            },
+            "unaccompanied": False,
+        }
+        response = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+        kid_id = response.data["attendee_id"]
+        parent_id = response.data["parent_id"]
+
+        # Guardian is non-consanguinity, so it should be linked in NON_FAMILY_CATEGORY (category 25)
+        # without creating duplicate folks
+        assert Folk.objects.filter(attendees=kid_id, category_id=Attendee.NON_FAMILY_CATEGORY).count() == 1
+
+        parent_fa = FolkAttendee.objects.filter(folk__category_id=Attendee.NON_FAMILY_CATEGORY, attendee_id=parent_id, role=guardian_rel).first()
+        child_fa = FolkAttendee.objects.filter(folk__category_id=Attendee.NON_FAMILY_CATEGORY, attendee_id=kid_id, role=ward_rel).first()
+
+        assert parent_fa is not None
+        assert parent_fa.role.id == guardian_rel.id
+        assert parent_fa.role.title == "guardian"
+
+        assert child_fa is not None
+        assert child_fa.role.id == ward_rel.id
+        assert child_fa.role.title == "ward"
+
+    def test_multiple_companions_and_gathering_occurrence(self):
+        guardian_rel, _ = Relation.objects.get_or_create(
+            id=15,
+            defaults={"title": "guardian", "gender": "unspecified", "reciprocal_ids": [16], "consanguinity": False}
+        )
+        ward_rel, _ = Relation.objects.get_or_create(
+            id=16,
+            defaults={"title": "ward", "gender": "unspecified", "reciprocal_ids": [15], "consanguinity": False}
+        )
+
+        meeting_time = datetime.now(timezone.utc) + timedelta(minutes=15)
+        occurrence_str = f"start_{meeting_time.isoformat()}"
+
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "gathering_id": occurrence_str,
+            "unaccompanied": False,
+            "kid_data": {
+                "first_name": "Alice",
+                "last_name": "Wonderland",
+                "birthday_year": 2017,
+                "birthday_month": 5,
+                "birthday_day": 20,
+                "contact_type": "phone",
+                "contact_value": "408-111-2222",
+                "grade": 2,
+                "food_pref": "No peanuts",
+            },
+            "companions": [
+                {
+                    "first_name": "Mary",
+                    "last_name": "Wonderland",
+                    "division_id": self.adult_division.id,
+                    "relationship": self.relation_parent.id,
+                    "contact_type": "phone",
+                    "contact_value": "408-333-4444",
+                },
+                {
+                    "first_name": "Grandpa",
+                    "last_name": "Joe",
+                    "division_id": self.adult_division.id,
+                    "relationship": guardian_rel.id,
+                    "contact_type": "wechat",
+                    "contact_value": "grandpajoe_wechat",
+                },
+            ],
+        }
+
+        response = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+        kid_id = response.data["attendee_id"]
+        companion_ids = response.data["companion_ids"]
+        assert len(companion_ids) == 2
+
+        comp1 = Attendee.objects.get(pk=companion_ids[0])
+        comp2 = Attendee.objects.get(pk=companion_ids[1])
+        assert comp1.first_name == "Mary"
+        assert comp1.infos["contacts"]["phone1"] == "408-333-4444"
+        assert comp2.first_name == "Grandpa"
+        assert comp2.infos["contacts"]["wechat1"] == "grandpajoe_wechat"
+
+        # Check emergency contacts in kid.infos
+        kid = Attendee.objects.get(pk=kid_id)
+        emergency_contacts = kid.infos.get("emergency_contacts", {})
+        assert len(emergency_contacts) == 2
+        assert str(comp1.id) in emergency_contacts
+        assert str(comp2.id) in emergency_contacts
+
+        # Family folk (Category 0) has kid + Mary
+        family_folk = Folk.objects.filter(attendees=kid_id, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family_folk is not None
+        assert comp1 in family_folk.attendees.all()
+        assert comp2 not in family_folk.attendees.all()
+
+        # Non-family folk (Category 25) has kid + Grandpa
+        non_family_folk = Folk.objects.filter(attendees=kid_id, category_id=Attendee.NON_FAMILY_CATEGORY).first()
+        assert non_family_folk is not None
+        assert comp2 in non_family_folk.attendees.all()
+
+        # Gathering was auto-created and attended
+        assert response.data["gathering_id"] is not None
+        gathering = Gathering.objects.get(pk=response.data["gathering_id"])
+        assert gathering.meet == self.kid_meet
+        attendance = Attendance.objects.filter(gathering=gathering, attending__attendee=kid).first()
+        assert attendance is not None
+
+    def test_adult_fast_onboard_with_companion(self):
+        spouse_rel, _ = Relation.objects.get_or_create(
+            id=3,
+            defaults={"title": "spouse", "gender": "unspecified", "reciprocal_ids": [3], "consanguinity": False, "relative": True}
+        )
+
+        payload = {
+            "meet_slug": self.adult_meet.slug,
+            "unaccompanied": False,
+            "kid_data": {
+                "first_name": "David",
+                "last_name": "Smith",
+                "birthday_year": 1985,
+                "birthday_month": 8,
+                "birthday_day": 10,
+                "contact_type": "phone",
+                "contact_value": "408-555-1111",
+            },
+            "companions": [
+                {
+                    "first_name": "Sarah",
+                    "last_name": "Smith",
+                    "division_id": self.adult_division.id,
+                    "relationship": spouse_rel.id,
+                    "contact_type": "email",
+                    "contact_value": "sarah@smith.com",
+                }
+            ],
+        }
+
+        response = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+        adult_id = response.data["attendee_id"]
+        companion_ids = response.data["companion_ids"]
+        assert len(companion_ids) == 1
+
+        adult = Attendee.objects.get(pk=adult_id)
+        comp = Attendee.objects.get(pk=companion_ids[0])
+        assert adult.first_name == "David"
+        assert comp.first_name == "Sarah"
+        assert comp.infos["contacts"]["email1"] == "sarah@smith.com"
+
+        # Check family folk has both David and Sarah
+        family_folk = Folk.objects.filter(attendees=adult_id, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family_folk is not None
+        assert comp in family_folk.attendees.all()
+
+

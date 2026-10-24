@@ -70,7 +70,25 @@
   };
 
   let organizationDivisions = [];
-  const loadOrganizationDivisions = () => {
+  const loadOrganizationDivisions = async (divisionsEndpoint) => {
+    if (organizationDivisions.length > 0) return organizationDivisions;
+    const url = (divisionsEndpoint || '/whereabouts/api/user_divisions/') + ((divisionsEndpoint || '').includes('?') ? '&take=999' : '?take=999');
+    try {
+      const res = await fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const raw = json.data || (Array.isArray(json) ? json : []);
+        if (Array.isArray(raw) && raw.length > 0) {
+          organizationDivisions = raw;
+          return organizationDivisions;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch divisions from API:', e);
+    }
     const divisionsEl = document.getElementById('organization-divisions');
     if (divisionsEl) {
       try {
@@ -78,6 +96,100 @@
       } catch (e) {
         organizationDivisions = [];
       }
+    }
+    return organizationDivisions;
+  };
+
+  const meetGatheringsCache = new Map();
+  const loadMeetGatherings = async (meetSlug, meetId, gatheringsEndpoint) => {
+    if (!meetSlug && !meetId) return [];
+    const cacheKey = String(meetSlug || meetId);
+    if (meetGatheringsCache.has(cacheKey) && meetGatheringsCache.get(cacheKey).length > 0) {
+      return meetGatheringsCache.get(cacheKey);
+    }
+
+    const seen = new Set();
+    const result = [];
+    const addG = (g) => {
+      if (!g) return;
+      const idKey = g.id ? String(g.id) : (g.start ? `start_${g.start}` : null);
+      if (idKey && !seen.has(idKey)) {
+        seen.add(idKey);
+        result.push(g);
+      }
+    };
+
+    // 1. Gatherings from registry
+    for (const g of gatheringsRegistry.values()) {
+      if (g && (String(g.meet_id) === String(meetId) || String(g.meet_slug) === String(meetSlug))) {
+        addG(g);
+      }
+    }
+
+    // 2. Fetch from gatherings API for this meet
+    if (meetSlug) {
+      const url = (gatheringsEndpoint || '/occasions/api/organization_team_gatherings/') + `?meets[]=${encodeURIComponent(meetSlug)}&take=999`;
+      try {
+        const res = await fetch(url, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'same-origin'
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const items = json.data || (Array.isArray(json) ? json : []);
+          items.forEach(item => {
+            addG({
+              id: item.id,
+              meet_id: meetId || item.meet_id,
+              meet_display_name: item.meet_display_name || '',
+              display_name: item.display_name,
+              start: item.start,
+              finish: item.finish
+            });
+          });
+        }
+      } catch (e) {
+        console.warn('Could not fetch gatherings for meet from API:', e);
+      }
+    }
+
+    // Sort chronologically
+    result.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+    // If completely empty, generate a synthetic option for Today
+    if (result.length === 0) {
+      const nowIso = new Date().toISOString();
+      result.push({
+        id: null,
+        meet_id: meetId,
+        display_name: `Today (${new Date().toLocaleDateString()})`,
+        start: nowIso,
+        finish: null
+      });
+    }
+
+    meetGatheringsCache.set(cacheKey, result);
+    return result;
+  };
+
+  let allFamilyRelations = [];
+  const loadFamilyRelations = async (relationsEndpoint) => {
+    if (allFamilyRelations.length > 0) return allFamilyRelations;
+    const url = (relationsEndpoint || '/persons/api/all_relations/') + '?category_id=0&take=999';
+    try {
+      const res = await fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+      });
+      if (!res.ok) throw new Error('Failed to fetch relations');
+      const json = await res.json();
+      const rawList = json.data || (Array.isArray(json) ? json : []);
+      const excludedRoles = new Set(['self', 'masked', 'hidden']);
+      allFamilyRelations = rawList.filter(r => r && r.id > 0 && !excludedRoles.has((r.title || '').trim().toLowerCase()));
+      return allFamilyRelations;
+    } catch (e) {
+      console.warn('Could not load relations from API, using fallback:', e);
+      return [];
     }
   };
 
@@ -88,15 +200,18 @@
     const endpoints = reactive({
       rosters: '',
       meets: '',
-      attendances: '/occasions/api/organization_meet_character_attendances/',
+      attendances: '', // '/occasions/api/organization_meet_character_attendances/',
       assemblies: '',
       categories: '',
       attendingmeets: '',
       attendings: '',
       characters: '',
       teams: '',
-      searchAttendees: '/persons/api/search_attendees_for_roster/',
-      fastOnboard: '/persons/api/fast_onboard_attendee/',
+      divisions: '', // divisions: '/whereabouts/api/user_divisions/',
+      gatherings: '', // '/occasions/api/organization_team_gatherings/',
+      searchAttendees: '', // '/persons/api/search_attendees_for_roster/',
+      fastOnboard: '', // '/persons/api/fast_onboard_attendee/',
+      relations: '', // '/persons/api/all_relations/',
       userCanWrite: true
     });
 
@@ -104,6 +219,7 @@
       const appEl = document.getElementById('app');
       if (appEl) {
         endpoints.rosters = appEl.dataset.rostersEndpoint || '';
+        endpoints.attendances = appEl.dataset.attendancesEndpoint || '';
         endpoints.meets = appEl.dataset.meetsEndpointBySlug || '';
         endpoints.assemblies = appEl.dataset.assembliesEndpoint || '';
         endpoints.categories = appEl.dataset.categoriesEndpoint || '';
@@ -111,12 +227,16 @@
         endpoints.attendings = appEl.dataset.attendingsEndpoint || '';
         endpoints.characters = appEl.dataset.charactersEndpoint || '';
         endpoints.teams = appEl.dataset.teamsEndpoint || '';
-        endpoints.searchAttendees = appEl.dataset.searchAttendeesEndpoint || '/persons/api/search_attendees_for_roster/';
-        endpoints.fastOnboard = appEl.dataset.fastOnboardEndpoint || '/persons/api/fast_onboard_attendee/';
+        endpoints.divisions = appEl.dataset.divisionsEndpoint;
+        endpoints.gatherings = appEl.dataset.gatheringsEndpoint;
+        endpoints.searchAttendees = appEl.dataset.searchAttendeesEndpoint;
+        endpoints.fastOnboard = appEl.dataset.fastOnboardEndpoint;
+        endpoints.relations = appEl.dataset.relationsEndpoint;
         endpoints.userCanWrite = appEl.dataset.userCanWrite !== 'false';
       }
       loadGradeConverter();
-      loadOrganizationDivisions();
+      loadOrganizationDivisions(endpoints.divisions);
+      loadFamilyRelations(endpoints.relations);
     };
 
     return { endpoints, initEndpoints };
@@ -502,20 +622,6 @@
       } else {
         console.warn('[Rosters] Signature canvas or SignaturePad not found!', { canvas, hasSignaturePad: typeof SignaturePad !== 'undefined' });
       }
-    };
-
-    window.debugRostersSignature = () => {
-      const canvas = document.querySelector('canvas.signature');
-      console.log({
-        hasSignaturePadLib: typeof SignaturePad !== 'undefined',
-        signaturePadInstance,
-        canvas,
-        canvasWidth: canvas ? canvas.width : null,
-        canvasHeight: canvas ? canvas.height : null,
-        canvasOffsetWidth: canvas ? canvas.offsetWidth : null,
-        canvasOffsetHeight: canvas ? canvas.offsetHeight : null,
-        popupInstance: signaturePopupInstance
-      });
     };
 
     const getSignaturePopup = () => {
@@ -1354,6 +1460,9 @@
         #rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-state-hover > td.roster-col-idx-${colIndex} {
           background-color: rgba(13, 110, 253, 0.22);
         }
+        #rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-selection > td.roster-col-idx-${colIndex} {
+          background-color: #a3e0c0;
+        }
       `;
     };
 
@@ -1365,10 +1474,19 @@
       styleTag.textContent = '';
     };
 
+    const highlightGatheringColumn = (gatheringId) => {
+      if (!gatheringId || !gridInstanceRef.value) return;
+      const columns = gridInstanceRef.value.option('columns') || [];
+      const col = columns.find(c => c.gatheringMeta && (String(c.gatheringMeta.id) === String(gatheringId)));
+      if (col && col.colIndex !== undefined) {
+        highlightColumn(col.colIndex, col.gatheringMeta);
+      }
+    };
+
     document.addEventListener('click', (e) => {
       if (activeHighlightedIndex === null) return;
       const gridContainer = document.getElementById('rosters-datagrid-container');
-      if (gridContainer && !gridContainer.contains(e.target) && !e.target.closest('.dx-overlay-content')) {
+      if (gridContainer && !gridContainer.contains(e.target) && !e.target.closest('.dx-overlay-content') && !e.target.closest('.add-attendee') && !e.target.closest('a.add-attendee')) {
         clearColumnHighlight();
       }
     });
@@ -1429,7 +1547,7 @@
       let warningHtml = '';
       if (hasSpecialWarning) {
         const specialAm = (data.attendingmeets || []).find(am => am && am.infos && am.infos.special && am.infos.special.check_in);
-        const warningMsg = (specialAm && specialAm.infos && specialAm.infos.special && specialAm.infos.special.check_in) || '⚠無監護人/護送者資料';
+        const warningMsg = (specialAm && specialAm.infos && specialAm.infos.special && specialAm.infos.special.check_in) || '⚠Missing companion info';
         warningHtml = `<span class="text-danger fw-bold me-1" title="${warningMsg}" style="font-size: 1.1em; cursor: help;">⚠</span>`;
       }
 
@@ -1893,128 +2011,149 @@
       }
     };
 
-    const loadData = async () => {
-      if (!filterData.meets || !filterData.meets.length) {
+    const loadData = (targetAttendeeId, targetGatheringId) => {
+      return new Promise(async (resolve) => {
+        if (!filterData.meets || !filterData.meets.length) {
+          if (gridInstanceRef.value) {
+            gridInstanceRef.value.option('dataSource', []);
+          }
+          resolve();
+          return; 
+        }
+
         if (gridInstanceRef.value) {
-          gridInstanceRef.value.option('dataSource', []);
-        }
-        return; 
-      }
-
-      if (gridInstanceRef.value) {
-        try {
-          if (typeof gridInstanceRef.value.beginCustomLoading === 'function') {
-            gridInstanceRef.value.beginCustomLoading();
-          }
-
-          const savedGridState = JSON.parse(window.sessionStorage.getItem(Attendees.utilities.datagridStorageKeys['rostersListView']) || '{}');
-          const currentTake = (savedGridState && typeof savedGridState.pageSize === 'number') 
-            ? savedGridState.pageSize 
-            : (gridInstanceRef.value && typeof gridInstanceRef.value.pageSize === 'function' ? gridInstanceRef.value.pageSize() : 40);
-
-          const queryParams = new URLSearchParams();
-          filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
-          
-          if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
-          if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
-
-          queryParams.set('skip', 0);
-          queryParams.set('take', currentTake || 40);
-
-          const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
-          if (!response.ok) throw new Error('Network response was not ok');
-          
-          const initialData = await response.json();
-          let preloadedData = initialData;
-
-          const customStore = new DevExpress.data.CustomStore({
-            key: 'attendee_id',
-            load: async (loadOptions) => {
-              try {
-                // If initial load with skip=0 and no custom sort/search/filter/group, consume preloaded data
-                const isInitialOptions = (!loadOptions.skip || loadOptions.skip === 0) 
-                  && !loadOptions.sort 
-                  && !loadOptions.searchValue 
-                  && !loadOptions.filter
-                  && (!loadOptions.group || loadOptions.group.length === 0);
-
-                if (preloadedData && isInitialOptions) {
-                  const cached = preloadedData;
-                  preloadedData = null;
-                  const rows = cached.data || cached.rows || [];
-                  const takeCount = loadOptions.take || currentTake || 40;
-                  return {
-                    data: (takeCount && rows.length > takeCount) ? rows.slice(0, takeCount) : rows,
-                    totalCount: cached.totalCount
-                  };
-                }
-
-                const pageParams = new URLSearchParams();
-                filterData.meets.forEach(meet => pageParams.append('meets[]', meet));
-                
-                if (filterData.startDate) pageParams.set('start', filterData.startDate.toISOString());
-                if (filterData.endDate) pageParams.set('finish', filterData.endDate.toISOString());
-
-                pageParams.set('skip', loadOptions.skip || 0);
-                pageParams.set('take', loadOptions.take || currentTake || 40);
-
-                if (loadOptions.sort) {
-                  pageParams.set('sort', JSON.stringify(loadOptions.sort));
-                }
-
-                if (loadOptions.group) {
-                  const adjustedGroup = loadOptions.group.map(g => ({ ...g, isExpanded: true }));
-                  pageParams.set('group', JSON.stringify(adjustedGroup));
-                }
-
-                if (loadOptions.searchValue) {
-                  pageParams.set('searchValue', loadOptions.searchValue);
-                } else if (loadOptions.filter) {
-                  pageParams.set('filter', JSON.stringify(loadOptions.filter));
-                }
-
-                const pageResponse = await fetch(`${endpoints.rosters}?${pageParams.toString()}`);
-                if (!pageResponse.ok) throw new Error('Network response was not ok');
-                
-                const pageData = await pageResponse.json();
-                
-                return {
-                  data: pageData.data || pageData.rows,
-                  totalCount: pageData.totalCount
-                };
-
-              } catch (error) {
-                DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
-                console.error(error);
-                throw error; 
-              }
+          try {
+            if (typeof gridInstanceRef.value.beginCustomLoading === 'function') {
+              gridInstanceRef.value.beginCustomLoading();
             }
-          });
 
-          gridInstanceRef.value.beginUpdate();
-          gatheringsRegistry.clear();
-          updateGridColumns(initialData.columns, initialData.data || initialData.rows || []);
-          const curTeamWidth = gridInstanceRef.value.columnOption('team__display_name', 'width');
-          if (curTeamWidth && curTeamWidth > 100) {
-            gridInstanceRef.value.columnOption('team__display_name', 'width', 80);
-          }
-          gridInstanceRef.value.option('dataSource', customStore);
-          gridInstanceRef.value.endUpdate();
+            const savedGridState = JSON.parse(window.sessionStorage.getItem(Attendees.utilities.datagridStorageKeys['rostersListView']) || '{}');
+            const currentTake = (savedGridState && typeof savedGridState.pageSize === 'number') 
+              ? savedGridState.pageSize 
+              : (gridInstanceRef.value && typeof gridInstanceRef.value.pageSize === 'function' ? gridInstanceRef.value.pageSize() : 40);
 
-          const targetPageIndex = (savedGridState && typeof savedGridState.pageIndex === 'number') ? savedGridState.pageIndex : null;
-          if (targetPageIndex !== null && targetPageIndex > 0 && gridInstanceRef.value.pageIndex() !== targetPageIndex) {
-            gridInstanceRef.value.pageIndex(targetPageIndex);
-          }
+            const queryParams = new URLSearchParams();
+            filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
+            
+            if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
+            if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
 
-        } catch (error) {
-          DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
-          console.error(error);
-        } finally {
-          if (typeof gridInstanceRef.value.endCustomLoading === 'function') {
-            gridInstanceRef.value.endCustomLoading();
+            queryParams.set('skip', 0);
+            queryParams.set('take', currentTake || 40);
+
+            const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const initialData = await response.json();
+            let preloadedData = initialData;
+
+            const customStore = new DevExpress.data.CustomStore({
+              key: 'attendee_id',
+              load: async (loadOptions) => {
+                try {
+                  // If initial load with skip=0 and no custom sort/search/filter/group, consume preloaded data
+                  const isInitialOptions = (!loadOptions.skip || loadOptions.skip === 0) 
+                    && !loadOptions.sort 
+                    && !loadOptions.searchValue 
+                    && !loadOptions.filter
+                    && (!loadOptions.group || loadOptions.group.length === 0);
+
+                  if (preloadedData && isInitialOptions) {
+                    const cached = preloadedData;
+                    preloadedData = null;
+                    const rows = cached.data || cached.rows || [];
+                    const takeCount = loadOptions.take || currentTake || 40;
+                    return {
+                      data: (takeCount && rows.length > takeCount) ? rows.slice(0, takeCount) : rows,
+                      totalCount: cached.totalCount
+                    };
+                  }
+
+                  const pageParams = new URLSearchParams();
+                  filterData.meets.forEach(meet => pageParams.append('meets[]', meet));
+                  
+                  if (filterData.startDate) pageParams.set('start', filterData.startDate.toISOString());
+                  if (filterData.endDate) pageParams.set('finish', filterData.endDate.toISOString());
+
+                  pageParams.set('skip', loadOptions.skip || 0);
+                  pageParams.set('take', loadOptions.take || currentTake || 40);
+
+                  if (loadOptions.sort) {
+                    pageParams.set('sort', JSON.stringify(loadOptions.sort));
+                  }
+
+                  if (loadOptions.group) {
+                    const adjustedGroup = loadOptions.group.map(g => ({ ...g, isExpanded: true }));
+                    pageParams.set('group', JSON.stringify(adjustedGroup));
+                  }
+
+                  if (loadOptions.searchValue) {
+                    pageParams.set('searchValue', loadOptions.searchValue);
+                  } else if (loadOptions.filter) {
+                    pageParams.set('filter', JSON.stringify(loadOptions.filter));
+                  }
+
+                  const pageResponse = await fetch(`${endpoints.rosters}?${pageParams.toString()}`);
+                  if (!pageResponse.ok) throw new Error('Network response was not ok');
+                  
+                  const pageData = await pageResponse.json();
+                  
+                  return {
+                    data: pageData.data || pageData.rows,
+                    totalCount: pageData.totalCount
+                  };
+
+                } catch (error) {
+                  DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
+                  console.error(error);
+                  throw error; 
+                }
+              }
+            });
+
+            const onContentReady = () => {
+              gridInstanceRef.value.off('contentReady', onContentReady);
+              if (targetAttendeeId) {
+                gridInstanceRef.value.selectRows([targetAttendeeId], false);
+                if (typeof gridInstanceRef.value.navigateToRow === 'function') {
+                  gridInstanceRef.value.navigateToRow(targetAttendeeId);
+                }
+              }
+              if (targetGatheringId) {
+                highlightGatheringColumn(targetGatheringId);
+              }
+              resolve();
+            };
+            gridInstanceRef.value.on('contentReady', onContentReady);
+
+            gridInstanceRef.value.beginUpdate();
+            gatheringsRegistry.clear();
+            updateGridColumns(initialData.columns, initialData.data || initialData.rows || []);
+            const curTeamWidth = gridInstanceRef.value.columnOption('team__display_name', 'width');
+            if (curTeamWidth && curTeamWidth > 100) {
+              gridInstanceRef.value.columnOption('team__display_name', 'width', 80);
+            }
+            gridInstanceRef.value.option('dataSource', customStore);
+            gridInstanceRef.value.endUpdate();
+
+            const targetPageIndex = (savedGridState && typeof savedGridState.pageIndex === 'number') ? savedGridState.pageIndex : null;
+            if (targetPageIndex !== null && targetPageIndex > 0 && gridInstanceRef.value.pageIndex() !== targetPageIndex) {
+              gridInstanceRef.value.pageIndex(targetPageIndex);
+            }
+
+          } catch (error) {
+            DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
+            console.error(error);
+            resolve();
+          } finally {
+            if (typeof gridInstanceRef.value.endCustomLoading === 'function') {
+              gridInstanceRef.value.endCustomLoading();
+            }
           }
+        } else {
+          resolve();
         }
-      }
+      });
     };
 
     const initDataGrid = (dataGridEl) => {
@@ -2245,7 +2384,8 @@
       initDataGrid,
       loadData,
       getHighlightedGathering: () => activeHighlightedIndex !== null ? lastHighlightedGathering : null,
-      clearColumnHighlight
+      clearColumnHighlight,
+      highlightGatheringColumn
     };
   }
 
@@ -2257,8 +2397,8 @@
     const storageOptsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
 
     const resetFilters = () => {
-      const defaultStart = new Date(new Date().setMonth(new Date().getMonth() - 3));
-      const defaultEnd = new Date(new Date().setMonth(new Date().getMonth() + 1));
+      const defaultStart = new Date(new Date().setMonth(new Date().getMonth() - 1));
+      const defaultEnd = new Date(new Date().setMonth(new Date().getMonth() + 3));
       filterData.meets = [];
       filterData.startDate = defaultStart;
       filterData.endDate = defaultEnd;
@@ -2474,7 +2614,7 @@
   // ==========================================================
   // 6. Add Attendee / Fast Onboarding Logic
   // ==========================================================
-  function useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering) {
+  function useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering, highlightGatheringColumn) {
     let popupInstance = null;
     let selectedMeetSlug = '';
     let selectedGatheringId = null;
@@ -2507,8 +2647,9 @@
     const getUpcomingOrOngoingGathering = (gatherings) => {
       if (!gatherings || gatherings.length === 0) return null;
       const now = Date.now();
+      const thirtyMinutes = 30 * 60 * 1000;
 
-      // 1. Check for ongoing gathering: start <= now <= (finish || start + 2 hours)
+      // 1. Ongoing gathering: start <= now <= (finish || start + 2 hours)
       const ongoing = gatherings.find(g => {
         const s = new Date(g.start).getTime();
         if (isNaN(s)) return false;
@@ -2520,31 +2661,32 @@
       });
       if (ongoing) return ongoing;
 
-      // 2. Look for the next upcoming gathering in the future:
+      // 2. Gathering starting within 30 minutes: now < start <= now + 30 minutes
+      const within30Mins = gatherings
+        .filter(g => {
+          const s = new Date(g.start).getTime();
+          return !isNaN(s) && s > now && s <= (now + thirtyMinutes);
+        })
+        .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+      if (within30Mins.length > 0) return within30Mins[0];
+
+      // 3. Earliest upcoming gathering in the future: start > now
       const upcomingList = gatherings
         .filter(g => {
           const s = new Date(g.start).getTime();
-          let f = g.finish ? new Date(g.finish).getTime() : NaN;
-          if (!isNaN(f) && f >= now) return true;
-          return !isNaN(s) && s >= now;
+          return !isNaN(s) && s > now;
         })
         .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+      if (upcomingList.length > 0) return upcomingList[0];
 
-      if (upcomingList.length > 0) {
-        return upcomingList[0]; // Earliest upcoming gathering
-      }
-
-      // 3. Fallback: If all gatherings are in the past, pick the most recent past one (latest start)
+      // 4. Fallback: most recent past gathering (latest start <= now)
       const pastList = gatherings
         .filter(g => {
           const s = new Date(g.start).getTime();
-          return !isNaN(s) && s < now;
+          return !isNaN(s) && s <= now;
         })
         .sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
-
-      if (pastList.length > 0) {
-        return pastList[0]; // Most recent past gathering
-      }
+      if (pastList.length > 0) return pastList[0];
 
       return gatherings[0];
     };
@@ -2578,14 +2720,17 @@
       return { meet, isKidMeet, showInsurer };
     };
 
-    const renderPopupContent = (container) => {
+    const renderPopupContent = async (container) => {
       const { meet, isKidMeet, showInsurer } = getMeetSettings();
       const meetDisplayName = meet ? (meet.display_name || meet.name || selectedMeetSlug) : (selectedMeetSlug || 'Selected Meet');
-      const meetGatherings = meet ? getGatheringsForMeet(meet.id) : [];
+      const meetGatherings = await loadMeetGatherings(selectedMeetSlug, meet ? meet.id : null, endpoints.gatherings);
 
-      if (!selectedGatheringId || !meetGatherings.some(g => String(g.id) === String(selectedGatheringId))) {
+      const highlighted = (typeof getHighlightedGathering === 'function') ? getHighlightedGathering() : null;
+      if (highlighted && highlighted.id && meetGatherings.some(g => String(g.id) === String(highlighted.id))) {
+        selectedGatheringId = highlighted.id;
+      } else if (!selectedGatheringId || !meetGatherings.some(g => String(g.id) === String(selectedGatheringId) || String(g.start ? `start_${g.start}` : '') === String(selectedGatheringId))) {
         const upcoming = getUpcomingOrOngoingGathering(meetGatherings);
-        selectedGatheringId = upcoming ? upcoming.id : (meetGatherings.length > 0 ? meetGatherings[0].id : null);
+        selectedGatheringId = upcoming ? (upcoming.id || (upcoming.start ? `start_${upcoming.start}` : null)) : (meetGatherings.length > 0 ? (meetGatherings[0].id || (meetGatherings[0].start ? `start_${meetGatherings[0].start}` : null)) : null);
       }
 
       container.innerHTML = '';
@@ -2626,40 +2771,195 @@
       const gatheringSelectEl = rootDiv.querySelector('.target-gathering-dropdown');
       if (gatheringSelectEl) {
         gatheringSelectEl.innerHTML = meetGatherings.length > 0
-          ? meetGatherings.map(g => `<option value="${g.id}" ${String(g.id) === String(selectedGatheringId) ? 'selected' : ''}>${escapeHtml(formatGatheringOption(g))}</option>`).join('')
+          ? meetGatherings.map(g => {
+              const val = g.id ? String(g.id) : (g.start ? `start_${g.start}` : '');
+              const isSelected = String(val) === String(selectedGatheringId) || String(g.id) === String(selectedGatheringId);
+              return `<option value="${val}" ${isSelected ? 'selected' : ''}>${escapeHtml(formatGatheringOption(g))}</option>`;
+            }).join('')
           : '<option value="">(No gatherings available)</option>';
       }
 
       // 3. School Grade dropdown options
       const gradeSelectEl = rootDiv.querySelector('.ob-grade');
-      if (gradeSelectEl && gradeConverter && gradeConverter.length > 0) {
-        gradeConverter.forEach(g => {
-          const opt = document.createElement('option');
-          opt.value = g.id;
-          opt.textContent = g.label;
-          gradeSelectEl.appendChild(opt);
-        });
-      }
-
-      // 4. Guardian Division dropdown options
-      const divSelectEl = rootDiv.querySelector('.ob-p-division');
-      if (divSelectEl && organizationDivisions) {
-        if (organizationDivisions.length > 1) {
-          const placeholderOpt = document.createElement('option');
-          placeholderOpt.value = '';
-          placeholderOpt.textContent = 'Select Division';
-          divSelectEl.appendChild(placeholderOpt);
+      if (gradeSelectEl) {
+        if (!gradeConverter || gradeConverter.length === 0) loadGradeConverter();
+        if (gradeConverter && gradeConverter.length > 0) {
+          gradeSelectEl.innerHTML = '<option value="">Select Grade</option>';
+          gradeConverter.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = g.label;
+            gradeSelectEl.appendChild(opt);
+          });
         }
-        organizationDivisions.forEach(d => {
-          const opt = document.createElement('option');
-          opt.value = d.id;
-          opt.textContent = d.display_name;
-          if (organizationDivisions.length === 1) opt.selected = true;
-          divSelectEl.appendChild(opt);
+      }
+
+      // Helpers for populating Division and Relationship dropdowns
+      const populateDivisionSelect = (selectEl) => {
+        if (!selectEl) return;
+        const doPopulate = (divisions) => {
+          if (!divisions || divisions.length === 0) return;
+          selectEl.innerHTML = '';
+          if (divisions.length > 1) {
+            const placeholderOpt = document.createElement('option');
+            placeholderOpt.value = '';
+            placeholderOpt.textContent = 'Select Division';
+            selectEl.appendChild(placeholderOpt);
+          }
+          divisions.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.display_name;
+            if (divisions.length === 1) opt.selected = true;
+            selectEl.appendChild(opt);
+          });
+        };
+        if (organizationDivisions.length > 0) {
+          doPopulate(organizationDivisions);
+        } else {
+          loadOrganizationDivisions(endpoints.divisions).then(doPopulate);
+        }
+      };
+
+      const populateRelationSelect = (selectEl, defaultSelected) => {
+        if (!selectEl) return;
+        const doPopulate = (relations) => {
+          if (!relations || relations.length === 0) return;
+          selectEl.innerHTML = '';
+          relations.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.id;
+            const title = (r.title || '').trim();
+            opt.textContent = title ? title.charAt(0).toUpperCase() + title.slice(1) : `Relation #${r.id}`;
+            if (title.toLowerCase() === (defaultSelected || 'parent').toLowerCase()) opt.selected = true;
+            selectEl.appendChild(opt);
+          });
+          if (!selectEl.value && selectEl.options.length > 0) selectEl.selectedIndex = 0;
+        };
+        if (allFamilyRelations.length > 0) {
+          doPopulate(allFamilyRelations);
+        } else {
+          loadFamilyRelations(endpoints.relations).then(doPopulate);
+        }
+      };
+
+      // 4. Companion Section DOM Elements & Initial Setup
+      const guardianSection = rootDiv.querySelector('.guardian-section');
+      const unaccompaniedContainer = rootDiv.querySelector('.unaccompanied-minor-container');
+      const comp1Block = rootDiv.querySelector('.companion-block-1');
+      const removeComp1Btn = rootDiv.querySelector('.remove-companion-1-btn');
+      const moreCompanionsBtn = rootDiv.querySelector('.more-companions-btn');
+      const addCompanionsContainer = rootDiv.querySelector('.additional-companions-container');
+      const compTemplate = document.getElementById('companion-block-template');
+
+      // Companion 1 Division & Relationship dropdowns
+      const divSelectEl = rootDiv.querySelector('.companion-block-1 .ob-p-division');
+      populateDivisionSelect(divSelectEl);
+
+      const relSelectEl = rootDiv.querySelector('.companion-block-1 .ob-p-relationship');
+      populateRelationSelect(relSelectEl, isKidMeet ? 'parent' : 'spouse');
+
+      // 4b. Dynamic Companion labeling function
+      const updateCompanionLabels = () => {
+        const visibleBlocks = Array.from(rootDiv.querySelectorAll('.companion-block')).filter(b => b.style.display !== 'none');
+        visibleBlocks.forEach((block, idx) => {
+          const curIndex = idx + 1;
+          const headerLabel = block.querySelector('.companion-label, .companion-1-label');
+          if (headerLabel) headerLabel.innerHTML = `<i class="fas fa-user me-1"></i> Companion ${curIndex}`;
+
+          const divLabel = block.querySelector('.comp-division-label');
+          if (divLabel) divLabel.innerHTML = `Companion ${curIndex} Division <span class="text-danger">*</span>`;
+
+          const relLabel = block.querySelector('.comp-relationship-label');
+          if (relLabel) relLabel.textContent = `Companion ${curIndex} Relationship`;
+
+          const fnLabel = block.querySelector('.comp-firstname-label');
+          if (fnLabel) fnLabel.textContent = `Companion ${curIndex} First Name (English)`;
+
+          const lnLabel = block.querySelector('.comp-lastname-label');
+          if (lnLabel) lnLabel.textContent = `Companion ${curIndex} Last Name (English)`;
+
+          const ln2Label = block.querySelector('.comp-lastname2-label');
+          if (ln2Label) ln2Label.textContent = `Companion ${curIndex} Last Name 2 (Other language)`;
+
+          const fn2Label = block.querySelector('.comp-firstname2-label');
+          if (fn2Label) fn2Label.textContent = `Companion ${curIndex} First Name 2 (Other language)`;
+
+          const ctLabel = block.querySelector('.comp-contacttype-label');
+          if (ctLabel) ctLabel.textContent = `Companion ${curIndex} Contact Type`;
+
+          const cvLabel = block.querySelector('.comp-contactval-label');
+          if (cvLabel) cvLabel.innerHTML = `Companion ${curIndex} Contact Number / Account <span class="text-danger">*</span>`;
+        });
+
+        if (!isKidMeet && visibleBlocks.length === 0) {
+          if (guardianSection) guardianSection.style.display = 'none';
+        }
+      };
+
+      // 4c. Remove Companion 1 (enabled for adult meet)
+      if (removeComp1Btn) {
+        removeComp1Btn.addEventListener('click', () => {
+          const firstExtra = addCompanionsContainer ? addCompanionsContainer.querySelector('.companion-block') : null;
+          if (firstExtra) {
+            comp1Block.querySelector('.ob-p-division').value = firstExtra.querySelector('.ob-p-division').value;
+            comp1Block.querySelector('.ob-p-relationship').value = firstExtra.querySelector('.ob-p-relationship').value;
+            comp1Block.querySelector('.ob-p-first-name').value = firstExtra.querySelector('.ob-p-first-name').value;
+            comp1Block.querySelector('.ob-p-last-name').value = firstExtra.querySelector('.ob-p-last-name').value;
+            comp1Block.querySelector('.ob-p-first-name2').value = firstExtra.querySelector('.ob-p-first-name2').value;
+            comp1Block.querySelector('.ob-p-last-name2').value = firstExtra.querySelector('.ob-p-last-name2').value;
+            comp1Block.querySelector('.ob-p-contact-type').value = firstExtra.querySelector('.ob-p-contact-type').value;
+            comp1Block.querySelector('.ob-p-contact-value').value = firstExtra.querySelector('.ob-p-contact-value').value;
+            firstExtra.remove();
+          } else {
+            comp1Block.querySelectorAll('input').forEach(inp => { inp.value = ''; });
+            comp1Block.style.display = 'none';
+            if (guardianSection) guardianSection.style.display = 'none';
+          }
+          updateCompanionLabels();
         });
       }
 
-      // 5. Birthday badge & Kid/Insurer section visibility
+      // 4d. More Companions button handler (Companion 1/2/3/4...)
+      if (moreCompanionsBtn && addCompanionsContainer && compTemplate) {
+        moreCompanionsBtn.addEventListener('click', () => {
+          if (guardianSection && guardianSection.style.display === 'none') {
+            guardianSection.style.display = '';
+          }
+
+          if (comp1Block && comp1Block.style.display === 'none') {
+            comp1Block.style.display = '';
+            if (removeComp1Btn && !isKidMeet) removeComp1Btn.classList.remove('d-none');
+            updateCompanionLabels();
+            const fnInp = comp1Block.querySelector('.ob-p-first-name');
+            if (fnInp) fnInp.focus();
+            return;
+          }
+
+          const clone = compTemplate.content.firstElementChild.cloneNode(true);
+          const compDivSelect = clone.querySelector('.ob-p-division');
+          populateDivisionSelect(compDivSelect);
+
+          const compRelSelect = clone.querySelector('.ob-p-relationship');
+          populateRelationSelect(compRelSelect, isKidMeet ? 'parent' : 'spouse');
+
+          const removeBtn = clone.querySelector('.remove-companion-btn');
+          if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+              clone.remove();
+              updateCompanionLabels();
+            });
+          }
+
+          addCompanionsContainer.appendChild(clone);
+          updateCompanionLabels();
+
+          const newFnInput = clone.querySelector('.ob-p-first-name');
+          if (newFnInput) newFnInput.focus();
+        });
+      }
+
+      // 5. Birthday badge & Kid/Insurer/Companion section visibility
       const birthdayBadge = rootDiv.querySelector('.ob-birthday-badge');
       if (birthdayBadge) {
         birthdayBadge.className = isKidMeet ? 'text-danger' : 'text-muted';
@@ -2671,9 +2971,23 @@
         kidFields.style.display = isKidMeet ? '' : 'none';
       }
 
-      const guardianSection = rootDiv.querySelector('.guardian-section');
+      if (unaccompaniedContainer) {
+        unaccompaniedContainer.style.display = isKidMeet ? '' : 'none';
+      }
+
       if (guardianSection) {
         guardianSection.style.display = isKidMeet ? '' : 'none';
+      }
+
+      if (comp1Block) {
+        comp1Block.style.display = isKidMeet ? '' : 'none';
+        if (removeComp1Btn) {
+          if (!isKidMeet) {
+            removeComp1Btn.classList.remove('d-none');
+          } else {
+            removeComp1Btn.classList.add('d-none');
+          }
+        }
       }
 
       const insurerGroup = rootDiv.querySelector('.insurer-field-group');
@@ -2690,19 +3004,19 @@
       // A. Target Meet & Gathering dropdowns
       const meetSelectEl = rootDiv.querySelector('.target-meet-dropdown');
       if (meetSelectEl) {
-        meetSelectEl.addEventListener('change', (e) => {
+        meetSelectEl.addEventListener('change', async (e) => {
           selectedMeetSlug = e.target.value;
           const newMeet = getSelectedMeet();
-          const newGatherings = newMeet ? getGatheringsForMeet(newMeet.id) : [];
+          const newGatherings = await loadMeetGatherings(selectedMeetSlug, newMeet ? newMeet.id : null, endpoints.gatherings);
           const upcoming = getUpcomingOrOngoingGathering(newGatherings);
-          selectedGatheringId = upcoming ? upcoming.id : (newGatherings.length > 0 ? newGatherings[0].id : null);
+          selectedGatheringId = upcoming ? (upcoming.id || (upcoming.start ? `start_${upcoming.start}` : null)) : (newGatherings.length > 0 ? (newGatherings[0].id || `start_${newGatherings[0].start}`) : null);
           renderPopupContent(container);
         });
       }
 
       if (gatheringSelectEl) {
         gatheringSelectEl.addEventListener('change', (e) => {
-          selectedGatheringId = e.target.value ? parseInt(e.target.value, 10) : null;
+          selectedGatheringId = e.target.value || null;
         });
       }
 
@@ -3012,7 +3326,7 @@
 
         DevExpress.ui.notify(`Enrolled and checked in ${cand.name} successfully!`, 'success', 2500);
         if (popupInstance) popupInstance.hide();
-        await loadData();
+        await loadData(cand.id, attPayload.gathering);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 3000);
       } finally {
@@ -3048,9 +3362,9 @@
 
       const isUnaccompanied = isKidMeet && rootDiv.querySelector('.ob-unaccompanied').checked;
 
-      // Validation
-      if (!firstName || !lastName) {
-        DevExpress.ui.notify('First Name and Last Name are required.', 'warning', 3000);
+      // Validation: at least one name (English or other language) is required
+      if (!firstName && !lastName && !firstName2 && !lastName2) {
+        DevExpress.ui.notify('At least one name (English or other language) is required.', 'warning', 3000);
         return;
       }
 
@@ -3069,49 +3383,140 @@
         }
       }
 
-      let parentData = null;
-      if (isKidMeet && !isUnaccompanied) {
-        const pDivisionEl = rootDiv.querySelector('.ob-p-division');
-        const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
-        if (organizationDivisions.length > 0 && !pDivisionVal) {
-          DevExpress.ui.notify('Please select a division for the guardian.', 'warning', 3000);
-          return;
+      let companionsList = [];
+      const guardianSectionEl = rootDiv.querySelector('.guardian-section');
+      const isGuardianSectionVisible = guardianSectionEl && guardianSectionEl.style.display !== 'none';
+
+      // Find all visible companion blocks
+      const allCompBlocks = Array.from(rootDiv.querySelectorAll('.companion-block'));
+      const visibleCompBlocks = isGuardianSectionVisible
+        ? allCompBlocks.filter(b => b.style.display !== 'none')
+        : [];
+
+      if (isKidMeet) {
+        if (!isUnaccompanied) {
+          if (visibleCompBlocks.length === 0) {
+            DevExpress.ui.notify('Companion information is required for kids unless "Child arrived alone" is checked.', 'warning', 3000);
+            return;
+          }
+          for (let i = 0; i < visibleCompBlocks.length; i++) {
+            const block = visibleCompBlocks[i];
+            const compNum = i + 1;
+            const pDivisionEl = block.querySelector('.ob-p-division');
+            const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
+            const pRelEl = block.querySelector('.ob-p-relationship');
+            const pRelVal = pRelEl ? pRelEl.value : 'parent';
+
+            const pFirst = (block.querySelector('.ob-p-first-name')?.value || '').trim();
+            const pLast = (block.querySelector('.ob-p-last-name')?.value || '').trim();
+            const pFirst2 = (block.querySelector('.ob-p-first-name2')?.value || '').trim();
+            const pLast2 = (block.querySelector('.ob-p-last-name2')?.value || '').trim();
+
+            const pContactTypeEl = block.querySelector('.ob-p-contact-type');
+            const pContactType = pContactTypeEl ? pContactTypeEl.value : 'phone';
+            const pContactVal = (block.querySelector('.ob-p-contact-value')?.value || '').trim();
+
+            const hasAnyName = Boolean(pFirst || pLast || pFirst2 || pLast2);
+
+            if (compNum === 1) {
+              if (organizationDivisions.length > 0 && !pDivisionVal) {
+                DevExpress.ui.notify('Please select a division for Companion 1.', 'warning', 3000);
+                return;
+              }
+              if (!hasAnyName || !pContactVal) {
+                DevExpress.ui.notify('Companion 1 name and contact information are required.', 'warning', 3000);
+                return;
+              }
+            } else {
+              if (!hasAnyName && !pContactVal) {
+                DevExpress.ui.notify(`Companion ${compNum} name and contact information are required (or remove it).`, 'warning', 3000);
+                return;
+              }
+              if (organizationDivisions.length > 0 && !pDivisionVal) {
+                DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', 3000);
+                return;
+              }
+              if (!hasAnyName || !pContactVal) {
+                DevExpress.ui.notify(`Companion ${compNum} name and contact information are required.`, 'warning', 3000);
+                return;
+              }
+            }
+
+            companionsList.push({
+              first_name: pFirst || null,
+              last_name: pLast || null,
+              first_name2: pFirst2 || null,
+              last_name2: pLast2 || null,
+              division_id: pDivisionVal ? parseInt(pDivisionVal, 10) : null,
+              relationship: pRelVal ? (parseInt(pRelVal, 10) || pRelVal) : 'parent',
+              contact_type: pContactType,
+              contact_value: pContactVal || null,
+              phone: pContactType === 'phone' ? pContactVal : null,
+              email: pContactType === 'email' ? pContactVal : null
+            });
+          }
         }
+      } else {
+        // Adult meet: companions are optional, but if any companion blocks are visible, validate them
+        if (visibleCompBlocks.length > 0) {
+          for (let i = 0; i < visibleCompBlocks.length; i++) {
+            const block = visibleCompBlocks[i];
+            const compNum = i + 1;
+            const pDivisionEl = block.querySelector('.ob-p-division');
+            const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
+            const pRelEl = block.querySelector('.ob-p-relationship');
+            const pRelVal = pRelEl ? pRelEl.value : 'spouse';
 
-        const pFirst = (rootDiv.querySelector('.ob-p-first-name').value || '').trim();
-        const pLast = (rootDiv.querySelector('.ob-p-last-name').value || '').trim();
-        const pFirst2 = (rootDiv.querySelector('.ob-p-first-name2').value || '').trim();
-        const pLast2 = (rootDiv.querySelector('.ob-p-last-name2').value || '').trim();
-        const pPhone = (rootDiv.querySelector('.ob-p-phone').value || '').trim();
-        const pEmail = (rootDiv.querySelector('.ob-p-email').value || '').trim();
-        const pRel = rootDiv.querySelector('.ob-p-relationship').value;
+            const pFirst = (block.querySelector('.ob-p-first-name')?.value || '').trim();
+            const pLast = (block.querySelector('.ob-p-last-name')?.value || '').trim();
+            const pFirst2 = (block.querySelector('.ob-p-first-name2')?.value || '').trim();
+            const pLast2 = (block.querySelector('.ob-p-last-name2')?.value || '').trim();
 
-        if (!pFirst || !pLast || !pPhone) {
-          DevExpress.ui.notify('Guardian First Name, Last Name, and Phone are required.', 'warning', 3000);
-          return;
+            const pContactTypeEl = block.querySelector('.ob-p-contact-type');
+            const pContactType = pContactTypeEl ? pContactTypeEl.value : 'phone';
+            const pContactVal = (block.querySelector('.ob-p-contact-value')?.value || '').trim();
+
+            const hasAnyName = Boolean(pFirst || pLast || pFirst2 || pLast2);
+
+            if (!hasAnyName && !pContactVal) {
+              DevExpress.ui.notify(`Companion ${compNum} name and contact information are required (or remove it).`, 'warning', 3000);
+              return;
+            }
+            if (organizationDivisions.length > 0 && !pDivisionVal) {
+              DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', 3000);
+              return;
+            }
+            if (!hasAnyName || !pContactVal) {
+              DevExpress.ui.notify(`Companion ${compNum} name and contact information are required.`, 'warning', 3000);
+              return;
+            }
+
+            companionsList.push({
+              first_name: pFirst || null,
+              last_name: pLast || null,
+              first_name2: pFirst2 || null,
+              last_name2: pLast2 || null,
+              division_id: pDivisionVal ? parseInt(pDivisionVal, 10) : null,
+              relationship: pRelVal ? (parseInt(pRelVal, 10) || pRelVal) : 'spouse',
+              contact_type: pContactType,
+              contact_value: pContactVal || null,
+              phone: pContactType === 'phone' ? pContactVal : null,
+              email: pContactType === 'email' ? pContactVal : null
+            });
+          }
         }
-
-        parentData = {
-          first_name: pFirst,
-          last_name: pLast,
-          first_name2: pFirst2 || null,
-          last_name2: pLast2 || null,
-          division_id: pDivisionVal ? parseInt(pDivisionVal, 10) : null,
-          phone: pPhone,
-          email: pEmail || null,
-          relationship: pRel || 'parent'
-        };
       }
 
-      const gatheringId = selectedGatheringId || null;
+      const gatheringSelect = rootDiv.querySelector('.target-gathering-dropdown');
+      const gatheringId = gatheringSelect ? (gatheringSelect.value || selectedGatheringId || null) : (selectedGatheringId || null);
 
       const payload = {
         meet_slug: meet.slug,
         gathering_id: gatheringId,
         unaccompanied: isUnaccompanied,
         kid_data: {
-          first_name: firstName,
-          last_name: lastName,
+          first_name: firstName || null,
+          last_name: lastName || null,
           first_name2: firstName2 || null,
           last_name2: lastName2 || null,
           gender: gender,
@@ -3124,7 +3529,8 @@
           food_pref: foodPref || null,
           insurer: insurer || null
         },
-        parent_data: parentData
+        parent_data: companionsList.length > 0 ? companionsList[0] : null,
+        companions: companionsList
       };
 
       submitBtn.disabled = true;
@@ -3153,7 +3559,7 @@
         const result = await response.json();
         DevExpress.ui.notify(`Registered ${result.attendee_name} and checked in successfully!`, 'success', 3000);
         if (popupInstance) popupInstance.hide();
-        await loadData();
+        await loadData(result.attendee_id, result.gathering_id || gatheringId);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', 4000);
       } finally {
@@ -3171,7 +3577,7 @@
 
       const isMobile = window.innerWidth < 768;
       popupInstance = new DevExpress.ui.dxPopup(popupEl, {
-        title: 'Add Attendee to Rosters, Welcome!',
+        title: "Add Attendee to Rosters, Welcome! Let's search first.",
         showCloseButton: true,
         dragEnabled: !isMobile,
         wrapperAttr: {
@@ -3181,6 +3587,16 @@
           if (window.Attendees && window.Attendees.utilities) {
             window.Attendees.utilities.editingEnabled = true;
           }
+        },
+        onShown: () => {
+          setTimeout(() => {
+            const content = popupInstance.content ? popupInstance.content()[0] : document.getElementById('add-attendee-popup');
+            const searchInput = content ? content.querySelector('.omni-search-box') : null;
+            if (searchInput) {
+              searchInput.focus();
+              searchInput.select();
+            }
+          }, 50);
         },
         onHiding: () => {
           if (window.Attendees && window.Attendees.utilities) {
@@ -3226,7 +3642,17 @@
         const contentEl = popupInstance.content ? popupInstance.content()[0] : null;
         if (contentEl) renderPopupContent(contentEl);
       }
-      if (popupInstance) popupInstance.show();
+      if (popupInstance) {
+        popupInstance.show();
+        setTimeout(() => {
+          const content = popupInstance.content ? popupInstance.content()[0] : document.getElementById('add-attendee-popup');
+          const searchInput = content ? content.querySelector('.omni-search-box') : null;
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }, 100);
+      }
     };
 
     return {
@@ -3280,7 +3706,7 @@
       const attendanceLogic = useAttendanceLogic(endpoints, gridInstanceRef);
       const attendingMeetsEditor = useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData);
       const resetFiltersRef = { current: null };
-      const { initDataGrid, loadData, getHighlightedGathering } = useRosterGrid(
+      const { initDataGrid, loadData, getHighlightedGathering, highlightGatheringColumn } = useRosterGrid(
         endpoints, 
         filterData, 
         gridInstanceRef, 
@@ -3292,7 +3718,7 @@
       resetFiltersRef.current = resetFilters;
 
       const { startPolling, stopPolling } = useSmartPolling(gridInstanceRef, filterData);
-      const { initAddAttendeePopup, openAddAttendeePopup } = useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering);
+      const { initAddAttendeePopup, openAddAttendeePopup } = useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering, highlightGatheringColumn);
 
       // Lifecycle
       onMounted(() => {

@@ -202,7 +202,7 @@ def post_save_handler_for_folkattendee_to_clear_unaccompanied_warning(sender, **
         return
 
     folk = instance.folk
-    if not folk or folk.category_id != Attendee.FAMILY_CATEGORY:
+    if not folk or folk.category_id not in (Attendee.FAMILY_CATEGORY, Attendee.NON_FAMILY_CATEGORY):
         return
 
     role = instance.role

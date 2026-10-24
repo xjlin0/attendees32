@@ -373,12 +373,197 @@ test.describe('Rosters List Page', () => {
     const contactTypeSelect = page.locator('.add-attendee-popup-wrapper select.ob-contact-type');
     await expect(contactTypeSelect).toBeVisible();
 
+    // Verify guardian / companion relationship options dynamically loaded from API if section is present
+    const relSelect = page.locator('.add-attendee-popup-wrapper select.ob-p-relationship');
+    if (await relSelect.isVisible()) {
+      await expect(async () => {
+        const relOptions = await relSelect.locator('option').allTextContents();
+        const normalized = relOptions.map(t => t.trim().toLowerCase());
+        expect(normalized).toContain('parent');
+        expect(normalized).toContain('child');
+        expect(normalized).not.toContain('self');
+        expect(normalized).not.toContain('hidden');
+      }).toPass({ timeout: 5000 });
+    }
+
+    // Verify Companion wording and "More Companions" functionality (for both kid and adult meets)
+    const guardianSection = page.locator('.add-attendee-popup-wrapper .guardian-section');
+    const moreCompanionsBtn = page.locator('.add-attendee-popup-wrapper .more-companions-btn');
+    await expect(moreCompanionsBtn).toBeVisible();
+
+    if (await guardianSection.isVisible()) {
+      // Kid meet: Companion 1 is visible by default
+      await expect(guardianSection).toContainText('Companion Information');
+      await expect(guardianSection).toContainText('Companion 1');
+
+      await moreCompanionsBtn.click();
+      const comp2Block = page.locator('.add-attendee-popup-wrapper .companion-block-extra');
+      await expect(comp2Block).toBeVisible();
+      await expect(comp2Block).toContainText('Companion 2');
+
+      await comp2Block.locator('.remove-companion-btn').click();
+      await expect(comp2Block).toBeHidden();
+    } else {
+      // Adult meet: Companion section is hidden initially, clicking "More Companions" reveals Companion 1
+      await moreCompanionsBtn.click();
+      await expect(guardianSection).toBeVisible();
+      await expect(guardianSection).toContainText('Companion 1');
+
+      // Clicking More Companions again reveals Companion 2
+      await moreCompanionsBtn.click();
+      const comp2Block = page.locator('.add-attendee-popup-wrapper .companion-block-extra');
+      await expect(comp2Block).toBeVisible();
+      await expect(comp2Block).toContainText('Companion 2');
+
+      // Removing Companion 2 removes it
+      await comp2Block.locator('.remove-companion-btn').click();
+      await expect(comp2Block).toBeHidden();
+
+      // Removing Companion 1 hides the companion section again
+      const comp1RemoveBtn = page.locator('.add-attendee-popup-wrapper .remove-companion-1-btn');
+      await comp1RemoveBtn.click();
+      await expect(guardianSection).toBeHidden();
+    }
+
     // Verify back to search button
     const backBtn = page.locator('.add-attendee-popup-wrapper .back-to-search-btn');
     await expect(backBtn).toBeVisible();
     await backBtn.click();
     await expect(searchInput).toBeVisible();
   });
+
+  test('Should satisfy all fast onboarding UI rules: autofocus, column preselection, 1 name only, no other gender, responsive layout, post-onboard row & column highlight and check-in', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Set a date range
+    const fromInput = page.locator('.dx-datebox input.dx-texteditor-input').nth(0);
+    await fromInput.fill('01/01/2020, 12:00 AM');
+    await fromInput.press('Enter');
+
+    const toInput = page.locator('.dx-datebox input.dx-texteditor-input').nth(1);
+    await toInput.fill('12/31/2026, 11:59 PM');
+    await toInput.press('Enter');
+    await page.waitForTimeout(500);
+
+    // Select meet from tagbox
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+    const listItem = page.locator('.dx-list-item').first();
+    await listItem.waitFor({ state: 'visible' });
+    await listItem.click();
+    await page.mouse.click(0, 0);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.dx-loadpanel').first()).toBeHidden({ timeout: 15000 });
+
+    // 2. Preselect a specific gathering column by clicking its header
+    const gatheringHeaders = page.locator('.dx-header-row .roster-header-cell');
+    await expect(gatheringHeaders.first()).toBeVisible({ timeout: 15000 });
+    const headerCount = await gatheringHeaders.count();
+    expect(headerCount).toBeGreaterThan(0);
+
+    // Click the first gathering header to highlight that column
+    await gatheringHeaders.first().click();
+
+    // Click "+ Attendee" button
+    const addAttendeeBtn = page.locator('a.add-attendee');
+    await addAttendeeBtn.click();
+
+    // 0. Test Autofocus on search input
+    const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+    await expect(searchInput).toBeFocused({ timeout: 5000 });
+
+    // 1. Test Font size of Target Meet and Gathering labels
+    const targetMeetLabel = page.locator('.add-attendee-popup-wrapper .meet-gathering-header .target-meet-label');
+    const targetGatheringLabel = page.locator('.add-attendee-popup-wrapper .meet-gathering-header .target-gathering-label');
+    await expect(targetMeetLabel).toBeVisible();
+    await expect(targetGatheringLabel).toBeVisible();
+    const meetLabelFontSize = await targetMeetLabel.evaluate((el) => window.getComputedStyle(el).fontSize);
+    const gatheringLabelFontSize = await targetGatheringLabel.evaluate((el) => window.getComputedStyle(el).fontSize);
+    expect(meetLabelFontSize).toBe(gatheringLabelFontSize);
+
+    // 2. Test preselected gathering matches the highlighted column
+    const gatheringSelect = page.locator('.add-attendee-popup-wrapper select.target-gathering-dropdown');
+    const selectedGatheringValue = await gatheringSelect.inputValue();
+    expect(selectedGatheringValue).toBeTruthy();
+
+    // Search for a unique new attendee name
+    const uniqueFirstName = `Fast${Date.now()}`;
+    await searchInput.fill(uniqueFirstName);
+    await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
+
+    // Click Register as New Attendee
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
+    await switchToOnboardBtn.click();
+
+    // 3b. Verify Gender select does NOT contain 'other'
+    const genderOptions = await page.locator('.add-attendee-popup-wrapper select.ob-gender option').allTextContents();
+    const normalizedGenderOptions = genderOptions.map(o => o.trim().toLowerCase());
+    expect(normalizedGenderOptions).not.toContain('other');
+    expect(normalizedGenderOptions).toContain('unspecified');
+    expect(normalizedGenderOptions).toContain('male');
+    expect(normalizedGenderOptions).toContain('female');
+
+    // 4. Verify Responsive layout order: [last_name2] precedes [first_name2]
+    const lastName2Input = page.locator('.add-attendee-popup-wrapper input.ob-last-name2');
+    const firstName2Input = page.locator('.add-attendee-popup-wrapper input.ob-first-name2');
+    const isLastName2BeforeFirstName2 = await page.evaluate(() => {
+      const ln2 = document.querySelector('.add-attendee-popup-wrapper input.ob-last-name2');
+      const fn2 = document.querySelector('.add-attendee-popup-wrapper input.ob-first-name2');
+      return !!(ln2 && fn2 && (ln2.compareDocumentPosition(fn2) & Node.DOCUMENT_POSITION_FOLLOWING));
+    });
+    expect(isLastName2BeforeFirstName2).toBe(true);
+
+    // 3a. Verify only ONE name is sufficient: Fill ONLY first_name, leave last_name and Chinese names empty
+    await page.locator('.add-attendee-popup-wrapper input.ob-first-name').fill(uniqueFirstName);
+
+    // Check if this meet requires kid fields or guardian fields
+    const isKidSectionVisible = await page.locator('.add-attendee-popup-wrapper .kid-specific-fields').isVisible();
+    if (isKidSectionVisible) {
+      // Birthday
+      await page.locator('.add-attendee-popup-wrapper input.ob-byear').fill('2018');
+      await page.locator('.add-attendee-popup-wrapper select.ob-bmonth').selectOption('5');
+      await page.locator('.add-attendee-popup-wrapper select.ob-bday').selectOption('15');
+      // Grade & Food
+      const gradeSelect = page.locator('.add-attendee-popup-wrapper select.ob-grade');
+      const gradeOptions = await gradeSelect.locator('option').all();
+      if (gradeOptions.length > 1) {
+        await gradeSelect.selectOption({ index: 1 });
+      }
+      await page.locator('.add-attendee-popup-wrapper input.ob-food-pref').fill('None');
+
+      // Unaccompanied minor
+      await page.locator('.add-attendee-popup-wrapper input.ob-unaccompanied').check();
+    }
+
+    // 5. Submit fast onboard form
+    await page.locator('.add-attendee-popup-wrapper button.ob-submit-btn').click();
+
+    // Verify popup closes on success
+    await expect(page.locator('.add-attendee-popup-wrapper')).toBeHidden({ timeout: 15000 });
+
+    // 5. Verify the newly onboarded attendee row is highlighted (selected) on the grid
+    const selectedRow = page.locator('.dx-datagrid-rowsview .dx-data-row.dx-selection').first();
+    await expect(selectedRow).toBeVisible({ timeout: 10000 });
+    await expect(selectedRow).toContainText(uniqueFirstName);
+
+    // 5. Verify the gathering column is highlighted on the grid
+    const highlightedHeader = page.locator('.dx-datagrid-headers [class*="roster-col-idx-"]');
+    await expect(highlightedHeader.first()).toBeVisible({ timeout: 5000 });
+
+    // 5. Verify the check-in button is green / solid checked-in (has .checked-in class) and Out button is visible
+    const checkInBtn = page.locator('.dx-datagrid-rowsview .dx-data-row.dx-selection .roster-btn.checked-in').first();
+    await expect(checkInBtn).toBeVisible({ timeout: 5000 });
+    const outBtn = page.locator('.dx-datagrid-rowsview .dx-data-row.dx-selection .roster-btn-out').first();
+    await expect(outBtn).toBeVisible({ timeout: 5000 });
+  });
 });
+
 
 

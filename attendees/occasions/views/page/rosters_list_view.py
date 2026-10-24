@@ -20,6 +20,9 @@ class RostersListView(RouteGuard, ListView):
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
                 "grade_converter": self.request.user.organization.infos.get('grade_converter', []) if (self.request.user and getattr(self.request.user, "organization", None) and isinstance(self.request.user.organization.infos, dict)) else [],
                 "divisions": list(DivisionService.by_organization(self.request.user.organization.slug).values("id", "display_name")) if (self.request.user and getattr(self.request.user, "organization", None)) else [],
+                "divisions_endpoint": "/whereabouts/api/user_divisions/",
+                "gatherings_endpoint": "/occasions/api/organization_team_gatherings/",
+                "attendances_endpoint": "/occasions/api/organization_meet_character_attendances/",
                 "assemblies_endpoint": "/occasions/api/user_assemblies/",
                 "categories_endpoint": "/persons/api/all_categories/",
                 "meets_endpoint_by_slug": "/occasions/api/organization_meets/",
@@ -30,6 +33,7 @@ class RostersListView(RouteGuard, ListView):
                 "teams_endpoint": "/occasions/api/organization_meet_teams/",
                 "search_attendees_endpoint": "/persons/api/search_attendees_for_roster/",
                 "fast_onboard_endpoint": "/persons/api/fast_onboard_attendee/",
+                "relations_endpoint": "/persons/api/all_relations/",
             }
         )
         return context

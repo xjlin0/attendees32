@@ -25,6 +25,7 @@ class ApiFastOnboardAttendeeViewSet(viewsets.ViewSet):
             raise ValidationError({"kid_data": "kid_data dictionary is required."})
 
         parent_data = request.data.get("parent_data")
+        companions = request.data.get("companions")
         unaccompanied = bool(request.data.get("unaccompanied", False))
         gathering_id = request.data.get("gathering_id")
 
@@ -33,6 +34,7 @@ class ApiFastOnboardAttendeeViewSet(viewsets.ViewSet):
             meet_slug=meet_slug,
             kid_data=kid_data,
             parent_data=parent_data,
+            companions=companions,
             unaccompanied=unaccompanied,
             gathering_id=gathering_id,
         )

@@ -141,12 +141,12 @@ When `isKidMeet` is true:
 
 ### 5.5. Unaccompanied Minor Safety Protocol
 *   If a neighborhood child arrives alone:
-    1. Coworker checks `[✓] Unaccompanied minor / 鄰家小孩自己跑來`.
+    1. Coworker checks `[✓] Child arrived alone / Unaccompanied`.
     2. Guardian fields are bypassed.
     3. Child `Attendee` is created and enrolled into `AttendingMeet`.
     4. **Safety Tagging**: Security alert stored strictly in:
        ```json
-       attendingmeet.infos["special"] = {"check_in": "⚠無監護人/護送者資料"}
+       attendingmeet.infos["special"] = {"check_in": "⚠Missing companion info"}
        ```
        *(Never stored in `Note`, preventing accidental overwrites or edits by unauthorized viewers).*
     5. **Visual Warning**: Roster DataGrid column 1 (`Attendee`) displays a red `⚠` icon before `(Info)`.
