@@ -1392,11 +1392,19 @@ class AttendeeService:
                     if actual_birthday > now_date:
                         raise ValidationError({"birthday": "Birthday cannot be in the future."})
                 elif bmonth and bday and not byear:
+                    try:
+                        date(1800, bmonth, bday)
+                    except ValueError as e:
+                        raise ValidationError({"birthday": f"Invalid birthday date: {e}"})
                     estimated_birthday = f"1800-{bmonth:02d}-{bday:02d}"
                 elif byear and bmonth:
+                    if not (1 <= bmonth <= 12):
+                        raise ValidationError({"birthday": "Invalid birth month: must be between 1 and 12."})
                     estimated_birthday = f"{byear:04d}-{bmonth:02d}"
                 elif byear:
                     estimated_birthday = f"{byear:04d}"
+                elif bday and not bmonth:
+                    raise ValidationError({"birthday": "Birth month is required when birth day is specified."})
 
                 grade = att_data.get("grade")
                 food_pref = (att_data.get("food_pref") or "").strip() or None

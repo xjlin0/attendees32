@@ -173,8 +173,9 @@
   };
 
   let allFamilyRelations = [];
+  let allRawRelations = [];
   const loadFamilyRelations = async (relationsEndpoint) => {
-    if (allFamilyRelations.length > 0) return allFamilyRelations;
+    if (allRawRelations.length > 0) return allRawRelations;
     const url = (relationsEndpoint || '/persons/api/all_relations/') + '?category_id=0&take=999';
     try {
       const res = await fetch(url, {
@@ -184,12 +185,24 @@
       if (!res.ok) throw new Error('Failed to fetch relations');
       const json = await res.json();
       const rawList = json.data || (Array.isArray(json) ? json : []);
-      const excludedRoles = new Set(['self', 'masked', 'hidden']);
-      allFamilyRelations = rawList.filter(r => r && r.id > 0 && !excludedRoles.has((r.title || '').trim().toLowerCase()));
-      return allFamilyRelations;
+      const excludedRoles = new Set(['masked', 'hidden']);
+      allRawRelations = rawList.filter(r => r && r.id > 0 && !excludedRoles.has((r.title || '').trim().toLowerCase()));
+      allFamilyRelations = allRawRelations.filter(r => (r.title || '').trim().toLowerCase() !== 'self');
+      return allRawRelations;
     } catch (e) {
       console.warn('Could not load relations from API, using fallback:', e);
-      return [];
+      allRawRelations = [
+        { id: 1, title: 'parent' },
+        { id: 2, title: 'child' },
+        { id: 3, title: 'son' },
+        { id: 4, title: 'daughter' },
+        { id: 5, title: 'husband' },
+        { id: 6, title: 'wife' },
+        { id: 14, title: 'spouse' },
+        { id: 28, title: 'self' }
+      ];
+      allFamilyRelations = allRawRelations.filter(r => r.title.toLowerCase() !== 'self');
+      return allRawRelations;
     }
   };
 
@@ -2862,6 +2875,83 @@
         }
       };
 
+      // Helpers for populating Division and Relationship dropdowns
+      const populateDivisionSelect = (selectEl, defaultDivisionId) => {
+        if (!selectEl) return;
+        const doPopulate = (divisions) => {
+          if (!divisions || divisions.length === 0) return;
+          selectEl.innerHTML = '';
+          if (divisions.length > 1) {
+            const placeholderOpt = document.createElement('option');
+            placeholderOpt.value = '';
+            placeholderOpt.textContent = 'Select Division';
+            selectEl.appendChild(placeholderOpt);
+          }
+          divisions.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.display_name;
+            if (defaultDivisionId !== undefined && defaultDivisionId !== null && String(d.id) === String(defaultDivisionId)) {
+              opt.selected = true;
+            } else if (divisions.length === 1) {
+              opt.selected = true;
+            }
+            selectEl.appendChild(opt);
+          });
+          if (defaultDivisionId !== undefined && defaultDivisionId !== null && divisions.some(d => String(d.id) === String(defaultDivisionId))) {
+            selectEl.value = String(defaultDivisionId);
+          }
+        };
+        if (organizationDivisions.length > 0) {
+          doPopulate(organizationDivisions);
+        } else {
+          loadOrganizationDivisions(endpoints.divisions).then(doPopulate);
+        }
+      };
+
+      const populateRelationSelect = (selectEl, defaultSelected, isAttendee = false) => {
+        if (!selectEl) return;
+        const doPopulate = () => {
+          const list = isAttendee ? allRawRelations : allFamilyRelations;
+          if (!list || list.length === 0) return;
+          selectEl.innerHTML = '';
+          list.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.id;
+            const title = (r.title || '').trim();
+            opt.textContent = title ? title.charAt(0).toUpperCase() + title.slice(1) : `Relation #${r.id}`;
+            if (title.toLowerCase() === (defaultSelected || 'parent').toLowerCase()) opt.selected = true;
+            selectEl.appendChild(opt);
+          });
+          if (!selectEl.value && selectEl.options.length > 0) {
+            const matchOpt = Array.from(selectEl.options).find(o => o.textContent.toLowerCase() === (defaultSelected || '').toLowerCase());
+            if (matchOpt) {
+              matchOpt.selected = true;
+            } else {
+              selectEl.selectedIndex = 0;
+            }
+          }
+        };
+        if (allRawRelations.length > 0) {
+          doPopulate();
+        } else {
+          loadFamilyRelations(endpoints.relations).then(doPopulate);
+        }
+      };
+
+      const meetDivisionId = meet?.division || meet?.division_id || (meet?.assembly && meet.assembly.division_id) || null;
+
+      // Attendee 1 Division & Relationship dropdowns
+      const att1DivSelect = rootDiv.querySelector('.attendee-block-1 .ob-division');
+      if (att1DivSelect) {
+        populateDivisionSelect(att1DivSelect, meetDivisionId);
+      }
+
+      const att1RelSelect = rootDiv.querySelector('.attendee-block-1 .ob-relationship');
+      if (att1RelSelect) {
+        populateRelationSelect(att1RelSelect, 'self', true);
+      }
+
       const gradeSelectEl = rootDiv.querySelector('.attendee-block-1 .ob-grade');
       if (gradeSelectEl) {
         populateGradeSelect(gradeSelectEl);
@@ -2871,6 +2961,32 @@
       if (att1GenderSelect) {
         populateGenderSelect(att1GenderSelect, 'UNSPECIFIED');
       }
+
+      // Sync birth day options based on chosen year and month
+      const setupBirthdayDropdownSync = (block) => {
+        if (!block) return;
+        const yInp = block.querySelector('.ob-byear');
+        const mSel = block.querySelector('.ob-bmonth');
+        const dSel = block.querySelector('.ob-bday');
+        if (!mSel || !dSel) return;
+
+        const syncDays = () => {
+          const yVal = yInp ? yInp.value : '';
+          const mVal = mSel ? mSel.value : '';
+          if (window.Attendees?.utilities?.adjustBirthdayDayOptions) {
+            window.Attendees.utilities.adjustBirthdayDayOptions(yVal, mVal, dSel);
+          }
+        };
+
+        if (yInp) {
+          yInp.addEventListener('input', syncDays);
+          yInp.addEventListener('change', syncDays);
+        }
+        if (mSel) {
+          mSel.addEventListener('change', syncDays);
+        }
+      };
+      setupBirthdayDropdownSync(rootDiv.querySelector('.attendee-block-1'));
 
       // 3b. Additional Attendees setup (Attendee 1, 2, 3...)
       const moreAttendeesBtn = rootDiv.querySelector('.more-attendees-btn');
@@ -2885,6 +3001,10 @@
           if (headerLabel) {
             headerLabel.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} Information` : 'Attendee Information';
           }
+          const divLabel = block.querySelector('.att-division-label');
+          if (divLabel) divLabel.innerHTML = visibleBlocks.length > 1 ? `Attendee ${curIndex} Division <span class="text-danger">*</span>` : `Division <span class="text-danger">*</span>`;
+          const relLabel = block.querySelector('.att-relationship-label');
+          if (relLabel) relLabel.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} Relationship` : 'Relationship';
           const fnLabel = block.querySelector('.att-firstname-label');
           if (fnLabel) fnLabel.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} First Name (English)` : 'First Name (English)';
           const lnLabel = block.querySelector('.att-lastname-label');
@@ -2899,6 +3019,17 @@
       const appendNewAttendeeBlock = () => {
         if (!addAttendeesContainer || !attendeeTemplate) return;
         const clone = attendeeTemplate.content.firstElementChild.cloneNode(true);
+
+        const attDivSelect = clone.querySelector('.ob-division');
+        if (attDivSelect) {
+          populateDivisionSelect(attDivSelect, meetDivisionId);
+        }
+
+        const attRelSelect = clone.querySelector('.ob-relationship');
+        if (attRelSelect) {
+          populateRelationSelect(attRelSelect, 'self', true);
+        }
+
         const gradeSelect = clone.querySelector('.ob-grade');
         if (gradeSelect) populateGradeSelect(gradeSelect);
 
@@ -2926,6 +3057,7 @@
         }
 
         addAttendeesContainer.appendChild(clone);
+        setupBirthdayDropdownSync(clone);
         updateAttendeeLabels();
 
         const newFnInput = clone.querySelector('.ob-first-name');
@@ -2935,55 +3067,6 @@
       if (moreAttendeesBtn && addAttendeesContainer && attendeeTemplate) {
         moreAttendeesBtn.addEventListener('click', appendNewAttendeeBlock);
       }
-
-      // Helpers for populating Division and Relationship dropdowns
-      const populateDivisionSelect = (selectEl) => {
-        if (!selectEl) return;
-        const doPopulate = (divisions) => {
-          if (!divisions || divisions.length === 0) return;
-          selectEl.innerHTML = '';
-          if (divisions.length > 1) {
-            const placeholderOpt = document.createElement('option');
-            placeholderOpt.value = '';
-            placeholderOpt.textContent = 'Select Division';
-            selectEl.appendChild(placeholderOpt);
-          }
-          divisions.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d.id;
-            opt.textContent = d.display_name;
-            if (divisions.length === 1) opt.selected = true;
-            selectEl.appendChild(opt);
-          });
-        };
-        if (organizationDivisions.length > 0) {
-          doPopulate(organizationDivisions);
-        } else {
-          loadOrganizationDivisions(endpoints.divisions).then(doPopulate);
-        }
-      };
-
-      const populateRelationSelect = (selectEl, defaultSelected) => {
-        if (!selectEl) return;
-        const doPopulate = (relations) => {
-          if (!relations || relations.length === 0) return;
-          selectEl.innerHTML = '';
-          relations.forEach(r => {
-            const opt = document.createElement('option');
-            opt.value = r.id;
-            const title = (r.title || '').trim();
-            opt.textContent = title ? title.charAt(0).toUpperCase() + title.slice(1) : `Relation #${r.id}`;
-            if (title.toLowerCase() === (defaultSelected || 'parent').toLowerCase()) opt.selected = true;
-            selectEl.appendChild(opt);
-          });
-          if (!selectEl.value && selectEl.options.length > 0) selectEl.selectedIndex = 0;
-        };
-        if (allFamilyRelations.length > 0) {
-          doPopulate(allFamilyRelations);
-        } else {
-          loadFamilyRelations(endpoints.relations).then(doPopulate);
-        }
-      };
 
       // 4. Companion Section DOM Elements & Initial Setup
       const guardianSection = rootDiv.querySelector('.guardian-section');
@@ -3394,7 +3477,11 @@
 
         try {
           const res = await fetch(`${endpoints.searchAttendees}?meet_slug=${selectedMeetSlug}&q=${encodeURIComponent(query)}`);
-          if (!res.ok) throw new Error('Search failed. Please try again.');
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            const errMsg = errData.detail || errData.error || res.statusText || 'Search failed. Please try again.';
+            throw new Error(errMsg);
+          }
           const results = await res.json();
           renderSearchResults(results, candidatesListEl, query, switchToOnboard);
         } catch (err) {
@@ -3641,6 +3728,17 @@
         const attNum = aIdx + 1;
         const attLabel = attendeeBlocks.length > 1 ? `Attendee ${attNum}` : 'Attendee';
 
+        const divEl = block.querySelector('.ob-division');
+        const divVal = divEl ? divEl.value : '';
+        const relEl = block.querySelector('.ob-relationship');
+        const relVal = relEl ? relEl.value : 'self';
+
+        if (organizationDivisions.length > 0 && !divVal) {
+          DevExpress.ui.notify(`Please select a division for ${attLabel}.`, 'warning', WARNING_NOTIFY_TIME);
+          divEl?.focus();
+          return;
+        }
+
         const firstName = (block.querySelector('.ob-first-name')?.value || '').trim();
         const lastName = (block.querySelector('.ob-last-name')?.value || '').trim();
         const firstName2 = (block.querySelector('.ob-first-name2')?.value || '').trim();
@@ -3667,13 +3765,19 @@
           }
         }
 
-        if (byear) {
+        if (byear || bmonth || bday) {
           const bValid = window.Attendees?.utilities?.validateFastInputBirthday
             ? window.Attendees.utilities.validateFastInputBirthday(byear, bmonth, bday)
             : { valid: true };
           if (!bValid.valid) {
             DevExpress.ui.notify(`${attLabel}: ${bValid.message}`, 'warning', WARNING_NOTIFY_TIME);
-            block.querySelector('.ob-byear')?.focus();
+            if (byear) {
+              block.querySelector('.ob-byear')?.focus();
+            } else if (bmonth) {
+              block.querySelector('.ob-bmonth')?.focus();
+            } else {
+              block.querySelector('.ob-bday')?.focus();
+            }
             return;
           }
         }
@@ -3725,6 +3829,8 @@
           first_name2: firstName2 || null,
           last_name2: lastName2 || null,
           gender: gender,
+          division_id: divVal ? parseInt(divVal, 10) : null,
+          relationship: relVal ? (parseInt(relVal, 10) || relVal) : 'self',
           birthday_year: byear ? parseInt(byear, 10) : null,
           birthday_month: bmonth ? parseInt(bmonth, 10) : null,
           birthday_day: bday ? parseInt(bday, 10) : null,
@@ -3940,7 +4046,11 @@
 
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
-          const errMsg = errData.detail || errData.error || (typeof errData === 'object' ? Object.values(errData).flat().join(' ') : 'Registration failed');
+          const errMsg = errData.detail
+            || errData.error
+            || (typeof errData === 'object' && Object.values(errData).flat().join(' ').trim())
+            || response.statusText
+            || `Registration failed (HTTP ${response.status})`;
           throw new Error(errMsg);
         }
 

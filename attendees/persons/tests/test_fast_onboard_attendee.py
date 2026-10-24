@@ -8,6 +8,7 @@ from rest_framework.test import APIClient
 
 from attendees.occasions.models import Assembly, Attendance, Character, Gathering, Meet
 from attendees.persons.models import Attendee, AttendingMeet, Category, Folk, FolkAttendee, Relation
+from attendees.persons.services import AttendeeService
 from attendees.users.models import User
 from attendees.whereabouts.models import Division, Organization
 
@@ -1011,6 +1012,68 @@ class TestFastOnboardAttendee:
         b2_fa = FolkAttendee.objects.get(folk=family_folk, attendee=b2)
         assert b2_fa.role == self.relation_son
         assert b2_fa.display_order == 11
+
+    def test_february_31_returns_400_json_not_500_html(self):
+        # 1. Adult meet with month 2, day 31 (no year)
+        payload = {
+            "meet_slug": self.adult_meet.slug,
+            "attendees_data": [
+                {
+                    "first_name": "Feb31Adult",
+                    "birthday_month": 2,
+                    "birthday_day": 31,
+                }
+            ],
+        }
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        assert "application/json" in res.headers["content-type"]
+        assert "Invalid birthday date" in str(res.data)
+
+        # 2. Kid meet with year 2020, month 2, day 31
+        kid_payload = {
+            "meet_slug": self.kid_meet.slug,
+            "kid_data": {
+                "first_name": "Feb31Kid",
+                "birthday_year": 2020,
+                "birthday_month": 2,
+                "birthday_day": 31,
+                "grade": 1,
+                "food_pref": "None",
+            },
+            "unaccompanied": True,
+        }
+        res_kid = self.client.post("/persons/api/fast_onboard_attendee/", kid_payload, format="json")
+        assert res_kid.status_code == status.HTTP_400_BAD_REQUEST
+        assert "application/json" in res_kid.headers["content-type"]
+        assert "Invalid birthday date" in str(res_kid.data)
+
+    def test_unhandled_exception_returns_500_json_not_html(self):
+        from unittest.mock import patch
+        payload = {
+            "meet_slug": self.adult_meet.slug,
+            "attendees_data": [
+                {
+                    "first_name": "CrashTest",
+                }
+            ],
+        }
+        with patch.object(AttendeeService, "fast_onboard", side_effect=RuntimeError("Database explosion!")):
+            res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+            assert res.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+            assert "application/json" in res.headers["content-type"]
+            assert "Internal server error" in res.data["detail"]
+            assert "Database explosion!" in res.data["error"]
+
+    def test_search_attendees_unhandled_exception_returns_500_json_not_html(self):
+        from unittest.mock import patch
+        with patch.object(AttendeeService, "search_for_roster", side_effect=RuntimeError("Search engine crash!")):
+            res = self.client.get(f"/persons/api/search_attendees_for_roster/?meet_slug={self.adult_meet.slug}")
+            assert res.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+            assert "application/json" in res.headers["content-type"]
+            assert "Internal server error" in res.data["detail"]
+            assert "Search engine crash!" in res.data["error"]
+
 
 
 

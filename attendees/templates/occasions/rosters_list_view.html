@@ -170,13 +170,29 @@
             <!-- Attendee 1 Block -->
             <div class="attendee-block attendee-block-1 p-2 bg-light rounded border mb-3 position-relative">
               <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                <h6 class="text-primary mb-0 fw-bold attendee-block-title" style="font-size: 0.95rem;">
+                <h6 class="text-primary mb-0 fw-bold attendee-block-title"
+                    title="All attendees will participate the chosen activity/meet">
                   <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
                 </h6>
                 <div class="d-flex align-items-center gap-1">
                   <button type="button" class="btn btn-outline-primary btn-sm add-more-attendee-btn p-0 d-flex align-items-center justify-content-center" title="Add another attendee" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
                     <i class="fas fa-plus"></i>
                   </button>
+                </div>
+              </div>
+              <!-- Division & Relationship -->
+              <div class="row g-2 mb-2">
+                <div class="col-md-6 col-12">
+                  <label class="form-label small mb-1 fw-semibold att-division-label">Division <span class="text-danger">*</span></label>
+                  <select class="form-select form-select-sm ob-division">
+                    <!-- Dynamically populated -->
+                  </select>
+                </div>
+                <div class="col-md-6 col-12">
+                  <label class="form-label small mb-1 fw-semibold att-relationship-label">Relationship</label>
+                  <select class="form-select form-select-sm ob-relationship">
+                    <!-- Dynamically populated -->
+                  </select>
                 </div>
               </div>
               <div class="row g-2 mb-2">
@@ -539,7 +555,8 @@
 <template id="attendee-block-template">
   <div class="attendee-block attendee-block-extra p-2 bg-light rounded border mb-3 position-relative">
     <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-      <h6 class="text-primary mb-0 fw-bold attendee-block-title" style="font-size: 0.95rem;">
+      <h6 class="text-primary mb-0 fw-bold attendee-block-title"
+          title="All attendees will participate the chosen activity/meet">
         <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
       </h6>
       <div class="d-flex align-items-center gap-1">
@@ -547,6 +564,21 @@
           <i class="fas fa-plus"></i>
         </button>
         <button type="button" class="btn-close btn-sm remove-attendee-btn" aria-label="Remove attendee" title="Remove attendee"></button>
+      </div>
+    </div>
+    <!-- Division & Relationship -->
+    <div class="row g-2 mb-2">
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold att-division-label">Division <span class="text-danger">*</span></label>
+        <select class="form-select form-select-sm ob-division">
+          <!-- Dynamically populated -->
+        </select>
+      </div>
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold att-relationship-label">Relationship</label>
+        <select class="form-select form-select-sm ob-relationship">
+          <!-- Dynamically populated -->
+        </select>
       </div>
     </div>
     <div class="row g-2 mb-2">

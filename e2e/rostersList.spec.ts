@@ -363,6 +363,23 @@ test.describe('Rosters List Page', () => {
     await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
     await switchToOnboardBtn.click();
 
+    // Verify dynamic birth day dropdown options when selecting February
+    const bmonthSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bmonth');
+    const bdaySelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bday');
+    await bmonthSelect.selectOption('2');
+    const febDays = await bdaySelect.locator('option').allTextContents();
+    expect(febDays).not.toContain('30');
+    expect(febDays).not.toContain('31');
+    expect(febDays).toContain('29');
+
+    // Enter non-leap year 1999 -> max is 28
+    const byearInput = page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-byear');
+    await byearInput.fill('1999');
+    await byearInput.dispatchEvent('change');
+    const feb1999Days = await bdaySelect.locator('option').allTextContents();
+    expect(feb1999Days).not.toContain('29');
+    expect(feb1999Days).toContain('28');
+
     // Verify onboard form fields
     const onboardContainer = page.locator('.add-attendee-popup-wrapper .onboard-view-container');
     await expect(onboardContainer).toBeVisible();
@@ -372,6 +389,21 @@ test.describe('Rosters List Page', () => {
     // Verify attendee contact type selector
     const contactTypeSelect = page.locator('.add-attendee-popup-wrapper select.ob-contact-type');
     await expect(contactTypeSelect).toBeVisible();
+
+    // Verify Attendee Division and Relationship dropdowns [division][Relationship]
+    const attDivisionSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-division');
+    await expect(attDivisionSelect).toBeVisible();
+    await expect(async () => {
+      const val = await attDivisionSelect.inputValue();
+      expect(val).toBeTruthy();
+    }).toPass({ timeout: 5000 });
+
+    const attRelSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-relationship');
+    await expect(attRelSelect).toBeVisible();
+    await expect(async () => {
+      const selectedOptionText = await attRelSelect.locator('option:checked').innerText();
+      expect(selectedOptionText.trim().toLowerCase()).toBe('self');
+    }).toPass({ timeout: 5000 });
 
     // Verify guardian / companion relationship options dynamically loaded from API if section is present
     const relSelect = page.locator('.add-attendee-popup-wrapper select.ob-p-relationship');
@@ -500,6 +532,23 @@ test.describe('Rosters List Page', () => {
     await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
     await switchToOnboardBtn.click();
 
+    // Verify dynamic birth day dropdown options when selecting February
+    const bmonthSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bmonth');
+    const bdaySelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bday');
+    await bmonthSelect.selectOption('2');
+    const febDays = await bdaySelect.locator('option').allTextContents();
+    expect(febDays).not.toContain('30');
+    expect(febDays).not.toContain('31');
+    expect(febDays).toContain('29');
+
+    // Enter non-leap year 1999 -> max is 28
+    const byearInput = page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-byear');
+    await byearInput.fill('1999');
+    await byearInput.dispatchEvent('change');
+    const feb1999Days = await bdaySelect.locator('option').allTextContents();
+    expect(feb1999Days).not.toContain('29');
+    expect(feb1999Days).toContain('28');
+
     // 3b. Verify Gender select does NOT contain 'other'
     const genderOptions = await page.locator('.add-attendee-popup-wrapper select.ob-gender option').allTextContents();
     const normalizedGenderOptions = genderOptions.map(o => o.trim().toLowerCase());
@@ -598,6 +647,18 @@ test.describe('Rosters List Page', () => {
     await closeBtn.click();
     await expect(popupWrapper).toBeHidden({ timeout: 5000 });
 
+    // Verify frontend birthday validation in utilities (defaults to year 2000 if year is empty)
+    const bdayTest1 = await page.evaluate(() => {
+      return (window as any).Attendees?.utilities?.validateFastInputBirthday('', '2', '31');
+    });
+    expect(bdayTest1?.valid).toBe(false);
+    expect(bdayTest1?.message).toContain('Invalid calendar date');
+
+    const bdayTest2 = await page.evaluate(() => {
+      return (window as any).Attendees?.utilities?.validateFastInputBirthday('', '2', '29');
+    });
+    expect(bdayTest2?.valid).toBe(true);
+
     // Reopen popup
     await addAttendeeBtn.click();
     await expect(popupWrapper).toBeVisible();
@@ -610,6 +671,23 @@ test.describe('Rosters List Page', () => {
     const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
     await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
     await switchToOnboardBtn.click();
+
+    // Verify dynamic birth day dropdown options when selecting February
+    const bmonthSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bmonth');
+    const bdaySelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bday');
+    await bmonthSelect.selectOption('2');
+    const febDays = await bdaySelect.locator('option').allTextContents();
+    expect(febDays).not.toContain('30');
+    expect(febDays).not.toContain('31');
+    expect(febDays).toContain('29');
+
+    // Enter non-leap year 1999 -> max is 28
+    const byearInput = page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-byear');
+    await byearInput.fill('1999');
+    await byearInput.dispatchEvent('change');
+    const feb1999Days = await bdaySelect.locator('option').allTextContents();
+    expect(feb1999Days).not.toContain('29');
+    expect(feb1999Days).toContain('28');
 
     // 2. Dynamic multiple contacts (+ and - buttons)
     const attendeeContactRows = page.locator('.add-attendee-popup-wrapper .attendee-contacts-container .contact-row');
