@@ -20,7 +20,9 @@ def test_target_attendees_own_meets_sort_first(mock_get_object, mock_meet, mock_
 
     view.get_queryset()
 
-    order_by = mock_meet.objects.filter.return_value.annotate.return_value.order_by
+    order_by = (
+        mock_meet.objects.select_related.return_value.filter.return_value.annotate.return_value.order_by
+    )
     args = order_by.call_args.args
     assert isinstance(args[0], Case)
     assert args[1] == "assembly_name"
@@ -43,7 +45,9 @@ def test_get_queryset_prefetches_event_relations(mock_get_object, mock_meet, moc
 
     view.get_queryset()
 
-    order_by = mock_meet.objects.filter.return_value.annotate.return_value.order_by
+    order_by = (
+        mock_meet.objects.select_related.return_value.filter.return_value.annotate.return_value.order_by
+    )
     prefetch_related = order_by.return_value.prefetch_related
     prefetch_related.assert_called_once()
     prefetch_arg = prefetch_related.call_args.args[0]
