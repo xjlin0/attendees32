@@ -563,6 +563,185 @@ test.describe('Rosters List Page', () => {
     const outBtn = page.locator('.dx-datagrid-rowsview .dx-data-row.dx-selection .roster-btn-out').first();
     await expect(outBtn).toBeVisible({ timeout: 5000 });
   });
+
+  test('Should support modal Esc close, contact validation, unaccompanied collapse, companion gender, and multiple contacts', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Select meet
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+    const listItem = page.locator('.dx-list-item').first();
+    await listItem.waitFor({ state: 'visible' });
+    await listItem.click();
+    await page.mouse.click(0, 0);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+
+    // 1. Verify Esc key closes the Add Attendee modal
+    const addAttendeeBtn = page.locator('a.add-attendee');
+    await expect(addAttendeeBtn).toBeVisible();
+    await addAttendeeBtn.click();
+
+    const popupWrapper = page.locator('.add-attendee-popup-wrapper');
+    await expect(popupWrapper).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(popupWrapper).toBeHidden({ timeout: 5000 });
+
+    // Reopen popup
+    await addAttendeeBtn.click();
+    await expect(popupWrapper).toBeVisible();
+
+    // Search and switch to onboard
+    const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
+    await searchInput.fill('NonExistentAttendeeEscTest');
+    await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
+
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
+    await switchToOnboardBtn.click();
+
+    // 2. Dynamic multiple contacts (+ and - buttons)
+    const attendeeContactRows = page.locator('.add-attendee-popup-wrapper .attendee-contacts-container .contact-row');
+    await expect(attendeeContactRows).toHaveCount(1);
+    // Row 1 only has + button, no - button
+    await expect(attendeeContactRows.nth(0).locator('.add-contact-btn')).toBeVisible();
+    await expect(attendeeContactRows.nth(0).locator('.remove-contact-btn')).toHaveCount(0);
+
+    // Click + to add a second contact row
+    await attendeeContactRows.nth(0).locator('.add-contact-btn').click();
+    await expect(attendeeContactRows).toHaveCount(2);
+    // Row 2 has both + and - buttons
+    await expect(attendeeContactRows.nth(1).locator('.add-contact-btn')).toBeVisible();
+    await expect(attendeeContactRows.nth(1).locator('.remove-contact-btn')).toBeVisible();
+
+    // Click - on row 2 to remove it
+    await attendeeContactRows.nth(1).locator('.remove-contact-btn').click();
+    await expect(attendeeContactRows).toHaveCount(1);
+
+    // 3. Companion Gender input in first row [division][gender][relation]
+    const guardianSection = page.locator('.add-attendee-popup-wrapper .guardian-section');
+    const moreCompanionsBtn = page.locator('.add-attendee-popup-wrapper .more-companions-btn');
+    if (!await guardianSection.isVisible()) {
+      await moreCompanionsBtn.click();
+    }
+    const comp1Gender = page.locator('.add-attendee-popup-wrapper .companion-block-1 select.ob-p-gender');
+    await expect(comp1Gender).toBeVisible();
+    const comp1GenderOptions = await comp1Gender.locator('option').allTextContents();
+    const normalizedGenders = comp1GenderOptions.map(t => t.trim().toLowerCase());
+    expect(normalizedGenders).toContain('unspecified');
+    expect(normalizedGenders).toContain('female');
+    expect(normalizedGenders).toContain('male');
+
+    // 4. Unaccompanied minor checkbox collapses all companions
+    const unaccompaniedCheck = page.locator('.add-attendee-popup-wrapper input.ob-unaccompanied');
+    const comp1Block = page.locator('.add-attendee-popup-wrapper .companion-block-1');
+    if (await unaccompaniedCheck.isVisible()) {
+      await expect(comp1Block).toBeVisible();
+      await expect(moreCompanionsBtn).toBeVisible();
+
+      // Check unaccompanied
+      await unaccompaniedCheck.check();
+      await expect(comp1Block).toBeHidden();
+      await expect(moreCompanionsBtn).toBeHidden();
+
+      // Uncheck unaccompanied
+      await unaccompaniedCheck.uncheck();
+      await expect(comp1Block).toBeVisible();
+      await expect(moreCompanionsBtn).toBeVisible();
+    }
+  });
+
+  test('Should support More Attendees button to register multiple attendees simultaneously', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Select meet
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+    const listItem = page.locator('.dx-list-item').first();
+    await listItem.waitFor({ state: 'visible' });
+    await listItem.click();
+    await page.mouse.click(0, 0);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+
+    const addAttendeeBtn = page.locator('a.add-attendee');
+    await expect(addAttendeeBtn).toBeVisible();
+    await addAttendeeBtn.click();
+
+    const popupWrapper = page.locator('.add-attendee-popup-wrapper');
+    await expect(popupWrapper).toBeVisible();
+
+    // Search and switch to onboard
+    const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
+    await searchInput.fill('MultiAttendeeUniqueTestUser');
+    await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
+
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
+    await switchToOnboardBtn.click();
+
+    // Verify More Attendees button exists
+    const moreAttendeesBtn = page.locator('.add-attendee-popup-wrapper .more-attendees-btn');
+    await expect(moreAttendeesBtn).toBeVisible();
+
+    // Click More Attendees button to add Attendee 2
+    await moreAttendeesBtn.click();
+
+    const attendeeBlocks = page.locator('.add-attendee-popup-wrapper .attendee-block');
+    await expect(attendeeBlocks).toHaveCount(2);
+
+    // Verify Attendee 2 block has remove button
+    const removeAtt2Btn = attendeeBlocks.nth(1).locator('.remove-attendee-btn');
+    await expect(removeAtt2Btn).toBeVisible();
+
+    // Fill Attendee 1
+    const ts = Date.now();
+    const att1First = `Multi1_${ts}`;
+    const att2First = `Multi2_${ts}`;
+    await attendeeBlocks.nth(0).locator('input.ob-first-name').fill(att1First);
+    await attendeeBlocks.nth(0).locator('input.ob-last-name').fill('FamilyUnit');
+
+    // Fill Attendee 2
+    await attendeeBlocks.nth(1).locator('input.ob-first-name').fill(att2First);
+    await attendeeBlocks.nth(1).locator('input.ob-last-name').fill('FamilyUnit');
+
+    // If kid meet, fill kid fields and check unaccompanied for test simplicity
+    const isKidSectionVisible = await attendeeBlocks.nth(0).locator('.kid-specific-fields').isVisible();
+    if (isKidSectionVisible) {
+      // Attendee 1
+      await attendeeBlocks.nth(0).locator('input.ob-byear').fill('2017');
+      await attendeeBlocks.nth(0).locator('select.ob-bmonth').selectOption('3');
+      await attendeeBlocks.nth(0).locator('select.ob-bday').selectOption('10');
+      const g1 = attendeeBlocks.nth(0).locator('select.ob-grade');
+      if ((await g1.locator('option').all()).length > 1) await g1.selectOption({ index: 1 });
+      await attendeeBlocks.nth(0).locator('input.ob-food-pref').fill('None');
+
+      // Attendee 2
+      await attendeeBlocks.nth(1).locator('input.ob-byear').fill('2019');
+      await attendeeBlocks.nth(1).locator('select.ob-bmonth').selectOption('6');
+      await attendeeBlocks.nth(1).locator('select.ob-bday').selectOption('20');
+      const g2 = attendeeBlocks.nth(1).locator('select.ob-grade');
+      if ((await g2.locator('option').all()).length > 1) await g2.selectOption({ index: 1 });
+      await attendeeBlocks.nth(1).locator('input.ob-food-pref').fill('None');
+
+      await page.locator('.add-attendee-popup-wrapper input.ob-unaccompanied').check();
+    }
+
+    // Submit form
+    await page.locator('.add-attendee-popup-wrapper button.ob-submit-btn').click();
+
+    // Verify popup closes on success
+    await expect(page.locator('.add-attendee-popup-wrapper')).toBeHidden({ timeout: 15000 });
+  });
 });
 
 

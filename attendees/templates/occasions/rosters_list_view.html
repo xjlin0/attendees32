@@ -172,140 +172,156 @@
       </div>
       <form class="onboard-form" onsubmit="return false;">
           <!-- Attendee Section -->
-          <div class="mb-3">
-            <h6 class="text-primary border-bottom pb-1 mb-2 fw-bold" style="font-size: 0.95rem;">
-              <i class="fas fa-user me-1"></i> Attendee Information
-            </h6>
-            <div class="row g-2 mb-2">
-              <div class="col-md-6 col-12">
-                <label class="form-label small mb-1 fw-semibold">First Name (English)</label>
-                <input type="text" class="form-control form-control-sm ob-first-name" placeholder="First name">
+          <div class="attendees-section mb-3">
+            <!-- Attendee 1 Block -->
+            <div class="attendee-block attendee-block-1 mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                <h6 class="text-primary mb-0 fw-bold attendee-block-title" style="font-size: 0.95rem;">
+                  <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
+                </h6>
+                <button type="button" class="btn-close btn-sm remove-attendee-btn remove-attendee-1-btn d-none" aria-label="Remove attendee" title="Remove attendee"></button>
               </div>
-              <div class="col-md-6 col-12">
-                <label class="form-label small mb-1 fw-semibold">Last Name (English)</label>
-                <input type="text" class="form-control form-control-sm ob-last-name" placeholder="Last name">
-              </div>
-            </div>
-            <div class="row g-2 mb-2">
-              <div class="col-md-6 col-12">
-                <label class="form-label small mb-1 text-muted">Last Name 2 (Other language)</label>
-                <input type="text" class="form-control form-control-sm ob-last-name2" placeholder="姓氏 (e.g., 李)">
-              </div>
-              <div class="col-md-6 col-12">
-                <label class="form-label small mb-1 text-muted">First Name 2 (Other language)</label>
-                <input type="text" class="form-control form-control-sm ob-first-name2" placeholder="名字 (e.g., 小明)">
-              </div>
-            </div>
-            <div class="row g-2 mb-2">
-              <div class="col-md-3 col-6">
-                <label class="form-label small mb-1 fw-semibold">Gender</label>
-                <select class="form-select form-select-sm ob-gender">
-                  <option value="unspecified" selected>Unspecified</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label small mb-1 fw-semibold ob-birthday-label">
-                  Birth Year <span class="ob-birthday-badge"></span>
-                </label>
-                <input type="number" class="form-control form-control-sm ob-byear" placeholder="YYYY" min="1900" max="2026">
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label small mb-1 fw-semibold">Birth Month</label>
-                <select class="form-select form-select-sm ob-bmonth">
-                  <option value="">Month</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
-                  <option value="10">10</option>
-                  <option value="11">11</option>
-                  <option value="12">12</option>
-                </select>
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label small mb-1 fw-semibold">Birth Day</label>
-                <select class="form-select form-select-sm ob-bday">
-                  <option value="">Day</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
-                  <option value="10">10</option>
-                  <option value="11">11</option>
-                  <option value="12">12</option>
-                  <option value="13">13</option>
-                  <option value="14">14</option>
-                  <option value="15">15</option>
-                  <option value="16">16</option>
-                  <option value="17">17</option>
-                  <option value="18">18</option>
-                  <option value="19">19</option>
-                  <option value="20">20</option>
-                  <option value="21">21</option>
-                  <option value="22">22</option>
-                  <option value="23">23</option>
-                  <option value="24">24</option>
-                  <option value="25">25</option>
-                  <option value="26">26</option>
-                  <option value="27">27</option>
-                  <option value="28">28</option>
-                  <option value="29">29</option>
-                  <option value="30">30</option>
-                  <option value="31">31</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Flexible Single Contact Selector for Attendee -->
-            <div class="row g-2 mb-2">
-              <div class="col-md-4 col-12">
-                <label class="form-label small mb-1 fw-semibold">Contact Type</label>
-                <select class="form-select form-select-sm ob-contact-type">
-                  <option value="phone" selected>Phone</option>
-                  <option value="email">Email</option>
-                  <option value="wechat">WeChat</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="line">Line</option>
-                </select>
-              </div>
-              <div class="col-md-8 col-12">
-                <label class="form-label small mb-1 fw-semibold">Contact Value</label>
-                <input type="text" class="form-control form-control-sm ob-contact-value" placeholder="Phone number, email, or account">
-              </div>
-            </div>
-
-            <!-- Kid-specific fields -->
-            <div class="kid-specific-fields">
               <div class="row g-2 mb-2">
-                <div class="col-md-4 col-12">
-                  <label class="form-label small mb-1 fw-semibold">School Grade <span class="text-danger">*</span></label>
-                  <select class="form-select form-select-sm ob-grade">
-                    <option value="">Select Grade</option>
-                    <!-- Dynamically populated from organization-grade-converter -->
+                <div class="col-md-6 col-12">
+                  <label class="form-label small mb-1 fw-semibold att-firstname-label">First Name (English)</label>
+                  <input type="text" class="form-control form-control-sm ob-first-name" placeholder="First name">
+                </div>
+                <div class="col-md-6 col-12">
+                  <label class="form-label small mb-1 fw-semibold att-lastname-label">Last Name (English)</label>
+                  <input type="text" class="form-control form-control-sm ob-last-name" placeholder="Last name">
+                </div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-md-6 col-12">
+                  <label class="form-label small mb-1 text-muted att-lastname2-label">Last Name 2 (Other language)</label>
+                  <input type="text" class="form-control form-control-sm ob-last-name2" placeholder="姓氏 (e.g., 李)">
+                </div>
+                <div class="col-md-6 col-12">
+                  <label class="form-label small mb-1 text-muted att-firstname2-label">First Name 2 (Other language)</label>
+                  <input type="text" class="form-control form-control-sm ob-first-name2" placeholder="名字 (e.g., 小明)">
+                </div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-md-3 col-6">
+                  <label class="form-label small mb-1 fw-semibold">Gender</label>
+                  <select class="form-select form-select-sm ob-gender">
+                    <option value="unspecified" selected>Unspecified</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
                   </select>
                 </div>
-                <div class="col-md-4 col-12">
-                  <label class="form-label small mb-1 fw-semibold">Food Preference / Allergies <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control form-control-sm ob-food-pref" placeholder="e.g., None, Peanut allergy">
+                <div class="col-md-3 col-6">
+                  <label class="form-label small mb-1 fw-semibold ob-birthday-label">
+                    Birth Year <span class="ob-birthday-badge"></span>
+                  </label>
+                  <input type="number" class="form-control form-control-sm ob-byear" placeholder="YYYY" min="1900" max="2026">
                 </div>
-                <div class="col-md-4 col-12 insurer-field-group">
-                  <label class="form-label small mb-1 fw-semibold">Medical Insurer <span class="text-muted">(Optional)</span></label>
-                  <input type="text" class="form-control form-control-sm ob-insurer" placeholder="Insurance company / Policy #">
+                <div class="col-md-3 col-6">
+                  <label class="form-label small mb-1 fw-semibold">Birth Month</label>
+                  <select class="form-select form-select-sm ob-bmonth">
+                    <option value="">Month</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                  </select>
+                </div>
+                <div class="col-md-3 col-6">
+                  <label class="form-label small mb-1 fw-semibold">Birth Day</label>
+                  <select class="form-select form-select-sm ob-bday">
+                    <option value="">Day</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="24">24</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="28">28</option>
+                    <option value="29">29</option>
+                    <option value="30">30</option>
+                    <option value="31">31</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Flexible Contacts Selector for Attendee -->
+              <div class="attendee-contacts-container mb-2">
+                <div class="row g-2 mb-2 align-items-end contact-row">
+                  <div class="col-md-4 col-12">
+                    <label class="form-label small mb-1 fw-semibold">Contact Type</label>
+                    <select class="form-select form-select-sm ob-contact-type">
+                      <option value="phone" selected>Phone</option>
+                      <option value="email">Email</option>
+                      <option value="wechat">WeChat</option>
+                      <option value="whatsapp">WhatsApp</option>
+                      <option value="line">Line</option>
+                    </select>
+                  </div>
+                  <div class="col-md-7 col-9">
+                    <label class="form-label small mb-1 fw-semibold">Contact Value</label>
+                    <input type="text" class="form-control form-control-sm ob-contact-value" placeholder="Phone number, email, or account">
+                  </div>
+                  <div class="col-md-1 col-3 d-flex gap-1 align-items-end justify-content-start">
+                    <button type="button" class="btn btn-outline-success btn-sm px-2 add-contact-btn" title="Add another contact" style="min-width: 32px;">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kid-specific fields -->
+              <div class="kid-specific-fields">
+                <div class="row g-2 mb-2">
+                  <div class="col-md-4 col-12">
+                    <label class="form-label small mb-1 fw-semibold">School Grade <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm ob-grade">
+                      <option value="">Select Grade</option>
+                      <!-- Dynamically populated from organization-grade-converter -->
+                    </select>
+                  </div>
+                  <div class="col-md-4 col-12">
+                    <label class="form-label small mb-1 fw-semibold">Food Preference / Allergies <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm ob-food-pref" placeholder="e.g., None, Peanut allergy">
+                  </div>
+                  <div class="col-md-4 col-12 insurer-field-group">
+                    <label class="form-label small mb-1 fw-semibold">Medical Insurer <span class="text-muted">(Optional)</span></label>
+                    <input type="text" class="form-control form-control-sm ob-insurer" placeholder="Insurance company / Policy #">
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- Additional Attendees Container (Appended above companions) -->
+            <div class="additional-attendees-container"></div>
           </div>
 
           <!-- Companion Section -->
@@ -335,15 +351,23 @@
                   <button type="button" class="btn-close btn-sm remove-companion-btn remove-companion-1-btn d-none" aria-label="Remove companion" title="Remove companion"></button>
                 </div>
 
-                <!-- Division & Relationship -->
+                <!-- Division, Gender & Relationship -->
                 <div class="row g-2 mb-2">
-                  <div class="col-md-6 col-12">
+                  <div class="col-md-4 col-12">
                     <label class="form-label small mb-1 fw-semibold comp-division-label">Companion 1 Division <span class="text-danger">*</span></label>
                     <select class="form-select form-select-sm ob-p-division">
                       <!-- Dynamically populated from divisions endpoint -->
                     </select>
                   </div>
-                  <div class="col-md-6 col-12">
+                  <div class="col-md-4 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-gender-label">Companion 1 Gender</label>
+                    <select class="form-select form-select-sm ob-p-gender">
+                      <option value="unspecified" selected>Unspecified</option>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4 col-12">
                     <label class="form-label small mb-1 fw-semibold comp-relationship-label">Companion 1 Relationship</label>
                     <select class="form-select form-select-sm ob-p-relationship">
                       <!-- Dynamically populated from relations-endpoint -->
@@ -377,20 +401,27 @@
                 </div>
 
                 <!-- Contact Selector -->
-                <div class="row g-2">
-                  <div class="col-md-4 col-12">
-                    <label class="form-label small mb-1 fw-semibold comp-contacttype-label">Companion 1 Contact Type</label>
-                    <select class="form-select form-select-sm ob-p-contact-type">
-                      <option value="phone" selected>Phone</option>
-                      <option value="email">Email</option>
-                      <option value="wechat">WeChat</option>
-                      <option value="whatsapp">WhatsApp</option>
-                      <option value="line">Line</option>
-                    </select>
-                  </div>
-                  <div class="col-md-8 col-12">
-                    <label class="form-label small mb-1 fw-semibold comp-contactval-label">Companion 1 Contact Number / Account <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-sm ob-p-contact-value" placeholder="Phone number, email, or account">
+                <div class="companion-contacts-container">
+                  <div class="row g-2 mb-2 align-items-end contact-row">
+                    <div class="col-md-4 col-12">
+                      <label class="form-label small mb-1 fw-semibold comp-contacttype-label">Companion 1 Contact Type</label>
+                      <select class="form-select form-select-sm ob-p-contact-type">
+                        <option value="phone" selected>Phone</option>
+                        <option value="email">Email</option>
+                        <option value="wechat">WeChat</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="line">Line</option>
+                      </select>
+                    </div>
+                    <div class="col-md-7 col-9">
+                      <label class="form-label small mb-1 fw-semibold comp-contactval-label">Companion 1 Contact Number / Account <span class="comp-contactval-req text-danger">*</span></label>
+                      <input type="text" class="form-control form-control-sm ob-p-contact-value" placeholder="Phone number, email, or account">
+                    </div>
+                    <div class="col-md-1 col-3 d-flex gap-1 align-items-end justify-content-start">
+                      <button type="button" class="btn btn-outline-success btn-sm px-2 add-contact-btn" title="Add another contact" style="min-width: 32px;">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -400,12 +431,21 @@
             <div class="additional-companions-container"></div>
           </div>
 
-        <!-- Buttons: More Companions + Register & Check In -->
-        <div class="d-flex gap-2 mt-3">
-          <button type="button" class="btn btn-outline-primary btn-sm flex-fill more-companions-btn fw-bold py-2">
-            <i class="fas fa-user-plus me-1"></i> More Companions
+        <!-- Buttons: More Companions + More Attendees + Register & Check In -->
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          <button type="button"
+                  class="btn btn-outline-primary btn-sm flex-fill more-companions-btn fw-bold py-2"
+                  title="Add more persons within the same family, not attending the activity">
+            <i class="fas fa-user-friends me-1"></i> More Companions
           </button>
-          <button type="button" class="btn btn-success btn-sm flex-fill ob-submit-btn fw-bold py-2">
+          <button type="button"
+                  class="btn btn-outline-info btn-sm flex-fill more-attendees-btn fw-bold py-2"
+                  title="Add more attendees within the same family, also attending the activity">
+            <i class="fas fa-user-plus me-1"></i> More Attendees
+          </button>
+          <button type="button"
+                  class="btn btn-success btn-sm flex-fill ob-submit-btn fw-bold py-2"
+                  title=Save attendees and companions, register and check-in attendees">
             <i class="fas fa-check-circle me-1"></i> Register & Check In
           </button>
         </div>
@@ -424,15 +464,23 @@
       <button type="button" class="btn-close btn-sm remove-companion-btn" aria-label="Remove companion" title="Remove companion"></button>
     </div>
 
-    <!-- Division & Relationship -->
+    <!-- Division, Gender & Relationship -->
     <div class="row g-2 mb-2">
-      <div class="col-md-6 col-12">
+      <div class="col-md-4 col-12">
         <label class="form-label small mb-1 fw-semibold comp-division-label">Division <span class="text-danger">*</span></label>
         <select class="form-select form-select-sm ob-p-division">
           <!-- Dynamically populated -->
         </select>
       </div>
-      <div class="col-md-6 col-12">
+      <div class="col-md-4 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-gender-label">Gender</label>
+        <select class="form-select form-select-sm ob-p-gender">
+          <option value="unspecified" selected>Unspecified</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+        </select>
+      </div>
+      <div class="col-md-4 col-12">
         <label class="form-label small mb-1 fw-semibold comp-relationship-label">Relationship</label>
         <select class="form-select form-select-sm ob-p-relationship">
           <!-- Dynamically populated -->
@@ -465,25 +513,177 @@
     </div>
 
     <!-- Contact Selector -->
-    <div class="row g-2">
-      <div class="col-md-4 col-12">
-        <label class="form-label small mb-1 fw-semibold comp-contacttype-label">Contact Type</label>
-        <select class="form-select form-select-sm ob-p-contact-type">
-          <option value="phone" selected>Phone</option>
-          <option value="email">Email</option>
-          <option value="wechat">WeChat</option>
-          <option value="whatsapp">WhatsApp</option>
-          <option value="line">Line</option>
-        </select>
-      </div>
-      <div class="col-md-8 col-12">
-        <label class="form-label small mb-1 fw-semibold comp-contactval-label">Contact Number / Account <span class="text-danger">*</span></label>
-        <input type="text" class="form-control form-control-sm ob-p-contact-value" placeholder="Phone number, email, or account">
+    <div class="companion-contacts-container">
+      <div class="row g-2 mb-2 align-items-end contact-row">
+        <div class="col-md-4 col-12">
+          <label class="form-label small mb-1 fw-semibold comp-contacttype-label">Contact Type</label>
+          <select class="form-select form-select-sm ob-p-contact-type">
+            <option value="phone" selected>Phone</option>
+            <option value="email">Email</option>
+            <option value="wechat">WeChat</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="line">Line</option>
+          </select>
+        </div>
+        <div class="col-md-7 col-9">
+          <label class="form-label small mb-1 fw-semibold comp-contactval-label">Contact Number / Account <span class="comp-contactval-req text-danger">*</span></label>
+          <input type="text" class="form-control form-control-sm ob-p-contact-value" placeholder="Phone number, email, or account">
+        </div>
+        <div class="col-md-1 col-3 d-flex gap-1 align-items-end justify-content-start">
+          <button type="button" class="btn btn-outline-success btn-sm px-2 add-contact-btn" title="Add another contact" style="min-width: 32px;">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
-      </form>
+
+<!-- Template for Additional Attendee Blocks -->
+<template id="attendee-block-template">
+  <div class="attendee-block attendee-block-extra p-2 bg-light rounded border mb-3 position-relative">
+    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+      <h6 class="text-primary mb-0 fw-bold attendee-block-title" style="font-size: 0.95rem;">
+        <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
+      </h6>
+      <button type="button" class="btn-close btn-sm remove-attendee-btn" aria-label="Remove attendee" title="Remove attendee"></button>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold att-firstname-label">First Name (English)</label>
+        <input type="text" class="form-control form-control-sm ob-first-name" placeholder="First name">
+      </div>
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 fw-semibold att-lastname-label">Last Name (English)</label>
+        <input type="text" class="form-control form-control-sm ob-last-name" placeholder="Last name">
+      </div>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 text-muted att-lastname2-label">Last Name 2 (Other language)</label>
+        <input type="text" class="form-control form-control-sm ob-last-name2" placeholder="姓氏 (e.g., 李)">
+      </div>
+      <div class="col-md-6 col-12">
+        <label class="form-label small mb-1 text-muted att-firstname2-label">First Name 2 (Other language)</label>
+        <input type="text" class="form-control form-control-sm ob-first-name2" placeholder="名字 (e.g., 小明)">
+      </div>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-md-3 col-6">
+        <label class="form-label small mb-1 fw-semibold">Gender</label>
+        <select class="form-select form-select-sm ob-gender">
+          <option value="unspecified" selected>Unspecified</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+      <div class="col-md-3 col-6">
+        <label class="form-label small mb-1 fw-semibold ob-birthday-label">
+          Birth Year <span class="ob-birthday-badge"></span>
+        </label>
+        <input type="number" class="form-control form-control-sm ob-byear" placeholder="YYYY" min="1900" max="2026">
+      </div>
+      <div class="col-md-3 col-6">
+        <label class="form-label small mb-1 fw-semibold">Birth Month</label>
+        <select class="form-select form-select-sm ob-bmonth">
+          <option value="">Month</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+      </div>
+      <div class="col-md-3 col-6">
+        <label class="form-label small mb-1 fw-semibold">Birth Day</label>
+        <select class="form-select form-select-sm ob-bday">
+          <option value="">Day</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+          <option value="21">21</option>
+          <option value="22">22</option>
+          <option value="23">23</option>
+          <option value="24">24</option>
+          <option value="25">25</option>
+          <option value="26">26</option>
+          <option value="27">27</option>
+          <option value="28">28</option>
+          <option value="29">29</option>
+          <option value="30">30</option>
+          <option value="31">31</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Flexible Contacts Selector for Attendee -->
+    <div class="attendee-contacts-container mb-2">
+      <div class="row g-2 mb-2 align-items-end contact-row">
+        <div class="col-md-4 col-12">
+          <label class="form-label small mb-1 fw-semibold">Contact Type</label>
+          <select class="form-select form-select-sm ob-contact-type">
+            <option value="phone" selected>Phone</option>
+            <option value="email">Email</option>
+            <option value="wechat">WeChat</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="line">Line</option>
+          </select>
+        </div>
+        <div class="col-md-7 col-9">
+          <label class="form-label small mb-1 fw-semibold">Contact Value</label>
+          <input type="text" class="form-control form-control-sm ob-contact-value" placeholder="Phone number, email, or account">
+        </div>
+        <div class="col-md-1 col-3 d-flex gap-1 align-items-end justify-content-start">
+          <button type="button" class="btn btn-outline-success btn-sm px-2 add-contact-btn" title="Add another contact" style="min-width: 32px;">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kid-specific fields -->
+    <div class="kid-specific-fields">
+      <div class="row g-2 mb-2">
+        <div class="col-md-4 col-12">
+          <label class="form-label small mb-1 fw-semibold">School Grade <span class="text-danger">*</span></label>
+          <select class="form-select form-select-sm ob-grade">
+            <option value="">Select Grade</option>
+            <!-- Dynamically populated from organization-grade-converter -->
+          </select>
+        </div>
+        <div class="col-md-4 col-12">
+          <label class="form-label small mb-1 fw-semibold">Food Preference / Allergies <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-sm ob-food-pref" placeholder="e.g., None, Peanut allergy">
+        </div>
+        <div class="col-md-4 col-12 insurer-field-group">
+          <label class="form-label small mb-1 fw-semibold">Medical Insurer <span class="text-muted">(Optional)</span></label>
+          <input type="text" class="form-control form-control-sm ob-insurer" placeholder="Insurance company / Policy #">
+        </div>
+      </div>
     </div>
   </div>
 </template>

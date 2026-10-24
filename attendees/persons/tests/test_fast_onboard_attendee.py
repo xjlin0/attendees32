@@ -74,6 +74,26 @@ class TestFastOnboardAttendee:
             id=2,
             defaults={"title": "child", "gender": "unspecified", "consanguinity": True, "relative": True}
         )
+        self.relation_son, _ = Relation.objects.get_or_create(
+            id=3,
+            defaults={"title": "son", "gender": "male", "consanguinity": True, "relative": True}
+        )
+        self.relation_daughter, _ = Relation.objects.get_or_create(
+            id=4,
+            defaults={"title": "daughter", "gender": "female", "consanguinity": True, "relative": True}
+        )
+        self.relation_husband, _ = Relation.objects.get_or_create(
+            id=5,
+            defaults={"title": "husband", "gender": "male", "consanguinity": False, "relative": True, "reciprocal_ids": [6, 14]}
+        )
+        self.relation_wife, _ = Relation.objects.get_or_create(
+            id=6,
+            defaults={"title": "wife", "gender": "female", "consanguinity": False, "relative": True, "reciprocal_ids": [5, 14]}
+        )
+        self.relation_spouse, _ = Relation.objects.get_or_create(
+            id=14,
+            defaults={"title": "spouse", "gender": "unspecified", "consanguinity": False, "relative": True, "reciprocal_ids": [14]}
+        )
 
         # Assemblies
         self.kid_assembly = Assembly.objects.create(
@@ -199,15 +219,21 @@ class TestFastOnboardAttendee:
         parent = Attendee.objects.get(id=data["parent_id"])
         assert parent.first_name == "Mary"
         assert parent.last_name == "Pan"
-        assert parent.infos["contacts"]["phone"] == "510-555-0199"
+        assert parent.infos["contacts"]["phone"] == "+15105550199"
         assert parent.infos["contacts"]["email"] == "mary@pan.org"
 
         # Verify family folk & FolkAttendee links
         family = Folk.objects.filter(attendees=kid, category_id=Attendee.FAMILY_CATEGORY).first()
         assert family is not None
         assert "Pan family" in family.display_name
-        assert FolkAttendee.objects.filter(folk=family, attendee=kid, role=self.relation_child).exists()
-        assert FolkAttendee.objects.filter(folk=family, attendee=parent, role=self.relation_parent).exists()
+        kid_fa = FolkAttendee.objects.get(folk=family, attendee=kid)
+        assert kid_fa.role == self.relation_son
+        assert kid_fa.display_order == 11
+        assert kid_fa.start == date(2018, 5, 20)
+
+        parent_fa = FolkAttendee.objects.get(folk=family, attendee=parent)
+        assert parent_fa.role == self.relation_parent
+        assert parent_fa.display_order == 1
 
         # Verify Attendance record
         attendance = Attendance.objects.get(id=data["attendance_id"])
@@ -534,7 +560,7 @@ class TestFastOnboardAttendee:
         comp1 = Attendee.objects.get(pk=companion_ids[0])
         comp2 = Attendee.objects.get(pk=companion_ids[1])
         assert comp1.first_name == "Mary"
-        assert comp1.infos["contacts"]["phone1"] == "408-333-4444"
+        assert comp1.infos["contacts"]["phone1"] == "+14083334444"
         assert comp2.first_name == "Grandpa"
         assert comp2.infos["contacts"]["wechat1"] == "grandpajoe_wechat"
 
@@ -564,29 +590,28 @@ class TestFastOnboardAttendee:
         assert attendance is not None
 
     def test_adult_fast_onboard_with_companion(self):
-        spouse_rel, _ = Relation.objects.get_or_create(
-            id=3,
-            defaults={"title": "spouse", "gender": "unspecified", "reciprocal_ids": [3], "consanguinity": False, "relative": True}
-        )
-
         payload = {
             "meet_slug": self.adult_meet.slug,
             "unaccompanied": False,
-            "kid_data": {
-                "first_name": "David",
-                "last_name": "Smith",
-                "birthday_year": 1985,
-                "birthday_month": 8,
-                "birthday_day": 10,
-                "contact_type": "phone",
-                "contact_value": "408-555-1111",
-            },
+            "attendees_data": [
+                {
+                    "first_name": "David",
+                    "last_name": "Smith",
+                    "gender": "male",
+                    "birthday_year": 1985,
+                    "birthday_month": 8,
+                    "birthday_day": 10,
+                    "contact_type": "phone",
+                    "contact_value": "(408) 555-1111",
+                }
+            ],
             "companions": [
                 {
                     "first_name": "Sarah",
                     "last_name": "Smith",
+                    "gender": "female",
                     "division_id": self.adult_division.id,
-                    "relationship": spouse_rel.id,
+                    "relationship": self.relation_spouse.id,
                     "contact_type": "email",
                     "contact_value": "sarah@smith.com",
                 }
@@ -603,6 +628,7 @@ class TestFastOnboardAttendee:
         adult = Attendee.objects.get(pk=adult_id)
         comp = Attendee.objects.get(pk=companion_ids[0])
         assert adult.first_name == "David"
+        assert adult.infos["contacts"]["phone"] == "+14085551111"
         assert comp.first_name == "Sarah"
         assert comp.infos["contacts"]["email1"] == "sarah@smith.com"
 
@@ -610,5 +636,243 @@ class TestFastOnboardAttendee:
         family_folk = Folk.objects.filter(attendees=adult_id, category_id=Attendee.FAMILY_CATEGORY).first()
         assert family_folk is not None
         assert comp in family_folk.attendees.all()
+
+        # Check FolkAttendee roles and ranks in adult meet:
+        # Male -> husband (rank 1), Female -> wife (rank 2)
+        david_fa = FolkAttendee.objects.get(folk=family_folk, attendee=adult)
+        assert david_fa.role == self.relation_husband
+        assert david_fa.display_order == 1
+
+        sarah_fa = FolkAttendee.objects.get(folk=family_folk, attendee=comp)
+        assert sarah_fa.role == self.relation_wife
+        assert sarah_fa.display_order == 2
+
+    def test_kid_fast_onboard_daughter_and_multiple_contacts(self):
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "gathering_id": self.kid_gathering.id,
+            "kid_data": {
+                "first_name": "Wendy",
+                "last_name": "Darling",
+                "gender": "female",
+                "birthday_year": 2016,
+                "birthday_month": 9,
+                "birthday_day": 12,
+                "grade": 3,
+                "food_pref": "None",
+                "contacts": [
+                    {"type": "phone", "value": "(510) 111-2222"},
+                    {"type": "email", "value": "wendy@darling.org"},
+                ],
+            },
+            "companions": [
+                {
+                    "first_name": "Mary",
+                    "last_name": "Darling",
+                    "gender": "female",
+                    "division_id": self.adult_division.id,
+                    "relationship": self.relation_parent.id,
+                    "contacts": [
+                        {"type": "phone", "value": "510-333-4444"},
+                        {"type": "email", "value": "mary@darling.org"},
+                        {"type": "wechat", "value": "mary_wechat"},
+                    ],
+                }
+            ],
+            "unaccompanied": False,
+        }
+
+        response = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+        kid_id = response.data["attendee_id"]
+        comp_id = response.data["companion_ids"][0]
+
+        kid = Attendee.objects.get(pk=kid_id)
+        comp = Attendee.objects.get(pk=comp_id)
+
+        assert kid.gender == "female"
+        assert kid.infos["contacts"]["phone1"] == "+15101112222"
+        assert kid.infos["contacts"]["email1"] == "wendy@darling.org"
+
+        assert comp.gender == "female"
+        assert comp.infos["contacts"]["phone1"] == "+15103334444"
+        assert comp.infos["contacts"]["email1"] == "mary@darling.org"
+        assert comp.infos["contacts"]["wechat1"] == "mary_wechat"
+
+        # Check family folk attendee roles and display order
+        family = Folk.objects.filter(attendees=kid, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family is not None
+        assert "Darling family" in family.display_name
+
+        kid_fa = FolkAttendee.objects.get(folk=family, attendee=kid)
+        assert kid_fa.role == self.relation_daughter
+        assert kid_fa.display_order == 11
+        assert kid_fa.start == date(2016, 9, 12)
+
+        parent_fa = FolkAttendee.objects.get(folk=family, attendee=comp)
+        assert parent_fa.role == self.relation_parent
+        assert parent_fa.display_order == 1
+
+    def test_fast_onboard_multiple_attendees(self):
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "gathering_id": self.kid_gathering.id,
+            "attendees_data": [
+                {
+                    "first_name": "James",
+                    "last_name": "Taylor",
+                    "gender": "male",
+                    "birthday_year": 2017,
+                    "birthday_month": 4,
+                    "birthday_day": 15,
+                    "grade": 1,
+                    "food_pref": "None",
+                    "contact_type": "phone",
+                    "contact_value": "510-999-1111",
+                },
+                {
+                    "first_name": "Emma",
+                    "last_name": "Taylor",
+                    "gender": "female",
+                    "birthday_year": 2019,
+                    "birthday_month": 11,
+                    "birthday_day": 5,
+                    "grade": 0,
+                    "food_pref": "No dairy",
+                    "contact_type": "email",
+                    "contact_value": "emma@taylor.org",
+                },
+            ],
+            "companions": [
+                {
+                    "first_name": "Robert",
+                    "last_name": "Taylor",
+                    "gender": "male",
+                    "division_id": self.adult_division.id,
+                    "relationship": self.relation_parent.id,
+                    "contact_type": "phone",
+                    "contact_value": "(510) 999-0000",
+                }
+            ],
+            "unaccompanied": False,
+        }
+
+        response = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+        data = response.data
+        assert "attendees" in data
+        assert len(data["attendees"]) == 2
+
+        # Verify James and Emma are created and enrolled
+        att1_id = data["attendees"][0]["attendee_id"]
+        att2_id = data["attendees"][1]["attendee_id"]
+        james = Attendee.objects.get(pk=att1_id)
+        emma = Attendee.objects.get(pk=att2_id)
+        assert james.first_name == "James"
+        assert emma.first_name == "Emma"
+
+        # Both have AttendingMeet and Attendance
+        assert AttendingMeet.objects.filter(attending__attendee=james, meet=self.kid_meet).exists()
+        assert AttendingMeet.objects.filter(attending__attendee=emma, meet=self.kid_meet).exists()
+        assert Attendance.objects.filter(gathering=self.kid_gathering, attending__attendee=james).exists()
+        assert Attendance.objects.filter(gathering=self.kid_gathering, attending__attendee=emma).exists()
+
+        # Both belong to same family folk
+        family = Folk.objects.filter(attendees=james, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family is not None
+        assert emma in family.attendees.all()
+
+        james_fa = FolkAttendee.objects.get(folk=family, attendee=james)
+        emma_fa = FolkAttendee.objects.get(folk=family, attendee=emma)
+        assert james_fa.role == self.relation_son
+        assert james_fa.display_order == 11
+        assert emma_fa.role == self.relation_daughter
+        assert emma_fa.display_order == 12
+
+    def test_adult_fast_onboard_companion_contact_optional(self):
+        payload = {
+            "meet_slug": self.adult_meet.slug,
+            "attendees_data": [
+                {
+                    "first_name": "Alice",
+                    "last_name": "Wong",
+                    "gender": "female",
+                    "birthday_year": 1990,
+                    "contact_type": "phone",
+                    "contact_value": "415-555-1234",
+                }
+            ],
+            "companions": [
+                {
+                    "first_name": "Bob",
+                    "last_name": "Wong",
+                    "gender": "male",
+                    # No contact provided! Should succeed for adult meet
+                }
+            ],
+            "unaccompanied": False,
+        }
+
+        response = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+        adult_id = response.data["attendee_id"]
+        comp_id = response.data["companion_ids"][0]
+        alice = Attendee.objects.get(pk=adult_id)
+        bob = Attendee.objects.get(pk=comp_id)
+
+        assert alice.first_name == "Alice"
+        assert bob.first_name == "Bob"
+
+        family = Folk.objects.filter(attendees=alice, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family is not None
+        assert bob in family.attendees.all()
+
+        alice_fa = FolkAttendee.objects.get(folk=family, attendee=alice)
+        bob_fa = FolkAttendee.objects.get(folk=family, attendee=bob)
+        assert alice_fa.role == self.relation_wife
+        assert alice_fa.display_order == 2
+        assert bob_fa.role == self.relation_husband
+        assert bob_fa.display_order == 1
+
+    def test_birthday_validation_future_and_invalid_year(self):
+        current_year = date.today().year
+
+        # 1. Year in future
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "kid_data": {
+                "first_name": "Time",
+                "last_name": "Traveler",
+                "birthday_year": current_year + 1,
+                "birthday_month": 1,
+                "birthday_day": 1,
+                "grade": 1,
+                "food_pref": "None",
+            },
+            "unaccompanied": True,
+        }
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        assert "cannot exceed" in str(res.data)
+
+        # 2. Year before 1900
+        payload["kid_data"]["birthday_year"] = 1899
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        assert "1900 or later" in str(res.data)
+
+        # 3. Future date within current year
+        tomorrow = date.today() + timedelta(days=1)
+        payload["kid_data"]["birthday_year"] = tomorrow.year
+        payload["kid_data"]["birthday_month"] = tomorrow.month
+        payload["kid_data"]["birthday_day"] = tomorrow.day
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        assert "cannot be in the future" in str(res.data)
+
+
 
 

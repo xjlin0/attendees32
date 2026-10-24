@@ -2397,8 +2397,8 @@
     const storageOptsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
 
     const resetFilters = () => {
-      const defaultStart = new Date(new Date().setMonth(new Date().getMonth() - 1));
-      const defaultEnd = new Date(new Date().setMonth(new Date().getMonth() + 3));
+      const defaultStart = new Date(new Date().setHours(new Date().getHours() - 16));
+      const defaultEnd = new Date(new Date().setMonth(new Date().getMonth() + 1));
       filterData.meets = [];
       filterData.startDate = defaultStart;
       filterData.endDate = defaultEnd;
@@ -2720,6 +2720,55 @@
       return { meet, isKidMeet, showInsurer };
     };
 
+    const createContactRow = (isCompanion) => {
+      const row = document.createElement('div');
+      row.className = 'row g-2 mb-2 align-items-end contact-row';
+      const typeClass = isCompanion ? 'ob-p-contact-type' : 'ob-contact-type';
+      const valClass = isCompanion ? 'ob-p-contact-value' : 'ob-contact-value';
+      row.innerHTML = `
+        <div class="col-md-4 col-12">
+          <select class="form-select form-select-sm ${typeClass}">
+            <option value="phone" selected>Phone</option>
+            <option value="email">Email</option>
+            <option value="wechat">WeChat</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="line">Line</option>
+          </select>
+        </div>
+        <div class="col-md-7 col-9">
+          <input type="text" class="form-control form-control-sm ${valClass}" placeholder="Phone number, email, or account">
+        </div>
+        <div class="col-md-1 col-3 d-flex gap-1 align-items-end justify-content-start">
+          <button type="button" class="btn btn-outline-success btn-sm px-2 add-contact-btn" title="Add another contact" style="min-width: 32px;">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button type="button" class="btn btn-outline-danger btn-sm px-2 remove-contact-btn" title="Remove this contact" style="min-width: 32px;">
+            <i class="fas fa-minus"></i>
+          </button>
+        </div>
+      `;
+      return row;
+    };
+
+    const getContactValidationError = (type, val, targetName = 'Contact') => {
+      if (!window.Attendees || !window.Attendees.utilities) return null;
+      const normType = (type || 'phone').toLowerCase();
+      if (normType === 'phone' || normType === 'whatsapp') {
+        if (!window.Attendees.utilities.validateFastInputPhoneNumber(val)) {
+          return `${targetName} phone number must contain at least 10 digits.`;
+        }
+      } else if (normType === 'email') {
+        if (!window.Attendees.utilities.validateFastInputEmail(val)) {
+          return `${targetName} email must be at least 5 characters and contain '@' and '.'.`;
+        }
+      } else {
+        if (!window.Attendees.utilities.validateFastInputContact(type, val)) {
+          return `${targetName} account must be at least 2 characters.`;
+        }
+      }
+      return null;
+    };
+
     const renderPopupContent = async (container) => {
       const { meet, isKidMeet, showInsurer } = getMeetSettings();
       const meetDisplayName = meet ? (meet.display_name || meet.name || selectedMeetSlug) : (selectedMeetSlug || 'Selected Meet');
@@ -2779,19 +2828,82 @@
           : '<option value="">(No gatherings available)</option>';
       }
 
-      // 3. School Grade dropdown options
-      const gradeSelectEl = rootDiv.querySelector('.ob-grade');
-      if (gradeSelectEl) {
+      // 3. School Grade dropdown helper & options
+      const populateGradeSelect = (selectEl) => {
+        if (!selectEl) return;
         if (!gradeConverter || gradeConverter.length === 0) loadGradeConverter();
         if (gradeConverter && gradeConverter.length > 0) {
-          gradeSelectEl.innerHTML = '<option value="">Select Grade</option>';
+          selectEl.innerHTML = '<option value="">Select Grade</option>';
           gradeConverter.forEach(g => {
             const opt = document.createElement('option');
             opt.value = g.id;
             opt.textContent = g.label;
-            gradeSelectEl.appendChild(opt);
+            selectEl.appendChild(opt);
           });
         }
+      };
+
+      const gradeSelectEl = rootDiv.querySelector('.attendee-block-1 .ob-grade');
+      if (gradeSelectEl) {
+        populateGradeSelect(gradeSelectEl);
+      }
+
+      // 3b. Additional Attendees setup (Attendee 1, 2, 3...)
+      const moreAttendeesBtn = rootDiv.querySelector('.more-attendees-btn');
+      const addAttendeesContainer = rootDiv.querySelector('.additional-attendees-container');
+      const attendeeTemplate = document.getElementById('attendee-block-template');
+
+      const updateAttendeeLabels = () => {
+        const visibleBlocks = Array.from(rootDiv.querySelectorAll('.attendee-block')).filter(b => b.style.display !== 'none');
+        visibleBlocks.forEach((block, idx) => {
+          const curIndex = idx + 1;
+          const headerLabel = block.querySelector('.attendee-label');
+          if (headerLabel) {
+            headerLabel.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} Information` : 'Attendee Information';
+          }
+          const fnLabel = block.querySelector('.att-firstname-label');
+          if (fnLabel) fnLabel.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} First Name (English)` : 'First Name (English)';
+          const lnLabel = block.querySelector('.att-lastname-label');
+          if (lnLabel) lnLabel.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} Last Name (English)` : 'Last Name (English)';
+          const fn2Label = block.querySelector('.att-firstname2-label');
+          if (fn2Label) fn2Label.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} First Name 2 (Other language)` : 'First Name 2 (Other language)';
+          const ln2Label = block.querySelector('.att-lastname2-label');
+          if (ln2Label) ln2Label.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} Last Name 2 (Other language)` : 'Last Name 2 (Other language)';
+        });
+      };
+
+      if (moreAttendeesBtn && addAttendeesContainer && attendeeTemplate) {
+        moreAttendeesBtn.addEventListener('click', () => {
+          const clone = attendeeTemplate.content.firstElementChild.cloneNode(true);
+          const gradeSelect = clone.querySelector('.ob-grade');
+          if (gradeSelect) populateGradeSelect(gradeSelect);
+
+          const kidFields = clone.querySelector('.kid-specific-fields');
+          if (kidFields) kidFields.style.display = isKidMeet ? '' : 'none';
+
+          const insurerGroup = clone.querySelector('.insurer-field-group');
+          if (insurerGroup) insurerGroup.style.display = showInsurer ? '' : 'none';
+
+          const birthdayBadge = clone.querySelector('.ob-birthday-badge');
+          if (birthdayBadge) {
+            birthdayBadge.className = isKidMeet ? 'text-danger' : 'text-muted';
+            birthdayBadge.textContent = isKidMeet ? '* (Required for kids)' : '(Optional for adults)';
+          }
+
+          const removeBtn = clone.querySelector('.remove-attendee-btn');
+          if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+              clone.remove();
+              updateAttendeeLabels();
+            });
+          }
+
+          addAttendeesContainer.appendChild(clone);
+          updateAttendeeLabels();
+
+          const newFnInput = clone.querySelector('.ob-first-name');
+          if (newFnInput) newFnInput.focus();
+        });
       }
 
       // Helpers for populating Division and Relationship dropdowns
@@ -2870,6 +2982,9 @@
           const divLabel = block.querySelector('.comp-division-label');
           if (divLabel) divLabel.innerHTML = `Companion ${curIndex} Division <span class="text-danger">*</span>`;
 
+          const genderLabel = block.querySelector('.comp-gender-label');
+          if (genderLabel) genderLabel.textContent = `Companion ${curIndex} Gender`;
+
           const relLabel = block.querySelector('.comp-relationship-label');
           if (relLabel) relLabel.textContent = `Companion ${curIndex} Relationship`;
 
@@ -2903,13 +3018,20 @@
           const firstExtra = addCompanionsContainer ? addCompanionsContainer.querySelector('.companion-block') : null;
           if (firstExtra) {
             comp1Block.querySelector('.ob-p-division').value = firstExtra.querySelector('.ob-p-division').value;
+            const extraGender = firstExtra.querySelector('.ob-p-gender');
+            if (extraGender) comp1Block.querySelector('.ob-p-gender').value = extraGender.value;
             comp1Block.querySelector('.ob-p-relationship').value = firstExtra.querySelector('.ob-p-relationship').value;
             comp1Block.querySelector('.ob-p-first-name').value = firstExtra.querySelector('.ob-p-first-name').value;
             comp1Block.querySelector('.ob-p-last-name').value = firstExtra.querySelector('.ob-p-last-name').value;
             comp1Block.querySelector('.ob-p-first-name2').value = firstExtra.querySelector('.ob-p-first-name2').value;
             comp1Block.querySelector('.ob-p-last-name2').value = firstExtra.querySelector('.ob-p-last-name2').value;
-            comp1Block.querySelector('.ob-p-contact-type').value = firstExtra.querySelector('.ob-p-contact-type').value;
-            comp1Block.querySelector('.ob-p-contact-value').value = firstExtra.querySelector('.ob-p-contact-value').value;
+
+            // Replace companion 1 contacts with firstExtra's contacts
+            const comp1ContactsContainer = comp1Block.querySelector('.companion-contacts-container');
+            const extraContactsContainer = firstExtra.querySelector('.companion-contacts-container');
+            if (comp1ContactsContainer && extraContactsContainer) {
+              comp1ContactsContainer.innerHTML = extraContactsContainer.innerHTML;
+            }
             firstExtra.remove();
           } else {
             comp1Block.querySelectorAll('input').forEach(inp => { inp.value = ''; });
@@ -3063,17 +3185,49 @@
         });
       }
 
-      // D. Unaccompanied Minor Checkbox toggle
+      // D. Unaccompanied Minor Checkbox toggle: collapse/hide all companions when checked
       const unaccompaniedCheck = rootDiv.querySelector('.ob-unaccompanied');
-      const guardianInputsEl = rootDiv.querySelector('.guardian-inputs-container');
-      if (unaccompaniedCheck && guardianInputsEl) {
+      if (unaccompaniedCheck) {
         unaccompaniedCheck.addEventListener('change', (e) => {
-          if (e.target.checked) {
-            guardianInputsEl.style.opacity = '0.4';
-            guardianInputsEl.style.pointerEvents = 'none';
-          } else {
-            guardianInputsEl.style.opacity = '1';
-            guardianInputsEl.style.pointerEvents = '';
+          const isAlone = e.target.checked;
+          if (comp1Block) comp1Block.style.display = isAlone ? 'none' : '';
+          if (addCompanionsContainer) addCompanionsContainer.style.display = isAlone ? 'none' : '';
+          if (moreCompanionsBtn) {
+            if (isAlone) {
+              moreCompanionsBtn.classList.add('d-none');
+            } else {
+              moreCompanionsBtn.classList.remove('d-none');
+            }
+          }
+        });
+      }
+
+      // E. Dynamic Contact rows (+ / - buttons) for Attendee and Companions
+      const onboardForm = rootDiv.querySelector('.onboard-form');
+      if (onboardForm) {
+        onboardForm.addEventListener('click', (e) => {
+          const addBtn = e.target.closest('.add-contact-btn');
+          if (addBtn) {
+            const row = addBtn.closest('.contact-row');
+            const container = addBtn.closest('.attendee-contacts-container, .companion-contacts-container');
+            const isCompanion = !!addBtn.closest('.companion-contacts-container');
+            const newRow = createContactRow(isCompanion);
+            if (row) {
+              row.after(newRow);
+            } else if (container) {
+              container.appendChild(newRow);
+            }
+            const newInput = newRow.querySelector('input');
+            if (newInput) newInput.focus();
+            return;
+          }
+          const removeBtn = e.target.closest('.remove-contact-btn');
+          if (removeBtn) {
+            const row = removeBtn.closest('.contact-row');
+            if (row) {
+              row.remove();
+            }
+            return;
           }
         });
       }
@@ -3343,53 +3497,125 @@
         return;
       }
 
-      const firstName = (rootDiv.querySelector('.ob-first-name').value || '').trim();
-      const lastName = (rootDiv.querySelector('.ob-last-name').value || '').trim();
-      const firstName2 = (rootDiv.querySelector('.ob-first-name2').value || '').trim();
-      const lastName2 = (rootDiv.querySelector('.ob-last-name2').value || '').trim();
-      const gender = rootDiv.querySelector('.ob-gender').value;
-
-      const byear = rootDiv.querySelector('.ob-byear').value.trim();
-      const bmonth = rootDiv.querySelector('.ob-bmonth').value.trim();
-      const bday = rootDiv.querySelector('.ob-bday').value.trim();
-
-      const contactType = rootDiv.querySelector('.ob-contact-type') ? rootDiv.querySelector('.ob-contact-type').value : 'phone';
-      const contactValue = rootDiv.querySelector('.ob-contact-value') ? (rootDiv.querySelector('.ob-contact-value').value || '').trim() : '';
-
-      const grade = isKidMeet ? rootDiv.querySelector('.ob-grade').value : '';
-      const foodPref = isKidMeet ? (rootDiv.querySelector('.ob-food-pref').value || '').trim() : '';
-      const insurer = (isKidMeet && showInsurer) ? (rootDiv.querySelector('.ob-insurer').value || '').trim() : '';
-
-      const isUnaccompanied = isKidMeet && rootDiv.querySelector('.ob-unaccompanied').checked;
-
-      // Validation: at least one name (English or other language) is required
-      if (!firstName && !lastName && !firstName2 && !lastName2) {
-        DevExpress.ui.notify('At least one name (English or other language) is required.', 'warning', 3000);
+      // 1. Collect and validate all Attendee blocks
+      const attendeeBlocks = Array.from(rootDiv.querySelectorAll('.attendee-block')).filter(b => b.style.display !== 'none');
+      if (attendeeBlocks.length === 0) {
+        DevExpress.ui.notify('Please provide at least one attendee.', 'warning', 3000);
         return;
       }
 
-      if (isKidMeet) {
-        if (!byear || !bmonth || !bday) {
-          DevExpress.ui.notify('Year, Month, and Day of birth are all required for kids.', 'warning', 3000);
+      const isUnaccompanied = isKidMeet && rootDiv.querySelector('.ob-unaccompanied')?.checked;
+      const attendeesList = [];
+
+      for (let aIdx = 0; aIdx < attendeeBlocks.length; aIdx++) {
+        const block = attendeeBlocks[aIdx];
+        const attNum = aIdx + 1;
+        const attLabel = attendeeBlocks.length > 1 ? `Attendee ${attNum}` : 'Attendee';
+
+        const firstName = (block.querySelector('.ob-first-name')?.value || '').trim();
+        const lastName = (block.querySelector('.ob-last-name')?.value || '').trim();
+        const firstName2 = (block.querySelector('.ob-first-name2')?.value || '').trim();
+        const lastName2 = (block.querySelector('.ob-last-name2')?.value || '').trim();
+        const gender = block.querySelector('.ob-gender')?.value || 'unspecified';
+
+        const byear = (block.querySelector('.ob-byear')?.value || '').trim();
+        const bmonth = (block.querySelector('.ob-bmonth')?.value || '').trim();
+        const bday = (block.querySelector('.ob-bday')?.value || '').trim();
+
+        // Validation: at least one name (English or other language) is required
+        if (!firstName && !lastName && !firstName2 && !lastName2) {
+          DevExpress.ui.notify(`At least one name (English or other language) is required for ${attLabel}.`, 'warning', 3000);
+          block.querySelector('.ob-first-name')?.focus();
           return;
         }
-        if (grade === '' || grade === undefined || grade === null) {
-          DevExpress.ui.notify('School Grade is required for kids.', 'warning', 3000);
-          return;
+
+        // Birthday validation
+        if (isKidMeet) {
+          if (!byear || !bmonth || !bday) {
+            DevExpress.ui.notify(`Year, Month, and Day of birth are all required for ${attLabel}.`, 'warning', 3000);
+            block.querySelector('.ob-byear')?.focus();
+            return;
+          }
         }
-        if (!foodPref) {
-          DevExpress.ui.notify('Food preference / allergies is required for kids (enter "None" if none).', 'warning', 3000);
-          return;
+
+        if (byear) {
+          const bValid = window.Attendees?.utilities?.validateFastInputBirthday
+            ? window.Attendees.utilities.validateFastInputBirthday(byear, bmonth, bday)
+            : { valid: true };
+          if (!bValid.valid) {
+            DevExpress.ui.notify(`${attLabel}: ${bValid.message}`, 'warning', 3500);
+            block.querySelector('.ob-byear')?.focus();
+            return;
+          }
         }
+
+        // Contacts validation & phone normalization
+        const attendeeContactRows = Array.from(block.querySelectorAll('.attendee-contacts-container .contact-row'));
+        const attendeeContacts = [];
+        for (const row of attendeeContactRows) {
+          const cType = row.querySelector('.ob-contact-type')?.value || 'phone';
+          let cVal = (row.querySelector('.ob-contact-value')?.value || '').trim();
+          if (cVal) {
+            const vErr = getContactValidationError(cType, cVal, attLabel);
+            if (vErr) {
+              DevExpress.ui.notify(vErr, 'warning', 3500);
+              row.querySelector('.ob-contact-value')?.focus();
+              return;
+            }
+            if ((cType.toLowerCase() === 'phone' || cType.toLowerCase() === 'whatsapp') && window.Attendees?.utilities?.normalizePhoneNumber) {
+              cVal = window.Attendees.utilities.normalizePhoneNumber(cVal);
+              const valInput = row.querySelector('.ob-contact-value');
+              if (valInput) valInput.value = cVal;
+            }
+            attendeeContacts.push({ type: cType, value: cVal });
+          }
+        }
+        const primaryAttendeeContact = attendeeContacts.length > 0 ? attendeeContacts[0] : null;
+
+        // Kid-specific fields
+        const grade = isKidMeet ? (block.querySelector('.ob-grade')?.value ?? '') : '';
+        const foodPref = isKidMeet ? (block.querySelector('.ob-food-pref')?.value || '').trim() : '';
+        const insurer = (isKidMeet && showInsurer) ? (block.querySelector('.ob-insurer')?.value || '').trim() : '';
+
+        if (isKidMeet) {
+          if (grade === '' || grade === undefined || grade === null) {
+            DevExpress.ui.notify(`School Grade is required for ${attLabel}.`, 'warning', 3000);
+            block.querySelector('.ob-grade')?.focus();
+            return;
+          }
+          if (!foodPref) {
+            DevExpress.ui.notify(`Food preference / allergies is required for ${attLabel} (enter "None" if none).`, 'warning', 3000);
+            block.querySelector('.ob-food-pref')?.focus();
+            return;
+          }
+        }
+
+        attendeesList.push({
+          first_name: firstName || null,
+          last_name: lastName || null,
+          first_name2: firstName2 || null,
+          last_name2: lastName2 || null,
+          gender: gender,
+          birthday_year: byear ? parseInt(byear, 10) : null,
+          birthday_month: bmonth ? parseInt(bmonth, 10) : null,
+          birthday_day: bday ? parseInt(bday, 10) : null,
+          contact_type: primaryAttendeeContact ? primaryAttendeeContact.type : 'phone',
+          contact_value: primaryAttendeeContact ? primaryAttendeeContact.value : null,
+          contacts: attendeeContacts,
+          grade: grade !== '' ? grade : null,
+          food_pref: foodPref || null,
+          insurer: insurer || null,
+        });
       }
 
+      // 2. Collect and validate Companions
       let companionsList = [];
       const guardianSectionEl = rootDiv.querySelector('.guardian-section');
       const isGuardianSectionVisible = guardianSectionEl && guardianSectionEl.style.display !== 'none';
 
       // Find all visible companion blocks
       const allCompBlocks = Array.from(rootDiv.querySelectorAll('.companion-block'));
-      const visibleCompBlocks = isGuardianSectionVisible
+      const visibleCompBlocks = (isGuardianSectionVisible && !isUnaccompanied)
         ? allCompBlocks.filter(b => b.style.display !== 'none')
         : [];
 
@@ -3404,6 +3630,8 @@
             const compNum = i + 1;
             const pDivisionEl = block.querySelector('.ob-p-division');
             const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
+            const pGenderEl = block.querySelector('.ob-p-gender');
+            const pGenderVal = pGenderEl ? pGenderEl.value : 'unspecified';
             const pRelEl = block.querySelector('.ob-p-relationship');
             const pRelVal = pRelEl ? pRelEl.value : 'parent';
 
@@ -3412,23 +3640,41 @@
             const pFirst2 = (block.querySelector('.ob-p-first-name2')?.value || '').trim();
             const pLast2 = (block.querySelector('.ob-p-last-name2')?.value || '').trim();
 
-            const pContactTypeEl = block.querySelector('.ob-p-contact-type');
-            const pContactType = pContactTypeEl ? pContactTypeEl.value : 'phone';
-            const pContactVal = (block.querySelector('.ob-p-contact-value')?.value || '').trim();
+            const compContactRows = Array.from(block.querySelectorAll('.companion-contacts-container .contact-row'));
+            const compContacts = [];
+            for (const cRow of compContactRows) {
+              const ct = cRow.querySelector('.ob-p-contact-type')?.value || 'phone';
+              let cv = (cRow.querySelector('.ob-p-contact-value')?.value || '').trim();
+              if (cv) {
+                const cvErr = getContactValidationError(ct, cv, `Companion ${compNum}`);
+                if (cvErr) {
+                  DevExpress.ui.notify(cvErr, 'warning', 3500);
+                  cRow.querySelector('.ob-p-contact-value')?.focus();
+                  return;
+                }
+                if ((ct.toLowerCase() === 'phone' || ct.toLowerCase() === 'whatsapp') && window.Attendees?.utilities?.normalizePhoneNumber) {
+                  cv = window.Attendees.utilities.normalizePhoneNumber(cv);
+                  const valInput = cRow.querySelector('.ob-p-contact-value');
+                  if (valInput) valInput.value = cv;
+                }
+                compContacts.push({ type: ct, value: cv });
+              }
+            }
 
             const hasAnyName = Boolean(pFirst || pLast || pFirst2 || pLast2);
+            const primaryCompContact = compContacts.length > 0 ? compContacts[0] : null;
 
             if (compNum === 1) {
               if (organizationDivisions.length > 0 && !pDivisionVal) {
                 DevExpress.ui.notify('Please select a division for Companion 1.', 'warning', 3000);
                 return;
               }
-              if (!hasAnyName || !pContactVal) {
+              if (!hasAnyName || compContacts.length === 0) {
                 DevExpress.ui.notify('Companion 1 name and contact information are required.', 'warning', 3000);
                 return;
               }
             } else {
-              if (!hasAnyName && !pContactVal) {
+              if (!hasAnyName && compContacts.length === 0) {
                 DevExpress.ui.notify(`Companion ${compNum} name and contact information are required (or remove it).`, 'warning', 3000);
                 return;
               }
@@ -3436,7 +3682,7 @@
                 DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', 3000);
                 return;
               }
-              if (!hasAnyName || !pContactVal) {
+              if (!hasAnyName || compContacts.length === 0) {
                 DevExpress.ui.notify(`Companion ${compNum} name and contact information are required.`, 'warning', 3000);
                 return;
               }
@@ -3447,23 +3693,27 @@
               last_name: pLast || null,
               first_name2: pFirst2 || null,
               last_name2: pLast2 || null,
+              gender: pGenderVal,
               division_id: pDivisionVal ? parseInt(pDivisionVal, 10) : null,
               relationship: pRelVal ? (parseInt(pRelVal, 10) || pRelVal) : 'parent',
-              contact_type: pContactType,
-              contact_value: pContactVal || null,
-              phone: pContactType === 'phone' ? pContactVal : null,
-              email: pContactType === 'email' ? pContactVal : null
+              contact_type: primaryCompContact ? primaryCompContact.type : 'phone',
+              contact_value: primaryCompContact ? primaryCompContact.value : null,
+              phone: primaryCompContact && primaryCompContact.type === 'phone' ? primaryCompContact.value : null,
+              email: primaryCompContact && primaryCompContact.type === 'email' ? primaryCompContact.value : null,
+              contacts: compContacts
             });
           }
         }
       } else {
-        // Adult meet: companions are optional, but if any companion blocks are visible, validate them
+        // Adult meet: companions are optional; contact is NOT mandatory for adult companions
         if (visibleCompBlocks.length > 0) {
           for (let i = 0; i < visibleCompBlocks.length; i++) {
             const block = visibleCompBlocks[i];
             const compNum = i + 1;
             const pDivisionEl = block.querySelector('.ob-p-division');
             const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
+            const pGenderEl = block.querySelector('.ob-p-gender');
+            const pGenderVal = pGenderEl ? pGenderEl.value : 'unspecified';
             const pRelEl = block.querySelector('.ob-p-relationship');
             const pRelVal = pRelEl ? pRelEl.value : 'spouse';
 
@@ -3472,22 +3722,36 @@
             const pFirst2 = (block.querySelector('.ob-p-first-name2')?.value || '').trim();
             const pLast2 = (block.querySelector('.ob-p-last-name2')?.value || '').trim();
 
-            const pContactTypeEl = block.querySelector('.ob-p-contact-type');
-            const pContactType = pContactTypeEl ? pContactTypeEl.value : 'phone';
-            const pContactVal = (block.querySelector('.ob-p-contact-value')?.value || '').trim();
+            const compContactRows = Array.from(block.querySelectorAll('.companion-contacts-container .contact-row'));
+            const compContacts = [];
+            for (const cRow of compContactRows) {
+              const ct = cRow.querySelector('.ob-p-contact-type')?.value || 'phone';
+              let cv = (cRow.querySelector('.ob-p-contact-value')?.value || '').trim();
+              if (cv) {
+                const cvErr = getContactValidationError(ct, cv, `Companion ${compNum}`);
+                if (cvErr) {
+                  DevExpress.ui.notify(cvErr, 'warning', 3500);
+                  cRow.querySelector('.ob-p-contact-value')?.focus();
+                  return;
+                }
+                if ((ct.toLowerCase() === 'phone' || ct.toLowerCase() === 'whatsapp') && window.Attendees?.utilities?.normalizePhoneNumber) {
+                  cv = window.Attendees.utilities.normalizePhoneNumber(cv);
+                  const valInput = cRow.querySelector('.ob-p-contact-value');
+                  if (valInput) valInput.value = cv;
+                }
+                compContacts.push({ type: ct, value: cv });
+              }
+            }
 
             const hasAnyName = Boolean(pFirst || pLast || pFirst2 || pLast2);
+            const primaryCompContact = compContacts.length > 0 ? compContacts[0] : null;
 
-            if (!hasAnyName && !pContactVal) {
-              DevExpress.ui.notify(`Companion ${compNum} name and contact information are required (or remove it).`, 'warning', 3000);
+            if (!hasAnyName) {
+              DevExpress.ui.notify(`Companion ${compNum} name is required (or remove it).`, 'warning', 3000);
               return;
             }
             if (organizationDivisions.length > 0 && !pDivisionVal) {
               DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', 3000);
-              return;
-            }
-            if (!hasAnyName || !pContactVal) {
-              DevExpress.ui.notify(`Companion ${compNum} name and contact information are required.`, 'warning', 3000);
               return;
             }
 
@@ -3496,12 +3760,14 @@
               last_name: pLast || null,
               first_name2: pFirst2 || null,
               last_name2: pLast2 || null,
+              gender: pGenderVal,
               division_id: pDivisionVal ? parseInt(pDivisionVal, 10) : null,
               relationship: pRelVal ? (parseInt(pRelVal, 10) || pRelVal) : 'spouse',
-              contact_type: pContactType,
-              contact_value: pContactVal || null,
-              phone: pContactType === 'phone' ? pContactVal : null,
-              email: pContactType === 'email' ? pContactVal : null
+              contact_type: primaryCompContact ? primaryCompContact.type : 'phone',
+              contact_value: primaryCompContact ? primaryCompContact.value : null,
+              phone: primaryCompContact && primaryCompContact.type === 'phone' ? primaryCompContact.value : null,
+              email: primaryCompContact && primaryCompContact.type === 'email' ? primaryCompContact.value : null,
+              contacts: compContacts
             });
           }
         }
@@ -3514,23 +3780,8 @@
         meet_slug: meet.slug,
         gathering_id: gatheringId,
         unaccompanied: isUnaccompanied,
-        kid_data: {
-          first_name: firstName || null,
-          last_name: lastName || null,
-          first_name2: firstName2 || null,
-          last_name2: lastName2 || null,
-          gender: gender,
-          birthday_year: byear ? parseInt(byear, 10) : null,
-          birthday_month: bmonth ? parseInt(bmonth, 10) : null,
-          birthday_day: bday ? parseInt(bday, 10) : null,
-          contact_type: contactType,
-          contact_value: contactValue || null,
-          grade: grade !== '' ? grade : null,
-          food_pref: foodPref || null,
-          insurer: insurer || null
-        },
-        parent_data: companionsList.length > 0 ? companionsList[0] : null,
-        companions: companionsList
+        attendees_data: attendeesList,
+        companions: companionsList,
       };
 
       submitBtn.disabled = true;
@@ -3557,7 +3808,10 @@
         }
 
         const result = await response.json();
-        DevExpress.ui.notify(`Registered ${result.attendee_name} and checked in successfully!`, 'success', 3000);
+        const registeredNames = (result.attendees && result.attendees.length > 1)
+          ? result.attendees.map(a => a.attendee_name).join(', ')
+          : (result.attendee_name || 'attendee');
+        DevExpress.ui.notify(`Registered ${registeredNames} and checked in successfully!`, 'success', 3000);
         if (popupInstance) popupInstance.hide();
         await loadData(result.attendee_id, result.gathering_id || gatheringId);
       } catch (err) {
@@ -3574,6 +3828,12 @@
     const initAddAttendeePopup = () => {
       const popupEl = document.getElementById('add-attendee-popup');
       if (!popupEl) return;
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.key === 'Escape' || e.keyCode === 27) && popupInstance && popupInstance.option('visible')) {
+          popupInstance.hide();
+        }
+      });
 
       const isMobile = window.innerWidth < 768;
       popupInstance = new DevExpress.ui.dxPopup(popupEl, {

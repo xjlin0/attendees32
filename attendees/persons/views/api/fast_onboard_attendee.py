@@ -20,20 +20,29 @@ class ApiFastOnboardAttendeeViewSet(viewsets.ViewSet):
         if not meet_slug:
             raise ValidationError({"meet_slug": "meet_slug is required."})
 
-        kid_data = request.data.get("kid_data")
-        if not kid_data or not isinstance(kid_data, dict):
-            raise ValidationError({"kid_data": "kid_data dictionary is required."})
+        attendees_data = request.data.get("attendees_data")
+        if not attendees_data:
+            kid_data = request.data.get("kid_data")
+            if kid_data and isinstance(kid_data, dict):
+                attendees_data = [kid_data]
+            elif isinstance(kid_data, list):
+                attendees_data = kid_data
 
-        parent_data = request.data.get("parent_data")
+        if not attendees_data or not isinstance(attendees_data, list):
+            raise ValidationError({"attendees_data": "attendees_data list is required."})
+
         companions = request.data.get("companions")
+        if not companions and request.data.get("parent_data"):
+            p_data = request.data.get("parent_data")
+            companions = [p_data] if isinstance(p_data, dict) else p_data
+
         unaccompanied = bool(request.data.get("unaccompanied", False))
         gathering_id = request.data.get("gathering_id")
 
         result = AttendeeService.fast_onboard(
             current_user=request.user,
             meet_slug=meet_slug,
-            kid_data=kid_data,
-            parent_data=parent_data,
+            attendees_data=attendees_data,
             companions=companions,
             unaccompanied=unaccompanied,
             gathering_id=gathering_id,

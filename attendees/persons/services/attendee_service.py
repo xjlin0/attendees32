@@ -1228,21 +1228,42 @@ class AttendeeService:
         }
 
     @staticmethod
+    def normalize_phone_number(val):
+        if not val or not isinstance(val, str):
+            return val
+        trimmed = val.strip()
+        if not trimmed:
+            return trimmed
+        digits = re.sub(r"\D", "", trimmed)
+        if len(digits) == 10:
+            return f"+1{digits}"
+        if len(digits) == 11 and digits.startswith("1"):
+            return f"+{digits}"
+        if trimmed.startswith("+") and len(digits) >= 7:
+            return f"+{digits}"
+        if len(digits) >= 10:
+            return f"+1{digits[-10:]}"
+        return trimmed
+
+    @staticmethod
     def fast_onboard(
         current_user,
         meet_slug,
-        kid_data,
-        parent_data=None,
+        attendees_data=None,
         companions=None,
         unaccompanied=False,
         gathering_id=None,
+        kid_data=None,
+        parent_data=None,
     ):
         """
-        Fast onboard an attendee (and optional guardian) into a meet.
+        Fast onboard one or more attendees (and optional companions) into a meet.
         - Validates current_user organization permissions.
         - Reads meet.assembly.division.infos["show_attendee_infos"] to check if kid meet.
         - Enforces strict Birthday rules:
             - Never asks for age; accepts birthday_year, birthday_month, birthday_day.
+            - Birthday year cannot exceed current year or be before 1900.
+            - Birthday cannot be in the future.
             - If kid meet (infos-grade is true):
                 - All 3 parts required, stored in actual_birthday (YYYY-MM-DD).
                 - Grade and food_pref (allergies) are mandatory.
@@ -1251,16 +1272,37 @@ class AttendeeService:
                 - If Y/M/D complete: actual_birthday.
                 - If partial (missing year): stored in estimated_birthday as '1800-MM-DD'.
                 - If partial (missing day/month): stored in estimated_birthday as 'YYYY' or 'YYYY-MM'.
-        - Guardian / Parent handling:
+        - Companion handling:
             - If unaccompanied: sets attendingmeet.infos['special'] = {'check_in': '⚠Missing companion info'}.
-            - If accompanied: creates parent Attendee (with names & phone), Family Folk, and FolkAttendee for both.
-        - Enrolls kid in meet (AttendingMeet) and optionally records Attendance for gathering_id.
+            - In kid meets: companion contact required unless unaccompanied.
+            - In adult meets: companion contact is optional (only name required).
+            - Folk & FolkAttendee creation:
+                - If kid meet: kids get role son/daughter/child (rank 11 + idx), companions get rank 1 (parent or specified relation).
+                - If adult meet: role is assigned based on gender (male -> husband rank 1, female -> wife rank 2, unspecified -> spouse rank 1/2).
+        - Enrolls all attendees in meet (AttendingMeet) and optionally records Attendance for gathering_id.
         """
         if not current_user or not current_user.is_authenticated or not getattr(current_user, "organization", None):
             raise PermissionDenied("Authentication and organization are required.")
 
         if not meet_slug:
             raise ValidationError({"meet_slug": "meet_slug is required."})
+
+        # Backward compatibility for kid_data and parent_data
+        if attendees_data is None and kid_data is not None:
+            attendees_data = kid_data
+
+        if isinstance(attendees_data, dict):
+            attendees_data = [attendees_data]
+        elif not isinstance(attendees_data, list):
+            attendees_data = []
+
+        if not attendees_data:
+            raise ValidationError({"attendees_data": "attendees_data list is required."})
+
+        companions_raw = companions
+        if not companions_raw and parent_data:
+            companions_raw = [parent_data] if isinstance(parent_data, dict) else parent_data
+        companions = companions_raw if isinstance(companions_raw, list) else []
 
         meet = (
             Meet.objects.filter(slug=meet_slug, is_removed=False)
@@ -1286,70 +1328,154 @@ class AttendeeService:
         is_kid_meet = bool(show_attendee_infos.get("infos-grade") or show_attendee_infos.get("grade"))
         show_insurer = bool(show_attendee_infos.get("infos-insurer") or show_attendee_infos.get("insurer"))
 
-        # 1. Validate kid data
-        first_name = (kid_data.get("first_name") or "").strip() or None
-        last_name = (kid_data.get("last_name") or "").strip() or None
-        first_name2 = (kid_data.get("first_name2") or "").strip() or None
-        last_name2 = (kid_data.get("last_name2") or "").strip() or None
-        if not (first_name or last_name or first_name2 or last_name2):
-            raise ValidationError({"name": "At least one name (English or other language) is required."})
+        # 1. Validate all attendees data
+        now_date = date.today()
+        current_year = now_date.year
+        validated_attendees = []
 
-        gender = kid_data.get("gender") or GenderEnum.UNSPECIFIED.value
+        for idx, att_data in enumerate(attendees_data):
+            att_label = f"Attendee {idx + 1}" if len(attendees_data) > 1 else "Attendee"
+            first_name = (att_data.get("first_name") or "").strip() or None
+            last_name = (att_data.get("last_name") or "").strip() or None
+            first_name2 = (att_data.get("first_name2") or "").strip() or None
+            last_name2 = (att_data.get("last_name2") or "").strip() or None
+            if not (first_name or last_name or first_name2 or last_name2):
+                raise ValidationError({"name": f"{att_label} name (English or other language) is required."})
 
-        byear = kid_data.get("birthday_year")
-        bmonth = kid_data.get("birthday_month")
-        bday = kid_data.get("birthday_day")
-        try:
-            byear = int(byear) if byear is not None and str(byear).strip() != "" else None
-            bmonth = int(bmonth) if bmonth is not None and str(bmonth).strip() != "" else None
-            bday = int(bday) if bday is not None and str(bday).strip() != "" else None
-        except (ValueError, TypeError):
-            raise ValidationError({"birthday": "Birthday year, month, and day must be valid numbers."})
+            gender = att_data.get("gender") or GenderEnum.UNSPECIFIED.value
 
-        actual_birthday = None
-        estimated_birthday = None
-
-        if is_kid_meet:
-            if not (byear and bmonth and bday):
-                raise ValidationError({"birthday": "Year, Month, and Day of birth are required for kids."})
+            byear = att_data.get("birthday_year")
+            bmonth = att_data.get("birthday_month")
+            bday = att_data.get("birthday_day")
             try:
-                actual_birthday = date(byear, bmonth, bday)
-            except ValueError as e:
-                raise ValidationError({"birthday": f"Invalid birthday date: {e}"})
+                byear = int(byear) if byear is not None and str(byear).strip() != "" else None
+                bmonth = int(bmonth) if bmonth is not None and str(bmonth).strip() != "" else None
+                bday = int(bday) if bday is not None and str(bday).strip() != "" else None
+            except (ValueError, TypeError):
+                raise ValidationError({"birthday": f"{att_label} birthday year, month, and day must be valid numbers."})
 
-            grade = kid_data.get("grade")
-            if grade is None or str(grade).strip() == "":
-                raise ValidationError({"grade": "School grade is required for kids."})
+            if byear is not None:
+                if byear > current_year:
+                    raise ValidationError({"birthday": f"Birth year cannot exceed {current_year}."})
+                if byear < 1900:
+                    raise ValidationError({"birthday": "Birth year must be 1900 or later."})
 
-            food_pref = (kid_data.get("food_pref") or "").strip()
-            if not food_pref:
-                raise ValidationError({"food_pref": "Food preference / allergies is required for kids (enter 'None' if none)."})
+            actual_birthday = None
+            estimated_birthday = None
 
-            insurer = (kid_data.get("insurer") or "").strip() if show_insurer else None
-        else:
-            if byear and bmonth and bday:
+            if is_kid_meet:
+                if not (byear and bmonth and bday):
+                    raise ValidationError({"birthday": "Year, Month, and Day of birth are required for kids."})
                 try:
                     actual_birthday = date(byear, bmonth, bday)
                 except ValueError as e:
                     raise ValidationError({"birthday": f"Invalid birthday date: {e}"})
-            elif bmonth and bday and not byear:
-                estimated_birthday = f"1800-{bmonth:02d}-{bday:02d}"
-            elif byear and bmonth:
-                estimated_birthday = f"{byear:04d}-{bmonth:02d}"
-            elif byear:
-                estimated_birthday = f"{byear:04d}"
 
-            grade = kid_data.get("grade")
-            food_pref = (kid_data.get("food_pref") or "").strip() or None
-            insurer = (kid_data.get("insurer") or "").strip() if show_insurer else None
+                if actual_birthday > now_date:
+                    raise ValidationError({"birthday": "Birthday cannot be in the future."})
+
+                grade = att_data.get("grade")
+                if grade is None or str(grade).strip() == "":
+                    raise ValidationError({"grade": "School grade is required for kids."})
+
+                food_pref = (att_data.get("food_pref") or "").strip()
+                if not food_pref:
+                    raise ValidationError({"food_pref": "Food preference / allergies is required for kids (enter 'None' if none)."})
+
+                insurer = (att_data.get("insurer") or "").strip() if show_insurer else None
+            else:
+                if byear and bmonth and bday:
+                    try:
+                        actual_birthday = date(byear, bmonth, bday)
+                    except ValueError as e:
+                        raise ValidationError({"birthday": f"Invalid birthday date: {e}"})
+                    if actual_birthday > now_date:
+                        raise ValidationError({"birthday": "Birthday cannot be in the future."})
+                elif bmonth and bday and not byear:
+                    estimated_birthday = f"1800-{bmonth:02d}-{bday:02d}"
+                elif byear and bmonth:
+                    estimated_birthday = f"{byear:04d}-{bmonth:02d}"
+                elif byear:
+                    estimated_birthday = f"{byear:04d}"
+
+                grade = att_data.get("grade")
+                food_pref = (att_data.get("food_pref") or "").strip() or None
+                insurer = (att_data.get("insurer") or "").strip() if show_insurer else None
+
+            fixed = {}
+            if grade is not None and str(grade).strip() != "":
+                try:
+                    fixed["grade"] = int(grade)
+                except (ValueError, TypeError):
+                    fixed["grade"] = grade
+            if food_pref:
+                fixed["food_pref"] = food_pref
+            if insurer:
+                fixed["insurer"] = insurer
+
+            contacts = {}
+            raw_contacts = att_data.get("contacts")
+            if isinstance(raw_contacts, list):
+                type_counts = {}
+                for c in raw_contacts:
+                    ct = (c.get("type") or "phone").strip().lower()
+                    cv = (c.get("value") or "").strip()
+                    if cv:
+                        if ct in ("phone", "whatsapp"):
+                            cv = AttendeeService.normalize_phone_number(cv)
+                        type_counts[ct] = type_counts.get(ct, 0) + 1
+                        c_idx = type_counts[ct]
+                        contacts[f"{ct}{c_idx}"] = cv
+                        if c_idx == 1:
+                            contacts[ct] = cv
+            elif isinstance(raw_contacts, dict):
+                contacts = {
+                    k: (AttendeeService.normalize_phone_number(v) if k.startswith("phone") or k.startswith("whatsapp") else v)
+                    for k, v in raw_contacts.items()
+                }
+
+            contact_type = (att_data.get("contact_type") or "phone").strip().lower()
+            contact_value = (att_data.get("contact_value") or "").strip()
+            if contact_value and not contacts:
+                if contact_type in ("phone", "whatsapp"):
+                    contact_value = AttendeeService.normalize_phone_number(contact_value)
+                key = contact_type if contact_type.endswith("1") else f"{contact_type}1"
+                contacts[key] = contact_value
+                contacts[contact_type] = contact_value
+            elif att_data.get("phone") and "phone" not in contacts:
+                ph = AttendeeService.normalize_phone_number(att_data.get("phone").strip())
+                contacts["phone1"] = ph
+                contacts["phone"] = ph
+            if att_data.get("email") and "email" not in contacts:
+                em = att_data.get("email").strip()
+                contacts["email1"] = em
+                contacts["email"] = em
+
+            infos = {"fixed": fixed}
+            if contacts:
+                infos["contacts"] = contacts
+
+            division_id = att_data.get("division_id") or att_data.get("division")
+            att_div = None
+            if division_id:
+                att_div = Division.objects.filter(pk=division_id, organization=current_user.organization).first()
+            if not att_div:
+                att_div = meet.assembly.division
+
+            validated_attendees.append({
+                "first_name": first_name,
+                "last_name": last_name,
+                "first_name2": first_name2,
+                "last_name2": last_name2,
+                "gender": gender,
+                "division": att_div,
+                "actual_birthday": actual_birthday,
+                "estimated_birthday": estimated_birthday,
+                "infos": infos,
+            })
 
         # 2. Validate guardian / companion data
         special_check_in = None
-        companions_raw = companions
-        if not companions_raw and parent_data:
-            companions_raw = [parent_data]
-        companions = companions_raw if isinstance(companions_raw, list) else []
-
         if unaccompanied:
             special_check_in = "⚠Missing companion info"
         else:
@@ -1359,11 +1485,14 @@ class AttendeeService:
                     c_last = (c.get("last_name") or "").strip() or None
                     c_first2 = (c.get("first_name2") or "").strip() or None
                     c_last2 = (c.get("last_name2") or "").strip() or None
-                    c_phone = (c.get("phone") or "").strip()
-                    c_contact_val = (c.get("contact_value") or "").strip()
                     if not (c_first or c_last or c_first2 or c_last2):
                         raise ValidationError({"companions": f"Companion {idx + 1} name is required."})
-                    if not (c_phone or c_contact_val):
+
+                    c_phone = (c.get("phone") or "").strip()
+                    c_contact_val = (c.get("contact_value") or "").strip()
+                    c_contacts_list = c.get("contacts") or []
+                    has_contact = bool(c_phone or c_contact_val or c_contacts_list)
+                    if is_kid_meet and not has_contact:
                         raise ValidationError({"companions": f"Companion {idx + 1} contact number or account is required."})
             elif is_kid_meet:
                 raise ValidationError({"unaccompanied": "Companion information is required unless 'Child arrived alone' is checked."})
@@ -1372,45 +1501,22 @@ class AttendeeService:
         with transaction.atomic():
             division = meet.assembly.division
 
-            kid_fixed = {}
-            if grade is not None and str(grade).strip() != "":
-                try:
-                    kid_fixed["grade"] = int(grade)
-                except (ValueError, TypeError):
-                    kid_fixed["grade"] = grade
-            if food_pref:
-                kid_fixed["food_pref"] = food_pref
-            if insurer:
-                kid_fixed["insurer"] = insurer
-
-            kid_contacts = {}
-            contact_type = (kid_data.get("contact_type") or "phone").strip().lower()
-            contact_value = (kid_data.get("contact_value") or "").strip()
-            if contact_value:
-                key = contact_type if contact_type.endswith("1") else f"{contact_type}1"
-                kid_contacts[key] = contact_value
-
-            kid_infos = {
-                "fixed": kid_fixed,
-            }
-            if kid_contacts:
-                kid_infos["contacts"] = kid_contacts
-
-            kid = Attendee.objects.create(
-                first_name=first_name,
-                last_name=last_name,
-                first_name2=first_name2,
-                last_name2=last_name2,
-                gender=gender,
-                division=division,
-                actual_birthday=actual_birthday,
-                estimated_birthday=estimated_birthday,
-                infos=kid_infos,
-            )
+            created_attendees = []
+            for item in validated_attendees:
+                attendee = Attendee.objects.create(
+                    first_name=item["first_name"],
+                    last_name=item["last_name"],
+                    first_name2=item["first_name2"],
+                    last_name2=item["last_name2"],
+                    gender=item["gender"],
+                    division=item["division"],
+                    actual_birthday=item["actual_birthday"],
+                    estimated_birthday=item["estimated_birthday"],
+                    infos=item["infos"],
+                )
+                created_attendees.append(attendee)
 
             created_companions = []
-            family_folk = None
-
             if not unaccompanied and companions:
                 for c_data in companions:
                     c_first = (c_data.get("first_name") or "").strip() or None
@@ -1420,18 +1526,42 @@ class AttendeeService:
                     c_gender = c_data.get("gender") or GenderEnum.UNSPECIFIED.value
 
                     c_contacts = {}
+                    raw_c_contacts = c_data.get("contacts")
+                    if isinstance(raw_c_contacts, list):
+                        type_counts = {}
+                        for c in raw_c_contacts:
+                            ct = (c.get("type") or "phone").strip().lower()
+                            cv = (c.get("value") or "").strip()
+                            if cv:
+                                if ct in ("phone", "whatsapp"):
+                                    cv = AttendeeService.normalize_phone_number(cv)
+                                type_counts[ct] = type_counts.get(ct, 0) + 1
+                                c_idx = type_counts[ct]
+                                c_contacts[f"{ct}{c_idx}"] = cv
+                                if c_idx == 1:
+                                    c_contacts[ct] = cv
+                    elif isinstance(raw_c_contacts, dict):
+                        c_contacts = {
+                            k: (AttendeeService.normalize_phone_number(v) if k.startswith("phone") or k.startswith("whatsapp") else v)
+                            for k, v in raw_c_contacts.items()
+                        }
+
                     c_contact_type = (c_data.get("contact_type") or "phone").strip().lower()
                     c_contact_val = (c_data.get("contact_value") or "").strip()
-                    if c_contact_val:
+                    if c_contact_val and not c_contacts:
+                        if c_contact_type in ("phone", "whatsapp"):
+                            c_contact_val = AttendeeService.normalize_phone_number(c_contact_val)
                         key = c_contact_type if c_contact_type.endswith("1") else f"{c_contact_type}1"
                         c_contacts[key] = c_contact_val
                         c_contacts[c_contact_type] = c_contact_val
-                    elif c_data.get("phone"):
-                        c_contacts["phone1"] = c_data.get("phone").strip()
-                        c_contacts["phone"] = c_data.get("phone").strip()
-                    if c_data.get("email"):
-                        c_contacts["email1"] = c_data.get("email").strip()
-                        c_contacts["email"] = c_data.get("email").strip()
+                    elif c_data.get("phone") and "phone" not in c_contacts:
+                        ph = AttendeeService.normalize_phone_number(c_data.get("phone").strip())
+                        c_contacts["phone1"] = ph
+                        c_contacts["phone"] = ph
+                    if c_data.get("email") and "email" not in c_contacts:
+                        em = c_data.get("email").strip()
+                        c_contacts["email1"] = em
+                        c_contacts["email"] = em
 
                     c_division_id = c_data.get("division_id") or c_data.get("division")
                     c_division = None
@@ -1447,148 +1577,239 @@ class AttendeeService:
                         last_name2=c_last2,
                         gender=c_gender,
                         division=c_division,
-                        infos={"contacts": c_contacts},
+                        infos={"contacts": c_contacts} if c_contacts else {},
                     )
-                    created_companions.append(companion_attendee)
+                    created_companions.append((companion_attendee, c_data))
 
-                    c_rel = c_data.get("relationship") or c_data.get("relation_id")
-                    comp_role = None
-                    if c_rel:
-                        if str(c_rel).isdigit():
-                            comp_role = Relation.objects.filter(pk=int(c_rel), is_removed=False).first()
-                        else:
-                            comp_role = Relation.objects.filter(title__iexact=str(c_rel).strip(), is_removed=False).first()
+            # Folk and FolkAttendee relations
+            if not unaccompanied and (created_companions or len(created_attendees) > 1):
+                if is_kid_meet:
+                    for c_idx, (comp_attendee, c_data) in enumerate(created_companions):
+                        c_rel = c_data.get("relationship") or c_data.get("relation_id")
+                        comp_role = None
+                        if c_rel:
+                            if str(c_rel).isdigit():
+                                comp_role = Relation.objects.filter(pk=int(c_rel), is_removed=False).first()
+                            else:
+                                comp_role = Relation.objects.filter(title__iexact=str(c_rel).strip(), is_removed=False).first()
 
-                    if not comp_role:
-                        comp_role = (
-                            Relation.objects.filter(title__iexact="parent").first()
-                            or Relation.objects.filter(emergency_contact=True).first()
-                            or Relation.objects.filter(id=1).first()
-                            or Relation.objects.first()
+                        if not comp_role:
+                            norm_cg = str(comp_attendee.gender).strip().lower()
+                            if norm_cg == "male":
+                                comp_role = Relation.objects.filter(title__iexact="father", is_removed=False).first()
+                            elif norm_cg == "female":
+                                comp_role = Relation.objects.filter(title__iexact="mother", is_removed=False).first()
+                            if not comp_role:
+                                comp_role = (
+                                    Relation.objects.filter(title__iexact="parent", is_removed=False).first()
+                                    or Relation.objects.filter(emergency_contact=True).first()
+                                    or Relation.objects.filter(id=1).first()
+                                    or Relation.objects.first()
+                                )
+
+                        recip_role = None
+                        if comp_role and comp_role.reciprocal_ids:
+                            recips = list(Relation.objects.filter(pk__in=comp_role.reciprocal_ids, is_removed=False))
+                            if comp_role.title and comp_role.title.lower() in ("guardian", "caregiver"):
+                                recip_role = next((r for r in recips if r.title.lower() in ("ward", "care receiver")), None)
+                            else:
+                                recip_role = next((r for r in recips if r.title.lower() == "child"), None)
+                            if not recip_role and recips:
+                                recip_role = recips[0]
+
+                        if not recip_role and comp_role and comp_role.title and comp_role.title.lower() in ("guardian", "caregiver"):
+                            recip_role = Relation.objects.filter(title__iexact="ward").first()
+
+                        if not recip_role:
+                            recip_role = (
+                                Relation.objects.filter(title__iexact="child").first()
+                                or Relation.objects.filter(id=2).first()
+                                or Relation.objects.first()
+                            )
+
+                        is_family = bool(
+                            comp_role and (
+                                comp_role.consanguinity
+                                or (comp_role.title and comp_role.title.lower() in ("parent", "father", "mother", "child", "son", "daughter", "brother", "sister", "husband", "wife", "spouse"))
+                            )
                         )
-                    if not comp_role:
-                        comp_role = Relation.objects.create(id=0, title="unspecified", gender=GenderEnum.UNSPECIFIED.value)
 
-                    recip_role = None
-                    if comp_role and comp_role.reciprocal_ids:
-                        recips = list(Relation.objects.filter(pk__in=comp_role.reciprocal_ids, is_removed=False))
-                        if comp_role.title and comp_role.title.lower() in ("guardian", "caregiver"):
-                            recip_role = next((r for r in recips if r.title.lower() in ("ward", "care receiver")), None)
-                        else:
-                            recip_role = next((r for r in recips if r.title.lower() == "child"), None)
-                        if not recip_role and recips:
-                            recip_role = recips[0]
-
-                    if not recip_role and comp_role and comp_role.title and comp_role.title.lower() in ("guardian", "caregiver"):
-                        recip_role = Relation.objects.filter(title__iexact="ward").first()
-
-                    if not recip_role:
-                        recip_role = (
-                            Relation.objects.filter(title__iexact="child").first()
-                            or Relation.objects.filter(id=2).first()
-                            or Relation.objects.first()
-                        )
-                    if not recip_role:
-                        recip_role = Relation.objects.create(id=0, title="unspecified", gender=GenderEnum.UNSPECIFIED.value)
-
-                    is_family = bool(
-                        comp_role.consanguinity
-                        or (comp_role.title and comp_role.title.lower() in ("parent", "father", "mother", "child", "son", "daughter", "brother", "sister", "husband", "wife", "spouse"))
-                    )
-
-                    if is_family:
-                        if not family_folk:
+                        if is_family:
+                            primary_kid = created_attendees[0]
                             family_folk = (
-                                kid.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
-                                or companion_attendee.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
+                                primary_kid.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
+                                or comp_attendee.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
                             )
-                        if not family_folk:
-                            family_cat, _ = Category.objects.get_or_create(
-                                id=Attendee.FAMILY_CATEGORY,
-                                defaults={"display_name": "Family", "type": "folk"},
-                            )
-                            family_name = c_last or c_last2 or c_first or c_first2 or kid.last_name or kid.first_name
-                            family_folk = Folk.objects.create(
-                                category=family_cat,
-                                division=c_division,
-                                display_name=f"{family_name} family",
-                            )
+                            if not family_folk:
+                                family_cat, _ = Category.objects.get_or_create(
+                                    id=Attendee.FAMILY_CATEGORY,
+                                    defaults={"display_name": "Family", "type": "folk"},
+                                )
+                                family_name = (
+                                    comp_attendee.last_name or comp_attendee.last_name2
+                                    or primary_kid.last_name or primary_kid.first_name
+                                )
+                                family_folk = Folk.objects.create(
+                                    category=family_cat,
+                                    division=comp_attendee.division,
+                                    display_name=f"{family_name} family",
+                                )
 
-                        FolkAttendee.objects.update_or_create(
-                            folk=family_folk,
-                            attendee=companion_attendee,
-                            defaults={"role": comp_role},
-                        )
-                        FolkAttendee.objects.update_or_create(
-                            folk=family_folk,
-                            attendee=kid,
-                            defaults={"role": recip_role},
-                        )
-                    else:
-                        kid_other_folk = kid.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
-                        if not kid_other_folk:
-                            kid_name_str = (kid.infos.get("names", {}).get("original") or kid.display_label).strip()
-                            kid_other_folk = AttendeeService.create_or_update_first_folk(
-                                kid,
-                                f"{kid_name_str} other",
-                                Attendee.NON_FAMILY_CATEGORY,
-                                Attendee.HIDDEN_ROLE,
-                                False,
-                            )
-
-                        FolkAttendee.objects.update_or_create(
-                            folk=kid_other_folk,
-                            attendee=companion_attendee,
-                            defaults={"role": comp_role},
-                        )
-
-                        comp_other_folk = companion_attendee.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
-                        if comp_other_folk:
                             FolkAttendee.objects.update_or_create(
-                                folk=comp_other_folk,
-                                attendee=kid,
-                                defaults={"role": recip_role},
+                                folk=family_folk,
+                                attendee=comp_attendee,
+                                defaults={"role": comp_role, "display_order": c_idx + 1},
                             )
 
-                    # Set emergency contacts
-                    if comp_role.emergency_contact or (comp_role.title and comp_role.title.lower() in ("parent", "father", "mother", "guardian", "caregiver")):
-                        kid.infos.setdefault("emergency_contacts", {})[str(companion_attendee.id)] = True
-                        companion_attendee.infos.setdefault("emergency_contacts", {})[str(kid.id)] = getattr(recip_role, "emergency_contact", False)
-                        companion_attendee.save(update_fields=["infos"])
+                            for k_idx, kid in enumerate(created_attendees):
+                                if comp_role and comp_role.title and comp_role.title.lower() in ("guardian", "caregiver"):
+                                    kid_role = recip_role
+                                else:
+                                    norm_kid_gender = str(kid.gender).strip().lower()
+                                    if norm_kid_gender == "male":
+                                        kid_role = (
+                                            Relation.objects.filter(title__iexact="son", is_removed=False).first()
+                                            or recip_role
+                                        )
+                                    elif norm_kid_gender == "female":
+                                        kid_role = (
+                                            Relation.objects.filter(title__iexact="daughter", is_removed=False).first()
+                                            or recip_role
+                                        )
+                                    else:
+                                        kid_role = recip_role
 
-                kid.save(update_fields=["infos"])
+                                kid_fa_defaults = {
+                                    "role": kid_role,
+                                    "display_order": 11 + k_idx,
+                                }
+                                if kid.actual_birthday:
+                                    kid_fa_defaults["start"] = kid.actual_birthday
 
-            # 4. Attending & AttendingMeet
-            attending = kid.attendings.first()
-            if not attending:
-                attending = Attending.objects.create(
-                    attendee=kid,
-                    category="auto-created",
-                    infos={"created_reason": "fast onboarding"},
-                )
+                                FolkAttendee.objects.update_or_create(
+                                    folk=family_folk,
+                                    attendee=kid,
+                                    defaults=kid_fa_defaults,
+                                )
+                        else:
+                            for k_idx, kid in enumerate(created_attendees):
+                                kid_other_folk = kid.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
+                                if not kid_other_folk:
+                                    kid_name_str = (kid.infos.get("names", {}).get("original") or kid.display_label).strip()
+                                    kid_other_folk = AttendeeService.create_or_update_first_folk(
+                                        kid,
+                                        f"{kid_name_str} other",
+                                        Attendee.NON_FAMILY_CATEGORY,
+                                        Attendee.HIDDEN_ROLE,
+                                        False,
+                                    )
 
-            am_infos = {"created_reason": "fast onboarding"}
-            if special_check_in:
-                am_infos["special"] = {"check_in": special_check_in}
+                                FolkAttendee.objects.update_or_create(
+                                    folk=kid_other_folk,
+                                    attendee=comp_attendee,
+                                    defaults={"role": comp_role, "display_order": c_idx + 1},
+                                )
 
+                                kid_fa_defaults = {
+                                    "role": recip_role,
+                                    "display_order": 11 + k_idx,
+                                }
+                                if kid.actual_birthday:
+                                    kid_fa_defaults["start"] = kid.actual_birthday
+
+                                comp_other_folk = comp_attendee.folks.filter(category=Attendee.NON_FAMILY_CATEGORY).first()
+                                if comp_other_folk:
+                                    FolkAttendee.objects.update_or_create(
+                                        folk=comp_other_folk,
+                                        attendee=kid,
+                                        defaults=kid_fa_defaults,
+                                    )
+
+                        # Set emergency contacts
+                        if comp_role and (comp_role.emergency_contact or (comp_role.title and comp_role.title.lower() in ("parent", "father", "mother", "guardian", "caregiver"))):
+                            for kid in created_attendees:
+                                kid.infos.setdefault("emergency_contacts", {})[str(comp_attendee.id)] = True
+                                comp_attendee.infos.setdefault("emergency_contacts", {})[str(kid.id)] = getattr(recip_role, "emergency_contact", False)
+                                kid.save(update_fields=["infos"])
+                            comp_attendee.save(update_fields=["infos"])
+                else:
+                    # Adult meet: establish family folk with husband (rank 1), wife (rank 2), spouse
+                    all_family_members = list(created_attendees) + [c[0] for c in created_companions]
+                    primary_adult = created_attendees[0]
+                    first_comp = created_companions[0][0] if created_companions else None
+                    family_name = (
+                        (first_comp.last_name or first_comp.last_name2)
+                        if first_comp and (first_comp.last_name or first_comp.last_name2)
+                        else (primary_adult.last_name or primary_adult.last_name2 or primary_adult.first_name)
+                    )
+                    family_cat, _ = Category.objects.get_or_create(
+                        id=Attendee.FAMILY_CATEGORY,
+                        defaults={"display_name": "Family", "type": "folk"},
+                    )
+                    family_folk = (
+                        primary_adult.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
+                        or (first_comp.folks.filter(category=Attendee.FAMILY_CATEGORY).first() if first_comp else None)
+                    )
+                    if not family_folk:
+                        family_folk = Folk.objects.create(
+                            category=family_cat,
+                            division=primary_adult.division,
+                            display_name=f"{family_name} family",
+                        )
+
+                    husband_role = (
+                        Relation.objects.filter(title__iexact="husband", is_removed=False).first()
+                        or Relation.objects.filter(id=5).first()
+                    )
+                    wife_role = (
+                        Relation.objects.filter(title__iexact="wife", is_removed=False).first()
+                        or Relation.objects.filter(id=6).first()
+                    )
+                    spouse_role = (
+                        Relation.objects.filter(title__iexact="spouse", is_removed=False).first()
+                        or Relation.objects.filter(id=14).first()
+                        or Relation.objects.first()
+                    )
+
+                    for m_idx, member in enumerate(all_family_members):
+                        m_gender = str(member.gender or "").strip().lower()
+                        if m_gender == "male":
+                            m_role = husband_role
+                            m_order = 1
+                        elif m_gender == "female":
+                            m_role = wife_role
+                            m_order = 2
+                        else:
+                            m_role = spouse_role or husband_role
+                            m_order = 1 if m_idx == 0 else 2
+
+                        m_defaults = {
+                            "role": m_role,
+                            "display_order": m_order,
+                        }
+                        if member.actual_birthday:
+                            m_defaults["start"] = member.actual_birthday
+
+                        FolkAttendee.objects.update_or_create(
+                            folk=family_folk,
+                            attendee=member,
+                            defaults=m_defaults,
+                        )
+
+                    for att in created_attendees:
+                        for comp_att, _ in created_companions:
+                            att.infos.setdefault("emergency_contacts", {})[str(comp_att.id)] = True
+                            comp_att.infos.setdefault("emergency_contacts", {})[str(att.id)] = True
+                            comp_att.save(update_fields=["infos"])
+                        att.save(update_fields=["infos"])
+
+            # 4. Attending & AttendingMeet & Attendance for all created attendees
             scheduled_cat = (
                 Category.objects.filter(id=Attendee.SCHEDULED_CATEGORY).first()
                 or Category.objects.filter(id=1).first()
             )
-
             major_char = meet.major_character or Character.objects.filter(assembly=meet.assembly).first()
 
-            attendingmeet = AttendingMeet.objects.create(
-                attending=attending,
-                meet=meet,
-                character=major_char,
-                category=scheduled_cat,
-                finish=Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999)),
-                infos=am_infos,
-            )
-
-            # 5. Optional check-in for gathering
-            attendance = None
             gathering = None
             if gathering_id:
                 if str(gathering_id).isdigit():
@@ -1612,7 +1833,6 @@ class AttendeeService:
                             )
 
             if not gathering:
-                # Find ongoing/upcoming gathering for this meet or nearest gathering
                 now = Utility.now_with_timezone()
                 gathering = (
                     Gathering.objects.filter(
@@ -1645,38 +1865,82 @@ class AttendeeService:
                     site_id=site_id,
                 )
 
-            if gathering:
-                attended_cat = (
-                    Category.objects.filter(id=Attendee.ATTENDED_CATEGORY).first()
-                    or Category.objects.filter(type="attendance", display_name__iexact="attended").first()
-                    or Category.objects.filter(type="attendance").exclude(id=1).first()
-                )
-                attendance = Attendance.objects.create(
-                    gathering=gathering,
+            attended_cat = (
+                Category.objects.filter(id=Attendee.ATTENDED_CATEGORY).first()
+                or Category.objects.filter(type="attendance", display_name__iexact="attended").first()
+                or Category.objects.filter(type="attendance").exclude(id=1).first()
+            )
+
+            created_attendees_info = []
+            for att in created_attendees:
+                attending = att.attendings.first()
+                if not attending:
+                    attending = Attending.objects.create(
+                        attendee=att,
+                        category="auto-created",
+                        infos={"created_reason": "fast onboarding"},
+                    )
+
+                am_infos = {"created_reason": "fast onboarding"}
+                if special_check_in:
+                    am_infos["special"] = {"check_in": special_check_in}
+
+                attendingmeet = AttendingMeet.objects.create(
                     attending=attending,
+                    meet=meet,
                     character=major_char,
-                    category=attended_cat or Category.objects.get(pk=Attendee.ATTENDED_CATEGORY),
-                    start=Utility.now_with_timezone(),
+                    category=scheduled_cat,
+                    finish=Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999)),
+                    infos=am_infos,
                 )
 
+                attendance = None
+                if gathering:
+                    attendance = Attendance.objects.create(
+                        gathering=gathering,
+                        attending=attending,
+                        character=major_char,
+                        category=attended_cat or Category.objects.get(pk=Attendee.ATTENDED_CATEGORY),
+                        start=Utility.now_with_timezone(),
+                    )
+
+                created_attendees_info.append({
+                    "attendee_id": att.id,
+                    "attendee_name": att.display_label,
+                    "first_name": att.first_name,
+                    "last_name": att.last_name,
+                    "first_name2": att.first_name2,
+                    "last_name2": att.last_name2,
+                    "gender": att.gender,
+                    "actual_birthday": str(att.actual_birthday) if att.actual_birthday else None,
+                    "estimated_birthday": str(att.estimated_birthday) if att.estimated_birthday else None,
+                    "attending_id": attending.id,
+                    "attendingmeet_id": attendingmeet.id,
+                    "attendance_id": attendance.id if attendance else None,
+                })
+
+            primary = created_attendees_info[0]
+            comp_objs = [c[0] for c in created_companions]
             return {
-                "attendee_id": kid.id,
-                "attendee_name": kid.display_label,
-                "first_name": kid.first_name,
-                "last_name": kid.last_name,
-                "first_name2": kid.first_name2,
-                "last_name2": kid.last_name2,
-                "gender": kid.gender,
-                "actual_birthday": str(kid.actual_birthday) if kid.actual_birthday else None,
-                "estimated_birthday": str(kid.estimated_birthday) if kid.estimated_birthday else None,
-                "attending_id": attending.id,
-                "attendingmeet_id": attendingmeet.id,
-                "attendance_id": attendance.id if attendance else None,
+                "attendee_id": primary["attendee_id"],
+                "attendee_name": primary["attendee_name"],
+                "first_name": primary["first_name"],
+                "last_name": primary["last_name"],
+                "first_name2": primary["first_name2"],
+                "last_name2": primary["last_name2"],
+                "gender": primary["gender"],
+                "actual_birthday": primary["actual_birthday"],
+                "estimated_birthday": primary["estimated_birthday"],
+                "attending_id": primary["attending_id"],
+                "attendingmeet_id": primary["attendingmeet_id"],
+                "attendance_id": primary["attendance_id"],
                 "gathering_id": gathering.id if gathering else None,
                 "warning": special_check_in,
-                "parent_id": created_companions[0].id if created_companions else None,
-                "companion_ids": [c.id for c in created_companions],
+                "parent_id": comp_objs[0].id if comp_objs else None,
+                "companion_ids": [c.id for c in comp_objs],
                 "is_kid_meet": is_kid_meet,
+                "attendees": created_attendees_info,
+                "attendee_ids": [info["attendee_id"] for info in created_attendees_info],
             }
 
 

@@ -353,6 +353,78 @@ Attendees.utilities = {
     });
     return args
   },
+
+  normalizePhoneNumber: (val) => {
+    if (!val || typeof val !== 'string') return val;
+    const trimmed = val.trim();
+    if (!trimmed) return trimmed;
+    const digitsOnly = trimmed.replace(/\D/g, '');
+    if (digitsOnly.length === 10) {
+      return `+1${digitsOnly}`;
+    }
+    if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+      return `+${digitsOnly}`;
+    }
+    if (trimmed.startsWith('+') && digitsOnly.length >= 7) {
+      return `+${digitsOnly}`;
+    }
+    if (digitsOnly.length >= 10) {
+      return `+1${digitsOnly.slice(-10)}`;
+    }
+    return trimmed;
+  },
+
+  validateFastInputBirthday: (year, month, day) => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const y = parseInt(year, 10);
+    if (!y || isNaN(y)) {
+      return { valid: false, message: 'Invalid birth year.' };
+    }
+    if (y > currentYear) {
+      return { valid: false, message: `Birth year cannot exceed ${currentYear}.` };
+    }
+    if (y < 1900) {
+      return { valid: false, message: 'Birth year must be 1900 or later.' };
+    }
+    const m = (month !== undefined && month !== null && String(month).trim() !== '') ? parseInt(month, 10) : null;
+    const d = (day !== undefined && day !== null && String(day).trim() !== '') ? parseInt(day, 10) : null;
+    if (m !== null && d !== null) {
+      const bDate = new Date(y, m - 1, d);
+      if (bDate.getFullYear() !== y || bDate.getMonth() !== m - 1 || bDate.getDate() !== d) {
+        return { valid: false, message: 'Invalid calendar date.' };
+      }
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+      if (bDate > endOfToday) {
+        return { valid: false, message: 'Birthday cannot be in the future.' };
+      }
+    }
+    return { valid: true };
+  },
+
+  validateFastInputPhoneNumber: (val) => {
+    if (!val || typeof val !== 'string') return false;
+    const digitsOnly = val.replace(/\D/g, '');
+    return digitsOnly.length >= 10;
+  },
+
+  validateFastInputEmail: (val) => {
+    if (!val || typeof val !== 'string') return false;
+    const trimmed = val.trim();
+    return trimmed.length >= 5 && trimmed.includes('.') && trimmed.includes('@');
+  },
+
+  validateFastInputContact: (type, val) => {
+    if (!val || typeof val !== 'string' || !val.trim()) return false;
+    const normalizedType = (type || 'phone').toLowerCase();
+    if (normalizedType === 'phone' || normalizedType === 'whatsapp') {
+      return Attendees.utilities.validateFastInputPhoneNumber(val);
+    } else if (normalizedType === 'email') {
+      return Attendees.utilities.validateFastInputEmail(val);
+    }
+    return val.trim().length >= 2;
+  },
 };
 
 $(document).ready(() => {
