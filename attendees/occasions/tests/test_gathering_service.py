@@ -181,3 +181,31 @@ class TestGatheringService:
         orderbys = [{"selector": "start", "desc": True}, {"selector": "site", "desc": False}]
         parsed = GatheringService.orderby_parser(orderbys)
         assert parsed == ["-start", "site_type", "site_id"]
+
+    def test_get_or_create_single_gathering(self):
+        start_time = self.now + timedelta(days=3)
+        gathering, created = GatheringService.get_or_create_single_gathering(self.meet, start_time)
+        assert created is True
+        assert gathering.id is not None
+        assert gathering.meet_id == self.meet.id
+
+        # Calling again should be idempotent
+        gathering2, created2 = GatheringService.get_or_create_single_gathering(self.meet, start_time)
+        assert created2 is False
+        assert gathering2.id == gathering.id
+
+    def test_get_roster_gatherings(self):
+        # Already has self.gathering created in setup_method
+        start_time = self.now - timedelta(days=1)
+        finish_time = self.now + timedelta(days=2)
+        cols = GatheringService.get_roster_gatherings(
+            organization=self.organization,
+            meet_slugs=[self.meet.slug],
+            start=start_time,
+            finish=finish_time,
+        )
+        assert len(cols) >= 1
+        existing_cols = [c for c in cols if c['id'] == self.gathering.id]
+        assert len(existing_cols) == 1
+        assert existing_cols[0]['meet_id'] == self.meet.id
+        assert existing_cols[0]['meet_display_name'] == self.meet.display_name

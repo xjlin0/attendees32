@@ -436,3 +436,72 @@ class AttendanceService:
             orderby_dict[direction + field] = True
 
         return orderby_dict.keys()
+
+    @staticmethod
+    def create_or_update_attendance(user, data, context=None):
+        """
+        Creates or updates an Attendance record.
+        If gathering is missing or null, finds or creates the gathering first using GatheringService.
+        """
+        from rest_framework import serializers
+        from attendees.occasions.serializers import AttendanceEtcSerializer
+        from attendees.occasions.services import GatheringService
+
+        data_dict = data.copy() if hasattr(data, 'copy') else dict(data)
+        gathering_id = data_dict.get('gathering')
+        if not gathering_id:
+            meet = data_dict.get('meet')
+            start = data_dict.get('gathering_start') or data_dict.get('start')
+            if not meet or not start:
+                raise serializers.ValidationError({"gathering": "Gathering ID or (meet and start time) is required."})
+            try:
+                gathering_obj, _ = GatheringService.get_or_create_single_gathering(meet, start)
+            except Exception as e:
+                raise serializers.ValidationError({"gathering": str(e)})
+            gathering_id = gathering_obj.id
+            data_dict['gathering'] = gathering_id
+
+        # Check if attendance already exists for this attending and gathering
+        attendance_id = data_dict.get('id')
+        if not attendance_id:
+            existing_attendance = Attendance.objects.filter(
+                attending_id=data_dict.get('attending'),
+                gathering_id=gathering_id,
+                is_removed=False
+            ).first()
+            if existing_attendance:
+                attendance_id = existing_attendance.id
+                data_dict['id'] = attendance_id
+
+        if attendance_id:
+            instance = Attendance.objects.get(pk=attendance_id)
+            serializer = AttendanceEtcSerializer(instance, data=data_dict, partial=True, context=context)
+        else:
+            serializer = AttendanceEtcSerializer(data=data_dict, context=context)
+
+        serializer.is_valid(raise_exception=True)
+        attendance = serializer.save()
+        AttendanceService.extend_attending_meet_if_needed(attendance)
+        return attendance
+
+    @staticmethod
+    def extend_attending_meet_if_needed(attendance):
+        """
+        Extends AttendingMeet finish date to end of gathering day if attendingmeet was expired.
+        """
+        if attendance and attendance.category_id != 1:  # Attended / Checked in
+            gathering = attendance.gathering
+            if gathering and gathering.meet and gathering.finish:
+                attending_meet = AttendingMeet.objects.filter(
+                    attending=attendance.attending,
+                    meet=gathering.meet,
+                    is_removed=False,
+                ).order_by('-finish').first()
+                if attending_meet and attending_meet.finish and attending_meet.finish < gathering.finish:
+                    end_of_day = gathering.finish.replace(hour=23, minute=59, second=59, microsecond=999999)
+                    attending_meet.finish = max(gathering.finish, end_of_day)
+                    attending_meet.save(update_fields=['finish', 'modified'])
+                    return attending_meet
+        return None
+
+

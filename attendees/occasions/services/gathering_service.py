@@ -2,11 +2,13 @@ from datetime import datetime, timedelta
 
 import pytz
 from address.models import Address
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.utils import json
 from django.db.models import Q
+from django.utils.dateparse import parse_datetime
+from rest_framework.utils import json
 
-from attendees.occasions.models import Gathering
+from attendees.occasions.models import Gathering, Meet
 from attendees.whereabouts.models import Room, Suite, Property, Campus, Division, Organization
 
 
@@ -238,3 +240,210 @@ class GatheringService:
             else:
                 orderby_list.append(direction + field)
         return orderby_list
+
+    @staticmethod
+    def get_or_create_single_gathering(meet, start_time):
+        """
+        Idempotently get or create a single gathering for a meet and start time.
+        Uses the meet's source EventRelation to determine duration and site if creating.
+
+        :param meet: Meet instance, or meet_id (int/str), or meet_slug (str)
+        :param start_time: datetime or ISO format datetime string
+        :return: (gathering, created) tuple
+        """
+        if isinstance(meet, Meet):
+            meet_obj = meet
+        elif isinstance(meet, (int, str)):
+            if str(meet).isdigit():
+                meet_obj = Meet.objects.filter(pk=int(meet)).first()
+            else:
+                meet_obj = Meet.objects.filter(slug=meet).first()
+        else:
+            meet_obj = None
+
+        if not meet_obj:
+            raise ValueError(f"Meet not found for: {meet}")
+
+        if isinstance(start_time, str):
+            parsed_dt = parse_datetime(start_time)
+            if parsed_dt is None:
+                from dateutil.parser import parse
+                parsed_dt = parse(start_time)
+        else:
+            parsed_dt = start_time
+
+        tz_name = meet_obj.infos.get('default_time_zone') or settings.TIME_ZONE
+        canonical_time_zone = pytz.timezone(tz_name)
+        if parsed_dt.tzinfo is None:
+            canonical_start = canonical_time_zone.localize(parsed_dt)
+        else:
+            canonical_start = parsed_dt.astimezone(canonical_time_zone)
+
+        # Check by meet and start time within a 30 second window
+        start_min = canonical_start - timedelta(seconds=30)
+        start_max = canonical_start + timedelta(seconds=30)
+        existing = Gathering.objects.filter(
+            meet=meet_obj,
+            start__gte=start_min,
+            start__lte=start_max,
+            is_removed=False,
+        ).first()
+
+        if existing:
+            return existing, False
+
+        site_type = meet_obj.site_type
+        site_id = meet_obj.site_id
+        canonical_end = None
+
+        source_er = meet_obj.event_relations.filter(distinction='source').first()
+        if not source_er:
+            source_er = meet_obj.event_relations.first()
+
+        if source_er:
+            site_info = source_er.event.description
+            if site_info and '#' in site_info:
+                model_name, s_id = site_info.split("#")
+                model = ContentType.objects.filter(model=model_name).first()
+                if model:
+                    site_type = ContentType.objects.get_for_model(model.model_class())
+                    site_id = s_id
+
+            # Determine occurrence duration
+            occs = source_er.event.get_occurrences(
+                canonical_start - timedelta(minutes=5),
+                canonical_start + timedelta(minutes=5)
+            )
+            for occ in occs:
+                if not occ.cancelled:
+                    canonical_end = occ.end.astimezone(canonical_time_zone)
+                    break
+
+        if not canonical_end:
+            canonical_end = canonical_start + timedelta(hours=1)
+
+        infos = {**meet_obj.infos.get('gathering_infos', {}), 'created_reason': 'auto created on attendance'}
+        site_name = ""
+        if meet_obj.site:
+            try:
+                site_name = str(meet_obj.site)
+            except Exception:
+                site_name = getattr(meet_obj.site, 'display_name', '')
+
+        gathering, created = Gathering.objects.get_or_create(
+            meet=meet_obj,
+            site_id=site_id,
+            site_type=site_type,
+            start=canonical_start,
+            defaults={
+                "site_type": site_type,
+                "site_id": site_id,
+                "meet": meet_obj,
+                "start": canonical_start,
+                "finish": canonical_end,
+                "infos": infos,
+                "display_name": f'{meet_obj.display_name} {canonical_start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {site_name}'[0:254],
+            },
+        )
+        return gathering, created
+
+    @staticmethod
+    def get_roster_gatherings(organization, meet_slugs, start, finish):
+        """
+        Returns a list of gathering column dicts for rosters datagrid.
+        Merges existing database gatherings and future occurrences forecasted from meet source event relations.
+        """
+        if isinstance(start, str):
+            start_dt = parse_datetime(start)
+        else:
+            start_dt = start
+
+        if isinstance(finish, str):
+            finish_dt = parse_datetime(finish)
+        else:
+            finish_dt = finish
+
+        existing_gatherings_qs = Gathering.objects.filter(
+            meet__slug__in=meet_slugs,
+            meet__assembly__division__organization=organization,
+            is_removed=False,
+        ).select_related('meet')
+        if start_dt:
+            existing_gatherings_qs = existing_gatherings_qs.filter(start__gte=start_dt)
+        if finish_dt:
+            existing_gatherings_qs = existing_gatherings_qs.filter(finish__lte=finish_dt)
+
+        existing_gatherings = list(existing_gatherings_qs.order_by('start', 'meet__display_name', 'id'))
+
+        columns = []
+        existing_keys = set()
+        for g in existing_gatherings:
+            columns.append({
+                "id": g.id,
+                "display_name": g.display_name,
+                "start": g.start.isoformat() if g.start else None,
+                "meet_id": g.meet_id,
+                "meet_display_name": g.meet.display_name if g.meet else "",
+                "_start_dt": g.start,
+            })
+            if g.start:
+                utc_start = g.start.astimezone(pytz.utc)
+                key = (g.meet_id, int(utc_start.timestamp() // 60))
+                existing_keys.add(key)
+
+        meets = Meet.objects.filter(
+            slug__in=meet_slugs,
+            assembly__division__organization=organization,
+            is_removed=False,
+        )
+        for meet in meets:
+            tz_name = meet.infos.get('default_time_zone') or settings.TIME_ZONE
+            canonical_tz = pytz.timezone(tz_name)
+
+            m_start = start_dt
+            if meet.start and (not m_start or meet.start > m_start):
+                m_start = meet.start
+
+            m_finish = finish_dt
+            if meet.finish and (not m_finish or meet.finish < m_finish):
+                m_finish = meet.finish
+
+            if not m_start or not m_finish or m_start >= m_finish:
+                continue
+
+            begin_time = m_start.astimezone(canonical_tz) if m_start.tzinfo else canonical_tz.localize(m_start)
+            end_time = m_finish.astimezone(canonical_tz) if m_finish.tzinfo else canonical_tz.localize(m_finish)
+
+            for er in meet.event_relations.filter(distinction='source'):
+                for occ in er.event.get_occurrences(begin_time, end_time):
+                    if occ.cancelled:
+                        continue
+                    occ_start = occ.start.astimezone(canonical_tz)
+                    if occ_start < begin_time or occ_start > end_time:
+                        continue
+                    utc_occ_start = occ_start.astimezone(pytz.utc)
+                    key = (meet.id, int(utc_occ_start.timestamp() // 60))
+                    if key in existing_keys:
+                        continue
+                    site_name = ""
+                    if meet.site:
+                        try:
+                            site_name = str(meet.site)
+                        except Exception:
+                            site_name = getattr(meet.site, 'display_name', '')
+
+                    display_name = f'{meet.display_name} {occ_start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {site_name}'[0:254]
+                    columns.append({
+                        "id": None,
+                        "display_name": display_name,
+                        "start": occ_start.isoformat(),
+                        "meet_id": meet.id,
+                        "meet_display_name": meet.display_name,
+                        "_start_dt": occ_start,
+                    })
+
+        columns.sort(key=lambda col: (col["_start_dt"].astimezone(pytz.utc) if col.get("_start_dt") else datetime.min.replace(tzinfo=pytz.utc), col.get("meet_id") or 0))
+        for col in columns:
+            col.pop("_start_dt", None)
+
+        return columns

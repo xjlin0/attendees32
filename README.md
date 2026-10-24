@@ -487,11 +487,56 @@ docker-compose -f production.yml run django python manage.py populate_coordinate
 ```
 timeout 300 docker compose -f local.yml run django pytest
 ```
-### Playwright (with chromium) e2e test when Django server is up:
+### Playwright (with chromium) e2e test, *empty DB* with ci_seed.json:
 ```
-C_PASSWORD=your_password_for_superuser_in_seed timeout 300 npx playwright test --workers=1
+docker compose -f local.yml run --rm django python manage.py flush --no-input
+docker compose -f local.yml run --rm django python manage.py loaddata fixtures/ci_seed.json
+docker compose -f local.yml restart django
+C_PASSWORD=your_password_for_superuser_in_seed timeout 300 npx playwright test --project=ci-seed --workers=1
 ```
-Please also define the repository secret `C_PASSWORD` in Github for running e2e in CI/CD
+Please also define the repository secret `C_PASSWORD` in Github for running e2e in CI/CD, you can also define your password by:
+```
+docker compose -f local.yml run --rm django python manage.py shell -c \
+"from attendees.users.models import User; u = User.objects.get(username='jack'); u.set_password('any_password'); u.save()"
+```
+
+### e2e with Golden data test (*everything in db will gone!!*):
+```
+docker compose -f local.yml run --rm django python manage.py flush --no-input
+docker compose -f local.yml run --rm django python manage.py load_golden_data --seed --force --manifest e2e/golden-manifest.json
+docker compose -f local.yml restart django
+TZ=UTC npx playwright test --project=chromium
+```
+
+## Flags in infos
+
+### meet:
+`signature_required_at`: could be nonexist, "check_out" or "check_in" string.  For check in/out attendance, "check_out" will force users to sign at checking out, "check_in" will force users to sign at checking in.
+`default_attendingmeet_in_weeks`: could be any positive integers. When generating attendingmeet, start will be current, and finish will be current plus that number of weeks.
+`default_time_zone`: used for generating any start/finish of attendingmeet/attendances in that timezone.
+
+## Admin tasks
+### Advancing grades of every students in all or one organization based on organization.infos["grade_converter"]
+You can also configure a periodic task to run it, such as every August (0 0 1 8 *). Once you have a Crontab, create a periodic task by selecting `attendees.persons.tasks.advance_grades` task. It will run for all organizations withou arguments or specify some with arguments:
+```
+{
+  "organization_infos": [
+    {"organization_slug": "d7c8Fd_cfcc_hayward"}
+  ]
+}
+```
+* manually execution, the Verbosity `-v 2` option will list students names:
+```
+docker compose -f local.yml run --rm django python manage.py advance_grades　-v 2
+```
+* manually execution with specific organization, the verbosity `-v 2` option will list students names:
+```
+docker compose -f local.yml run --rm django python manage.py advance_grades -o d7c8Fd_cfcc_hayward -v 2
+```
+* Dry-run, list every student to be changed without actually written to DB, the verbosity `-v 2` option will list students names
+```
+docker compose -f local.yml run --rm django python manage.py advance_grades --dry-run -v 2
+```
 
 ## Todo & progress:
 

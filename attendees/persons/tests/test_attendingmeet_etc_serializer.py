@@ -35,3 +35,26 @@ class TestAttendingMeetEtcSerializer:
         assert instance.infos == {"existing": "value", "new": "value"}
         instance.meet.save.assert_called_once()
         instance.save.assert_called_once()
+
+    @patch('attendees.occasions.models.Attendance.objects.filter')
+    def test_update_updates_future_attendances(self, mock_attendance_filter):
+        mock_qs = MagicMock()
+        mock_attendance_filter.return_value = mock_qs
+
+        instance = MagicMock()
+        instance.meet = MagicMock()
+        instance.infos = {}
+        instance.team = MagicMock(id=5)
+        instance.character = MagicMock(id=10)
+
+        serializer = AttendingMeetEtcSerializer()
+        data = {
+            "team": instance.team,
+            "character": instance.character,
+        }
+
+        result = serializer.update(instance, data)
+
+        instance.save.assert_called_once()
+        mock_attendance_filter.assert_called_once()
+        mock_qs.update.assert_called_once_with(team=instance.team, character=instance.character)

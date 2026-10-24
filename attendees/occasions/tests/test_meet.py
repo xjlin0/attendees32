@@ -7,6 +7,7 @@ from attendees.occasions.models.character import Character
 from attendees.whereabouts.models import Division, Organization
 from attendees.persons.models import Category
 from django.contrib.auth.models import Group
+from attendees.occasions.serializers.meet import MeetSerializer
 
 @pytest.mark.django_db
 class TestMeet:
@@ -76,3 +77,10 @@ class TestMeet:
 
     def test_schedule_text_empty(self):
         assert self.meet.schedule_text() == ""
+
+    def test_meet_serializer_show_attendee_infos(self):
+        self.division.infos = {"show_attendee_infos": {"infos-grade": True, "infos-insurer": True}}
+        self.division.save()
+        serializer = MeetSerializer(self.meet)
+        assert serializer.data["show_attendee_infos"] == {"infos-grade": True, "infos-insurer": True}
+

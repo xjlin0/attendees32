@@ -202,6 +202,7 @@ class Utility:
             "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE,
             "gathering_infos": {},
             "attendance": {},
+            "signature_required_at": None,
         }
 
     @staticmethod
