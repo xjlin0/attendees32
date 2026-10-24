@@ -6,7 +6,7 @@
   }
 
   const { createApp, ref, reactive, onMounted } = Vue;
-
+  const WARNING_NOTIFY_TIME = 5000;
   // Shared registry of gatherings for columns:
   const gatheringsRegistry = new Map();
   const meetsInfoMap = new Map();
@@ -498,7 +498,7 @@
 
         DevExpress.ui.notify(newCategory !== 1 ? 'Checked in successfully' : 'Check-in undone', 'success', 2000);
       } catch (err) {
-        DevExpress.ui.notify(err.message, 'error', 3000);
+        DevExpress.ui.notify(err.message, 'error', WARNING_NOTIFY_TIME);
       } finally {
         if (window.Attendees && window.Attendees.utilities) {
           window.Attendees.utilities.editingEnabled = false;
@@ -698,7 +698,7 @@
                       at: 'center',
                       of: window,
                     },
-                  }, 'error', 3000);
+                  }, 'error', WARNING_NOTIFY_TIME);
                 }
               },
             },
@@ -749,7 +749,7 @@
         popup.show();
         initSignatureCanvas();
       } catch (e) {
-        DevExpress.ui.notify(e.message, 'error', 3000);
+        DevExpress.ui.notify(e.message, 'error', WARNING_NOTIFY_TIME);
       }
     };
 
@@ -806,7 +806,7 @@
         updateGridRowAttendance(rowData, updatedRecord.gathering, normalizedRecord, rowIndex);
         DevExpress.ui.notify(newFinish ? 'Checked out successfully' : 'Check-out undone', newFinish ? 'success' : 'info', 2000);
       } catch (err) {
-        DevExpress.ui.notify(err.message, 'error', 3000);
+        DevExpress.ui.notify(err.message, 'error', WARNING_NOTIFY_TIME);
       }
     };
 
@@ -983,7 +983,7 @@
 
       const validation = form.validate();
       if (!validation.isValid) {
-        DevExpress.ui.notify('Please check required fields', 'warning', 2500);
+        DevExpress.ui.notify('Please check required fields', 'warning', WARNING_NOTIFY_TIME);
         return;
       }
 
@@ -1034,7 +1034,7 @@
           gridInstanceRef.value.refresh();
         }
       } catch (saveErr) {
-        DevExpress.ui.notify(`Save failed: ${saveErr.message}`, 'error', 3000);
+        DevExpress.ui.notify(`Save failed: ${saveErr.message}`, 'error', WARNING_NOTIFY_TIME);
       }
     };
 
@@ -1295,7 +1295,7 @@
         const json = await res.json();
         rawMeets = json.data || [];
       } catch (err) {
-        DevExpress.ui.notify(`Error loading enrollments: ${err.message}`, 'error', 3000);
+        DevExpress.ui.notify(`Error loading enrollments: ${err.message}`, 'error', WARNING_NOTIFY_TIME);
         return;
       }
 
@@ -1719,7 +1719,7 @@
               DevExpress.ui.notify(`${field === 'team' ? 'Team' : 'Character'} updated successfully`, 'success', 2000);
             } catch (err) {
               console.error('Error patching ' + field, err);
-              DevExpress.ui.notify('Update failed: ' + err.message, 'error', 3000);
+              DevExpress.ui.notify('Update failed: ' + err.message, 'error', WARNING_NOTIFY_TIME);
             } finally {
               cleanup();
               renderInlineEditableLine(lineContainer, field, am, rowData, isMultiMeet);
@@ -2104,7 +2104,7 @@
                   };
 
                 } catch (error) {
-                  DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
+                  DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', WARNING_NOTIFY_TIME);
                   console.error(error);
                   throw error; 
                 }
@@ -2142,7 +2142,7 @@
             }
 
           } catch (error) {
-            DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', 3000);
+            DevExpress.ui.notify(`Error loading rosters: ${error.message}`, 'error', WARNING_NOTIFY_TIME);
             console.error(error);
             resolve();
           } finally {
@@ -2226,7 +2226,7 @@
           }
 
           if (!excelJs || !DevExpress.excelExporter) {
-            DevExpress.ui.notify('ExcelJS library is not loaded', 'error', 3000);
+            DevExpress.ui.notify('ExcelJS library is not loaded', 'error', WARNING_NOTIFY_TIME);
             return;
           }
 
@@ -2278,11 +2278,11 @@
               }
             }).catch(err => {
               console.error('Error writing workbook buffer:', err);
-              DevExpress.ui.notify('Export failed: ' + err.message, 'error', 3000);
+              DevExpress.ui.notify('Export failed: ' + err.message, 'error', WARNING_NOTIFY_TIME);
             });
           }).catch(err => {
             console.error('Error exporting datagrid:', err);
-            DevExpress.ui.notify('Export failed: ' + err.message, 'error', 3000);
+            DevExpress.ui.notify('Export failed: ' + err.message, 'error', WARNING_NOTIFY_TIME);
           });
           e.cancel = true;
         },
@@ -2887,7 +2887,7 @@
           const birthdayBadge = clone.querySelector('.ob-birthday-badge');
           if (birthdayBadge) {
             birthdayBadge.className = isKidMeet ? 'text-danger' : 'text-muted';
-            birthdayBadge.textContent = isKidMeet ? '* (Required for kids)' : '(Optional for adults)';
+            birthdayBadge.textContent = isKidMeet ? '* (Required)' : '(Optional)';
           }
 
           const removeBtn = clone.querySelector('.remove-attendee-btn');
@@ -3085,7 +3085,7 @@
       const birthdayBadge = rootDiv.querySelector('.ob-birthday-badge');
       if (birthdayBadge) {
         birthdayBadge.className = isKidMeet ? 'text-danger' : 'text-muted';
-        birthdayBadge.textContent = isKidMeet ? '* (Required for kids)' : '(Optional for adults)';
+        birthdayBadge.textContent = isKidMeet ? '* (Required)' : '(Optional)';
       }
 
       const kidFields = rootDiv.querySelector('.kid-specific-fields');
@@ -3482,7 +3482,7 @@
         if (popupInstance) popupInstance.hide();
         await loadData(cand.id, attPayload.gathering);
       } catch (err) {
-        DevExpress.ui.notify(err.message, 'error', 3000);
+        DevExpress.ui.notify(err.message, 'error', WARNING_NOTIFY_TIME);
       } finally {
         if (window.Attendees && window.Attendees.utilities) {
           window.Attendees.utilities.editingEnabled = false;
@@ -3493,14 +3493,14 @@
     const handleFastOnboardSubmit = async (rootDiv, submitBtn) => {
       const { meet, isKidMeet, showInsurer } = getMeetSettings();
       if (!meet) {
-        DevExpress.ui.notify('Please select a valid meet.', 'error', 3000);
+        DevExpress.ui.notify('Please select a valid meet.', 'error', WARNING_NOTIFY_TIME);
         return;
       }
 
       // 1. Collect and validate all Attendee blocks
       const attendeeBlocks = Array.from(rootDiv.querySelectorAll('.attendee-block')).filter(b => b.style.display !== 'none');
       if (attendeeBlocks.length === 0) {
-        DevExpress.ui.notify('Please provide at least one attendee.', 'warning', 3000);
+        DevExpress.ui.notify('Please provide at least one attendee.', 'warning', WARNING_NOTIFY_TIME);
         return;
       }
 
@@ -3524,7 +3524,7 @@
 
         // Validation: at least one name (English or other language) is required
         if (!firstName && !lastName && !firstName2 && !lastName2) {
-          DevExpress.ui.notify(`At least one name (English or other language) is required for ${attLabel}.`, 'warning', 3000);
+          DevExpress.ui.notify(`At least one name (English or other language) is required for ${attLabel}.`, 'warning', WARNING_NOTIFY_TIME);
           block.querySelector('.ob-first-name')?.focus();
           return;
         }
@@ -3532,7 +3532,7 @@
         // Birthday validation
         if (isKidMeet) {
           if (!byear || !bmonth || !bday) {
-            DevExpress.ui.notify(`Year, Month, and Day of birth are all required for ${attLabel}.`, 'warning', 3000);
+            DevExpress.ui.notify(`Year, Month, and Day of birth are all required for ${attLabel}.`, 'warning', WARNING_NOTIFY_TIME);
             block.querySelector('.ob-byear')?.focus();
             return;
           }
@@ -3543,7 +3543,7 @@
             ? window.Attendees.utilities.validateFastInputBirthday(byear, bmonth, bday)
             : { valid: true };
           if (!bValid.valid) {
-            DevExpress.ui.notify(`${attLabel}: ${bValid.message}`, 'warning', 3500);
+            DevExpress.ui.notify(`${attLabel}: ${bValid.message}`, 'warning', WARNING_NOTIFY_TIME);
             block.querySelector('.ob-byear')?.focus();
             return;
           }
@@ -3558,7 +3558,7 @@
           if (cVal) {
             const vErr = getContactValidationError(cType, cVal, attLabel);
             if (vErr) {
-              DevExpress.ui.notify(vErr, 'warning', 3500);
+              DevExpress.ui.notify(vErr, 'warning', WARNING_NOTIFY_TIME);
               row.querySelector('.ob-contact-value')?.focus();
               return;
             }
@@ -3579,12 +3579,12 @@
 
         if (isKidMeet) {
           if (grade === '' || grade === undefined || grade === null) {
-            DevExpress.ui.notify(`School Grade is required for ${attLabel}.`, 'warning', 3000);
+            DevExpress.ui.notify(`School Grade is required for ${attLabel}.`, 'warning', WARNING_NOTIFY_TIME);
             block.querySelector('.ob-grade')?.focus();
             return;
           }
           if (!foodPref) {
-            DevExpress.ui.notify(`Food preference / allergies is required for ${attLabel} (enter "None" if none).`, 'warning', 3000);
+            DevExpress.ui.notify(`Food preference / allergies is required for ${attLabel} (enter "None" if none).`, 'warning', WARNING_NOTIFY_TIME);
             block.querySelector('.ob-food-pref')?.focus();
             return;
           }
@@ -3622,7 +3622,7 @@
       if (isKidMeet) {
         if (!isUnaccompanied) {
           if (visibleCompBlocks.length === 0) {
-            DevExpress.ui.notify('Companion information is required for kids unless "Child arrived alone" is checked.', 'warning', 3000);
+            DevExpress.ui.notify('Companion information is required for kids unless "Child arrived alone" is checked.', 'warning', WARNING_NOTIFY_TIME);
             return;
           }
           for (let i = 0; i < visibleCompBlocks.length; i++) {
@@ -3648,7 +3648,7 @@
               if (cv) {
                 const cvErr = getContactValidationError(ct, cv, `Companion ${compNum}`);
                 if (cvErr) {
-                  DevExpress.ui.notify(cvErr, 'warning', 3500);
+                  DevExpress.ui.notify(cvErr, 'warning', WARNING_NOTIFY_TIME);
                   cRow.querySelector('.ob-p-contact-value')?.focus();
                   return;
                 }
@@ -3666,24 +3666,24 @@
 
             if (compNum === 1) {
               if (organizationDivisions.length > 0 && !pDivisionVal) {
-                DevExpress.ui.notify('Please select a division for Companion 1.', 'warning', 3000);
+                DevExpress.ui.notify('Please select a division for Companion 1.', 'warning', WARNING_NOTIFY_TIME);
                 return;
               }
               if (!hasAnyName || compContacts.length === 0) {
-                DevExpress.ui.notify('Companion 1 name and contact information are required.', 'warning', 3000);
+                DevExpress.ui.notify('Companion 1 name and contact information are required.', 'warning', WARNING_NOTIFY_TIME);
                 return;
               }
             } else {
               if (!hasAnyName && compContacts.length === 0) {
-                DevExpress.ui.notify(`Companion ${compNum} name and contact information are required (or remove it).`, 'warning', 3000);
+                DevExpress.ui.notify(`Companion ${compNum} name and contact information are required (or remove it).`, 'warning', WARNING_NOTIFY_TIME);
                 return;
               }
               if (organizationDivisions.length > 0 && !pDivisionVal) {
-                DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', 3000);
+                DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', WARNING_NOTIFY_TIME);
                 return;
               }
               if (!hasAnyName || compContacts.length === 0) {
-                DevExpress.ui.notify(`Companion ${compNum} name and contact information are required.`, 'warning', 3000);
+                DevExpress.ui.notify(`Companion ${compNum} name and contact information are required.`, 'warning', WARNING_NOTIFY_TIME);
                 return;
               }
             }
@@ -3730,7 +3730,7 @@
               if (cv) {
                 const cvErr = getContactValidationError(ct, cv, `Companion ${compNum}`);
                 if (cvErr) {
-                  DevExpress.ui.notify(cvErr, 'warning', 3500);
+                  DevExpress.ui.notify(cvErr, 'warning', WARNING_NOTIFY_TIME);
                   cRow.querySelector('.ob-p-contact-value')?.focus();
                   return;
                 }
@@ -3747,11 +3747,11 @@
             const primaryCompContact = compContacts.length > 0 ? compContacts[0] : null;
 
             if (!hasAnyName) {
-              DevExpress.ui.notify(`Companion ${compNum} name is required (or remove it).`, 'warning', 3000);
+              DevExpress.ui.notify(`Companion ${compNum} name is required (or remove it).`, 'warning', WARNING_NOTIFY_TIME);
               return;
             }
             if (organizationDivisions.length > 0 && !pDivisionVal) {
-              DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', 3000);
+              DevExpress.ui.notify(`Please select a division for Companion ${compNum}.`, 'warning', WARNING_NOTIFY_TIME);
               return;
             }
 
@@ -3815,7 +3815,7 @@
         if (popupInstance) popupInstance.hide();
         await loadData(result.attendee_id, result.gathering_id || gatheringId);
       } catch (err) {
-        DevExpress.ui.notify(err.message, 'error', 4000);
+        DevExpress.ui.notify(err.message, 'error', WARNING_NOTIFY_TIME);
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Register & Check In';
@@ -3871,7 +3871,7 @@
 
     const openAddAttendeePopup = () => {
       if (!filterData.meets || filterData.meets.length === 0) {
-        DevExpress.ui.notify('Please select at least one meet in the filter first.', 'warning', 3000);
+        DevExpress.ui.notify('Please select at least one meet in the filter first.', 'warning', WARNING_NOTIFY_TIME);
         return;
       }
 
