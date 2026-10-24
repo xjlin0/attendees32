@@ -1,9 +1,9 @@
 # Connecting Tally
 
-[Tally](https://github.com/vrwarp/tally) is a check-in app for a youth
-ministry. It can use this Attendees server as its **people backend**: the
-system of record for who its students are. Tally reads the roster's person
-data from here, creates quick-added visitors as attendees, writes profile
+[Tally](https://github.com/vrwarp/tally) is a church ministry check-in app.
+It can use this Attendees server as its **people backend**: the system of
+record for who its people are. Tally reads the roster's person data from
+here, creates quick-added visitors as attendees, writes profile
 edits back, files parents into families, and imports attendance history —
 all over the JSON API, as a server-to-server client with a DRF token.
 
@@ -53,9 +53,9 @@ All under token auth (`Authorization: Token …`), all JSON:
 | `GET /persons/api/datagrid_data_attendee/?take&skip` | The roster sweep (the whole org, paginated). |
 | `GET /persons/api/datagrid_data_attendee/?searchValue=` | Person search. |
 | `GET/POST/PATCH /persons/api/datagrid_data_attendee/[{uuid}/]` | Person read, visitor create, profile edit. |
-| `GET/POST /persons/api/attendee_families/` | A student's family folks; creating one for a new parent. |
+| `GET/POST /persons/api/attendee_families/` | A person's family folks; creating one for a new parent. |
 | `GET/POST /persons/api/datagrid_data_familyattendees/` | Family membership edges. |
-| `GET /persons/api/attendee_attendings/` | Resolving a student's attending id. |
+| `GET /persons/api/attendee_attendings/` | Resolving a person's attending id. |
 | `GET /persons/api/all_relations/` | The relation vocabulary (`child`, `parent`). |
 | `GET /occasions/api/organization_meets/` | The history-import picker: the meets the group may read. |
 | `GET /occasions/api/organization_team_gatherings/?meets[]=<slug>` | Gatherings of a meet, for history import. |
