@@ -246,6 +246,9 @@ class AttendeeMergeService:
         moved = {
             "details": AttendeeMergeService._merge_details(duplicate, primary),
             "own_references": AttendeeMergeService._merge_own_references(duplicate, primary),
+            # Registrations fold before the attendings do: the duplicate's
+            # attending under a folded registration then folds by registration.
+            "registrations_folded": AttendeeMergeService._fold_registrations(duplicate, primary),
             "attendings": AttendeeMergeService._fold_attendings(duplicate, primary),
             "memberships": AttendeeMergeService._move_memberships(duplicate, primary),
             "pasts": AttendeeMergeService._move_linked(Past, duplicate, primary),
@@ -440,6 +443,13 @@ class AttendeeMergeService:
                 is_removed=False
             )
             Attending.all_objects.filter(pk=fold["attending"]).update(is_removed=False)
+        # A folded registration comes back live, its attendings under it again.
+        # Merges made before registrations folded have no such record.
+        for fold in moved.get("registrations_folded") or []:
+            Attending.all_objects.filter(pk__in=fold["attendings"]).update(
+                registration_id=fold["registration"]
+            )
+            Registration.all_objects.filter(pk=fold["registration"]).update(is_removed=False)
 
         Attendee.all_objects.filter(pk__in=moved["tombstones"]).update(merged_into=duplicate)
 
@@ -641,6 +651,33 @@ class AttendeeMergeService:
                 place.save(update_fields=["object_id"])
                 record["moved"].append(str(place.pk))
         return record
+
+    @staticmethod
+    def _fold_registrations(duplicate, primary):
+        """A registration is unique per assembly and registrant while live, so
+        one for an assembly the primary is already registered for cannot move.
+        It is retired, and the duplicate's attendings under it are pointed at
+        the primary's registration, so they fold with the primary's attending."""
+        folded = []
+        for registration in Registration.objects.filter(
+            registrant=duplicate, assembly__isnull=False
+        ):
+            theirs = Registration.objects.filter(
+                registrant=primary, assembly_id=registration.assembly_id
+            ).first()
+            if theirs is None:
+                continue
+            attendings = list(
+                Attending.objects.filter(attendee=duplicate, registration=registration)
+                .values_list("pk", flat=True)
+            )
+            Attending.objects.filter(pk__in=attendings).update(registration=theirs)
+            registration.is_removed = True
+            registration.save(update_fields=["is_removed"])
+            folded.append(
+                {"registration": str(registration.pk), "into": str(theirs.pk), "attendings": attendings}
+            )
+        return folded
 
     @staticmethod
     def _move_registrations(duplicate, primary):
