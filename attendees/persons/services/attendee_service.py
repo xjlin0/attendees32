@@ -1770,18 +1770,70 @@ class AttendeeService:
                         or Relation.objects.filter(id=14).first()
                         or Relation.objects.first()
                     )
+                    son_role = (
+                        Relation.objects.filter(title__iexact="son", is_removed=False).first()
+                        or Relation.objects.filter(id=3).first()
+                    )
+                    daughter_role = (
+                        Relation.objects.filter(title__iexact="daughter", is_removed=False).first()
+                        or Relation.objects.filter(id=4).first()
+                    )
+                    child_role = (
+                        Relation.objects.filter(title__iexact="child", is_removed=False).first()
+                        or Relation.objects.filter(id=27).first()
+                        or son_role
+                    )
+
+                    has_husband = False
+                    has_wife = False
+                    child_count = 0
 
                     for m_idx, member in enumerate(all_family_members):
                         m_gender = str(member.gender or "").strip().lower()
-                        if m_gender == "male":
-                            m_role = husband_role
-                            m_order = 1
-                        elif m_gender == "female":
-                            m_role = wife_role
-                            m_order = 2
+                        # Starting from 3rd member (m_idx >= 2), assign child role (son/daughter/child, rank 11+)
+                        if m_idx >= 2:
+                            if m_gender == "male":
+                                m_role = son_role
+                            elif m_gender == "female":
+                                m_role = daughter_role
+                            else:
+                                m_role = child_role
+                            m_order = 11 + child_count
+                            child_count += 1
                         else:
-                            m_role = spouse_role or husband_role
-                            m_order = 1 if m_idx == 0 else 2
+                            # First two members: husband and wife with exclusivity
+                            if m_gender == "male":
+                                if not has_husband:
+                                    m_role = husband_role
+                                    m_order = 1
+                                    has_husband = True
+                                else:
+                                    m_role = son_role
+                                    m_order = 11 + child_count
+                                    child_count += 1
+                            elif m_gender == "female":
+                                if not has_wife:
+                                    m_role = wife_role
+                                    m_order = 2
+                                    has_wife = True
+                                else:
+                                    m_role = daughter_role
+                                    m_order = 11 + child_count
+                                    child_count += 1
+                            else:
+                                # Unspecified gender
+                                if not has_husband:
+                                    m_role = husband_role or spouse_role
+                                    m_order = 1
+                                    has_husband = True
+                                elif not has_wife:
+                                    m_role = wife_role or spouse_role
+                                    m_order = 2
+                                    has_wife = True
+                                else:
+                                    m_role = child_role
+                                    m_order = 11 + child_count
+                                    child_count += 1
 
                         m_defaults = {
                             "role": m_role,

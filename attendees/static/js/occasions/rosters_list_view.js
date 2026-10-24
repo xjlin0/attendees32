@@ -2397,7 +2397,7 @@
     const storageOptsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
 
     const resetFilters = () => {
-      const defaultStart = new Date(new Date().setHours(new Date().getHours() - 16));
+      const defaultStart = new Date(new Date().setDate(new Date().getDate() - 5));
       const defaultEnd = new Date(new Date().setMonth(new Date().getMonth() + 1));
       filterData.meets = [];
       filterData.startDate = defaultStart;
@@ -2618,6 +2618,7 @@
     let popupInstance = null;
     let selectedMeetSlug = '';
     let selectedGatheringId = null;
+    let currentSwitchToSearch = null;
 
     const escapeHtml = (str) => {
       if (!str) return '';
@@ -2718,6 +2719,24 @@
       const isKidMeet = Boolean(showInfos['infos-grade'] || showInfos['grade']);
       const showInsurer = Boolean(showInfos['infos-insurer'] || showInfos['insurer']);
       return { meet, isKidMeet, showInsurer };
+    };
+
+    const populateGenderSelect = (selectEl, defaultVal = 'UNSPECIFIED') => {
+      if (!selectEl) return;
+      const enums = (window.Attendees && window.Attendees.utilities && typeof window.Attendees.utilities.genderEnums === 'function')
+        ? window.Attendees.utilities.genderEnums()
+        : [{ name: 'MALE' }, { name: 'FEMALE' }, { name: 'UNSPECIFIED' }];
+
+      selectEl.innerHTML = '';
+      enums.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.name;
+        opt.textContent = item.name.charAt(0).toUpperCase() + item.name.slice(1).toLowerCase();
+        if (item.name.toUpperCase() === String(defaultVal).toUpperCase()) {
+          opt.selected = true;
+        }
+        selectEl.appendChild(opt);
+      });
     };
 
     const createContactRow = (isCompanion) => {
@@ -2848,6 +2867,11 @@
         populateGradeSelect(gradeSelectEl);
       }
 
+      const att1GenderSelect = rootDiv.querySelector('.attendee-block-1 .ob-gender');
+      if (att1GenderSelect) {
+        populateGenderSelect(att1GenderSelect, 'UNSPECIFIED');
+      }
+
       // 3b. Additional Attendees setup (Attendee 1, 2, 3...)
       const moreAttendeesBtn = rootDiv.querySelector('.more-attendees-btn');
       const addAttendeesContainer = rootDiv.querySelector('.additional-attendees-container');
@@ -2872,38 +2896,44 @@
         });
       };
 
+      const appendNewAttendeeBlock = () => {
+        if (!addAttendeesContainer || !attendeeTemplate) return;
+        const clone = attendeeTemplate.content.firstElementChild.cloneNode(true);
+        const gradeSelect = clone.querySelector('.ob-grade');
+        if (gradeSelect) populateGradeSelect(gradeSelect);
+
+        const attGender = clone.querySelector('.ob-gender');
+        if (attGender) populateGenderSelect(attGender, 'UNSPECIFIED');
+
+        const kidFields = clone.querySelector('.kid-specific-fields');
+        if (kidFields) kidFields.style.display = isKidMeet ? '' : 'none';
+
+        const insurerGroup = clone.querySelector('.insurer-field-group');
+        if (insurerGroup) insurerGroup.style.display = showInsurer ? '' : 'none';
+
+        const birthdayBadge = clone.querySelector('.ob-birthday-badge');
+        if (birthdayBadge) {
+          birthdayBadge.className = isKidMeet ? 'text-danger' : 'text-muted';
+          birthdayBadge.textContent = isKidMeet ? '* (Required)' : '(Optional)';
+        }
+
+        const removeBtn = clone.querySelector('.remove-attendee-btn');
+        if (removeBtn) {
+          removeBtn.addEventListener('click', () => {
+            clone.remove();
+            updateAttendeeLabels();
+          });
+        }
+
+        addAttendeesContainer.appendChild(clone);
+        updateAttendeeLabels();
+
+        const newFnInput = clone.querySelector('.ob-first-name');
+        if (newFnInput) newFnInput.focus();
+      };
+
       if (moreAttendeesBtn && addAttendeesContainer && attendeeTemplate) {
-        moreAttendeesBtn.addEventListener('click', () => {
-          const clone = attendeeTemplate.content.firstElementChild.cloneNode(true);
-          const gradeSelect = clone.querySelector('.ob-grade');
-          if (gradeSelect) populateGradeSelect(gradeSelect);
-
-          const kidFields = clone.querySelector('.kid-specific-fields');
-          if (kidFields) kidFields.style.display = isKidMeet ? '' : 'none';
-
-          const insurerGroup = clone.querySelector('.insurer-field-group');
-          if (insurerGroup) insurerGroup.style.display = showInsurer ? '' : 'none';
-
-          const birthdayBadge = clone.querySelector('.ob-birthday-badge');
-          if (birthdayBadge) {
-            birthdayBadge.className = isKidMeet ? 'text-danger' : 'text-muted';
-            birthdayBadge.textContent = isKidMeet ? '* (Required)' : '(Optional)';
-          }
-
-          const removeBtn = clone.querySelector('.remove-attendee-btn');
-          if (removeBtn) {
-            removeBtn.addEventListener('click', () => {
-              clone.remove();
-              updateAttendeeLabels();
-            });
-          }
-
-          addAttendeesContainer.appendChild(clone);
-          updateAttendeeLabels();
-
-          const newFnInput = clone.querySelector('.ob-first-name');
-          if (newFnInput) newFnInput.focus();
-        });
+        moreAttendeesBtn.addEventListener('click', appendNewAttendeeBlock);
       }
 
       // Helpers for populating Division and Relationship dropdowns
@@ -2957,6 +2987,9 @@
 
       // 4. Companion Section DOM Elements & Initial Setup
       const guardianSection = rootDiv.querySelector('.guardian-section');
+      const guardianHeader = rootDiv.querySelector('.guardian-section-header');
+      const guardianContent = rootDiv.querySelector('.guardian-section-content');
+      const companionCollapseIcon = rootDiv.querySelector('.companion-collapse-icon');
       const unaccompaniedContainer = rootDiv.querySelector('.unaccompanied-minor-container');
       const comp1Block = rootDiv.querySelector('.companion-block-1');
       const removeComp1Btn = rootDiv.querySelector('.remove-companion-1-btn');
@@ -2964,9 +2997,35 @@
       const addCompanionsContainer = rootDiv.querySelector('.additional-companions-container');
       const compTemplate = document.getElementById('companion-block-template');
 
-      // Companion 1 Division & Relationship dropdowns
+      const setGuardianCollapsed = (collapsed) => {
+        const content = rootDiv.querySelector('.guardian-section-content');
+        if (content) {
+          content.style.display = collapsed ? 'none' : '';
+        }
+        const indicator = rootDiv.querySelector('.companion-toggle-indicator');
+        if (indicator) {
+          const iconClass = collapsed ? 'fa-caret-right' : 'fa-caret-down';
+          indicator.innerHTML = `<i class="fas ${iconClass} companion-collapse-icon" style="font-size: 1.15rem;"></i>`;
+        }
+      };
+
+      if (guardianHeader) {
+        guardianHeader.addEventListener('click', (e) => {
+          if (e.target.closest('button, input, select, a')) return;
+          const content = rootDiv.querySelector('.guardian-section-content');
+          const isCurrentlyCollapsed = content && content.style.display === 'none';
+          setGuardianCollapsed(!isCurrentlyCollapsed);
+        });
+      }
+
+      // Companion 1 Division, Gender & Relationship dropdowns
       const divSelectEl = rootDiv.querySelector('.companion-block-1 .ob-p-division');
       populateDivisionSelect(divSelectEl);
+
+      const comp1GenderEl = rootDiv.querySelector('.companion-block-1 .ob-p-gender');
+      if (comp1GenderEl) {
+        populateGenderSelect(comp1GenderEl, 'UNSPECIFIED');
+      }
 
       const relSelectEl = rootDiv.querySelector('.companion-block-1 .ob-p-relationship');
       populateRelationSelect(relSelectEl, isKidMeet ? 'parent' : 'spouse');
@@ -3008,7 +3067,7 @@
         });
 
         if (!isKidMeet && visibleBlocks.length === 0) {
-          if (guardianSection) guardianSection.style.display = 'none';
+          setGuardianCollapsed(true);
         }
       };
 
@@ -3036,49 +3095,59 @@
           } else {
             comp1Block.querySelectorAll('input').forEach(inp => { inp.value = ''; });
             comp1Block.style.display = 'none';
-            if (guardianSection) guardianSection.style.display = 'none';
+            setGuardianCollapsed(true);
           }
           updateCompanionLabels();
         });
       }
 
-      // 4d. More Companions button handler (Companion 1/2/3/4...)
-      if (moreCompanionsBtn && addCompanionsContainer && compTemplate) {
-        moreCompanionsBtn.addEventListener('click', () => {
-          if (guardianSection && guardianSection.style.display === 'none') {
-            guardianSection.style.display = '';
-          }
+      // 4d. Companion block append helper (triggered by '+' buttons or legacy 'More Companions' button)
+      const appendNewCompanionBlock = () => {
+        if (guardianSection && guardianSection.style.display === 'none') {
+          guardianSection.style.display = '';
+        }
+        setGuardianCollapsed(false);
 
-          if (comp1Block && comp1Block.style.display === 'none') {
-            comp1Block.style.display = '';
-            if (removeComp1Btn && !isKidMeet) removeComp1Btn.classList.remove('d-none');
-            updateCompanionLabels();
-            const fnInp = comp1Block.querySelector('.ob-p-first-name');
-            if (fnInp) fnInp.focus();
-            return;
-          }
-
-          const clone = compTemplate.content.firstElementChild.cloneNode(true);
-          const compDivSelect = clone.querySelector('.ob-p-division');
-          populateDivisionSelect(compDivSelect);
-
-          const compRelSelect = clone.querySelector('.ob-p-relationship');
-          populateRelationSelect(compRelSelect, isKidMeet ? 'parent' : 'spouse');
-
-          const removeBtn = clone.querySelector('.remove-companion-btn');
-          if (removeBtn) {
-            removeBtn.addEventListener('click', () => {
-              clone.remove();
-              updateCompanionLabels();
-            });
-          }
-
-          addCompanionsContainer.appendChild(clone);
+        if (comp1Block && comp1Block.style.display === 'none') {
+          comp1Block.style.display = '';
+          if (removeComp1Btn && !isKidMeet) removeComp1Btn.classList.remove('d-none');
           updateCompanionLabels();
+          const fnInp = comp1Block.querySelector('.ob-p-first-name');
+          if (fnInp) fnInp.focus();
+          return;
+        }
 
-          const newFnInput = clone.querySelector('.ob-p-first-name');
-          if (newFnInput) newFnInput.focus();
-        });
+        if (!addCompanionsContainer || !compTemplate) return;
+
+        const clone = compTemplate.content.firstElementChild.cloneNode(true);
+        const compDivSelect = clone.querySelector('.ob-p-division');
+        populateDivisionSelect(compDivSelect);
+
+        const compGenderSelect = clone.querySelector('.ob-p-gender');
+        if (compGenderSelect) {
+          populateGenderSelect(compGenderSelect, 'UNSPECIFIED');
+        }
+
+        const compRelSelect = clone.querySelector('.ob-p-relationship');
+        populateRelationSelect(compRelSelect, isKidMeet ? 'parent' : 'spouse');
+
+        const removeBtn = clone.querySelector('.remove-companion-btn');
+        if (removeBtn) {
+          removeBtn.addEventListener('click', () => {
+            clone.remove();
+            updateCompanionLabels();
+          });
+        }
+
+        addCompanionsContainer.appendChild(clone);
+        updateCompanionLabels();
+
+        const newFnInput = clone.querySelector('.ob-p-first-name');
+        if (newFnInput) newFnInput.focus();
+      };
+
+      if (moreCompanionsBtn) {
+        moreCompanionsBtn.addEventListener('click', appendNewCompanionBlock);
       }
 
       // 5. Birthday badge & Kid/Insurer/Companion section visibility
@@ -3098,11 +3167,12 @@
       }
 
       if (guardianSection) {
-        guardianSection.style.display = isKidMeet ? '' : 'none';
+        guardianSection.style.display = '';
       }
+      setGuardianCollapsed(!isKidMeet);
 
       if (comp1Block) {
-        comp1Block.style.display = isKidMeet ? '' : 'none';
+        comp1Block.style.display = '';
         if (removeComp1Btn) {
           if (!isKidMeet) {
             removeComp1Btn.classList.remove('d-none');
@@ -3142,10 +3212,38 @@
         });
       }
 
+      // Helper to update popup title bar and back button [←]
+      const updatePopupTitle = (isOnboard) => {
+        const popupWrapper = document.querySelector('.add-attendee-popup-wrapper');
+        if (!popupWrapper) return;
+        const backBtn = popupWrapper.querySelector('.popup-title-container .back-to-search-btn');
+        const titleText = popupWrapper.querySelector('.popup-title-container .popup-title-text');
+        if (isOnboard) {
+          if (backBtn) backBtn.classList.remove('d-none');
+          if (titleText) titleText.textContent = "Add Attendee to Rosters / New Attendee Registration";
+        } else {
+          if (backBtn) backBtn.classList.add('d-none');
+          if (titleText) titleText.textContent = "Add Attendee to Rosters, Welcome! Let's search first.";
+        }
+      };
+
+      const switchToSearch = () => {
+        onboardViewEl.style.display = 'none';
+        searchViewEl.style.display = '';
+        updatePopupTitle(false);
+        const searchInputEl = rootDiv.querySelector('.omni-search-box');
+        if (searchInputEl) {
+          searchInputEl.focus();
+          searchInputEl.select();
+        }
+      };
+      currentSwitchToSearch = switchToSearch;
+
       // B. Switch to Onboard function (prefilling names)
       const switchToOnboard = (query) => {
         searchViewEl.style.display = 'none';
         onboardViewEl.style.display = '';
+        updatePopupTitle(true);
 
         if (query && typeof query === 'string') {
           const trimmed = query.trim();
@@ -3180,8 +3278,7 @@
       const backToSearchBtn = rootDiv.querySelector('.back-to-search-btn');
       if (backToSearchBtn) {
         backToSearchBtn.addEventListener('click', () => {
-          onboardViewEl.style.display = 'none';
-          searchViewEl.style.display = '';
+          switchToSearch();
         });
       }
 
@@ -3202,10 +3299,42 @@
         });
       }
 
-      // E. Dynamic Contact rows (+ / - buttons) for Attendee and Companions
+      // E. Dynamic Contact rows (+ / - buttons) for Attendee and Companions & Attendee/Companion Block (+ / X)
       const onboardForm = rootDiv.querySelector('.onboard-form');
       if (onboardForm) {
         onboardForm.addEventListener('click', (e) => {
+          const addAttBtn = e.target.closest('.add-more-attendee-btn');
+          if (addAttBtn) {
+            appendNewAttendeeBlock();
+            return;
+          }
+          const removeAttBtn = e.target.closest('.remove-attendee-btn');
+          if (removeAttBtn) {
+            const block = removeAttBtn.closest('.attendee-block');
+            if (block && !block.classList.contains('attendee-block-1')) {
+              block.remove();
+              updateAttendeeLabels();
+            }
+            return;
+          }
+          const addCompBtn = e.target.closest('.add-more-companion-btn');
+          if (addCompBtn) {
+            appendNewCompanionBlock();
+            return;
+          }
+          const removeCompBtn = e.target.closest('.remove-companion-btn');
+          if (removeCompBtn) {
+            if (removeCompBtn.classList.contains('remove-companion-1-btn')) {
+              // handled by removeComp1Btn
+            } else {
+              const block = removeCompBtn.closest('.companion-block');
+              if (block) {
+                block.remove();
+                updateCompanionLabels();
+              }
+            }
+            return;
+          }
           const addBtn = e.target.closest('.add-contact-btn');
           if (addBtn) {
             const row = addBtn.closest('.contact-row');
@@ -3516,7 +3645,7 @@
         const lastName = (block.querySelector('.ob-last-name')?.value || '').trim();
         const firstName2 = (block.querySelector('.ob-first-name2')?.value || '').trim();
         const lastName2 = (block.querySelector('.ob-last-name2')?.value || '').trim();
-        const gender = block.querySelector('.ob-gender')?.value || 'unspecified';
+        const gender = (block.querySelector('.ob-gender')?.value || 'UNSPECIFIED').toUpperCase();
 
         const byear = (block.querySelector('.ob-byear')?.value || '').trim();
         const bmonth = (block.querySelector('.ob-bmonth')?.value || '').trim();
@@ -3611,11 +3740,13 @@
       // 2. Collect and validate Companions
       let companionsList = [];
       const guardianSectionEl = rootDiv.querySelector('.guardian-section');
+      const guardianContentEl = rootDiv.querySelector('.guardian-section-content');
       const isGuardianSectionVisible = guardianSectionEl && guardianSectionEl.style.display !== 'none';
+      const isGuardianContentVisible = guardianContentEl && guardianContentEl.style.display !== 'none';
 
       // Find all visible companion blocks
       const allCompBlocks = Array.from(rootDiv.querySelectorAll('.companion-block'));
-      const visibleCompBlocks = (isGuardianSectionVisible && !isUnaccompanied)
+      const visibleCompBlocks = (isGuardianSectionVisible && isGuardianContentVisible && !isUnaccompanied)
         ? allCompBlocks.filter(b => b.style.display !== 'none')
         : [];
 
@@ -3631,7 +3762,7 @@
             const pDivisionEl = block.querySelector('.ob-p-division');
             const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
             const pGenderEl = block.querySelector('.ob-p-gender');
-            const pGenderVal = pGenderEl ? pGenderEl.value : 'unspecified';
+            const pGenderVal = (pGenderEl ? pGenderEl.value : 'UNSPECIFIED').toUpperCase();
             const pRelEl = block.querySelector('.ob-p-relationship');
             const pRelVal = pRelEl ? pRelEl.value : 'parent';
 
@@ -3713,7 +3844,7 @@
             const pDivisionEl = block.querySelector('.ob-p-division');
             const pDivisionVal = pDivisionEl ? pDivisionEl.value : '';
             const pGenderEl = block.querySelector('.ob-p-gender');
-            const pGenderVal = pGenderEl ? pGenderEl.value : 'unspecified';
+            const pGenderVal = (pGenderEl ? pGenderEl.value : 'UNSPECIFIED').toUpperCase();
             const pRelEl = block.querySelector('.ob-p-relationship');
             const pRelVal = pRelEl ? pRelEl.value : 'spouse';
 
@@ -3744,7 +3875,13 @@
             }
 
             const hasAnyName = Boolean(pFirst || pLast || pFirst2 || pLast2);
+            const hasAnyContact = compContacts.length > 0;
             const primaryCompContact = compContacts.length > 0 ? compContacts[0] : null;
+
+            // If it's the only companion block (Companion 1) and completely untouched/empty, skip it in adult meet
+            if (visibleCompBlocks.length === 1 && !hasAnyName && !hasAnyContact) {
+              continue;
+            }
 
             if (!hasAnyName) {
               DevExpress.ui.notify(`Companion ${compNum} name is required (or remove it).`, 'warning', WARNING_NOTIFY_TIME);
@@ -3837,11 +3974,40 @@
 
       const isMobile = window.innerWidth < 768;
       popupInstance = new DevExpress.ui.dxPopup(popupEl, {
-        title: "Add Attendee to Rosters, Welcome! Let's search first.",
         showCloseButton: true,
         dragEnabled: !isMobile,
         wrapperAttr: {
           class: 'add-attendee-popup-wrapper'
+        },
+        titleTemplate: (titleElement) => {
+          const titleEl = (titleElement && titleElement[0]) ? titleElement[0] : titleElement;
+          titleEl.innerHTML = `
+            <div class="d-flex align-items-center justify-content-between popup-title-container w-100">
+              <div class="d-flex align-items-center flex-grow-1 overflow-hidden me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 me-2 back-to-search-btn d-none" title="Back to Search">
+                  <i class="fas fa-arrow-left"></i>
+                </button>
+                <span class="popup-title-text fw-bold text-dark text-truncate">Add Attendee to Rosters, Welcome! Let's search first.</span>
+              </div>
+              <button type="button" class="btn-close popup-close-btn dx-closebutton flex-shrink-0" aria-label="Close" title="Close"></button>
+            </div>
+          `;
+          const backBtn = titleEl.querySelector('.back-to-search-btn');
+          if (backBtn) {
+            backBtn.addEventListener('click', () => {
+              if (typeof currentSwitchToSearch === 'function') {
+                currentSwitchToSearch();
+              }
+            });
+          }
+          const closeBtn = titleEl.querySelector('.popup-close-btn');
+          if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+              if (popupInstance) {
+                popupInstance.hide();
+              }
+            });
+          }
         },
         onShowing: () => {
           if (window.Attendees && window.Attendees.utilities) {
@@ -3859,6 +4025,9 @@
           }, 50);
         },
         onHiding: () => {
+          if (typeof currentSwitchToSearch === 'function') {
+            currentSwitchToSearch();
+          }
           if (window.Attendees && window.Attendees.utilities) {
             window.Attendees.utilities.editingEnabled = false;
           }
@@ -3903,6 +4072,9 @@
         if (contentEl) renderPopupContent(contentEl);
       }
       if (popupInstance) {
+        if (typeof currentSwitchToSearch === 'function') {
+          currentSwitchToSearch();
+        }
         popupInstance.show();
         setTimeout(() => {
           const content = popupInstance.content ? popupInstance.content()[0] : document.getElementById('add-attendee-popup');

@@ -386,50 +386,48 @@ test.describe('Rosters List Page', () => {
       }).toPass({ timeout: 5000 });
     }
 
-    // Verify Companion wording and "More Companions" functionality (for both kid and adult meets)
-    const guardianSection = page.locator('.add-attendee-popup-wrapper .guardian-section');
+    // Verify removal of bottom action buttons More Companions & More Attendees
     const moreCompanionsBtn = page.locator('.add-attendee-popup-wrapper .more-companions-btn');
-    await expect(moreCompanionsBtn).toBeVisible();
+    const moreAttendeesBtn = page.locator('.add-attendee-popup-wrapper .more-attendees-btn');
+    await expect(moreCompanionsBtn).toHaveCount(0);
+    await expect(moreAttendeesBtn).toHaveCount(0);
 
-    if (await guardianSection.isVisible()) {
-      // Kid meet: Companion 1 is visible by default
-      await expect(guardianSection).toContainText('Companion Information');
-      await expect(guardianSection).toContainText('Companion 1');
+    // Verify Companion section and (+) button to add another companion
+    const guardianSection = page.locator('.add-attendee-popup-wrapper .guardian-section');
+    await expect(guardianSection).toBeVisible();
+    await expect(guardianSection).toContainText('Companion Information');
 
-      await moreCompanionsBtn.click();
-      const comp2Block = page.locator('.add-attendee-popup-wrapper .companion-block-extra');
-      await expect(comp2Block).toBeVisible();
-      await expect(comp2Block).toContainText('Companion 2');
-
-      await comp2Block.locator('.remove-companion-btn').click();
-      await expect(comp2Block).toBeHidden();
-    } else {
-      // Adult meet: Companion section is hidden initially, clicking "More Companions" reveals Companion 1
-      await moreCompanionsBtn.click();
-      await expect(guardianSection).toBeVisible();
-      await expect(guardianSection).toContainText('Companion 1');
-
-      // Clicking More Companions again reveals Companion 2
-      await moreCompanionsBtn.click();
-      const comp2Block = page.locator('.add-attendee-popup-wrapper .companion-block-extra');
-      await expect(comp2Block).toBeVisible();
-      await expect(comp2Block).toContainText('Companion 2');
-
-      // Removing Companion 2 removes it
-      await comp2Block.locator('.remove-companion-btn').click();
-      await expect(comp2Block).toBeHidden();
-
-      // Removing Companion 1 hides the companion section again
-      const comp1RemoveBtn = page.locator('.add-attendee-popup-wrapper .remove-companion-1-btn');
-      await comp1RemoveBtn.click();
-      await expect(guardianSection).toBeHidden();
+    // In adult meets, companion information is collapsed by default; click header to open it
+    const guardianContent = page.locator('.add-attendee-popup-wrapper .guardian-section-content');
+    if (!(await guardianContent.isVisible())) {
+      await page.locator('.add-attendee-popup-wrapper .guardian-section-header').click();
+      await expect(guardianContent).toBeVisible();
     }
+    await expect(guardianSection).toContainText('Companion 1');
 
-    // Verify back to search button
-    const backBtn = page.locator('.add-attendee-popup-wrapper .back-to-search-btn');
+    const comp1AddBtn = page.locator('.add-attendee-popup-wrapper .companion-block-1 .add-more-companion-btn');
+    await expect(comp1AddBtn).toBeVisible();
+    await comp1AddBtn.click();
+
+    const comp2Block = page.locator('.add-attendee-popup-wrapper .companion-block-extra');
+    await expect(comp2Block).toBeVisible();
+    await expect(comp2Block).toContainText('Companion 2');
+    await expect(comp2Block.locator('.add-more-companion-btn')).toBeVisible();
+
+    await comp2Block.locator('.remove-companion-btn').click();
+    await expect(comp2Block).toBeHidden();
+
+    // Verify modal title in onboard state has [←] back button and onboard title
+    const titleContainer = page.locator('.add-attendee-popup-wrapper .popup-title-container');
+    await expect(titleContainer).toContainText('Add Attendee to Rosters / New Attendee Registration');
+    const backBtn = page.locator('.add-attendee-popup-wrapper .popup-title-container .back-to-search-btn');
     await expect(backBtn).toBeVisible();
+
+    // Click [←] back button: returns to search view and restores search title
     await backBtn.click();
     await expect(searchInput).toBeVisible();
+    await expect(backBtn).toBeHidden();
+    await expect(titleContainer).toContainText("Add Attendee to Rosters, Welcome! Let's search first.");
   });
 
   test('Should satisfy all fast onboarding UI rules: autofocus, column preselection, 1 name only, no other gender, responsive layout, post-onboard row & column highlight and check-in', async ({ page }) => {
@@ -592,6 +590,14 @@ test.describe('Rosters List Page', () => {
     await page.keyboard.press('Escape');
     await expect(popupWrapper).toBeHidden({ timeout: 5000 });
 
+    // Verify rightmost (X) close button closes the Add Attendee modal
+    await addAttendeeBtn.click();
+    await expect(popupWrapper).toBeVisible();
+    const closeBtn = page.locator('.add-attendee-popup-wrapper .popup-close-btn');
+    await expect(closeBtn).toBeVisible();
+    await closeBtn.click();
+    await expect(popupWrapper).toBeHidden({ timeout: 5000 });
+
     // Reopen popup
     await addAttendeeBtn.click();
     await expect(popupWrapper).toBeVisible();
@@ -623,12 +629,30 @@ test.describe('Rosters List Page', () => {
     await attendeeContactRows.nth(1).locator('.remove-contact-btn').click();
     await expect(attendeeContactRows).toHaveCount(1);
 
-    // 3. Companion Gender input in first row [division][gender][relation]
+    // 3. Companion Section toggle and Companion Gender input
     const guardianSection = page.locator('.add-attendee-popup-wrapper .guardian-section');
-    const moreCompanionsBtn = page.locator('.add-attendee-popup-wrapper .more-companions-btn');
-    if (!await guardianSection.isVisible()) {
-      await moreCompanionsBtn.click();
+    await expect(guardianSection).toBeVisible();
+    const guardianHeader = page.locator('.add-attendee-popup-wrapper .guardian-section-header');
+    const guardianContent = page.locator('.add-attendee-popup-wrapper .guardian-section-content');
+    const collapseIcon = page.locator('.add-attendee-popup-wrapper .companion-collapse-icon');
+
+    if (!(await guardianContent.isVisible())) {
+      // If collapsed by default (adult meet), verify caret right, click to expand, verify caret down
+      await expect(collapseIcon).toHaveClass(/fa-caret-right/);
+      await guardianHeader.click();
+      await expect(guardianContent).toBeVisible();
+      await expect(collapseIcon).toHaveClass(/fa-caret-down/);
+    } else {
+      // If expanded by default (kid meet), verify caret down, test collapse and re-expand
+      await expect(collapseIcon).toHaveClass(/fa-caret-down/);
+      await guardianHeader.click();
+      await expect(guardianContent).toBeHidden();
+      await expect(collapseIcon).toHaveClass(/fa-caret-right/);
+      await guardianHeader.click();
+      await expect(guardianContent).toBeVisible();
+      await expect(collapseIcon).toHaveClass(/fa-caret-down/);
     }
+
     const comp1Gender = page.locator('.add-attendee-popup-wrapper .companion-block-1 select.ob-p-gender');
     await expect(comp1Gender).toBeVisible();
     const comp1GenderOptions = await comp1Gender.locator('option').allTextContents();
@@ -642,21 +666,18 @@ test.describe('Rosters List Page', () => {
     const comp1Block = page.locator('.add-attendee-popup-wrapper .companion-block-1');
     if (await unaccompaniedCheck.isVisible()) {
       await expect(comp1Block).toBeVisible();
-      await expect(moreCompanionsBtn).toBeVisible();
 
       // Check unaccompanied
       await unaccompaniedCheck.check();
       await expect(comp1Block).toBeHidden();
-      await expect(moreCompanionsBtn).toBeHidden();
 
       // Uncheck unaccompanied
       await unaccompaniedCheck.uncheck();
       await expect(comp1Block).toBeVisible();
-      await expect(moreCompanionsBtn).toBeVisible();
     }
   });
 
-  test('Should support More Attendees button to register multiple attendees simultaneously', async ({ page }) => {
+  test('Should support attendee (+) button to register multiple attendees simultaneously', async ({ page }) => {
     await page.goto('/occasions/rosters/');
 
     const appContainer = page.locator('#app');
@@ -682,56 +703,76 @@ test.describe('Rosters List Page', () => {
 
     // Search and switch to onboard
     const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
-    await searchInput.fill('MultiAttendeeUniqueTestUser');
+    await expect(searchInput).toBeVisible();
+    await searchInput.click();
+    await searchInput.fill(`NonExistentMultiTest_${Date.now()}`);
     await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
 
-    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn').first();
     await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
     await switchToOnboardBtn.click();
 
-    // Verify More Attendees button exists
-    const moreAttendeesBtn = page.locator('.add-attendee-popup-wrapper .more-attendees-btn');
-    await expect(moreAttendeesBtn).toBeVisible();
-
-    // Click More Attendees button to add Attendee 2
-    await moreAttendeesBtn.click();
-
+    // Verify Attendee 1 has add (+) button, but no remove (X) button
     const attendeeBlocks = page.locator('.add-attendee-popup-wrapper .attendee-block');
-    await expect(attendeeBlocks).toHaveCount(2);
+    const att1Block = attendeeBlocks.nth(0);
+    const att1AddBtn = att1Block.locator('.add-more-attendee-btn');
+    await expect(att1AddBtn).toBeVisible();
+    await expect(att1Block.locator('.remove-attendee-btn')).toHaveCount(0);
 
-    // Verify Attendee 2 block has remove button
-    const removeAtt2Btn = attendeeBlocks.nth(1).locator('.remove-attendee-btn');
+    // Click (+) button on Attendee 1 to add Attendee 2
+    await att1AddBtn.click();
+
+    let currentAttendeeBlocks = page.locator('.add-attendee-popup-wrapper .attendee-block');
+    await expect(currentAttendeeBlocks).toHaveCount(2);
+
+    // Verify Attendee 2 block has both (+) button and remove (X) button
+    const att2Block = currentAttendeeBlocks.nth(1);
+    await expect(att2Block.locator('.add-more-attendee-btn')).toBeVisible();
+    const removeAtt2Btn = att2Block.locator('.remove-attendee-btn');
     await expect(removeAtt2Btn).toBeVisible();
+
+    // Click remove (X) on Attendee 2 to verify removal
+    await removeAtt2Btn.click();
+    await expect(page.locator('.add-attendee-popup-wrapper .attendee-block')).toHaveCount(1);
+
+    // Verify More Attendees button is removed from bottom actions
+    await expect(page.locator('.add-attendee-popup-wrapper .more-attendees-btn')).toHaveCount(0);
+
+    // Click (+) on Attendee 1 to re-add Attendee 2
+    await att1AddBtn.click();
+
+    currentAttendeeBlocks = page.locator('.add-attendee-popup-wrapper .attendee-block');
+    await expect(currentAttendeeBlocks).toHaveCount(2);
 
     // Fill Attendee 1
     const ts = Date.now();
     const att1First = `Multi1_${ts}`;
     const att2First = `Multi2_${ts}`;
-    await attendeeBlocks.nth(0).locator('input.ob-first-name').fill(att1First);
-    await attendeeBlocks.nth(0).locator('input.ob-last-name').fill('FamilyUnit');
+    await currentAttendeeBlocks.nth(0).locator('input.ob-first-name').fill(att1First);
+    await currentAttendeeBlocks.nth(0).locator('input.ob-last-name').fill('FamilyUnit');
 
     // Fill Attendee 2
-    await attendeeBlocks.nth(1).locator('input.ob-first-name').fill(att2First);
-    await attendeeBlocks.nth(1).locator('input.ob-last-name').fill('FamilyUnit');
+    await currentAttendeeBlocks.nth(1).locator('input.ob-first-name').fill(att2First);
+    await currentAttendeeBlocks.nth(1).locator('input.ob-last-name').fill('FamilyUnit');
 
     // If kid meet, fill kid fields and check unaccompanied for test simplicity
-    const isKidSectionVisible = await attendeeBlocks.nth(0).locator('.kid-specific-fields').isVisible();
+    const isKidSectionVisible = await currentAttendeeBlocks.nth(0).locator('.kid-specific-fields').isVisible();
     if (isKidSectionVisible) {
       // Attendee 1
-      await attendeeBlocks.nth(0).locator('input.ob-byear').fill('2017');
-      await attendeeBlocks.nth(0).locator('select.ob-bmonth').selectOption('3');
-      await attendeeBlocks.nth(0).locator('select.ob-bday').selectOption('10');
-      const g1 = attendeeBlocks.nth(0).locator('select.ob-grade');
+      await currentAttendeeBlocks.nth(0).locator('input.ob-byear').fill('2017');
+      await currentAttendeeBlocks.nth(0).locator('select.ob-bmonth').selectOption('3');
+      await currentAttendeeBlocks.nth(0).locator('select.ob-bday').selectOption('10');
+      const g1 = currentAttendeeBlocks.nth(0).locator('select.ob-grade');
       if ((await g1.locator('option').all()).length > 1) await g1.selectOption({ index: 1 });
-      await attendeeBlocks.nth(0).locator('input.ob-food-pref').fill('None');
+      await currentAttendeeBlocks.nth(0).locator('input.ob-food-pref').fill('None');
 
       // Attendee 2
-      await attendeeBlocks.nth(1).locator('input.ob-byear').fill('2019');
-      await attendeeBlocks.nth(1).locator('select.ob-bmonth').selectOption('6');
-      await attendeeBlocks.nth(1).locator('select.ob-bday').selectOption('20');
-      const g2 = attendeeBlocks.nth(1).locator('select.ob-grade');
+      await currentAttendeeBlocks.nth(1).locator('input.ob-byear').fill('2019');
+      await currentAttendeeBlocks.nth(1).locator('select.ob-bmonth').selectOption('6');
+      await currentAttendeeBlocks.nth(1).locator('select.ob-bday').selectOption('20');
+      const g2 = currentAttendeeBlocks.nth(1).locator('select.ob-grade');
       if ((await g2.locator('option').all()).length > 1) await g2.selectOption({ index: 1 });
-      await attendeeBlocks.nth(1).locator('input.ob-food-pref').fill('None');
+      await currentAttendeeBlocks.nth(1).locator('input.ob-food-pref').fill('None');
 
       await page.locator('.add-attendee-popup-wrapper input.ob-unaccompanied').check();
     }

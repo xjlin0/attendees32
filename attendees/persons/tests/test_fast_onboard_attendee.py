@@ -873,6 +873,146 @@ class TestFastOnboardAttendee:
         assert res.status_code == status.HTTP_400_BAD_REQUEST
         assert "cannot be in the future" in str(res.data)
 
+    def test_adult_fast_onboard_exclusivity_and_3plus_attendees(self):
+        payload = {
+            "meet_slug": self.adult_meet.slug,
+            "unaccompanied": False,
+            "attendees_data": [
+                {
+                    "first_name": "Father",
+                    "last_name": "Lee",
+                    "gender": "male",
+                    "birthday_year": 1980,
+                    "birthday_month": 1,
+                    "birthday_day": 1,
+                    "contact_type": "phone",
+                    "contact_value": "4085551001",
+                },
+                {
+                    "first_name": "Mother",
+                    "last_name": "Lee",
+                    "gender": "female",
+                    "birthday_year": 1982,
+                    "birthday_month": 2,
+                    "birthday_day": 2,
+                    "contact_type": "phone",
+                    "contact_value": "4085551002",
+                },
+                {
+                    "first_name": "Sonny",
+                    "last_name": "Lee",
+                    "gender": "male",
+                    "birthday_year": 2010,
+                    "birthday_month": 5,
+                    "birthday_day": 5,
+                    "contact_type": "phone",
+                    "contact_value": "4085551003",
+                },
+            ],
+            "companions": [
+                {
+                    "first_name": "Daughtery",
+                    "last_name": "Lee",
+                    "gender": "female",
+                    "division_id": self.adult_division.id,
+                    "relationship": self.relation_child.id,
+                },
+                {
+                    "first_name": "Baby",
+                    "last_name": "Lee",
+                    "gender": "unspecified",
+                    "division_id": self.adult_division.id,
+                    "relationship": self.relation_child.id,
+                },
+            ],
+        }
+
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+
+        data = res.data
+        assert len(data["attendee_ids"]) == 3
+        assert len(data["companion_ids"]) == 2
+
+        father = Attendee.objects.get(pk=data["attendee_ids"][0])
+        mother = Attendee.objects.get(pk=data["attendee_ids"][1])
+        sonny = Attendee.objects.get(pk=data["attendee_ids"][2])
+        daughtery = Attendee.objects.get(pk=data["companion_ids"][0])
+        baby = Attendee.objects.get(pk=data["companion_ids"][1])
+
+        family_folk = Folk.objects.filter(attendees=father.id, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family_folk is not None
+
+        # Check FolkAttendee roles and display_order:
+        # 1st male -> husband (rank 1)
+        father_fa = FolkAttendee.objects.get(folk=family_folk, attendee=father)
+        assert father_fa.role == self.relation_husband
+        assert father_fa.display_order == 1
+
+        # 1st female -> wife (rank 2)
+        mother_fa = FolkAttendee.objects.get(folk=family_folk, attendee=mother)
+        assert mother_fa.role == self.relation_wife
+        assert mother_fa.display_order == 2
+
+        # 3rd member (male) -> son (rank 11) + start date = actual_birthday
+        sonny_fa = FolkAttendee.objects.get(folk=family_folk, attendee=sonny)
+        assert sonny_fa.role == self.relation_son
+        assert sonny_fa.display_order == 11
+        assert sonny_fa.start == date(2010, 5, 5)
+
+        # 4th member (female) -> daughter (rank 12)
+        daughtery_fa = FolkAttendee.objects.get(folk=family_folk, attendee=daughtery)
+        assert daughtery_fa.role == self.relation_daughter
+        assert daughtery_fa.display_order == 12
+
+        # 5th member (unspecified) -> child (rank 13)
+        baby_fa = FolkAttendee.objects.get(folk=family_folk, attendee=baby)
+        assert baby_fa.role.title.lower() == "child"
+        assert baby_fa.display_order == 13
+
+    def test_adult_fast_onboard_two_males_exclusivity(self):
+        payload = {
+            "meet_slug": self.adult_meet.slug,
+            "unaccompanied": False,
+            "attendees_data": [
+                {
+                    "first_name": "Brother1",
+                    "last_name": "Wang",
+                    "gender": "male",
+                    "contact_type": "phone",
+                    "contact_value": "4085552001",
+                },
+                {
+                    "first_name": "Brother2",
+                    "last_name": "Wang",
+                    "gender": "male",
+                    "contact_type": "phone",
+                    "contact_value": "4085552002",
+                },
+            ],
+            "companions": [],
+        }
+
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+
+        b1 = Attendee.objects.get(pk=res.data["attendee_ids"][0])
+        b2 = Attendee.objects.get(pk=res.data["attendee_ids"][1])
+
+        family_folk = Folk.objects.filter(attendees=b1.id, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family_folk is not None
+
+        # 1st male is husband (rank 1)
+        b1_fa = FolkAttendee.objects.get(folk=family_folk, attendee=b1)
+        assert b1_fa.role == self.relation_husband
+        assert b1_fa.display_order == 1
+
+        # 2nd male cannot be husband due to exclusivity, so becomes son (rank 11)
+        b2_fa = FolkAttendee.objects.get(folk=family_folk, attendee=b2)
+        assert b2_fa.role == self.relation_son
+        assert b2_fa.display_order == 11
+
+
 
 
 

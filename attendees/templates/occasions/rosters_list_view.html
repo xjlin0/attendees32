@@ -164,22 +164,20 @@
 
     <!-- 3. Onboard View Container (Accessible ONLY after searching) -->
     <div class="onboard-view-container" style="display: none;">
-      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-        <button type="button" class="btn btn-outline-secondary btn-sm back-to-search-btn">
-          <i class="fas fa-arrow-left me-1"></i> Back to Search
-        </button>
-        <span class="badge bg-success py-2 px-3 fw-normal" style="font-size: 0.85rem; text-wrap: balance;">New Attendee Registration</span>
-      </div>
       <form class="onboard-form" onsubmit="return false;">
           <!-- Attendee Section -->
           <div class="attendees-section mb-3">
             <!-- Attendee 1 Block -->
-            <div class="attendee-block attendee-block-1 mb-3">
+            <div class="attendee-block attendee-block-1 p-2 bg-light rounded border mb-3 position-relative">
               <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
                 <h6 class="text-primary mb-0 fw-bold attendee-block-title" style="font-size: 0.95rem;">
                   <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
                 </h6>
-                <button type="button" class="btn-close btn-sm remove-attendee-btn remove-attendee-1-btn d-none" aria-label="Remove attendee" title="Remove attendee"></button>
+                <div class="d-flex align-items-center gap-1">
+                  <button type="button" class="btn btn-outline-primary btn-sm add-more-attendee-btn p-0 d-flex align-items-center justify-content-center" title="Add another attendee" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
               </div>
               <div class="row g-2 mb-2">
                 <div class="col-md-6 col-12">
@@ -204,11 +202,7 @@
               <div class="row g-2 mb-2">
                 <div class="col-md-3 col-6">
                   <label class="form-label small mb-1 fw-semibold">Gender</label>
-                  <select class="form-select form-select-sm ob-gender">
-                    <option value="unspecified" selected>Unspecified</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
+                  <select class="form-select form-select-sm ob-gender"></select>
                 </div>
                 <div class="col-md-3 col-6">
                   <label class="form-label small mb-1 fw-semibold ob-birthday-label">
@@ -326,11 +320,20 @@
 
           <!-- Companion Section -->
           <div class="guardian-section">
-            <h6 class="text-primary border-bottom pb-1 mb-2 fw-bold" style="font-size: 0.95rem;">
-              <i class="fas fa-user-friends me-1"></i> Companion Information
-            </h6>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2 guardian-section-header" role="button">
+              <h6 class="text-primary mb-0 fw-bold"
+                  style="font-size: 0.95rem;"
+                  title="Companions won't attend the activity/meet">
+                <i class="fas fa-user-friends me-1"></i> Companion Information
+              </h6>
+              <span class="text-secondary companion-toggle-indicator" title="Toggle Companion Information">
+                <i class="fas fa-caret-down companion-collapse-icon" style="font-size: 1.15rem;"></i>
+              </span>
+            </div>
 
-            <!-- Unaccompanied Minor Checkbox (Kids Only) -->
+            <!-- Collapsible Companion Content -->
+            <div class="guardian-section-content">
+              <!-- Unaccompanied Minor Checkbox (Kids Only) -->
             <div class="form-check p-2 bg-light rounded border mb-2 unaccompanied-minor-container">
               <input class="form-check-input ms-0 me-2 ob-unaccompanied" type="checkbox" id="unaccompaniedMinorCheck">
               <label class="form-check-label fw-bold text-dark" for="unaccompaniedMinorCheck" role="button">
@@ -344,11 +347,16 @@
             <!-- Companion 1 Block -->
             <div class="guardian-inputs-container companion-block companion-block-1 mb-2">
               <div class="p-2 bg-light rounded border mb-2 position-relative">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
                   <div class="fw-bold small text-secondary companion-label">
                     <i class="fas fa-user me-1"></i> <span class="companion-1-label">Companion 1</span>
                   </div>
-                  <button type="button" class="btn-close btn-sm remove-companion-btn remove-companion-1-btn d-none" aria-label="Remove companion" title="Remove companion"></button>
+                  <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-outline-secondary btn-sm add-more-companion-btn p-0 d-flex align-items-center justify-content-center" title="Add another companion" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                    <button type="button" class="btn-close btn-sm remove-companion-btn remove-companion-1-btn d-none" aria-label="Remove companion" title="Remove companion"></button>
+                  </div>
                 </div>
 
                 <!-- Division, Gender & Relationship -->
@@ -361,11 +369,7 @@
                   </div>
                   <div class="col-md-4 col-12">
                     <label class="form-label small mb-1 fw-semibold comp-gender-label">Companion 1 Gender</label>
-                    <select class="form-select form-select-sm ob-p-gender">
-                      <option value="unspecified" selected>Unspecified</option>
-                      <option value="female">Female</option>
-                      <option value="male">Male</option>
-                    </select>
+                    <select class="form-select form-select-sm ob-p-gender"></select>
                   </div>
                   <div class="col-md-4 col-12">
                     <label class="form-label small mb-1 fw-semibold comp-relationship-label">Companion 1 Relationship</label>
@@ -429,23 +433,14 @@
 
             <!-- Additional Companions Container (Appended above buttons) -->
             <div class="additional-companions-container"></div>
+            </div>
           </div>
 
-        <!-- Buttons: More Companions + More Attendees + Register & Check In -->
-        <div class="d-flex gap-2 mt-3 flex-wrap">
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end pt-2 border-top mt-3">
           <button type="button"
-                  class="btn btn-outline-primary btn-sm flex-fill more-companions-btn fw-bold py-2"
-                  title="Add more persons within the same family, not attending the activity">
-            <i class="fas fa-user-friends me-1"></i> More Companions
-          </button>
-          <button type="button"
-                  class="btn btn-outline-info btn-sm flex-fill more-attendees-btn fw-bold py-2"
-                  title="Add more attendees within the same family, also attending the activity">
-            <i class="fas fa-user-plus me-1"></i> More Attendees
-          </button>
-          <button type="button"
-                  class="btn btn-success btn-sm flex-fill ob-submit-btn fw-bold py-2"
-                  title=Save attendees and companions, register and check-in attendees">
+                  class="btn btn-success btn-sm ob-submit-btn fw-bold py-2 px-4"
+                  title="Save attendees and companions, register and check-in attendees">
             <i class="fas fa-check-circle me-1"></i> Register & Check In
           </button>
         </div>
@@ -457,11 +452,16 @@
 <!-- Template for Additional Companion Blocks -->
 <template id="companion-block-template">
   <div class="companion-block companion-block-extra p-2 bg-light rounded border mb-2 position-relative">
-    <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
       <div class="fw-bold small text-secondary companion-label">
         <i class="fas fa-user me-1"></i> Companion
       </div>
-      <button type="button" class="btn-close btn-sm remove-companion-btn" aria-label="Remove companion" title="Remove companion"></button>
+      <div class="d-flex align-items-center gap-1">
+        <button type="button" class="btn btn-outline-secondary btn-sm add-more-companion-btn p-0 d-flex align-items-center justify-content-center" title="Add another companion" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button type="button" class="btn-close btn-sm remove-companion-btn" aria-label="Remove companion" title="Remove companion"></button>
+      </div>
     </div>
 
     <!-- Division, Gender & Relationship -->
@@ -474,11 +474,7 @@
       </div>
       <div class="col-md-4 col-12">
         <label class="form-label small mb-1 fw-semibold comp-gender-label">Gender</label>
-        <select class="form-select form-select-sm ob-p-gender">
-          <option value="unspecified" selected>Unspecified</option>
-          <option value="female">Female</option>
-          <option value="male">Male</option>
-        </select>
+        <select class="form-select form-select-sm ob-p-gender"></select>
       </div>
       <div class="col-md-4 col-12">
         <label class="form-label small mb-1 fw-semibold comp-relationship-label">Relationship</label>
@@ -546,7 +542,12 @@
       <h6 class="text-primary mb-0 fw-bold attendee-block-title" style="font-size: 0.95rem;">
         <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
       </h6>
-      <button type="button" class="btn-close btn-sm remove-attendee-btn" aria-label="Remove attendee" title="Remove attendee"></button>
+      <div class="d-flex align-items-center gap-1">
+        <button type="button" class="btn btn-outline-primary btn-sm add-more-attendee-btn p-0 d-flex align-items-center justify-content-center" title="Add another attendee" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button type="button" class="btn-close btn-sm remove-attendee-btn" aria-label="Remove attendee" title="Remove attendee"></button>
+      </div>
     </div>
     <div class="row g-2 mb-2">
       <div class="col-md-6 col-12">
@@ -571,11 +572,7 @@
     <div class="row g-2 mb-2">
       <div class="col-md-3 col-6">
         <label class="form-label small mb-1 fw-semibold">Gender</label>
-        <select class="form-select form-select-sm ob-gender">
-          <option value="unspecified" selected>Unspecified</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-        </select>
+        <select class="form-select form-select-sm ob-gender"></select>
       </div>
       <div class="col-md-3 col-6">
         <label class="form-label small mb-1 fw-semibold ob-birthday-label">

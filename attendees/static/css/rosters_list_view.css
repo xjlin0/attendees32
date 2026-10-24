@@ -343,5 +343,28 @@ body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-select
   background-color: #b9dec7;
 }
 
+body div.add-attendee-popup-wrapper div.dx-popup-title {
+  padding: 10px 14px;
+}
+
+body div.add-attendee-popup-wrapper div.dx-popup-title .dx-toolbar-label {
+  width: 100%;
+}
+
+.guardian-section-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.guardian-section-header:hover {
+  opacity: 0.85;
+}
+
+.companion-toggle-indicator {
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 
 
