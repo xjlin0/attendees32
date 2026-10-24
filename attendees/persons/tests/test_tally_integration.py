@@ -116,7 +116,7 @@ def provisioned(organization, vocabulary, meet):
         "organization": organization,
         "user": user,
         "token": user.auth_token.key,
-        "division": Division.objects.get(slug="testorg_unspecified"),
+        "division": Division.objects.get(slug="testorg_tally"),
         "meet": meet,
         "assembly": meet.assembly,
     }
@@ -158,19 +158,17 @@ class TestSetupCommand:
             call_command("setup_tally_integration", "--organization-slug", "testorg", "--readable-meet", "nope")
         assert not User.objects.filter(username="tally-integration").exists()
 
-    def test_files_people_under_the_unspecified_division(self, provisioned):
-        # Made here because the minimal fixture has none; a real organization
-        # has one already, and the next test shows it is adopted.
+    def test_files_people_under_a_division_of_tallys_own(self, provisioned):
         division = provisioned["division"]
-        assert division.display_name == "Unspecified"
+        assert division.display_name == "Tally"
         assert Attendee.objects.get(user=provisioned["user"]).division == division
 
-    def test_adopts_the_organizations_unspecified_division(self, organization, vocabulary):
+    def test_adopts_the_tally_division_it_finds(self, organization, vocabulary):
         from django.contrib.auth.models import Group
 
         audience, _ = Group.objects.get_or_create(name="organization_participant")
         theirs = Division.objects.create(
-            organization=organization, slug="testorg_unspecified", display_name="未指定", audience_auth_group=audience, infos={}
+            organization=organization, slug="testorg_tally", display_name="From Tally", audience_auth_group=audience, infos={}
         )
         call_command("setup_tally_integration", "--organization-slug", "testorg")
         attendee = Attendee.objects.get(user__username="tally-integration")
@@ -189,7 +187,7 @@ class TestSetupCommand:
         attendee = Attendee.objects.get(user=provisioned["user"])
         assert attendee.infos["tally"] == {
             "group": "tally_integration",
-            "division": "testorg_unspecified",
+            "division": "testorg_tally",
             "division_created": True,
             "readable_meets": [provisioned["meet"].slug],
         }

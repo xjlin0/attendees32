@@ -15,9 +15,10 @@ reads history from, and reading a meet takes the group's name in that meet's
 allowed groups: ``--readable-meet <slug>`` grants that on an existing meet, as
 many times as needed. Nothing else about meets is created or changed.
 
-Tally's people are filed under the organization's "unspecified" division, the
-one the app itself falls back to, so nothing has to be chosen; ``--division-slug``
-names an existing division instead.
+Tally's people are filed under a division of Tally's own, ``<org>_tally``,
+made if absent, so nothing has to be chosen and what came in from Tally is
+easy to tell apart and triage; ``--division-slug`` names an existing division
+instead.
 
 It prints, at the end, exactly the values to copy into Tally's configuration
 plus the token — DRF stores it retrievably, so later runs print it again by
@@ -26,7 +27,6 @@ design (it is the *server's* secret store, unlike hashed passwords).
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.db.models import Q
 from rest_framework.authtoken.models import Token
 
 from attendees.occasions.models import Meet
@@ -51,7 +51,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--division-slug",
             default=None,
-            help="An existing division to file Tally's people under. Default: the organization's unspecified division.",
+            help="An existing division to file Tally's people under. Default: <org-slug>_tally, made if absent.",
         )
         parser.add_argument("--username", default="tally-integration", help="The integration user.")
         parser.add_argument("--group", default="tally_integration", help="The auth group granted to the user.")
@@ -113,21 +113,15 @@ class Command(BaseCommand):
                 known = ", ".join(Division.objects.filter(organization=organization).values_list("slug", flat=True))
                 raise CommandError(f"No division '{options['division_slug']}' in organization '{org_slug}'. Known: {known}")
         else:
-            # The app's own "not chosen" bucket: pk 0 by convention, which the
-            # attendee model defaults to; made here only if the organization
-            # has none.
-            division = (
-                Division.objects.filter(organization=organization)
-                .filter(Q(pk=0) | Q(slug=f"{org_slug}_unspecified"))
-                .order_by("pk")
-                .first()
-            )
+            # Tally's own bucket, so what it pushed is easy to tell apart and
+            # triage into the right division later.
+            division = Division.objects.filter(slug=f"{org_slug}_tally", organization=organization).first()
             division_created = division is None
             if division_created:
                 division = Division.objects.create(
                     organization=organization,
-                    slug=f"{org_slug}_unspecified",
-                    display_name="Unspecified",
+                    slug=f"{org_slug}_tally",
+                    display_name="Tally",
                     audience_auth_group=group,
                     infos={},
                 )
