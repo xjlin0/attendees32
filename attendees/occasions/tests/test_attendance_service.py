@@ -246,3 +246,33 @@ class TestAttendanceService:
         assert att.gathering is not None
         assert att.gathering.meet_id == self.meet.id
         assert att.category_id == 9
+
+    def test_create_or_update_attendance_rejects_virtual_start_string_with_validation_error(self):
+        from rest_framework import serializers
+        start_time = self.now + timedelta(days=7)
+        data = {
+            'gathering': f'start_{start_time.isoformat()}',
+            'meet': self.meet.id,
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        with pytest.raises(serializers.ValidationError) as excinfo:
+            AttendanceService.create_or_update_attendance(self.user, data)
+        assert 'gathering' in excinfo.value.detail
+        assert 'Expected an integer ID or null' in str(excinfo.value.detail['gathering'])
+
+    def test_create_or_update_attendance_with_null_gathering_and_inferred_meet(self):
+        start_time = self.now + timedelta(days=10)
+        data = {
+            'gathering': None,
+            'gathering_start': start_time.isoformat(),
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        att = AttendanceService.create_or_update_attendance(self.user, data)
+        assert att.id is not None
+        assert isinstance(att.gathering_id, int)
+        assert att.gathering.meet_id == self.meet.id
+        assert att.category_id == 9

@@ -3640,8 +3640,31 @@
 
       try {
         // 1. Create or renew AttendingMeet
+        let attendingId = cand.attending_id;
+        if (!attendingId) {
+          const attgRes = await fetch(endpoints.attendings, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Target-Attendee-Id': String(cand.id),
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+              attendee: cand.id,
+              registration: null
+            })
+          });
+          if (!attgRes.ok) {
+            const attgErr = await attgRes.json().catch(() => ({}));
+            throw new Error(attgErr.detail || attgErr.error || 'Failed to initialize attending record');
+          }
+          const newAttending = await attgRes.json();
+          attendingId = newAttending.id;
+          cand.attending_id = attendingId;
+        }
+
         const amPayload = {
-          attending: cand.attending_id,
+          attending: attendingId,
           meet: meetObj.id,
           character: meetObj.major_character || 1,
           category: 1, // Scheduled
@@ -3660,32 +3683,52 @@
 
         if (!amRes.ok) {
           const amErr = await amRes.json().catch(() => ({}));
-          throw new Error(amErr.detail || amErr.error || 'Failed to enroll in meet');
+          throw new Error(amErr.detail || amErr.error || `Failed to enroll in meet (HTTP ${amRes.status})`);
         }
 
         // 2. Mark check-in with selected gathering
-        let activeGathering = null;
-        if (selectedGatheringId) {
-          activeGathering = Array.from(gatheringsRegistry.values()).find(g => String(g.id) === String(selectedGatheringId));
+        const gatheringDropdown = document.querySelector('.target-gathering-dropdown');
+        const chosenGatheringVal = (gatheringDropdown && gatheringDropdown.value) || selectedGatheringId || '';
+
+        let targetGatheringId = null;
+        let targetGatheringStart = null;
+
+        if (chosenGatheringVal) {
+          if (String(chosenGatheringVal).startsWith('start_')) {
+            targetGatheringStart = String(chosenGatheringVal).replace(/^start_/, '');
+          } else if (/^\d+$/.test(String(chosenGatheringVal))) {
+            targetGatheringId = parseInt(chosenGatheringVal, 10);
+          }
         }
-        if (!activeGathering) {
+
+        if (!targetGatheringId && !targetGatheringStart) {
           const meetGatherings = getGatheringsForMeet(meetObj.id);
-          activeGathering = getUpcomingOrOngoingGathering(meetGatherings);
+          const upcoming = getUpcomingOrOngoingGathering(meetGatherings);
+          if (upcoming) {
+            if (upcoming.id && /^\d+$/.test(String(upcoming.id))) {
+              targetGatheringId = parseInt(upcoming.id, 10);
+            } else if (upcoming.start) {
+              targetGatheringStart = upcoming.start;
+            }
+          }
         }
 
         const attPayload = {
-          gathering: activeGathering ? activeGathering.id : (selectedGatheringId || null),
-          attending: cand.attending_id,
+          attending: attendingId,
           character: meetObj.major_character || 1,
-          category: 9,
-          start: new Date().toISOString()
+          category: 9, // Attended
+          start: new Date().toISOString(),
+          meet: meetObj.id
         };
-        if (!attPayload.gathering && activeGathering) {
-          attPayload.meet = meetObj.id;
-          attPayload.gathering_start = activeGathering.start;
+
+        if (targetGatheringId) {
+          attPayload.gathering = targetGatheringId;
+        } else if (targetGatheringStart) {
+          attPayload.gathering = null;
+          attPayload.gathering_start = targetGatheringStart;
         }
 
-        await fetch(endpoints.attendances, {
+        const attRes = await fetch(endpoints.attendances, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3694,9 +3737,17 @@
           body: JSON.stringify(attPayload)
         });
 
+        if (!attRes.ok) {
+          const attErr = await attRes.json().catch(() => ({}));
+          throw new Error(attErr.detail || attErr.error || `Attendance check-in failed (HTTP ${attRes.status}: ${attRes.statusText})`);
+        }
+
+        const attData = await attRes.json().catch(() => ({}));
+        const confirmedGatheringId = attData.gathering || targetGatheringId || null;
+
         DevExpress.ui.notify(`Enrolled and checked in ${cand.name} successfully!`, 'success', 2500);
         if (popupInstance) popupInstance.hide();
-        await loadData(cand.id, attPayload.gathering);
+        await loadData(cand.id, confirmedGatheringId);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', WARNING_NOTIFY_TIME);
       } finally {

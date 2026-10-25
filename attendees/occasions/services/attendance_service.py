@@ -449,8 +449,29 @@ class AttendanceService:
 
         data_dict = data.copy() if hasattr(data, 'copy') else dict(data)
         gathering_id = data_dict.get('gathering')
+
+        # Strict validation: gathering must be an integer ID, integer string, or null/empty
+        if gathering_id is not None and gathering_id != '':
+            if not (isinstance(gathering_id, int) or (isinstance(gathering_id, str) and gathering_id.isdigit())):
+                raise serializers.ValidationError({
+                    "gathering": f"Expected an integer ID or null, but got '{gathering_id}'."
+                })
+            gathering_id = int(gathering_id)
+            data_dict['gathering'] = gathering_id
+        else:
+            gathering_id = None
+            data_dict['gathering'] = None
+
         if not gathering_id:
             meet = data_dict.get('meet')
+            if not meet and data_dict.get('attending'):
+                from attendees.persons.models import AttendingMeet
+                attending_meet = AttendingMeet.objects.filter(
+                    attending_id=data_dict.get('attending'),
+                    is_removed=False,
+                ).order_by('-finish').first()
+                if attending_meet:
+                    meet = attending_meet.meet_id
             start = data_dict.get('gathering_start') or data_dict.get('start')
             if not meet or not start:
                 raise serializers.ValidationError({"gathering": "Gathering ID or (meet and start time) is required."})
