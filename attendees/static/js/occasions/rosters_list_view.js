@@ -103,6 +103,10 @@
   const meetGatheringsCache = new Map();
   const loadMeetGatherings = async (meetSlug, meetId, gatheringsEndpoint) => {
     if (!meetSlug && !meetId) return [];
+    if (!meetId && meetSlug) {
+      const m = meetsMap.get(meetSlug) || meetsMap.get(String(meetSlug));
+      if (m && m.id) meetId = m.id;
+    }
     const cacheKey = String(meetSlug || meetId);
     if (meetGatheringsCache.has(cacheKey) && meetGatheringsCache.get(cacheKey).length > 0) {
       return meetGatheringsCache.get(cacheKey);
@@ -121,13 +125,13 @@
 
     // 1. Gatherings from registry
     for (const g of gatheringsRegistry.values()) {
-      if (g && (String(g.meet_id) === String(meetId) || String(g.meet_slug) === String(meetSlug))) {
+      if (g && ((meetId && String(g.meet_id) === String(meetId)) || (meetSlug && String(g.meet_slug) === String(meetSlug)))) {
         addG(g);
       }
     }
 
-    // 2. Fetch from gatherings API for this meet
-    if (meetSlug) {
+    // 2. Fetch from gatherings API for this meet only if not found in registry
+    if (result.length === 0 && meetSlug) {
       const url = (gatheringsEndpoint || '/occasions/api/organization_team_gatherings/') + `?meets[]=${encodeURIComponent(meetSlug)}&take=999`;
       try {
         const res = await fetch(url, {
@@ -2128,9 +2132,69 @@
               gridInstanceRef.value.off('contentReady', onContentReady);
               if (targetAttendeeId) {
                 gridInstanceRef.value.selectRows([targetAttendeeId], false);
-                if (typeof gridInstanceRef.value.navigateToRow === 'function') {
-                  gridInstanceRef.value.navigateToRow(targetAttendeeId);
-                }
+
+                const scrollToRowElement = () => {
+                  if (!gridInstanceRef.value) return;
+                  const rowIndex = gridInstanceRef.value.getRowIndexByKey(targetAttendeeId);
+                  if (rowIndex >= 0) {
+                    const rowEl = gridInstanceRef.value.getRowElement(rowIndex);
+                    const domEl = rowEl && (rowEl[0] || (rowEl.length ? rowEl[0] : rowEl));
+                    if (domEl && typeof domEl.scrollIntoView === 'function') {
+                      domEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                  }
+                };
+
+                const tryNavigateAndScroll = async () => {
+                  if (!gridInstanceRef.value) return;
+                  const rowIndex = gridInstanceRef.value.getRowIndexByKey(targetAttendeeId);
+
+                  if (rowIndex >= 0) {
+                    scrollToRowElement();
+                    return;
+                  }
+
+                  // If not on current page, check where the attendee is located across the roster
+                  try {
+                    const findParams = new URLSearchParams();
+                    filterData.meets.forEach(meet => findParams.append('meets[]', meet));
+                    if (filterData.startDate) findParams.set('start', filterData.startDate.toISOString());
+                    if (filterData.endDate) findParams.set('finish', filterData.endDate.toISOString());
+                    findParams.set('skip', 0);
+                    findParams.set('take', 9999);
+
+                    const allRes = await fetch(`${endpoints.rosters}?${findParams.toString()}`);
+                    if (allRes.ok) {
+                      const allData = await allRes.json();
+                      const allRows = allData.data || allData.rows || [];
+                      const foundIdx = allRows.findIndex(r => String(r.attendee_id) === String(targetAttendeeId));
+                      if (foundIdx >= 0) {
+                        const pageSize = gridInstanceRef.value.pageSize() || 40;
+                        const targetPage = Math.floor(foundIdx / pageSize);
+                        if (gridInstanceRef.value.pageIndex() !== targetPage) {
+                          const onTargetPageReady = () => {
+                            gridInstanceRef.value.off('contentReady', onTargetPageReady);
+                            gridInstanceRef.value.selectRows([targetAttendeeId], false);
+                            setTimeout(scrollToRowElement, 150);
+                          };
+                          gridInstanceRef.value.on('contentReady', onTargetPageReady);
+                          gridInstanceRef.value.pageIndex(targetPage);
+                          return;
+                        }
+                      }
+                    }
+                  } catch (e) {
+                    console.warn('Auto page navigation error:', e);
+                  }
+
+                  // Fallback: navigateToRow
+                  if (typeof gridInstanceRef.value.navigateToRow === 'function') {
+                    gridInstanceRef.value.navigateToRow(targetAttendeeId);
+                    setTimeout(scrollToRowElement, 200);
+                  }
+                };
+
+                setTimeout(tryNavigateAndScroll, 100);
               }
               if (targetGatheringId) {
                 highlightGatheringColumn(targetGatheringId);
@@ -2802,6 +2866,8 @@
     };
 
     const renderPopupContent = async (container) => {
+      const targetEl = (container && container[0]) ? container[0] : container;
+      if (!targetEl) return;
       const { meet, isKidMeet, showInsurer } = getMeetSettings();
       const meetDisplayName = meet ? (meet.display_name || meet.name || selectedMeetSlug) : (selectedMeetSlug || 'Selected Meet');
       const meetGatherings = await loadMeetGatherings(selectedMeetSlug, meet ? meet.id : null, endpoints.gatherings);
@@ -2814,7 +2880,7 @@
         selectedGatheringId = upcoming ? (upcoming.id || (upcoming.start ? `start_${upcoming.start}` : null)) : (meetGatherings.length > 0 ? (meetGatherings[0].id || (meetGatherings[0].start ? `start_${meetGatherings[0].start}` : null)) : null);
       }
 
-      container.innerHTML = '';
+      targetEl.innerHTML = '';
       const template = document.getElementById('add-attendee-popup-template');
       if (!template || !template.content || !template.content.firstElementChild) {
         console.error('add-attendee-popup-template not found in DOM');
@@ -3270,7 +3336,7 @@
         insurerGroup.style.display = showInsurer ? '' : 'none';
       }
 
-      container.appendChild(rootDiv);
+      targetEl.appendChild(rootDiv);
 
       // DOM Elements & Views
       const searchViewEl = rootDiv.querySelector('.search-view-container');
@@ -4177,7 +4243,8 @@
         },
         onShown: () => {
           setTimeout(() => {
-            const content = popupInstance.content ? popupInstance.content()[0] : document.getElementById('add-attendee-popup');
+            const rawContent = popupInstance.content ? popupInstance.content() : null;
+            const content = (rawContent && rawContent[0]) ? rawContent[0] : (rawContent || document.getElementById('add-attendee-popup'));
             const searchInput = content ? content.querySelector('.omni-search-box') : null;
             if (searchInput) {
               searchInput.focus();
@@ -4194,7 +4261,8 @@
           }
         },
         contentTemplate: (container) => {
-          renderPopupContent(container[0]);
+          const el = (container && container[0]) ? container[0] : container;
+          renderPopupContent(el);
         }
       });
     };
@@ -4229,7 +4297,8 @@
       if (!popupInstance) {
         initAddAttendeePopup();
       } else {
-        const contentEl = popupInstance.content ? popupInstance.content()[0] : null;
+        const rawContent = popupInstance.content ? popupInstance.content() : null;
+        const contentEl = (rawContent && rawContent[0]) ? rawContent[0] : rawContent;
         if (contentEl) renderPopupContent(contentEl);
       }
       if (popupInstance) {
@@ -4238,13 +4307,14 @@
         }
         popupInstance.show();
         setTimeout(() => {
-          const content = popupInstance.content ? popupInstance.content()[0] : document.getElementById('add-attendee-popup');
+          const rawContent = popupInstance.content ? popupInstance.content() : null;
+          const content = (rawContent && rawContent[0]) ? rawContent[0] : (rawContent || document.getElementById('add-attendee-popup'));
           const searchInput = content ? content.querySelector('.omni-search-box') : null;
           if (searchInput) {
             searchInput.focus();
             searchInput.select();
           }
-        }, 100);
+        }, 50);
       }
     };
 
