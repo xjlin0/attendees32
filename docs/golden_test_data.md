@@ -184,6 +184,7 @@ to Grace Chen.
 | `pages/test_page_<page>.py` | one file per page: what it renders, and the per-person guard where it has one |
 | `test_admin.py` | the Django admin |
 | `test_models.py` | the checks that go through no endpoint: constraints, history, content types |
+| `test_tally_integration.py` | the token-authenticated server-to-server sweep |
 | `helpers.py` | constants and small helpers the files above share |
 
 New tests for an endpoint go in that endpoint's file; a new endpoint gets a new file.
