@@ -1,22 +1,24 @@
 import time
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from attendees.persons.models import Utility, Attending
 from attendees.persons.serializers.attending_minimal_serializer import AttendingMinimalSerializer
 
 
-class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(LoginRequiredMixin, viewsets.ModelViewSet):
+class ApiOrganizationMeetCharacterAttendingsViewSetForAttendingMeet(viewsets.ModelViewSet):
     """
     API endpoint that allows Team to be viewed or edited.
-    Todo 20220514: replace LoginRequiredMixin with SpyGuard and needed seeds json
     Todo 20220514: make API returns only current users attendinmeets if not admin
     """
 
+    # A DRF permission, not LoginRequiredMixin: the mixin runs before DRF
+    # authenticates and sends a token-authenticated client to the login page.
+    permission_classes = [IsAuthenticated]
     serializer_class = AttendingMinimalSerializer
 
     def list(self, request, *args, **kwargs):
