@@ -25,6 +25,10 @@ class TestAttendeeService:
         self.category_1 = Category.objects.create(id=1, display_name="Scheduled")
         self.family_category = Category.objects.create(id=0, display_name="Family")
         self.past_category = Category.objects.create(id=26, display_name="Past Category")
+        self.attended_category, _ = Category.objects.get_or_create(
+            id=Attendee.ATTENDED_CATEGORY,
+            defaults={"display_name": "attended", "type": "attendance"}
+        )
         self.relation = Relation.objects.create(id=0, title="test relation", gender=GenderEnum.UNSPECIFIED.value)
         
         self.assembly = Assembly.objects.create(
@@ -196,3 +200,44 @@ class TestAttendeeService:
         assert row['attendingmeets'] is not None
         assert len(row['attendingmeets']) == 1
         assert row['attendingmeets'][0]['meet_id'] == self.meet.id
+
+    def test_normalize_phone_number(self):
+        assert AttendeeService.normalize_phone_number("510-123-4567") == "+15101234567"
+        assert AttendeeService.normalize_phone_number("(510) 123-4567") == "+15101234567"
+        assert AttendeeService.normalize_phone_number("15101234567") == "+15101234567"
+        assert AttendeeService.normalize_phone_number("+886912345678") == "+886912345678"
+        assert AttendeeService.normalize_phone_number("510123456789") == "+10123456789"
+        assert AttendeeService.normalize_phone_number("12345") == "12345"
+        assert AttendeeService.normalize_phone_number("") == ""
+        assert AttendeeService.normalize_phone_number(None) is None
+        assert AttendeeService.normalize_phone_number(123) == 123
+
+    def test_search_for_roster(self):
+        results = AttendeeService.search_for_roster(self.user, self.meet.slug, "John")
+        assert len(results) >= 1
+        matched = next((r for r in results if r["id"] == str(self.attendee.id)), None)
+        assert matched is not None
+        assert matched["name"] == "John Doe"
+        assert matched["meet_status"] == "enrolled"
+        assert matched["can_join"] is False
+
+    def test_fast_onboard(self):
+        attendees_data = [{
+            "first_name": "Alice",
+            "last_name": "Smith",
+            "gender": "female",
+            "division_id": self.division.id,
+            "relationship": "self",
+        }]
+        result = AttendeeService.fast_onboard(
+            current_user=self.user,
+            meet_slug=self.meet.slug,
+            attendees_data=attendees_data,
+        )
+        assert result is not None
+        assert "attendee_id" in result
+        assert len(result.get("attendees", [])) == 1
+        new_att = result["attendees"][0]
+        assert new_att["first_name"] == "Alice"
+        assert new_att["last_name"] == "Smith"
+        assert Attendee.objects.filter(first_name="Alice", last_name="Smith").exists()

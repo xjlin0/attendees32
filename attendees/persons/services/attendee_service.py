@@ -6,14 +6,14 @@ from partial_date import PartialDate
 import pghistory
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import StringAgg, JSONBAgg
+from django.contrib.postgres.search import TrigramSimilarity
 from django.db import transaction
 from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count, Min
-from django.db.models.functions import Cast, Substr, Coalesce
+from django.db.models.functions import Cast, Substr, Coalesce, Greatest
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.utils import json
-
 from attendees.occasions.models import Attendance, Character, Gathering, Meet
 from attendees.persons.models.enum import GenderEnum
 from attendees.persons.models import (  # , Relationship
@@ -690,8 +690,8 @@ class AttendeeService:
         - Validates that current_user has an organization and that meet belongs to current_user.organization.
         - If current_user.can_see_all_organizational_meets_attendees() is True, searches across organization.
         - If False, restricts search to attendees sharing a Folk with current_user.attendee.
-        - Supports phone search (last 4 digits or formatted), multi-word names, traditional/simplified Chinese
-          (via OpenCC), romanization (via unidecode), and fuzzy typo matching (via pg_trgm TrigramSimilarity).
+        - Supports phone search (last 4 digits or formatted), multi-word names, and fuzzy typo matching (via
+          pg_trgm TrigramSimilarity) on traditional/simplified Chinese, names and romanization.
         - If meet.infos['kid_search_families_show_grades'] is True:
             - Performs cross-relation search: includes other members sharing a Folk with matched attendees.
             - Includes age, grade_name (mapped via organization.infos['grade_converter']), grade_index, and guardians.
@@ -792,9 +792,6 @@ class AttendeeService:
         direct_attendees = []
         if len(q) >= 3:
             try:
-                from django.contrib.postgres.search import TrigramSimilarity
-                from django.db.models.functions import Greatest
-
                 sim_expr = Greatest(
                     TrigramSimilarity(Cast("infos__names__original", CharField()), q),
                     TrigramSimilarity(Coalesce(Cast("infos__names__traditional", CharField()), Value("")), q),
@@ -1229,21 +1226,7 @@ class AttendeeService:
 
     @staticmethod
     def normalize_phone_number(val):
-        if not val or not isinstance(val, str):
-            return val
-        trimmed = val.strip()
-        if not trimmed:
-            return trimmed
-        digits = re.sub(r"\D", "", trimmed)
-        if len(digits) == 10:
-            return f"+1{digits}"
-        if len(digits) == 11 and digits.startswith("1"):
-            return f"+{digits}"
-        if trimmed.startswith("+") and len(digits) >= 7:
-            return f"+{digits}"
-        if len(digits) >= 10:
-            return f"+1{digits[-10:]}"
-        return trimmed
+        return Utility.normalize_phone_number(val)
 
     @staticmethod
     def fast_onboard(

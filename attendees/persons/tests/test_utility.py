@@ -18,6 +18,17 @@ class TestUtility:
         assert Utility.phone_number_formatter("+11234567890") == "(123)456-7890"
         assert Utility.phone_number_formatter("") == ""
 
+    def test_normalize_phone_number(self):
+        assert Utility.normalize_phone_number("510-123-4567") == "+15101234567"
+        assert Utility.normalize_phone_number("(510) 123-4567") == "+15101234567"
+        assert Utility.normalize_phone_number("15101234567") == "+15101234567"
+        assert Utility.normalize_phone_number("+886912345678") == "+886912345678"
+        assert Utility.normalize_phone_number("510123456789") == "+10123456789"
+        assert Utility.normalize_phone_number("12345") == "12345"
+        assert Utility.normalize_phone_number("") == ""
+        assert Utility.normalize_phone_number(None) is None
+        assert Utility.normalize_phone_number(123) == 123
+
     def test_user_infos(self):
         assert Utility.user_infos() == {"settings": {}}
 
