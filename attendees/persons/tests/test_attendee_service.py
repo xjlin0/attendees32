@@ -7,7 +7,7 @@ from attendees.users.models import User
 from attendees.whereabouts.models import Organization, Division
 from attendees.persons.models import Attendee, Attending, AttendingMeet, Category, Registration, Relation, Folk, FolkAttendee, Past
 from attendees.persons.models.enum import GenderEnum
-from attendees.occasions.models import Meet, Character, Assembly
+from attendees.occasions.models import Meet, Character, Assembly, Gathering, Attendance
 from attendees.persons.services.attendee_service import AttendeeService
 
 @pytest.mark.django_db
@@ -25,6 +25,10 @@ class TestAttendeeService:
         self.category_1 = Category.objects.create(id=1, display_name="Scheduled")
         self.family_category = Category.objects.create(id=0, display_name="Family")
         self.past_category = Category.objects.create(id=26, display_name="Past Category")
+        self.attended_category, _ = Category.objects.get_or_create(
+            id=Attendee.ATTENDED_CATEGORY,
+            defaults={"display_name": "attended", "type": "attendance"}
+        )
         self.relation = Relation.objects.create(id=0, title="test relation", gender=GenderEnum.UNSPECIFIED.value)
         
         self.assembly = Assembly.objects.create(
@@ -142,3 +146,98 @@ class TestAttendeeService:
         
         # Pasts should be soft-deleted or deleted depending on logic
         assert not Past.objects.filter(object_id=self.attendee.id, is_removed=False).exists()
+
+    def test_get_roster_data(self):
+        meet_slugs = [self.meet.slug]
+        start_date = self.now - timedelta(days=1)
+        finish_date = self.now + timedelta(days=1)
+
+        gathering = Gathering.objects.create(
+            meet=self.meet,
+            start=self.now,
+            finish=self.now + timedelta(hours=2),
+            display_name="Test Gathering",
+            site_type=self.site_type,
+            site_id=str(self.assembly.id),
+        )
+
+        attendance = Attendance.objects.create(
+            gathering=gathering,
+            attending=self.attending,
+            character=self.character,
+            category=self.category_1,
+            start=self.now,
+            finish=self.now + timedelta(hours=2),
+        )
+
+        columns, rows, total_count = AttendeeService.get_roster_data(
+            organization=self.organization,
+            meet_slugs=meet_slugs,
+            start=start_date,
+            finish=finish_date,
+            skip=0,
+            take=40
+        )
+
+        assert total_count == 1
+
+        # Verify columns includes gathering info
+        assert len(columns) == 1
+        assert columns[0]['id'] == gathering.id
+
+        # Verify rows includes attending info and JSON aggregations
+        assert len(rows) == 1
+        row = rows[0]
+        assert row['attending_id'] == self.attending.id
+        assert row['attendee_id'] == self.attendee.id
+        assert 'team__display_name' in row
+        assert row['attendances'] is not None
+        assert len(row['attendances']) == 1
+        assert row['attendances'][0]['gathering_id'] == gathering.id
+        assert 'start' in row['attendances'][0]
+        assert 'finish' in row['attendances'][0]
+
+        assert row['attendingmeets'] is not None
+        assert len(row['attendingmeets']) == 1
+        assert row['attendingmeets'][0]['meet_id'] == self.meet.id
+
+    def test_normalize_phone_number(self):
+        assert AttendeeService.normalize_phone_number("510-123-4567") == "+15101234567"
+        assert AttendeeService.normalize_phone_number("(510) 123-4567") == "+15101234567"
+        assert AttendeeService.normalize_phone_number("15101234567") == "+15101234567"
+        assert AttendeeService.normalize_phone_number("+886912345678") == "+886912345678"
+        assert AttendeeService.normalize_phone_number("510123456789") == "+10123456789"
+        assert AttendeeService.normalize_phone_number("12345") == "12345"
+        assert AttendeeService.normalize_phone_number("") == ""
+        assert AttendeeService.normalize_phone_number(None) is None
+        assert AttendeeService.normalize_phone_number(123) == 123
+
+    def test_search_for_roster(self):
+        results = AttendeeService.search_for_roster(self.user, self.meet.slug, "John")
+        assert len(results) >= 1
+        matched = next((r for r in results if r["id"] == str(self.attendee.id)), None)
+        assert matched is not None
+        assert matched["name"] == "John Doe"
+        assert matched["meet_status"] == "enrolled"
+        assert matched["can_join"] is False
+
+    def test_fast_onboard(self):
+        attendees_data = [{
+            "first_name": "Alice",
+            "last_name": "Smith",
+            "gender": "female",
+            "division_id": self.division.id,
+            "relationship": "self",
+        }]
+        result = AttendeeService.fast_onboard(
+            current_user=self.user,
+            meet_slug=self.meet.slug,
+            attendees_data=attendees_data,
+        )
+        assert result is not None
+        assert "attendee_id" in result
+        assert len(result.get("attendees", [])) == 1
+        new_att = result["attendees"][0]
+        assert new_att["first_name"] == "Alice"
+        assert new_att["last_name"] == "Smith"
+        assert Attendee.objects.filter(first_name="Alice", last_name="Smith").exists()

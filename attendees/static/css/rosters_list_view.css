@@ -1,0 +1,370 @@
+.attendee-info {
+  display: flex;
+  align-items: center;
+}
+.attendee-photo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+.attendee-info-link {
+  color: #0d6efd;
+  text-decoration: underline;
+  margin-right: 6px;
+  font-size: 0.9em;
+}
+.attendee-info-link:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+.attendee-name-link {
+  color: #212529;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+.attendee-name-link:hover {
+  color: #0d6efd;
+  text-decoration: underline;
+}
+body div.dx-overlay.dx-popup.attendingmeets-popup-wrapper div.dx-overlay-content.dx-popup-normal {
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+}
+
+body div.attendingmeets-popup-wrapper div.dx-popup-content {
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  body div.dx-overlay.dx-popup.attendingmeets-popup-wrapper div.dx-overlay-content.dx-popup-normal {
+    width: 70vw;
+    height: 70vh;
+    max-width: 70vw;
+    max-height: 70vh;
+  }
+  body div.attendingmeets-popup-wrapper div.dx-popup-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body div.dx-overlay.dx-popup.attendingmeets-popup-wrapper div.dx-overlay-content.dx-popup-normal {
+    width: 92vw;
+    max-width: 95vw;
+    max-height: 90vh;
+    margin: auto;
+  }
+  body div.attendingmeets-popup-wrapper div.dx-popup-content {
+    padding: 12px 14px;
+    max-height: calc(90vh - 55px);
+  }
+  body div.attendingmeets-popup-wrapper div.dx-popup-title {
+    padding: 10px 14px;
+  }
+  body div.attendingmeets-popup-wrapper div.dx-form,
+  body div.attendingmeets-popup-wrapper div.attendingmeets-content-area,
+  body div.attendingmeets-popup-wrapper div.dx-tabpanel {
+    width: 100%;
+  }
+  body div.attendingmeets-popup-wrapper div.dx-form .dx-field-item-help-text {
+    font-size: 0.85em;
+    font-style: italic;
+    color: #6c757d;
+  }
+}
+.attendingmeet-tab-title {
+  font-weight: 500;
+}
+.roster-btn {
+  background-color: transparent;
+  color: green;
+  border: 1px solid green;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.82em;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 66px;
+  flex-shrink: 0;
+}
+.roster-btn:hover {
+  background-color: green;
+  color: white;
+}
+.roster-btn.checked-in {
+  background-color: green;
+  color: white;
+  border-color: green;
+}
+.roster-btn.checked-in:hover {
+  background-color: darkgreen;
+  border-color: darkgreen;
+}
+.roster-btn-normal {
+  background-color: #fff;
+  color: #495057;
+  border-color: #ced4da;
+}
+.roster-btn-normal:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+.roster-btn-out {
+  background-color: transparent;
+  color: blue;
+  border-color: blue;
+  margin-left: 3px;
+  padding: 2px 5px;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+.roster-btn-out:hover {
+  background-color: blue;
+  color: white;
+}
+.roster-btn-out.checked-out {
+  background-color: blue;
+  color: white;
+  border-color: blue;
+}
+.roster-btn-out.checked-out:hover {
+  background-color: darkblue;
+  border-color: darkblue;
+}
+.roster-cell-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+}
+.not-attending-text {
+  color: gray;
+  font-size: 0.85em;
+  font-style: italic;
+}
+#rosters-datagrid-container .dx-datagrid-headers .dx-header-row {
+  background-color: #e9ecef;
+  color: #343a40;
+}
+#rosters-datagrid-container .dx-datagrid-headers .dx-datagrid-table .dx-row > td,
+#rosters-datagrid-container .dx-datagrid-headers .dx-datagrid-table .dx-row > th,
+#rosters-datagrid-container .dx-datagrid-headers .dx-header-row > td,
+#rosters-datagrid-container .dx-datagrid-headers .dx-header-row > th {
+  white-space: normal;
+  vertical-align: middle;
+}
+#rosters-datagrid-container .dx-datagrid-headers .dx-datagrid-text-content {
+  font-weight: bold;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
+}
+.roster-header-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  line-height: 1.2;
+}
+.roster-header-meet {
+  font-weight: bold;
+  font-size: 0.82em;
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
+  word-break: break-word;
+}
+.roster-header-time {
+  font-size: 0.82em;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+}
+.roster-header-time.single {
+  font-weight: bold;
+  font-size: 0.85em;
+}
+
+.roster-cell-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.roster-inline-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: 0.85em;
+  line-height: 1.25;
+}
+
+.roster-meet-label {
+  color: #6c757d;
+  font-weight: 500;
+  font-size: 0.82em;
+  margin-right: 3px;
+  word-break: break-word;
+}
+
+.roster-editable-val {
+  color: #212529;
+  border-bottom: 1px dashed #adb5bd;
+  cursor: pointer;
+  padding: 0 2px;
+  border-radius: 2px;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  word-break: break-word;
+}
+
+.roster-editable-val:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+.roster-editable-val.empty-val {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+.roster-inline-editor-container {
+  display: inline-block;
+  min-width: 60px;
+  width: 100%;
+}
+
+.dx-popup-content canvas.signature,
+canvas.signature {
+  border: 1px dashed #ced4da;
+  border-radius: 4px;
+  touch-action: none;
+  background-color: #fff;
+  cursor: crosshair;
+  width: 100%;
+  height: 100px;
+  display: block;
+}
+
+body div.dx-overlay.dx-popup.add-attendee-popup-wrapper div.dx-overlay-content.dx-popup-normal {
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+}
+
+@media (min-width: 768px) {
+  body div.dx-overlay.dx-popup.add-attendee-popup-wrapper div.dx-overlay-content.dx-popup-normal {
+    width: 680px;
+    max-width: 90vw;
+    max-height: 85vh;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body div.dx-overlay.dx-popup.add-attendee-popup-wrapper div.dx-overlay-content.dx-popup-normal {
+    width: 95vw;
+    max-width: 95vw;
+    max-height: 90vh;
+    margin: auto;
+  }
+}
+
+body div.add-attendee-popup-wrapper div.dx-popup-content {
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+.search-candidate-item {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s ease-in-out;
+}
+
+body div.add-attendee-popup-wrapper div.search-candidate-item.already-enrolled {
+  border-left: 4px solid #0dcaf0;
+  background-color: #f4faff;
+}
+
+.search-candidate-item:hover {
+  background-color: #eef2f7;
+}
+
+body div.add-attendee-popup-wrapper div.search-candidate-item.already-enrolled:hover {
+  background-color: #e6f6ff;
+}
+
+.search-candidate-title {
+  font-weight: 600;
+  color: #212529;
+}
+
+.search-candidate-subtitle {
+  font-size: 0.88em;
+  color: #6c757d;
+}
+
+body div.add-attendee-popup-wrapper .meet-gathering-header label.form-label {
+  font-size: 1rem;
+}
+
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-meet-container,
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-meet-container strong,
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-meet-dropdown,
+body div.add-attendee-popup-wrapper .meet-gathering-header .target-gathering-dropdown {
+  font-size: 1rem;
+}
+
+body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-selection > td {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-selection.dx-row-alt > td {
+  background-color: #c7e2d3;
+  color: #0f5132;
+}
+
+body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-selection.dx-state-hover > td {
+  background-color: #b9dec7;
+}
+
+body div.add-attendee-popup-wrapper div.dx-popup-title {
+  padding: 10px 14px;
+}
+
+body div.add-attendee-popup-wrapper div.dx-popup-title .dx-toolbar-label {
+  width: 100%;
+}
+
+.guardian-section-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.guardian-section-header:hover {
+  opacity: 0.85;
+}
+
+.companion-toggle-indicator {
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+
+

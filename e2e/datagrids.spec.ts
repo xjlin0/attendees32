@@ -109,6 +109,12 @@ test.describe('the other grids', () => {
     await page.waitForSelector('#attendances-datagrid-container .dx-datagrid');
   });
 
+  test('the multi-date rosters grid boots', async ({ page, signIn }) => {
+    await signIn('golden_children_organizer');
+    await visit(page, '/occasions/rosters/');
+    await page.waitForSelector('#rosters-datagrid-container .dx-datagrid');
+  });
+
   test('the statistics grid boots', async ({ page, signIn }) => {
     await signIn('golden_data_organizer');
     await visit(page, '/occasions/attendance_statistics/');

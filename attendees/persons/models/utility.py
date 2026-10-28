@@ -140,6 +140,24 @@ class Utility:
             return ''
 
     @staticmethod
+    def normalize_phone_number(val):
+        if not val or not isinstance(val, str):
+            return val
+        trimmed = val.strip()
+        if not trimmed:
+            return trimmed
+        digits = re.sub(r"\D", "", trimmed)
+        if len(digits) == 10:
+            return f"+1{digits}"
+        if len(digits) == 11 and digits.startswith("1"):
+            return f"+{digits}"
+        if trimmed.startswith("+") and len(digits) >= 7:
+            return f"+{digits}"
+        if len(digits) >= 10:
+            return f"+1{digits[-10:]}"
+        return trimmed
+
+    @staticmethod
     def user_infos():
         return {"settings": {}}
 
@@ -202,6 +220,7 @@ class Utility:
             "default_time_zone": settings.CLIENT_DEFAULT_TIME_ZONE,
             "gathering_infos": {},
             "attendance": {},
+            "signature_required_at": None,
         }
 
     @staticmethod

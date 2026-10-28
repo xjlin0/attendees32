@@ -28,10 +28,12 @@
             <br>
             {% if item.context_user %}
               by {{ item.context_user.username }}{% if item.context_user.email %} ({{ item.context_user.email }}){% endif %}
+            {% elif item.pgh_context.metadata.modifier %}
+              by {{ item.pgh_context.metadata.modifier }}
             {% elif item.pgh_context.metadata.url and "login" in item.pgh_context.metadata.url %}
               login
             {% else %}
-              no records
+              modifier unavailable
             {% endif %}
           </th>
           <td style="width: 10%;">{{ item.pgh_label }}</td>
@@ -66,9 +68,9 @@
                         {% if item.context_user %}
                           {{ item.context_user.username }}{% if item.context_user.email %} ({{ item.context_user.email }}){% endif %} [ID: {{ value }}]
                         {% elif value %}
-                          no records [ID: {{ value }}]
+                          modifier unavailable [ID: {{ value }}]
                         {% else %}
-                          no records
+                          modifier unavailable
                         {% endif %}
                       {% else %}
                         {{ value }}
