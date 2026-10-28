@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 
-from attendees.persons.models import Attendee, Category, Folk, FolkAttendee
+from attendees.persons.models import Attendee, Category, Folk, FolkAttendee, Utility
 from attendees.persons.serializers import FolkSerializer
 from attendees.persons.services import FolkService, AttendingMeetService
 from attendees.users.authorization.drf_guards import DrfSpyGuard
@@ -53,9 +53,22 @@ class ApiAttendeeFolksViewsSet(viewsets.ModelViewSet):
             ),
         )
 
+        now_date = Utility.now_with_timezone().date()
+        folk_attendees_prefetch = Prefetch(
+            "folkattendee_set",
+            queryset=FolkAttendee.objects.filter(
+                is_removed=False,
+                attendee__is_removed=False,
+            ).filter(
+                Q(finish__isnull=True) | Q(finish__gte=now_date),
+            ).select_related(
+                "attendee__division"
+            ).order_by("display_order"),
+        )
+
         if current_user.privileged_to_edit(attendee and attendee.id):
             if folk_id:
-                return Folk.objects.filter(extra_filter).prefetch_related(places_prefetch, "attendees")
+                return Folk.objects.filter(extra_filter).prefetch_related(places_prefetch, "attendees", folk_attendees_prefetch)
             else:
                 role_subquery = Subquery(
                     FolkAttendee.objects.filter(
@@ -78,11 +91,11 @@ class ApiAttendeeFolksViewsSet(viewsets.ModelViewSet):
                         )
                     )
                     .order_by("relative_order", "role_order", "display_order")
-                    .prefetch_related(places_prefetch, "attendees")
+                    .prefetch_related(places_prefetch, "attendees", folk_attendees_prefetch)
                 )
         else:
             return (
-                attendee.folks.filter(extra_filter).prefetch_related(places_prefetch, "attendees")
+                attendee.folks.filter(extra_filter).prefetch_related(places_prefetch, "attendees", folk_attendees_prefetch)
                 if attendee
                 else Folk.objects.none()
             )

@@ -356,15 +356,28 @@ class Utility:
         word = word.replace("-", "_")
         return word.lower()
 
-    @staticmethod
-    def get_object_name(instance, method_name='description', object_field=None):
+    _model_cache = {}
+
+    @classmethod
+    def get_model_by_name(cls, model_name):
+        if not model_name:
+            return None
+        name = model_name.lower()
+        if not cls._model_cache:
+            from django.apps import apps
+            for m in apps.get_models():
+                cls._model_cache[m._meta.model_name.lower()] = m
+        return cls._model_cache.get(name)
+
+    @classmethod
+    def get_object_name(cls, instance, method_name='description', object_field=None):
         instance_field = getattr(instance, method_name, None)
         if instance_field and '#' in instance_field:
             model_name, object_id = instance_field.split("#")
             if model_name:
-                model = ContentType.objects.filter(model=model_name).first()
-                if model:
-                    target = model.model_class().objects.filter(pk=object_id).first()
+                model_cls = cls.get_model_by_name(model_name)
+                if model_cls:
+                    target = model_cls.objects.filter(pk=object_id).first()
                     if target:
                         if object_field:
                             return getattr(target, object_field)

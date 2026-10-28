@@ -92,3 +92,34 @@ class TestUtility:
     def test_underscore(self):
         assert Utility.underscore("CamelCase") == "camel_case"
         assert Utility.underscore("lowerCase") == "lower_case"
+
+    def test_get_model_by_name(self):
+        from attendees.whereabouts.models import Place
+        from attendees.persons.models import Attendee
+        assert Utility.get_model_by_name("place") == Place
+        assert Utility.get_model_by_name("attendee") == Attendee
+        assert Utility.get_model_by_name("nonexistent_model_xyz") is None
+        assert Utility.get_model_by_name("") is None
+
+    @pytest.mark.django_db
+    def test_get_object_name_without_content_type_query(self, django_assert_num_queries):
+        from unittest.mock import MagicMock
+        from attendees.whereabouts.models import Place, Organization
+        from django.contrib.contenttypes.models import ContentType
+        org = Organization.objects.create(slug="test-util-org", display_name="Test Util Org")
+        place = Place.objects.create(
+            organization=org,
+            content_type=ContentType.objects.get_for_model(Organization),
+            object_id=str(org.id),
+            display_name="Sanctuary",
+        )
+        fake_event = MagicMock()
+        fake_event.description = f"place#{place.id}"
+
+        # First call populates model cache
+        Utility.get_object_name(fake_event, object_field='display_name')
+
+        # Subsequent call with object_field should query only the target table (Place), NEVER django_content_type
+        with django_assert_num_queries(1):
+            name = Utility.get_object_name(fake_event, object_field='display_name')
+            assert name == "Sanctuary"

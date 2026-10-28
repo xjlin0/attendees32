@@ -46,7 +46,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     def get_attendee_id(self, obj):
         target_id = getattr(obj, '__dict__', {}).get('target_attendee_id')
         if target_id is not None:
-            return str(target_id)
+            return str(target_id) if target_id else None
         if obj.content_type.model == 'attendee':
             return str(obj.object_id)
         elif obj.content_type.model == 'folk':
@@ -58,6 +58,8 @@ class PlaceSerializer(serializers.ModelSerializer):
                     is_removed=False,
                     attendee__is_removed=False,
                 ).order_by('display_order').first()
+                if fa:
+                    obj._fallback_fa = fa
                 return str(fa.attendee_id) if fa else None
             except Exception:
                 return None
@@ -66,7 +68,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     def get_attendee_name(self, obj):
         target_name = getattr(obj, '__dict__', {}).get('target_attendee_name')
         if target_name is not None:
-            return target_name
+            return target_name if target_name else None
         if obj.content_type.model == 'attendee':
             try:
                 att = Attendee.objects.select_related('division').filter(pk=obj.object_id, is_removed=False).first()
@@ -78,16 +80,18 @@ class PlaceSerializer(serializers.ModelSerializer):
             name_orig = att.infos.get('names', {}).get('original', '') if isinstance(att.infos, dict) else ''
             return f"{acronym} {name_orig}".strip()
         elif obj.content_type.model == 'folk':
-            now_date = Utility.now_with_timezone().date()
-            try:
-                fa = FolkAttendee.objects.select_related('attendee', 'attendee__division').filter(
-                    Q(finish__isnull=True) | Q(finish__gte=now_date),
-                    folk_id=obj.object_id,
-                    is_removed=False,
-                    attendee__is_removed=False,
-                ).order_by('display_order').first()
-            except Exception:
-                return None
+            fa = getattr(obj, '_fallback_fa', None)
+            if fa is None:
+                now_date = Utility.now_with_timezone().date()
+                try:
+                    fa = FolkAttendee.objects.select_related('attendee', 'attendee__division').filter(
+                        Q(finish__isnull=True) | Q(finish__gte=now_date),
+                        folk_id=obj.object_id,
+                        is_removed=False,
+                        attendee__is_removed=False,
+                    ).order_by('display_order').first()
+                except Exception:
+                    return None
             if not fa or not fa.attendee:
                 return None
             att = fa.attendee
