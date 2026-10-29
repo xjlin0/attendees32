@@ -27,6 +27,7 @@ class TestApiAttendeeFolksViewsSet:
         mock_folk_filter.assert_called()
         prefetch_args = mock_folk_filter.return_value.prefetch_related.call_args.args
         assert any(getattr(arg, 'prefetch_through', None) == 'places' for arg in prefetch_args)
+        assert any(getattr(arg, 'prefetch_through', None) == 'folkattendee_set' for arg in prefetch_args)
         assert 'attendees' in prefetch_args
 
     @patch('attendees.persons.views.api.attendee_folks.get_object_or_404')
@@ -96,3 +97,43 @@ class TestApiAttendeeFolksViewsSet:
         
         with pytest.raises(PermissionDenied):
             view.perform_destroy(MagicMock())
+
+    @pytest.mark.django_db
+    def test_folk_serializer_places_zero_queries_when_prefetched(self, django_assert_num_queries):
+        from attendees.whereabouts.models import Organization, Division, Place
+        from attendees.persons.models import Category, Relation, Folk, Attendee, FolkAttendee
+        from attendees.persons.serializers import FolkSerializer
+        from django.contrib.contenttypes.models import ContentType
+        from django.contrib.auth.models import Group
+
+        org = Organization.objects.create(slug="ser-org2", display_name="Serializer Org 2")
+        auth_group = Group.objects.create(name="ser-group2")
+        div = Division.objects.create(organization=org, slug="ser-div2", display_name="Serializer Div 2", audience_auth_group=auth_group, infos={"acronym": "S2"})
+        folk_cat, _ = Category.objects.get_or_create(id=0, defaults={"type": "folk", "display_name": "folk"})
+        Category.objects.get_or_create(id=25, defaults={"type": "attending", "display_name": "attending"})
+        rel, _ = Relation.objects.get_or_create(id=0, defaults={"title": "self", "gender": "unspecified"})
+        att = Attendee.objects.create(first_name="John", last_name="Doe", division=div, gender="male", infos={"names": {"original": "John Doe"}})
+        folk = Folk.objects.create(division=div, category=folk_cat, display_name="Doe Family")
+        FolkAttendee.objects.create(folk=folk, attendee=att, role=rel, display_order=1)
+        place = Place.objects.create(
+            organization=org,
+            content_type=ContentType.objects.get_for_model(Folk),
+            object_id=str(folk.id),
+            display_name="Home",
+        )
+
+        # Simulate prefetched caches
+        folk._prefetched_objects_cache = {
+            'places': [place],
+            'folkattendee_set': [
+                FolkAttendee.objects.select_related('attendee__division').get(folk=folk)
+            ],
+            'attendees': [att],
+        }
+
+        # Serializing folk and its places should run 0 database queries
+        with django_assert_num_queries(0):
+            data = FolkSerializer(folk).data
+            assert len(data['places']) == 1
+            assert data['places'][0]['attendee_id'] == str(att.id)
+            assert data['places'][0]['attendee_name'] == "S2 John Doe"
