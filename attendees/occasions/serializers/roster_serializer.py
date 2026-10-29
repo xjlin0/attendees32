@@ -6,6 +6,8 @@ class RosterColumnSerializer(serializers.Serializer):
     start = serializers.DateTimeField()
     meet_id = serializers.IntegerField()
     meet_display_name = serializers.CharField(allow_blank=True, required=False, default="")
+    attendances_count = serializers.IntegerField(default=0, required=False)
+
 
 class RosterRowSerializer(serializers.Serializer):
     attending_id = serializers.IntegerField(allow_null=True, required=False)

@@ -103,6 +103,7 @@ def test_organization_meet_rosters_success(api_client, setup_objects):
     assert "rows" in data
     assert len(data["columns"]) == 1
     assert data["columns"][0]["id"] == setup_objects["gathering"].id
+    assert "attendances_count" in data["columns"][0]
     
     assert len(data["rows"]) == 1
     row = data["rows"][0]

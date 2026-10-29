@@ -209,3 +209,21 @@ class TestGatheringService:
         assert len(existing_cols) == 1
         assert existing_cols[0]['meet_id'] == self.meet.id
         assert existing_cols[0]['meet_display_name'] == self.meet.display_name
+        assert existing_cols[0]['attendances_count'] == 0
+
+        cat_attended, _ = Category.objects.get_or_create(id=Attendee.ATTENDED_CATEGORY, defaults={"display_name": "Attended"})
+        Attendance.objects.create(
+            gathering=self.gathering,
+            attending=self.attending,
+            character=self.character,
+            category=cat_attended,
+        )
+
+        cols2 = GatheringService.get_roster_gatherings(
+            organization=self.organization,
+            meet_slugs=[self.meet.slug],
+            start=start_time,
+            finish=finish_time,
+        )
+        existing_cols2 = [c for c in cols2 if c['id'] == self.gathering.id]
+        assert existing_cols2[0]['attendances_count'] == 1

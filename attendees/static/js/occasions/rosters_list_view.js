@@ -32,7 +32,8 @@
         meet_id: gathering.meet_id,
         meet_display_name: gathering.meet_display_name || '',
         start: gathering.start,
-        finish: gathering.finish
+        finish: gathering.finish,
+        attendances_count: (gathering.attendances_count !== undefined) ? gathering.attendances_count : 0
       };
       if (meetStartKey) gatheringsRegistry.set(meetStartKey, existing);
     } else {
@@ -43,6 +44,7 @@
       if (gathering.meet_display_name && !existing.meet_display_name) existing.meet_display_name = gathering.meet_display_name;
       if (gathering.start && !existing.start) existing.start = gathering.start;
       if (gathering.finish && !existing.finish) existing.finish = gathering.finish;
+      if (gathering.attendances_count !== undefined) existing.attendances_count = gathering.attendances_count;
     }
 
     if (existing.id) {
@@ -320,7 +322,52 @@
       return getAttendingMeetStatus(rowData, gathering) !== 'not_attending';
     };
 
-    const executeAttendanceToggle = async (rowData, gathering, domElements, rowIndex, colName, newCategory, encodedFile, clearFile) => {
+    const updateGatheringCheckInCount = (gathering, delta, colIdx, colName) => {
+      const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
+      const targetGathering = gatheringMeta || (colName && gatheringsRegistry.get(colName)) || null;
+      if (!targetGathering) return;
+
+      const currentCount = (targetGathering.attendances_count !== undefined) ? targetGathering.attendances_count : 0;
+      const newCount = Math.max(0, currentCount + delta);
+      targetGathering.attendances_count = newCount;
+
+      const colId = colName || getColumnIdentifier(targetGathering);
+      if (targetGathering.id) {
+        const reg = gatheringsRegistry.get(String(targetGathering.id));
+        if (reg) reg.attendances_count = newCount;
+      }
+      const regCol = gatheringsRegistry.get(colId);
+      if (regCol) regCol.attendances_count = newCount;
+
+      // 1. Update Header count in DOM
+      const headerEls = document.querySelectorAll(`.roster-header-count[data-col-id="${colId}"]`);
+      headerEls.forEach(el => {
+        el.textContent = `(${newCount})`;
+      });
+
+      // 2. Update Footer count in DOM
+      let targetColIdx = colIdx;
+      if ((targetColIdx === undefined || targetColIdx === null) && gridInstanceRef && gridInstanceRef.value) {
+        const col = gridInstanceRef.value.columnOption(colId);
+        if (col && col.colIndex !== undefined) {
+          targetColIdx = col.colIndex;
+        }
+      }
+
+      if (targetColIdx !== undefined && targetColIdx !== null) {
+        const footerCells = document.querySelectorAll(`.dx-datagrid-total-footer td.roster-col-idx-${targetColIdx}, .dx-datagrid-total-footer .roster-col-idx-${targetColIdx}`);
+        footerCells.forEach(cell => {
+          const item = cell.querySelector('.dx-datagrid-summary-item') || cell;
+          item.textContent = `${newCount}`;
+        });
+      }
+      const customFooterEls = document.querySelectorAll(`.roster-footer-count[data-col-id="${colId}"]`);
+      customFooterEls.forEach(el => {
+        el.textContent = `${newCount}`;
+      });
+    };
+
+    const executeAttendanceToggle = async (rowData, gathering, domElements, rowIndex, colName, colIdx, newCategory, encodedFile, clearFile) => {
       const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
       let gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
       let record = getAttendanceRecord(rowData, gatheringId);
@@ -489,6 +536,12 @@
           }
         }
 
+        // Update gathering check-in count dynamically
+        const delta = (!isCurrentlyCheckedIn && newCategory !== 1) ? 1 : ((isCurrentlyCheckedIn && newCategory === 1) ? -1 : 0);
+        if (delta !== 0) {
+          updateGatheringCheckInCount(gatheringMeta || gathering, delta, colIdx, colName);
+        }
+
         // Dynamically adjust column width: expand to 150px on check-in, shrink to 100px if all checked out
         if (gridInstanceRef.value && colName) {
           if (newCategory !== 1) {
@@ -523,7 +576,7 @@
       }
     };
 
-    const toggleAttendance = async (rowData, gathering, domElements, rowIndex, colName) => {
+    const toggleAttendance = async (rowData, gathering, domElements, rowIndex, colName, colIdx) => {
       const gatheringMeta = (gathering && typeof gathering === 'object') ? gathering : null;
       let gatheringId = gatheringMeta ? gatheringMeta.id : gathering;
       let record = getAttendanceRecord(rowData, gatheringId);
@@ -538,11 +591,11 @@
           await openSignaturePopup({
             title: `Checking in ${attendeeName}`,
             onSign: async (encodedFile) => {
-              await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 9, encodedFile, false);
+              await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, colIdx, 9, encodedFile, false);
             }
           });
         } else {
-          await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 9, null, false);
+          await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, colIdx, 9, null, false);
         }
       } else {
         // Undoing check in!
@@ -563,11 +616,11 @@
           );
           resultPromise.done(async (dialogResult) => {
             if (dialogResult) {
-              await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 1, null, true);
+              await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, colIdx, 1, null, true);
             }
           });
         } else {
-          await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, 1, null, false);
+          await executeAttendanceToggle(rowData, gathering, domElements, rowIndex, colName, colIdx, 1, null, false);
         }
       }
     };
@@ -1517,14 +1570,16 @@
         || (colMeta && colMeta.meet_id && meetsInfoMap.get(String(colMeta.meet_id)))
         || '';
       const timeStr = formatDate(colMeta ? colMeta.start : '');
+      const count = (colMeta && colMeta.attendances_count !== undefined) ? colMeta.attendances_count : 0;
+      const colId = options.column.name || (colMeta ? getColumnIdentifier(colMeta) : '');
 
       const wrapper = document.createElement('div');
       wrapper.className = 'text-center roster-header-cell';
       wrapper.style.cursor = 'pointer';
       if (isMultiMeet && meetName) {
-        wrapper.innerHTML = `<div class="roster-header-meet">${meetName}</div><div class="roster-header-time">${timeStr}</div>`;
+        wrapper.innerHTML = `<div class="roster-header-meet">${meetName}</div><div class="roster-header-time">${timeStr}</div><div class="roster-header-count" data-col-id="${colId}">(${count})</div>`;
       } else {
-        wrapper.innerHTML = `<div class="roster-header-time single">${timeStr}</div>`;
+        wrapper.innerHTML = `<div class="roster-header-time single">${timeStr}</div><div class="roster-header-count" data-col-id="${colId}">(${count})</div>`;
       }
 
       wrapper.addEventListener('click', () => {
@@ -1856,7 +1911,7 @@
 
       checkInBtn.addEventListener('click', () => {
         highlightColumn(colIdx, gatheringMeta);
-        attendanceLogic.toggleAttendance(data, gatheringMeta, domElements, options.rowIndex, colName);
+        attendanceLogic.toggleAttendance(data, gatheringMeta, domElements, options.rowIndex, colName, colIdx);
       });
 
       outBtn.addEventListener('click', () => {
@@ -1949,6 +2004,16 @@
           }
         ];
 
+        const summaryTotalItems = [
+          {
+            column: 'attendee_name',
+            summaryType: 'custom',
+            alignment: 'right',
+            cssClass: 'roster-footer-label-cell',
+            customizeText: () => 'Total Check-ins:'
+          }
+        ];
+
         serverColumns.forEach((gathering, idx) => {
           const registered = registerGathering(gathering);
           const gid = registered.id;
@@ -1967,6 +2032,19 @@
             headerCellTemplate: gatheringHeaderTemplate,
             cellTemplate: attendanceCellTemplate,
             cssClass: `roster-col-idx-${idx}`
+          });
+
+          summaryTotalItems.push({
+            column: colId,
+            name: 'summary_' + colId,
+            summaryType: 'custom',
+            alignment: 'center',
+            cssClass: `roster-footer-cell roster-col-idx-${idx}`,
+            customizeText: (itemInfo) => {
+              const reg = gatheringsRegistry.get(colId);
+              const count = (reg && reg.attendances_count !== undefined) ? reg.attendances_count : (itemInfo && itemInfo.value !== undefined ? itemInfo.value : 0);
+              return String(count);
+            }
           });
         });
 
@@ -2006,11 +2084,23 @@
         });
 
         gridInstanceRef.value.option('columns', columns);
-      } else if (rows && rows.length) {
+        gridInstanceRef.value.option('summary', {
+          totalItems: summaryTotalItems,
+          calculateCustomSummary: (options) => {
+            if (options.summaryProcess === 'finalize') {
+              const colId = options.name ? options.name.replace(/^summary_/, '') : null;
+              if (colId) {
+                const reg = gatheringsRegistry.get(colId);
+                options.totalValue = (reg && reg.attendances_count !== undefined) ? reg.attendances_count : 0;
+              }
+            }
+          }
+        });
+      } else if (serverColumns && serverColumns.length) {
         serverColumns.forEach(gathering => {
           const registered = registerGathering(gathering);
           const gid = registered.id;
-          const hasCheckedIn = gid && rows.some(r => attendanceLogic.isCheckedIn(r, gid));
+          const hasCheckedIn = gid && rows && rows.length && rows.some(r => attendanceLogic.isCheckedIn(r, gid));
           const colId = getColumnIdentifier(registered);
           const targetWidth = hasCheckedIn ? 150 : 100;
           const curWidth = gridInstanceRef.value.columnOption(colId, 'width');
@@ -2024,7 +2114,15 @@
           if (curCaption && curCaption !== targetCaption) {
             gridInstanceRef.value.columnOption(colId, 'caption', targetCaption);
           }
+          const count = (registered && registered.attendances_count !== undefined) ? registered.attendances_count : 0;
+          const headerEls = document.querySelectorAll(`.roster-header-count[data-col-id="${colId}"]`);
+          headerEls.forEach(el => {
+            el.textContent = `(${count})`;
+          });
         });
+        if (gridInstanceRef.value && typeof gridInstanceRef.value.repaint === 'function') {
+          gridInstanceRef.value.repaint();
+        }
       }
     };
 
@@ -2414,6 +2512,9 @@
             allowHiding: true
           }
         ],
+        summary: {
+          totalItems: [],
+        },
         grouping: {
           autoExpandAll: true,
         },

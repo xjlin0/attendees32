@@ -4,11 +4,12 @@ import pytz
 from address.models import Address
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils.dateparse import parse_datetime
 from rest_framework.utils import json
 
 from attendees.occasions.models import Gathering, Meet
+from attendees.persons.models import Attendee
 from attendees.whereabouts.models import Room, Suite, Property, Campus, Division, Organization
 
 
@@ -367,7 +368,16 @@ class GatheringService:
             meet__slug__in=meet_slugs,
             meet__assembly__division__organization=organization,
             is_removed=False,
-        ).select_related('meet')
+        ).select_related('meet').annotate(
+            attendances_count=Count(
+                'attendance',
+                filter=Q(
+                    attendance__is_removed=False,
+                    attendance__category_id=Attendee.ATTENDED_CATEGORY,
+                ),
+                distinct=True,
+            )
+        )
         if start_dt:
             existing_gatherings_qs = existing_gatherings_qs.filter(start__gte=start_dt)
         if finish_dt:
@@ -384,6 +394,7 @@ class GatheringService:
                 "start": g.start.isoformat() if g.start else None,
                 "meet_id": g.meet_id,
                 "meet_display_name": g.meet.display_name if g.meet else "",
+                "attendances_count": getattr(g, 'attendances_count', 0),
                 "_start_dt": g.start,
             })
             if g.start:
@@ -439,6 +450,7 @@ class GatheringService:
                         "start": occ_start.isoformat(),
                         "meet_id": meet.id,
                         "meet_display_name": meet.display_name,
+                        "attendances_count": 0,
                         "_start_dt": occ_start,
                     })
 
