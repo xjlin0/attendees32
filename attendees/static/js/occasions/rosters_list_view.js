@@ -7,6 +7,7 @@
 
   const { createApp, ref, reactive, onMounted } = Vue;
   const WARNING_NOTIFY_TIME = 5000;
+  const SUCCESS_NOTIFY_TIME = 3000;
   // Shared registry of gatherings for columns:
   const gatheringsRegistry = new Map();
   const meetsInfoMap = new Map();
@@ -3769,10 +3770,11 @@
           locateBtn.addEventListener('click', () => {
             if (popupInstance) popupInstance.hide();
             if (gridInstanceRef.value) {
+              const targetName = (cand.name || '').replace(/\s+/g, ' ').trim();
               if (typeof gridInstanceRef.value.searchByText === 'function') {
-                gridInstanceRef.value.searchByText(cand.name);
+                gridInstanceRef.value.searchByText(targetName);
               }
-              DevExpress.ui.notify(`Located in roster: ${cand.name}`, 'info', 3000);
+              DevExpress.ui.notify(`Located in roster: ${targetName}`, 'info', SUCCESS_NOTIFY_TIME);
             }
           });
         }
@@ -4276,7 +4278,7 @@
         const registeredNames = (result.attendees && result.attendees.length > 1)
           ? result.attendees.map(a => a.attendee_name).join(', ')
           : (result.attendee_name || 'attendee');
-        DevExpress.ui.notify(`Registered ${registeredNames} and checked in successfully!`, 'success', 3000);
+        DevExpress.ui.notify(`Registered ${registeredNames} and checked in successfully!`, 'success', SUCCESS_NOTIFY_TIME);
         if (popupInstance) popupInstance.hide();
         await loadData(result.attendee_id, result.gathering_id || gatheringId);
       } catch (err) {

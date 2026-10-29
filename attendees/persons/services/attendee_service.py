@@ -9,7 +9,7 @@ from django.contrib.postgres.aggregates.general import StringAgg, JSONBAgg
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import transaction
 from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count, Min
-from django.db.models.functions import Cast, Substr, Coalesce, Greatest
+from django.db.models.functions import Cast, Substr, Coalesce, Greatest, Concat, Trim
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -548,16 +548,28 @@ class AttendeeService:
         )
 
         if search_value:
+            clean_search_value = " ".join(search_value.split())
+            attendees_qs = attendees_qs.annotate(
+                _search_full_name=Trim(
+                    Concat(
+                        Trim(Concat('first_name', Value(' '), 'last_name', output_field=CharField())),
+                        Value(' '),
+                        Trim(Concat('last_name2', 'first_name2', output_field=CharField())),
+                        output_field=CharField()
+                    )
+                )
+            )
             search_filter = (
-                Q(first_name__icontains=search_value) |
-                Q(last_name__icontains=search_value) |
-                Q(first_name2__icontains=search_value) |
-                Q(last_name2__icontains=search_value) |
-                Q(infos__names__original__icontains=search_value) |
-                Q(infos__contacts__icontains=search_value) |
-                Q(infos__icontains=search_value) |
-                Q(attendings__attendingmeet__team__display_name__icontains=search_value) |
-                Q(attendings__attendingmeet__character__display_name__icontains=search_value)
+                Q(_search_full_name__icontains=clean_search_value) |
+                Q(first_name__icontains=clean_search_value) |
+                Q(last_name__icontains=clean_search_value) |
+                Q(first_name2__icontains=clean_search_value) |
+                Q(last_name2__icontains=clean_search_value) |
+                Q(infos__names__original__icontains=clean_search_value) |
+                Q(infos__contacts__icontains=clean_search_value) |
+                Q(infos__icontains=clean_search_value) |
+                Q(attendings__attendingmeet__team__display_name__icontains=clean_search_value) |
+                Q(attendings__attendingmeet__character__display_name__icontains=clean_search_value)
             )
             attendees_qs = attendees_qs.filter(search_filter)
 
