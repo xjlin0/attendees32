@@ -113,6 +113,7 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                     pass
 
         columns, rows, total_count = AttendeeService.get_roster_data(
+            current_user=request.user,
             organization=current_user_organization,
             meet_slugs=meet_slugs,
             start=start,

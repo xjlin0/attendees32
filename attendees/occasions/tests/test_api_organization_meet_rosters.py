@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from attendees.users.tests.factories import UserFactory
 from attendees.persons.models.enum import GenderEnum
-from attendees.persons.models import Category, Relation, Attendee, Registration, Attending, AttendingMeet
+from attendees.persons.models import Category, Relation, Attendee, Registration, Attending, AttendingMeet, Folk, FolkAttendee
 from attendees.whereabouts.models import Organization, Division
 from attendees.occasions.models import Price, Gathering, Character, Team, Meet, Assembly, Attendance
 from django.contrib.auth.models import Group
@@ -51,7 +51,10 @@ def setup_objects():
         category=category
     )
 
+    organization.infos = {"groups_see_all_meets_attendees": [group.name]}
+    organization.save()
     user = UserFactory(organization=organization)
+    user.groups.add(group)
     
     return {
         "user": user,
@@ -322,6 +325,139 @@ def test_organization_meet_rosters_grouping_respects_display_order(api_client, s
     group_keys = [g["key"] for g in data["rows"]]
     # Beta Team (display_order 100) must appear before Alpha Team (display_order 200)
     assert group_keys.index("Beta Team") < group_keys.index("Alpha Team")
+
+
+@pytest.mark.django_db
+def test_organization_meet_rosters_restricted_user_only_sees_family(api_client, setup_objects):
+    meet = setup_objects["meet"]
+    division = meet.assembly.division
+    organization = division.organization
+    category = setup_objects["category"]
+
+    # Restricted user with no see_all permission
+    restricted_user = UserFactory(organization=organization)
+    assert restricted_user.can_see_all_organizational_meets_attendees() is False
+
+    # Parent attendee linked to user
+    parent_attendee = Attendee.objects.create(
+        first_name="Parent",
+        last_name="Smith",
+        gender=0,
+        division=division,
+        user=restricted_user,
+    )
+    # Child attendee in the same family
+    child_attendee = Attendee.objects.create(
+        first_name="Child",
+        last_name="Smith",
+        gender=0,
+        division=division,
+    )
+
+    family_folk = Folk.objects.create(
+        division=division,
+        category=category,
+        display_name="Smith Family",
+    )
+    FolkAttendee.objects.create(
+        folk=family_folk,
+        attendee=parent_attendee,
+        role_id=0,
+    )
+    FolkAttendee.objects.create(
+        folk=family_folk,
+        attendee=child_attendee,
+        role_id=0,
+    )
+
+    # Enroll parent and child into the meet
+    attending_parent = Attending.objects.create(attendee=parent_attendee)
+    AttendingMeet.objects.create(
+        attending=attending_parent,
+        meet=meet,
+        character=setup_objects["attendance"].character,
+        category=category,
+        start=datetime.now(timezone.utc),
+        finish=datetime.now(timezone.utc) + timedelta(days=1),
+    )
+
+    attending_child = Attending.objects.create(attendee=child_attendee)
+    AttendingMeet.objects.create(
+        attending=attending_child,
+        meet=meet,
+        character=setup_objects["attendance"].character,
+        category=category,
+        start=datetime.now(timezone.utc),
+        finish=datetime.now(timezone.utc) + timedelta(days=1),
+    )
+
+    # setup_objects already has "John Doe" (an unrelated attendee) enrolled in the meet
+    url = reverse("occasions:organization_meet_rosters-list")
+    api_client.force_login(restricted_user)
+
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["totalCount"] == 2
+    row_names = [r["attendee_name"] for r in data["rows"]]
+    assert "Parent Smith" in row_names
+    assert "Child Smith" in row_names
+    assert "John Doe" not in row_names
+
+    # Privileged user sees everyone in the meet (John Doe + Parent Smith + Child Smith)
+    api_client.force_login(setup_objects["user"])
+    response_admin = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+        },
+    )
+    assert response_admin.status_code == 200
+    data_admin = response_admin.json()
+    assert data_admin["totalCount"] == 3
+    admin_row_names = [r["attendee_name"] for r in data_admin["rows"]]
+    assert "John Doe" in admin_row_names
+    assert "Parent Smith" in admin_row_names
+    assert "Child Smith" in admin_row_names
+
+
+@pytest.mark.django_db
+def test_organization_meet_rosters_restricted_user_without_attendee_sees_empty(api_client, setup_objects):
+    meet = setup_objects["meet"]
+    organization = meet.assembly.division.organization
+
+    # Restricted user without attendee profile
+    unaffiliated_user = UserFactory(organization=organization)
+    assert unaffiliated_user.can_see_all_organizational_meets_attendees() is False
+    assert not hasattr(unaffiliated_user, "attendee")
+
+    url = reverse("occasions:organization_meet_rosters-list")
+    api_client.force_login(unaffiliated_user)
+
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["totalCount"] == 0
+    assert data["rows"] == []
+
 
 
 

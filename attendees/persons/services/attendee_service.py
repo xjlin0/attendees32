@@ -511,7 +511,7 @@ class AttendeeService:
         return folk
 
     @staticmethod
-    def get_roster_data(organization, meet_slugs, start, finish, skip, take, sort_list=None, search_value=None):
+    def get_roster_data(organization, meet_slugs, start, finish, skip, take, sort_list=None, search_value=None, current_user=None):
         if not sort_list:
             sort_list = ['first_name', 'last_name']
 
@@ -546,6 +546,21 @@ class AttendeeService:
             attendingmeet_filter,
             is_removed=False
         )
+
+        if current_user and not current_user.can_see_all_organizational_meets_attendees():
+            user_attendee = getattr(current_user, "attendee", None)
+            if not user_attendee:
+                return gathering_list, [], 0
+            user_folk_ids = list(
+                user_attendee.folks.filter(
+                    is_removed=False,
+                    folkattendee__is_removed=False,
+                ).values_list("id", flat=True)
+            )
+            attendees_qs = attendees_qs.filter(
+                Q(folkattendee__folk__in=user_folk_ids, folkattendee__is_removed=False) |
+                Q(id=user_attendee.id)
+            )
 
         if search_value:
             clean_search_value = " ".join(search_value.split())
