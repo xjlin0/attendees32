@@ -1,3 +1,5 @@
+import json
+
 import pytest
 import pytz
 from django.utils import timezone
@@ -90,8 +92,11 @@ class TestEarlyApiAuthMiddleware:
         assert response.status_code == 403
 
     @pytest.mark.parametrize("header", ["Token null", "Token undefined", "Token ", "Bearer x", "Token " + "g" * 40])
-    def test_a_malformed_token_is_refused(self, header):
-        assert self._call(HTTP_AUTHORIZATION=header).status_code == 403
+    def test_a_malformed_token_is_refused_as_invalid(self, header):
+        response = self._call(HTTP_AUTHORIZATION=header)
+        assert response.status_code == 401
+        assert response["WWW-Authenticate"] == "Token"
+        assert json.loads(response.content) == {"detail": "Invalid token."}
 
     def test_a_well_formed_token_passes_through(self):
         assert self._call(HTTP_AUTHORIZATION=f"Token {self.TOKEN}") == "passed through"
@@ -126,5 +131,5 @@ class TestApiRefusalNeedsNoDatabase:
 
     def test_a_null_token_is_refused_without_a_query(self, client):
         response = client.get("/persons/api/attendee_attendings/", HTTP_AUTHORIZATION="Token null")
-        assert response.status_code == 403
+        assert response.status_code == 401
 
