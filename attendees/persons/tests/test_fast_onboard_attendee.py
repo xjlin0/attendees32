@@ -220,8 +220,10 @@ class TestFastOnboardAttendee:
         parent = Attendee.objects.get(id=data["parent_id"])
         assert parent.first_name == "Mary"
         assert parent.last_name == "Pan"
-        assert parent.infos["contacts"]["phone"] == "+15105550199"
-        assert parent.infos["contacts"]["email"] == "mary@pan.org"
+        assert parent.infos["contacts"]["phone1"] == "+15105550199"
+        assert parent.infos["contacts"]["email1"] == "mary@pan.org"
+        assert "phone" not in parent.infos["contacts"]
+        assert "email" not in parent.infos["contacts"]
 
         # Verify family folk & FolkAttendee links
         family = Folk.objects.filter(attendees=kid, category_id=Attendee.FAMILY_CATEGORY).first()
@@ -629,7 +631,8 @@ class TestFastOnboardAttendee:
         adult = Attendee.objects.get(pk=adult_id)
         comp = Attendee.objects.get(pk=companion_ids[0])
         assert adult.first_name == "David"
-        assert adult.infos["contacts"]["phone"] == "+14085551111"
+        assert adult.infos["contacts"]["phone1"] == "+14085551111"
+        assert "phone" not in adult.infos["contacts"]
         assert comp.first_name == "Sarah"
         assert comp.infos["contacts"]["email1"] == "sarah@smith.com"
 
@@ -1065,14 +1068,289 @@ class TestFastOnboardAttendee:
             assert "Internal server error" in res.data["detail"]
             assert "Database explosion!" in res.data["error"]
 
-    def test_search_attendees_unhandled_exception_returns_500_json_not_html(self):
-        from unittest.mock import patch
-        with patch.object(AttendeeService, "search_for_roster", side_effect=RuntimeError("Search engine crash!")):
-            res = self.client.get(f"/persons/api/search_attendees_for_roster/?meet_slug={self.adult_meet.slug}")
-            assert res.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-            assert "application/json" in res.headers["content-type"]
-            assert "Internal server error" in res.data["detail"]
-            assert "Search engine crash!" in res.data["error"]
+    def test_fast_onboard_with_existing_attendee_id_updates_and_merges_contacts(self):
+        # 1. Create an existing attendee with phone1
+        existing_attendee = Attendee.objects.create(
+            first_name="OriginalName",
+            last_name="ExistingLast",
+            gender="UNSPECIFIED",
+            division=self.adult_meet.assembly.division,
+            infos={"contacts": {"phone1": "+15101112222"}, "fixed": {"food_pref": "Vegetarian"}},
+        )
+        initial_count = Attendee.objects.count()
+
+        now = datetime.now(timezone.utc)
+        adult_gathering = Gathering.objects.create(
+            meet=self.adult_meet,
+            start=now,
+            finish=now + timedelta(hours=2),
+            display_name="Adult Gathering",
+            site_type=self.site_type,
+            site_id=str(self.adult_assembly.id),
+        )
+
+        # 2. Fast onboard with attendee_id and an additional phone2 + updated food_pref
+        payload = {
+            "meet_slug": self.adult_meet.slug,
+            "gathering_id": adult_gathering.id,
+            "attendees_data": [
+                {
+                    "attendee_id": str(existing_attendee.id),
+                    "first_name": "UpdatedName",
+                    "contacts": [
+                        {"type": "phone", "value": "510-111-2222"},  # duplicate number
+                        {"type": "phone", "value": "510-999-8888"},  # new number
+                        {"type": "email", "value": "updated@example.com"},
+                    ],
+                }
+            ],
+            "unaccompanied": True,
+        }
+
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        assert Attendee.objects.count() == initial_count  # NO new attendee created!
+
+        existing_attendee.refresh_from_db()
+        assert existing_attendee.first_name == "UpdatedName"
+        assert existing_attendee.last_name == "ExistingLast"
+        assert existing_attendee.infos["fixed"]["food_pref"] == "Vegetarian"  # preserved
+
+        # Contacts merged cleanly with strictly numbered keys:
+        contacts = existing_attendee.infos["contacts"]
+        assert contacts["phone1"] == "+15101112222"
+        assert contacts["phone2"] == "+15109998888"
+        assert contacts["email1"] == "updated@example.com"
+        assert "phone" not in contacts
+        assert "email" not in contacts
+
+        # Attendance check-in recorded for gathering
+        attending = existing_attendee.attendings.first()
+        assert Attendance.objects.filter(gathering=adult_gathering, attending=attending).count() == 1
+
+    def test_fast_onboard_with_existing_companion_id_updates_and_links(self):
+        existing_parent = Attendee.objects.create(
+            first_name="DadName",
+            last_name="ExistingFamily",
+            gender="MALE",
+            division=self.kid_meet.assembly.division,
+            infos={"contacts": {"phone1": "+15103334444"}},
+        )
+        initial_count = Attendee.objects.count()
+
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "gathering_id": self.kid_gathering.id,
+            "attendees_data": [
+                {
+                    "first_name": "NewKid",
+                    "last_name": "ExistingFamily",
+                    "gender": "MALE",
+                    "birthday_year": 2017,
+                    "birthday_month": 5,
+                    "birthday_day": 10,
+                    "grade": 3,
+                    "food_pref": "None",
+                }
+            ],
+            "companions": [
+                {
+                    "attendee_id": str(existing_parent.id),
+                    "first_name": "DadUpdated",
+                    "contacts": [
+                        {"type": "email", "value": "dad@family.org"},
+                    ],
+                    "relationship": "father",
+                }
+            ],
+        }
+
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        assert Attendee.objects.count() == initial_count + 1  # Only the kid is new, parent is updated
+
+        existing_parent.refresh_from_db()
+        assert existing_parent.first_name == "DadUpdated"
+        assert existing_parent.infos["contacts"]["phone1"] == "+15103334444"
+        assert existing_parent.infos["contacts"]["email1"] == "dad@family.org"
+        assert "phone" not in existing_parent.infos["contacts"]
+
+        # Family relation linked
+        kid = Attendee.objects.get(first_name="NewKid")
+        family = Folk.objects.filter(attendees=kid, category_id=Attendee.FAMILY_CATEGORY).first()
+        assert family is not None
+        assert existing_parent in family.attendees.all()
+
+    def test_fast_onboard_prioritizes_latest_family_folk(self):
+        """When an attendee belongs to multiple families, fast onboard defaults to the latest created family."""
+        family_cat = Category.objects.get(pk=Attendee.FAMILY_CATEGORY)
+        division = self.kid_meet.assembly.division
+        parent = Attendee.objects.create(
+            first_name="MultiFamParent",
+            last_name="Wang",
+            division=division,
+            gender="MALE",
+        )
+        old_family = Folk.objects.create(
+            category=family_cat,
+            division=division,
+            display_name="Old Wang Family",
+        )
+        new_family = Folk.objects.create(
+            category=family_cat,
+            division=division,
+            display_name="New Wang Family",
+        )
+        father_role = Relation.objects.filter(title__iexact="father").first() or Relation.objects.first()
+        FolkAttendee.objects.create(folk=old_family, attendee=parent, role=father_role, display_order=1)
+        FolkAttendee.objects.create(folk=new_family, attendee=parent, role=father_role, display_order=1)
+
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "gathering_id": self.kid_gathering.id,
+            "attendees_data": [
+                {
+                    "first_name": "BabyWang",
+                    "last_name": "Wang",
+                    "gender": "MALE",
+                    "birthday_year": 2022,
+                    "birthday_month": 1,
+                    "birthday_day": 1,
+                    "grade": 0,
+                    "food_pref": "None",
+                }
+            ],
+            "companions": [
+                {
+                    "attendee_id": str(parent.id),
+                    "first_name": parent.first_name,
+                    "last_name": parent.last_name,
+                    "relationship": "father",
+                    "contacts": [{"type": "phone", "value": "510-111-2222"}],
+                }
+            ],
+        }
+
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        baby = Attendee.objects.get(first_name="BabyWang")
+        baby_families = list(baby.folks.filter(category=family_cat))
+        assert len(baby_families) == 1
+        assert baby_families[0].id == new_family.id
+        assert res.json()["family_folk_id"] == str(new_family.id)
+
+    def test_fast_onboard_target_folk_id_joins_specified_family(self):
+        """When target_folk_id is passed, new members join that specific family instead of the latest."""
+        family_cat = Category.objects.get(pk=Attendee.FAMILY_CATEGORY)
+        division = self.kid_meet.assembly.division
+        parent = Attendee.objects.create(
+            first_name="SpecificFamParent",
+            last_name="Lee",
+            division=division,
+            gender="FEMALE",
+        )
+        old_family = Folk.objects.create(
+            category=family_cat,
+            division=division,
+            display_name="Old Lee Family",
+        )
+        new_family = Folk.objects.create(
+            category=family_cat,
+            division=division,
+            display_name="New Lee Family",
+        )
+        mother_role = Relation.objects.filter(title__iexact="mother").first() or Relation.objects.first()
+        FolkAttendee.objects.create(folk=old_family, attendee=parent, role=mother_role, display_order=1)
+        FolkAttendee.objects.create(folk=new_family, attendee=parent, role=mother_role, display_order=1)
+
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "gathering_id": self.kid_gathering.id,
+            "target_folk_id": str(old_family.id),
+            "attendees_data": [
+                {
+                    "first_name": "ChildLee",
+                    "last_name": "Lee",
+                    "gender": "FEMALE",
+                    "birthday_year": 2020,
+                    "birthday_month": 3,
+                    "birthday_day": 15,
+                    "grade": 1,
+                    "food_pref": "None",
+                }
+            ],
+            "companions": [
+                {
+                    "attendee_id": str(parent.id),
+                    "first_name": parent.first_name,
+                    "last_name": parent.last_name,
+                    "relationship": "mother",
+                    "contacts": [{"type": "phone", "value": "510-222-3333"}],
+                }
+            ],
+        }
+
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        child = Attendee.objects.get(first_name="ChildLee")
+        child_families = list(child.folks.filter(category=family_cat))
+        assert len(child_families) == 1
+        assert child_families[0].id == old_family.id
+        assert res.json()["family_folk_id"] == str(old_family.id)
+
+    def test_fast_onboard_create_new_folk_creates_separate_family(self):
+        """When create_new_folk is True, a new family is created even if an attendee belongs to existing families."""
+        family_cat = Category.objects.get(pk=Attendee.FAMILY_CATEGORY)
+        division = self.kid_meet.assembly.division
+        parent = Attendee.objects.create(
+            first_name="IndependentParent",
+            last_name="Chen",
+            division=division,
+            gender="MALE",
+        )
+        old_family = Folk.objects.create(
+            category=family_cat,
+            division=division,
+            display_name="Old Chen Family",
+        )
+        father_role = Relation.objects.filter(title__iexact="father").first() or Relation.objects.first()
+        FolkAttendee.objects.create(folk=old_family, attendee=parent, role=father_role, display_order=1)
+
+        payload = {
+            "meet_slug": self.kid_meet.slug,
+            "gathering_id": self.kid_gathering.id,
+            "create_new_folk": True,
+            "attendees_data": [
+                {
+                    "first_name": "NewFamilyKid",
+                    "last_name": "Chen",
+                    "gender": "MALE",
+                    "birthday_year": 2021,
+                    "birthday_month": 6,
+                    "birthday_day": 20,
+                    "grade": 0,
+                    "food_pref": "None",
+                }
+            ],
+            "companions": [
+                {
+                    "attendee_id": str(parent.id),
+                    "first_name": parent.first_name,
+                    "last_name": parent.last_name,
+                    "relationship": "father",
+                    "contacts": [{"type": "phone", "value": "510-444-5555"}],
+                }
+            ],
+        }
+
+        res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        kid = Attendee.objects.get(first_name="NewFamilyKid")
+        kid_families = list(kid.folks.filter(category=family_cat))
+        assert len(kid_families) == 1
+        assert kid_families[0].id != old_family.id
+        assert kid_families[0].display_name == "Chen family"
+
 
 
 

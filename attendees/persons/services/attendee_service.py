@@ -7,8 +7,8 @@ import pghistory
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import StringAgg, JSONBAgg
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db import transaction
-from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count, Min
+from django.db import models, transaction
+from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count, Min, Max
 from django.db.models.functions import Cast, Substr, Coalesce, Greatest, Concat, Trim
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
@@ -1033,8 +1033,16 @@ class AttendeeService:
                 grade_index = None
                 guardians = None
 
-            # Full folks array
+            # Full folks array: family folks ordered by created desc (latest first)
             cand_fas = fas_by_attendee.get(attendee.id, [])
+            family_fas = [fa for fa in cand_fas if fa.folk and fa.folk.category_id == Attendee.FAMILY_CATEGORY]
+            family_fas.sort(
+                key=lambda fa: (fa.folk.created if fa.folk and fa.folk.created else datetime.min.replace(tzinfo=timezone.utc)),
+                reverse=True,
+            )
+            non_family_fas = [fa for fa in cand_fas if fa.folk and fa.folk.category_id != Attendee.FAMILY_CATEGORY]
+            sorted_cand_fas = family_fas + non_family_fas
+
             folks_list = [
                 {
                     "id": str(fa.folk.id),
@@ -1045,9 +1053,15 @@ class AttendeeService:
                     "role_title": fa.role.title if fa.role else "",
                     "is_emergency_contact": fa.role.emergency_contact if fa.role else False,
                     "display_order": fa.display_order,
+                    "created": fa.folk.created.isoformat() if (fa.folk and fa.folk.created) else None,
+                    "is_latest_family": bool(family_fas and fa.folk_id == family_fas[0].folk_id),
                 }
-                for fa in cand_fas
+                for fa in sorted_cand_fas
             ]
+
+            # Primary family folk attendee for default role / relationship (latest created family first)
+            fam_fa = family_fas[0] if family_fas else (cand_fas[0] if cand_fas else None)
+            fixed_infos = attendee.infos.get("fixed", {}) if isinstance(attendee.infos, dict) else {}
 
             results.append({
                 "id": str(attendee.id),
@@ -1057,6 +1071,13 @@ class AttendeeService:
                 "first_name2": attendee.first_name2 or "",
                 "last_name2": attendee.last_name2 or "",
                 "gender": attendee.gender,
+                "division_id": attendee.division_id,
+                "role_id": fam_fa.role_id if fam_fa else None,
+                "role_title": fam_fa.role.title if (fam_fa and fam_fa.role) else None,
+                "latest_family_id": str(family_fas[0].folk.id) if family_fas else None,
+                "latest_family_name": family_fas[0].folk.display_name if family_fas else None,
+                "food_pref": fixed_infos.get("food_pref"),
+                "insurer": fixed_infos.get("insurer"),
                 "actual_birthday": attendee.actual_birthday.isoformat() if attendee.actual_birthday else None,
                 "estimated_birthday": str(attendee.estimated_birthday) if attendee.estimated_birthday else None,
                 "photo_url": photo_url,
@@ -1250,6 +1271,8 @@ class AttendeeService:
         gathering_id=None,
         kid_data=None,
         parent_data=None,
+        target_folk_id=None,
+        create_new_folk=False,
     ):
         """
         Fast onboard one or more attendees (and optional companions) into a meet.
@@ -1429,12 +1452,10 @@ class AttendeeService:
                         type_counts[ct] = type_counts.get(ct, 0) + 1
                         c_idx = type_counts[ct]
                         contacts[f"{ct}{c_idx}"] = cv
-                        if c_idx == 1:
-                            contacts[ct] = cv
             elif isinstance(raw_contacts, dict):
                 contacts = {
-                    k: (AttendeeService.normalize_phone_number(v) if k.startswith("phone") or k.startswith("whatsapp") else v)
-                    for k, v in raw_contacts.items()
+                    (k if re.search(r'\d$', k) else f"{k}1"): (AttendeeService.normalize_phone_number(v) if k.startswith("phone") or k.startswith("whatsapp") else v)
+                    for k, v in raw_contacts.items() if v
                 }
 
             contact_type = (att_data.get("contact_type") or "phone").strip().lower()
@@ -1442,17 +1463,14 @@ class AttendeeService:
             if contact_value and not contacts:
                 if contact_type in ("phone", "whatsapp"):
                     contact_value = AttendeeService.normalize_phone_number(contact_value)
-                key = contact_type if contact_type.endswith("1") else f"{contact_type}1"
+                key = contact_type if re.search(r'\d$', contact_type) else f"{contact_type}1"
                 contacts[key] = contact_value
-                contacts[contact_type] = contact_value
-            elif att_data.get("phone") and "phone" not in contacts:
+            elif att_data.get("phone") and not any(k.startswith("phone") for k in contacts):
                 ph = AttendeeService.normalize_phone_number(att_data.get("phone").strip())
                 contacts["phone1"] = ph
-                contacts["phone"] = ph
-            if att_data.get("email") and "email" not in contacts:
+            if att_data.get("email") and not any(k.startswith("email") for k in contacts):
                 em = att_data.get("email").strip()
                 contacts["email1"] = em
-                contacts["email"] = em
 
             infos = {"fixed": fixed}
             if contacts:
@@ -1466,6 +1484,7 @@ class AttendeeService:
                 att_div = meet.assembly.division
 
             validated_attendees.append({
+                "attendee_id": att_data.get("attendee_id") or att_data.get("id"),
                 "first_name": first_name,
                 "last_name": last_name,
                 "first_name2": first_name2,
@@ -1506,17 +1525,45 @@ class AttendeeService:
 
             created_attendees = []
             for item in validated_attendees:
-                attendee = Attendee.objects.create(
-                    first_name=item["first_name"],
-                    last_name=item["last_name"],
-                    first_name2=item["first_name2"],
-                    last_name2=item["last_name2"],
-                    gender=item["gender"],
-                    division=item["division"],
-                    actual_birthday=item["actual_birthday"],
-                    estimated_birthday=item["estimated_birthday"],
-                    infos=item["infos"],
-                )
+                attendee = None
+                att_id = item.get("attendee_id")
+                if att_id:
+                    attendee = Attendee.objects.filter(pk=att_id, division__organization=current_user.organization).first()
+                if attendee:
+                    if item["first_name"]:
+                        attendee.first_name = item["first_name"]
+                    if item["last_name"]:
+                        attendee.last_name = item["last_name"]
+                    if item["first_name2"]:
+                        attendee.first_name2 = item["first_name2"]
+                    if item["last_name2"]:
+                        attendee.last_name2 = item["last_name2"]
+                    if item["gender"] and item["gender"] != GenderEnum.UNSPECIFIED.value:
+                        attendee.gender = item["gender"]
+                    if item["division"]:
+                        attendee.division = item["division"]
+                    if item["actual_birthday"]:
+                        attendee.actual_birthday = item["actual_birthday"]
+                    if item["estimated_birthday"]:
+                        attendee.estimated_birthday = item["estimated_birthday"]
+                    attendee.infos = Utility.deep_merge_attendee_infos(
+                        attendee.infos,
+                        item["infos"],
+                        getattr(current_user, "attendee_uuid", None),
+                    )
+                    attendee.save()
+                else:
+                    attendee = Attendee.objects.create(
+                        first_name=item["first_name"],
+                        last_name=item["last_name"],
+                        first_name2=item["first_name2"],
+                        last_name2=item["last_name2"],
+                        gender=item["gender"],
+                        division=item["division"],
+                        actual_birthday=item["actual_birthday"],
+                        estimated_birthday=item["estimated_birthday"],
+                        infos=item["infos"],
+                    )
                 created_attendees.append(attendee)
 
             created_companions = []
@@ -1541,12 +1588,10 @@ class AttendeeService:
                                 type_counts[ct] = type_counts.get(ct, 0) + 1
                                 c_idx = type_counts[ct]
                                 c_contacts[f"{ct}{c_idx}"] = cv
-                                if c_idx == 1:
-                                    c_contacts[ct] = cv
                     elif isinstance(raw_c_contacts, dict):
                         c_contacts = {
-                            k: (AttendeeService.normalize_phone_number(v) if k.startswith("phone") or k.startswith("whatsapp") else v)
-                            for k, v in raw_c_contacts.items()
+                            (k if re.search(r'\d$', k) else f"{k}1"): (AttendeeService.normalize_phone_number(v) if k.startswith("phone") or k.startswith("whatsapp") else v)
+                            for k, v in raw_c_contacts.items() if v
                         }
 
                     c_contact_type = (c_data.get("contact_type") or "phone").strip().lower()
@@ -1554,17 +1599,14 @@ class AttendeeService:
                     if c_contact_val and not c_contacts:
                         if c_contact_type in ("phone", "whatsapp"):
                             c_contact_val = AttendeeService.normalize_phone_number(c_contact_val)
-                        key = c_contact_type if c_contact_type.endswith("1") else f"{c_contact_type}1"
+                        key = c_contact_type if re.search(r'\d$', c_contact_type) else f"{c_contact_type}1"
                         c_contacts[key] = c_contact_val
-                        c_contacts[c_contact_type] = c_contact_val
-                    elif c_data.get("phone") and "phone" not in c_contacts:
+                    elif c_data.get("phone") and not any(k.startswith("phone") for k in c_contacts):
                         ph = AttendeeService.normalize_phone_number(c_data.get("phone").strip())
                         c_contacts["phone1"] = ph
-                        c_contacts["phone"] = ph
-                    if c_data.get("email") and "email" not in c_contacts:
+                    if c_data.get("email") and not any(k.startswith("email") for k in c_contacts):
                         em = c_data.get("email").strip()
                         c_contacts["email1"] = em
-                        c_contacts["email"] = em
 
                     c_division_id = c_data.get("division_id") or c_data.get("division")
                     c_division = None
@@ -1573,20 +1615,66 @@ class AttendeeService:
                     if not c_division:
                         c_division = division
 
-                    companion_attendee = Attendee.objects.create(
-                        first_name=c_first,
-                        last_name=c_last,
-                        first_name2=c_first2,
-                        last_name2=c_last2,
-                        gender=c_gender,
-                        division=c_division,
-                        infos={"contacts": c_contacts} if c_contacts else {},
-                    )
+                    c_id = c_data.get("attendee_id") or c_data.get("id")
+                    companion_attendee = None
+                    if c_id:
+                        companion_attendee = Attendee.objects.filter(pk=c_id, division__organization=current_user.organization).first()
+                    if companion_attendee:
+                        if c_first:
+                            companion_attendee.first_name = c_first
+                        if c_last:
+                            companion_attendee.last_name = c_last
+                        if c_first2:
+                            companion_attendee.first_name2 = c_first2
+                        if c_last2:
+                            companion_attendee.last_name2 = c_last2
+                        if c_gender and c_gender != GenderEnum.UNSPECIFIED.value:
+                            companion_attendee.gender = c_gender
+                        if c_division:
+                            companion_attendee.division = c_division
+                        companion_attendee.infos = Utility.deep_merge_attendee_infos(
+                            companion_attendee.infos,
+                            {"contacts": c_contacts} if c_contacts else {},
+                            getattr(current_user, "attendee_uuid", None),
+                        )
+                        companion_attendee.save()
+                    else:
+                        companion_attendee = Attendee.objects.create(
+                            first_name=c_first,
+                            last_name=c_last,
+                            first_name2=c_first2,
+                            last_name2=c_last2,
+                            gender=c_gender,
+                            division=c_division,
+                            infos={"contacts": c_contacts} if c_contacts else {},
+                        )
                     created_companions.append((companion_attendee, c_data))
 
             # Folk and FolkAttendee relations
+            family_folk = None
             if not unaccompanied and (created_companions or len(created_attendees) > 1):
                 if is_kid_meet:
+                    # Determine target family folk (prioritize latest created family or explicit target_folk_id)
+                    if not create_new_folk:
+                        if target_folk_id:
+                            family_folk = Folk.objects.filter(
+                                pk=target_folk_id,
+                                category=Attendee.FAMILY_CATEGORY,
+                                is_removed=False,
+                            ).first()
+                        if not family_folk:
+                            all_people = list(created_attendees) + [c[0] for c in created_companions]
+                            family_folk = (
+                                Folk.objects.filter(
+                                    folkattendee__attendee__in=all_people,
+                                    category=Attendee.FAMILY_CATEGORY,
+                                    is_removed=False,
+                                )
+                                .distinct()
+                                .order_by("-created")
+                                .first()
+                            )
+
                     for c_idx, (comp_attendee, c_data) in enumerate(created_companions):
                         c_rel = c_data.get("relationship") or c_data.get("relation_id")
                         comp_role = None
@@ -1638,16 +1726,12 @@ class AttendeeService:
                         )
 
                         if is_family:
-                            primary_kid = created_attendees[0]
-                            family_folk = (
-                                primary_kid.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
-                                or comp_attendee.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
-                            )
                             if not family_folk:
                                 family_cat, _ = Category.objects.get_or_create(
                                     id=Attendee.FAMILY_CATEGORY,
                                     defaults={"display_name": "Family", "type": "folk"},
                                 )
+                                primary_kid = created_attendees[0]
                                 family_name = (
                                     comp_attendee.last_name or comp_attendee.last_name2
                                     or primary_kid.last_name or primary_kid.first_name
@@ -1658,11 +1742,24 @@ class AttendeeService:
                                     display_name=f"{family_name} family",
                                 )
 
+                            comp_fa_defaults = {"role": comp_role, "display_order": c_idx + 1}
+                            existing_comp_fa = FolkAttendee.objects.filter(folk=family_folk, attendee=comp_attendee, is_removed=False).first()
+                            if existing_comp_fa:
+                                comp_fa_defaults["display_order"] = existing_comp_fa.display_order
+                                if not comp_role:
+                                    comp_fa_defaults["role"] = existing_comp_fa.role
+
                             FolkAttendee.objects.update_or_create(
                                 folk=family_folk,
                                 attendee=comp_attendee,
-                                defaults={"role": comp_role, "display_order": c_idx + 1},
+                                defaults=comp_fa_defaults,
                             )
+
+                            existing_child_max = FolkAttendee.objects.filter(
+                                folk=family_folk,
+                                display_order__gte=11,
+                                is_removed=False,
+                            ).aggregate(models.Max('display_order'))['display_order__max'] or 10
 
                             for k_idx, kid in enumerate(created_attendees):
                                 if comp_role and comp_role.title and comp_role.title.lower() in ("guardian", "caregiver"):
@@ -1684,8 +1781,12 @@ class AttendeeService:
 
                                 kid_fa_defaults = {
                                     "role": kid_role,
-                                    "display_order": 11 + k_idx,
+                                    "display_order": existing_child_max + 1 + k_idx,
                                 }
+                                existing_kid_fa = FolkAttendee.objects.filter(folk=family_folk, attendee=kid, is_removed=False).first()
+                                if existing_kid_fa:
+                                    kid_fa_defaults["display_order"] = existing_kid_fa.display_order
+
                                 if kid.actual_birthday:
                                     kid_fa_defaults["start"] = kid.actual_birthday
 
@@ -1749,10 +1850,24 @@ class AttendeeService:
                         id=Attendee.FAMILY_CATEGORY,
                         defaults={"display_name": "Family", "type": "folk"},
                     )
-                    family_folk = (
-                        primary_adult.folks.filter(category=Attendee.FAMILY_CATEGORY).first()
-                        or (first_comp.folks.filter(category=Attendee.FAMILY_CATEGORY).first() if first_comp else None)
-                    )
+                    if not create_new_folk:
+                        if target_folk_id:
+                            family_folk = Folk.objects.filter(
+                                pk=target_folk_id,
+                                category=Attendee.FAMILY_CATEGORY,
+                                is_removed=False,
+                            ).first()
+                        if not family_folk:
+                            family_folk = (
+                                Folk.objects.filter(
+                                    folkattendee__attendee__in=all_family_members,
+                                    category=Attendee.FAMILY_CATEGORY,
+                                    is_removed=False,
+                                )
+                                .distinct()
+                                .order_by("-created")
+                                .first()
+                            )
                     if not family_folk:
                         family_folk = Folk.objects.create(
                             category=family_cat,
@@ -1787,56 +1902,64 @@ class AttendeeService:
                         or son_role
                     )
 
-                    has_husband = False
-                    has_wife = False
-                    child_count = 0
+                    existing_fas = list(FolkAttendee.objects.filter(folk=family_folk, is_removed=False).select_related("role"))
+                    existing_roles = {fa.attendee_id: fa.role for fa in existing_fas}
+                    existing_orders = {fa.attendee_id: fa.display_order for fa in existing_fas}
+                    has_husband = any(fa.role == husband_role or fa.display_order == 1 for fa in existing_fas if fa.attendee not in all_family_members)
+                    has_wife = any(fa.role == wife_role or fa.display_order == 2 for fa in existing_fas if fa.attendee not in all_family_members)
+                    existing_child_orders = [fa.display_order for fa in existing_fas if fa.display_order >= 11 and fa.attendee not in all_family_members]
+                    child_count = (max(existing_child_orders) - 10) if existing_child_orders else 0
 
                     for m_idx, member in enumerate(all_family_members):
-                        m_gender = str(member.gender or "").strip().lower()
-                        # Starting from 3rd member (m_idx >= 2), assign child role (son/daughter/child, rank 11+)
-                        if m_idx >= 2:
-                            if m_gender == "male":
-                                m_role = son_role
-                            elif m_gender == "female":
-                                m_role = daughter_role
-                            else:
-                                m_role = child_role
-                            m_order = 11 + child_count
-                            child_count += 1
+                        if member.id in existing_roles:
+                            m_role = existing_roles[member.id]
+                            m_order = existing_orders[member.id]
                         else:
-                            # First two members: husband and wife with exclusivity
-                            if m_gender == "male":
-                                if not has_husband:
-                                    m_role = husband_role
-                                    m_order = 1
-                                    has_husband = True
-                                else:
+                            m_gender = str(member.gender or "").strip().lower()
+                            # Starting from 3rd member (m_idx >= 2), assign child role (son/daughter/child, rank 11+)
+                            if m_idx >= 2:
+                                if m_gender == "male":
                                     m_role = son_role
-                                    m_order = 11 + child_count
-                                    child_count += 1
-                            elif m_gender == "female":
-                                if not has_wife:
-                                    m_role = wife_role
-                                    m_order = 2
-                                    has_wife = True
-                                else:
+                                elif m_gender == "female":
                                     m_role = daughter_role
-                                    m_order = 11 + child_count
-                                    child_count += 1
-                            else:
-                                # Unspecified gender
-                                if not has_husband:
-                                    m_role = husband_role or spouse_role
-                                    m_order = 1
-                                    has_husband = True
-                                elif not has_wife:
-                                    m_role = wife_role or spouse_role
-                                    m_order = 2
-                                    has_wife = True
                                 else:
                                     m_role = child_role
-                                    m_order = 11 + child_count
-                                    child_count += 1
+                                m_order = 11 + child_count
+                                child_count += 1
+                            else:
+                                # First two members: husband and wife with exclusivity
+                                if m_gender == "male":
+                                    if not has_husband:
+                                        m_role = husband_role
+                                        m_order = 1
+                                        has_husband = True
+                                    else:
+                                        m_role = son_role
+                                        m_order = 11 + child_count
+                                        child_count += 1
+                                elif m_gender == "female":
+                                    if not has_wife:
+                                        m_role = wife_role
+                                        m_order = 2
+                                        has_wife = True
+                                    else:
+                                        m_role = daughter_role
+                                        m_order = 11 + child_count
+                                        child_count += 1
+                                else:
+                                    # Unspecified gender
+                                    if not has_husband:
+                                        m_role = husband_role or spouse_role
+                                        m_order = 1
+                                        has_husband = True
+                                    elif not has_wife:
+                                        m_role = wife_role or spouse_role
+                                        m_order = 2
+                                        has_wife = True
+                                    else:
+                                        m_role = child_role
+                                        m_order = 11 + child_count
+                                        child_count += 1
 
                         m_defaults = {
                             "role": m_role,
@@ -1940,24 +2063,42 @@ class AttendeeService:
                 if special_check_in:
                     am_infos["special"] = {"check_in": special_check_in}
 
-                attendingmeet = AttendingMeet.objects.create(
+                attendingmeet = AttendingMeet.objects.filter(
                     attending=attending,
                     meet=meet,
-                    character=major_char,
-                    category=scheduled_cat,
-                    finish=Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999)),
-                    infos=am_infos,
-                )
+                    is_removed=False,
+                ).first()
+                if not attendingmeet:
+                    attendingmeet = AttendingMeet.objects.create(
+                        attending=attending,
+                        meet=meet,
+                        character=major_char,
+                        category=scheduled_cat,
+                        finish=Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999)),
+                        infos=am_infos,
+                    )
+                elif special_check_in:
+                    attendingmeet.infos.setdefault("special", {})["check_in"] = special_check_in
+                    attendingmeet.save(update_fields=["infos"])
 
                 attendance = None
                 if gathering:
-                    attendance = Attendance.objects.create(
+                    attendance = Attendance.objects.filter(
                         gathering=gathering,
                         attending=attending,
-                        character=major_char,
-                        category=attended_cat or Category.objects.get(pk=Attendee.ATTENDED_CATEGORY),
-                        start=Utility.now_with_timezone(),
-                    )
+                        is_removed=False,
+                    ).first()
+                    if not attendance:
+                        attendance = Attendance.objects.create(
+                            gathering=gathering,
+                            attending=attending,
+                            character=attendingmeet.character or major_char,
+                            category=attended_cat or Category.objects.get(pk=Attendee.ATTENDED_CATEGORY),
+                            start=Utility.now_with_timezone(),
+                        )
+                    elif attendance.category != attended_cat and attended_cat:
+                        attendance.category = attended_cat
+                        attendance.save(update_fields=["category"])
 
                 created_attendees_info.append({
                     "attendee_id": att.id,
@@ -1994,6 +2135,8 @@ class AttendeeService:
                 "parent_id": comp_objs[0].id if comp_objs else None,
                 "companion_ids": [c.id for c in comp_objs],
                 "is_kid_meet": is_kid_meet,
+                "family_folk_id": str(family_folk.id) if family_folk else None,
+                "family_folk_name": family_folk.display_name if family_folk else None,
                 "attendees": created_attendees_info,
                 "attendee_ids": [info["attendee_id"] for info in created_attendees_info],
             }

@@ -66,6 +66,8 @@ class ApiFastOnboardAttendeeViewSet(viewsets.ViewSet):
 
         unaccompanied = bool(request.data.get("unaccompanied", False))
         gathering_id = request.data.get("gathering_id")
+        target_folk_id = request.data.get("target_folk_id") or request.data.get("folk_id")
+        create_new_folk = bool(request.data.get("create_new_folk", False))
 
         result = AttendeeService.fast_onboard(
             current_user=request.user,
@@ -74,6 +76,8 @@ class ApiFastOnboardAttendeeViewSet(viewsets.ViewSet):
             companions=companions,
             unaccompanied=unaccompanied,
             gathering_id=gathering_id,
+            target_folk_id=target_folk_id,
+            create_new_folk=create_new_folk,
         )
 
         return Response(result, status=status.HTTP_201_CREATED)

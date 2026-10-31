@@ -170,9 +170,10 @@
             <!-- Attendee 1 Block -->
             <div class="attendee-block attendee-block-1 p-2 bg-light rounded border mb-3 position-relative">
               <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                <h6 class="text-primary mb-0 fw-bold attendee-block-title"
+                <h6 class="text-primary mb-0 fw-bold attendee-block-title d-flex flex-wrap align-items-center"
                     title="All attendees will participate the chosen activity/meet">
                   <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
+                  <span class="candidate-matches ms-2 small"></span>
                 </h6>
                 <div class="d-flex align-items-center gap-1">
                   <button type="button" class="btn btn-outline-primary btn-sm add-more-attendee-btn p-0 d-flex align-items-center justify-content-center" title="Add another attendee" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
@@ -180,15 +181,21 @@
                   </button>
                 </div>
               </div>
-              <!-- Division & Relationship -->
+              <!-- Division, Family & Relationship -->
               <div class="row g-2 mb-2">
-                <div class="col-md-6 col-12">
+                <div class="col-md-4 col-12">
                   <label class="form-label small mb-1 fw-semibold att-division-label">Division <span class="text-danger">*</span></label>
                   <select class="form-select form-select-sm ob-division">
                     <!-- Dynamically populated -->
                   </select>
                 </div>
-                <div class="col-md-6 col-12">
+                <div class="col-md-4 col-12">
+                  <label class="form-label small mb-1 fw-semibold att-family-label"><i class="fas fa-home text-secondary me-1"></i>Family</label>
+                  <select class="form-select form-select-sm ob-family" title="Family assignment for this attendee">
+                    <option value="">➕ New family (Default)</option>
+                  </select>
+                </div>
+                <div class="col-md-4 col-12">
                   <label class="form-label small mb-1 fw-semibold att-relationship-label">Relationship</label>
                   <select class="form-select form-select-sm ob-relationship">
                     <!-- Dynamically populated -->
@@ -364,8 +371,9 @@
             <div class="guardian-inputs-container companion-block companion-block-1 mb-2">
               <div class="p-2 bg-light rounded border mb-2 position-relative">
                 <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                  <div class="fw-bold small text-secondary companion-label">
+                  <div class="fw-bold small text-secondary companion-label d-flex flex-wrap align-items-center">
                     <i class="fas fa-user me-1"></i> <span class="companion-1-label">Companion 1</span>
+                    <span class="candidate-matches ms-2 small"></span>
                   </div>
                   <div class="d-flex align-items-center gap-1">
                     <button type="button" class="btn btn-outline-secondary btn-sm add-more-companion-btn p-0 d-flex align-items-center justify-content-center" title="Add another companion" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
@@ -375,19 +383,25 @@
                   </div>
                 </div>
 
-                <!-- Division, Gender & Relationship -->
+                <!-- Division, Gender, Family & Relationship -->
                 <div class="row g-2 mb-2">
-                  <div class="col-md-4 col-12">
+                  <div class="col-md-3 col-12">
                     <label class="form-label small mb-1 fw-semibold comp-division-label">Companion 1 Division <span class="text-danger">*</span></label>
                     <select class="form-select form-select-sm ob-p-division">
                       <!-- Dynamically populated from divisions endpoint -->
                     </select>
                   </div>
-                  <div class="col-md-4 col-12">
+                  <div class="col-md-3 col-6">
                     <label class="form-label small mb-1 fw-semibold comp-gender-label">Companion 1 Gender</label>
                     <select class="form-select form-select-sm ob-p-gender"></select>
                   </div>
-                  <div class="col-md-4 col-12">
+                  <div class="col-md-3 col-12">
+                    <label class="form-label small mb-1 fw-semibold comp-family-label"><i class="fas fa-home text-secondary me-1"></i>Companion 1 Family</label>
+                    <select class="form-select form-select-sm ob-p-family" title="Family assignment for this companion">
+                      <option value="">➕ New family (Default)</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 col-6">
                     <label class="form-label small mb-1 fw-semibold comp-relationship-label">Companion 1 Relationship</label>
                     <select class="form-select form-select-sm ob-p-relationship">
                       <!-- Dynamically populated from relations-endpoint -->
@@ -452,6 +466,7 @@
             </div>
           </div>
 
+
         <!-- Action Buttons -->
         <div class="d-flex justify-content-end pt-2 border-top mt-3">
           <button type="button"
@@ -469,8 +484,9 @@
 <template id="companion-block-template">
   <div class="companion-block companion-block-extra p-2 bg-light rounded border mb-2 position-relative">
     <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-      <div class="fw-bold small text-secondary companion-label">
-        <i class="fas fa-user me-1"></i> Companion
+      <div class="fw-bold small text-secondary companion-label d-flex flex-wrap align-items-center">
+        <i class="fas fa-user me-1"></i> <span class="companion-title-text">Companion</span>
+        <span class="candidate-matches ms-2 small"></span>
       </div>
       <div class="d-flex align-items-center gap-1">
         <button type="button" class="btn btn-outline-secondary btn-sm add-more-companion-btn p-0 d-flex align-items-center justify-content-center" title="Add another companion" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
@@ -480,19 +496,25 @@
       </div>
     </div>
 
-    <!-- Division, Gender & Relationship -->
+    <!-- Division, Gender, Family & Relationship -->
     <div class="row g-2 mb-2">
-      <div class="col-md-4 col-12">
+      <div class="col-md-3 col-12">
         <label class="form-label small mb-1 fw-semibold comp-division-label">Division <span class="text-danger">*</span></label>
         <select class="form-select form-select-sm ob-p-division">
           <!-- Dynamically populated -->
         </select>
       </div>
-      <div class="col-md-4 col-12">
+      <div class="col-md-3 col-6">
         <label class="form-label small mb-1 fw-semibold comp-gender-label">Gender</label>
         <select class="form-select form-select-sm ob-p-gender"></select>
       </div>
-      <div class="col-md-4 col-12">
+      <div class="col-md-3 col-12">
+        <label class="form-label small mb-1 fw-semibold comp-family-label"><i class="fas fa-home text-secondary me-1"></i>Family</label>
+        <select class="form-select form-select-sm ob-p-family" title="Family assignment for this companion">
+          <option value="">➕ New family (Default)</option>
+        </select>
+      </div>
+      <div class="col-md-3 col-6">
         <label class="form-label small mb-1 fw-semibold comp-relationship-label">Relationship</label>
         <select class="form-select form-select-sm ob-p-relationship">
           <!-- Dynamically populated -->
@@ -555,9 +577,10 @@
 <template id="attendee-block-template">
   <div class="attendee-block attendee-block-extra p-2 bg-light rounded border mb-3 position-relative">
     <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-      <h6 class="text-primary mb-0 fw-bold attendee-block-title"
+      <h6 class="text-primary mb-0 fw-bold attendee-block-title d-flex flex-wrap align-items-center"
           title="All attendees will participate the chosen activity/meet">
         <i class="fas fa-user me-1"></i> <span class="attendee-label">Attendee Information</span>
+        <span class="candidate-matches ms-2 small"></span>
       </h6>
       <div class="d-flex align-items-center gap-1">
         <button type="button" class="btn btn-outline-primary btn-sm add-more-attendee-btn p-0 d-flex align-items-center justify-content-center" title="Add another attendee" style="width: 24px; height: 24px; font-size: 0.75rem; border-radius: 4px;">
@@ -566,15 +589,21 @@
         <button type="button" class="btn-close btn-sm remove-attendee-btn" aria-label="Remove attendee" title="Remove attendee"></button>
       </div>
     </div>
-    <!-- Division & Relationship -->
+    <!-- Division, Family & Relationship -->
     <div class="row g-2 mb-2">
-      <div class="col-md-6 col-12">
+      <div class="col-md-4 col-12">
         <label class="form-label small mb-1 fw-semibold att-division-label">Division <span class="text-danger">*</span></label>
         <select class="form-select form-select-sm ob-division">
           <!-- Dynamically populated -->
         </select>
       </div>
-      <div class="col-md-6 col-12">
+      <div class="col-md-4 col-12">
+        <label class="form-label small mb-1 fw-semibold att-family-label"><i class="fas fa-home text-secondary me-1"></i>Family</label>
+        <select class="form-select form-select-sm ob-family" title="Family assignment for this attendee">
+          <option value="">➕ New family (Default)</option>
+        </select>
+      </div>
+      <div class="col-md-4 col-12">
         <label class="form-label small mb-1 fw-semibold att-relationship-label">Relationship</label>
         <select class="form-select form-select-sm ob-relationship">
           <!-- Dynamically populated -->

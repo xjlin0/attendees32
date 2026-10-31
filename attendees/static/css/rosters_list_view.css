@@ -366,6 +366,22 @@ body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.dx-select
   background-color: #b9dec7;
 }
 
+@keyframes rosterRowHighlightPulse {
+  0% {
+    background-color: #fff3cd !important;
+  }
+  50% {
+    background-color: #a3e0c0 !important;
+  }
+  100% {
+    background-color: #d1e7dd !important;
+  }
+}
+
+body div#rosters-datagrid-container .dx-datagrid-rowsview .dx-data-row.roster-row-newly-added > td {
+  animation: rosterRowHighlightPulse 2s ease-in-out;
+}
+
 body div.add-attendee-popup-wrapper div.dx-popup-title {
   padding: 10px 14px;
 }

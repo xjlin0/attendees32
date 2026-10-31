@@ -2163,6 +2163,8 @@
             const initialData = await response.json();
             let preloadedData = initialData;
 
+            let isStoreLoadCompleted = false;
+
             const customStore = new DevExpress.data.CustomStore({
               key: 'attendee_id',
               load: async (loadOptions) => {
@@ -2179,6 +2181,7 @@
                     preloadedData = null;
                     const rows = cached.data || cached.rows || [];
                     const takeCount = loadOptions.take || currentTake || 40;
+                    isStoreLoadCompleted = true;
                     return {
                       data: (takeCount && rows.length > takeCount) ? rows.slice(0, takeCount) : rows,
                       totalCount: cached.totalCount
@@ -2213,7 +2216,7 @@
                   if (!pageResponse.ok) throw new Error('Network response was not ok');
                   
                   const pageData = await pageResponse.json();
-                  
+                  isStoreLoadCompleted = true;
                   return {
                     data: pageData.data || pageData.rows,
                     totalCount: pageData.totalCount
@@ -2227,79 +2230,112 @@
               }
             });
 
-            const onContentReady = () => {
-              gridInstanceRef.value.off('contentReady', onContentReady);
-              if (targetAttendeeId) {
-                gridInstanceRef.value.selectRows([targetAttendeeId], false);
+            const highlightAndScrollTarget = async () => {
+              if (!gridInstanceRef.value || !targetAttendeeId) return;
+              const targetIds = (Array.isArray(targetAttendeeId) ? targetAttendeeId : [targetAttendeeId])
+                .map(id => String(id))
+                .filter(Boolean);
+              if (targetIds.length === 0) return;
 
-                const scrollToRowElement = () => {
-                  if (!gridInstanceRef.value) return;
-                  const rowIndex = gridInstanceRef.value.getRowIndexByKey(targetAttendeeId);
-                  if (rowIndex >= 0) {
-                    const rowEl = gridInstanceRef.value.getRowElement(rowIndex);
+              const primaryId = targetIds[0];
+
+              if (gridInstanceRef.value.option('searchPanel.text')) {
+                gridInstanceRef.value.searchByText('');
+              }
+
+              const applySelectionAndVisuals = async () => {
+                try {
+                  await gridInstanceRef.value.selectRows(targetIds, false);
+                  const rIdx = gridInstanceRef.value.getRowIndexByKey(primaryId);
+                  if (rIdx >= 0) {
+                    const rowEl = gridInstanceRef.value.getRowElement(rIdx);
                     const domEl = rowEl && (rowEl[0] || (rowEl.length ? rowEl[0] : rowEl));
-                    if (domEl && typeof domEl.scrollIntoView === 'function') {
-                      domEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                  }
-                };
-
-                const tryNavigateAndScroll = async () => {
-                  if (!gridInstanceRef.value) return;
-                  const rowIndex = gridInstanceRef.value.getRowIndexByKey(targetAttendeeId);
-
-                  if (rowIndex >= 0) {
-                    scrollToRowElement();
-                    return;
-                  }
-
-                  // If not on current page, check where the attendee is located across the roster
-                  try {
-                    const findParams = new URLSearchParams();
-                    filterData.meets.forEach(meet => findParams.append('meets[]', meet));
-                    if (filterData.startDate) findParams.set('start', filterData.startDate.toISOString());
-                    if (filterData.endDate) findParams.set('finish', filterData.endDate.toISOString());
-                    findParams.set('skip', 0);
-                    findParams.set('take', 9999);
-
-                    const allRes = await fetch(`${endpoints.rosters}?${findParams.toString()}`);
-                    if (allRes.ok) {
-                      const allData = await allRes.json();
-                      const allRows = allData.data || allData.rows || [];
-                      const foundIdx = allRows.findIndex(r => String(r.attendee_id) === String(targetAttendeeId));
-                      if (foundIdx >= 0) {
-                        const pageSize = gridInstanceRef.value.pageSize() || 40;
-                        const targetPage = Math.floor(foundIdx / pageSize);
-                        if (gridInstanceRef.value.pageIndex() !== targetPage) {
-                          const onTargetPageReady = () => {
-                            gridInstanceRef.value.off('contentReady', onTargetPageReady);
-                            gridInstanceRef.value.selectRows([targetAttendeeId], false);
-                            setTimeout(scrollToRowElement, 150);
-                          };
-                          gridInstanceRef.value.on('contentReady', onTargetPageReady);
-                          gridInstanceRef.value.pageIndex(targetPage);
-                          return;
-                        }
+                    if (domEl) {
+                      if (typeof domEl.scrollIntoView === 'function') {
+                        domEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }
+                      domEl.classList.add('roster-row-newly-added');
+                      setTimeout(() => domEl.classList.remove('roster-row-newly-added'), 3500);
                     }
-                  } catch (e) {
-                    console.warn('Auto page navigation error:', e);
                   }
+                } catch (e) {
+                  console.warn('Error applying row selection:', e);
+                }
+              };
 
-                  // Fallback: navigateToRow
-                  if (typeof gridInstanceRef.value.navigateToRow === 'function') {
-                    gridInstanceRef.value.navigateToRow(targetAttendeeId);
-                    setTimeout(scrollToRowElement, 200);
+              let rowIndex = gridInstanceRef.value.getRowIndexByKey(primaryId);
+              if (rowIndex >= 0) {
+                await applySelectionAndVisuals();
+                return;
+              }
+
+              // If not on current page, check where the attendee is located across the roster
+              try {
+                const findParams = new URLSearchParams();
+                filterData.meets.forEach(meet => findParams.append('meets[]', meet));
+                if (filterData.startDate) findParams.set('start', filterData.startDate.toISOString());
+                if (filterData.endDate) findParams.set('finish', filterData.endDate.toISOString());
+                findParams.set('skip', 0);
+                findParams.set('take', 9999);
+
+                const allRes = await fetch(`${endpoints.rosters}?${findParams.toString()}`);
+                if (allRes.ok) {
+                  const allData = await allRes.json();
+                  const allRows = allData.data || allData.rows || [];
+                  const foundIdx = allRows.findIndex(r => String(r.attendee_id) === primaryId);
+                  if (foundIdx >= 0) {
+                    const pageSize = gridInstanceRef.value.pageSize() || 40;
+                    const targetPage = Math.floor(foundIdx / pageSize);
+                    if (gridInstanceRef.value.pageIndex() !== targetPage) {
+                      const onTargetPageReady = async () => {
+                        gridInstanceRef.value.off('contentReady', onTargetPageReady);
+                        await applySelectionAndVisuals();
+                      };
+                      gridInstanceRef.value.on('contentReady', onTargetPageReady);
+                      gridInstanceRef.value.pageIndex(targetPage);
+                      return;
+                    }
                   }
-                };
+                }
+              } catch (e) {
+                console.warn('Auto page navigation error:', e);
+              }
 
-                setTimeout(tryNavigateAndScroll, 100);
+              // Fallback
+              await applySelectionAndVisuals();
+              if (typeof gridInstanceRef.value.navigateToRow === 'function') {
+                gridInstanceRef.value.navigateToRow(primaryId);
+              }
+            };
+
+            let safetyTimer = null;
+            const onContentReady = async () => {
+              if (!isStoreLoadCompleted) return;
+              if (safetyTimer) clearTimeout(safetyTimer);
+              gridInstanceRef.value.off('contentReady', onContentReady);
+
+              if (targetAttendeeId) {
+                await highlightAndScrollTarget();
               }
               if (targetGatheringId) {
                 highlightGatheringColumn(targetGatheringId);
               }
               resolve();
             };
+
+            safetyTimer = setTimeout(async () => {
+              if (gridInstanceRef.value) {
+                gridInstanceRef.value.off('contentReady', onContentReady);
+                if (targetAttendeeId) {
+                  await highlightAndScrollTarget();
+                }
+                if (targetGatheringId) {
+                  highlightGatheringColumn(targetGatheringId);
+                }
+              }
+              resolve();
+            }, 1000);
+
             gridInstanceRef.value.on('contentReady', onContentReady);
 
             gridInstanceRef.value.beginUpdate();
@@ -3156,6 +3192,327 @@
       };
       setupBirthdayDropdownSync(rootDiv.querySelector('.attendee-block-1'));
 
+      // 3a-2. Family Options Sync across Attendee & Companion blocks
+      const updateFamilyOptionsAcrossBlocks = () => {
+        const allBlocks = [
+          rootDiv.querySelector('.attendee-block-1'),
+          ...Array.from(rootDiv.querySelectorAll('.additional-attendees-container .attendee-block')),
+          ...Array.from(rootDiv.querySelectorAll('.companion-block'))
+        ].filter(Boolean);
+
+        const linkedCandidates = [];
+        allBlocks.forEach(b => {
+          if (b.dataset.attendeeId && b._linkedCandidate) {
+            linkedCandidates.push(b._linkedCandidate);
+          }
+        });
+
+        const familyMap = new Map();
+        linkedCandidates.forEach(cand => {
+          if (Array.isArray(cand.folks)) {
+            cand.folks.forEach(f => {
+              if (f.category_id === 0 && f.id) {
+                if (!familyMap.has(f.id)) {
+                  familyMap.set(f.id, {
+                    id: f.id,
+                    name: f.name || 'Family',
+                    created: f.created || '',
+                    members: [cand.name],
+                    is_latest: Boolean(f.is_latest_family)
+                  });
+                } else {
+                  const existing = familyMap.get(f.id);
+                  if (!existing.members.includes(cand.name)) {
+                    existing.members.push(cand.name);
+                  }
+                  if (f.is_latest_family) existing.is_latest = true;
+                }
+              }
+            });
+          }
+        });
+
+        const families = Array.from(familyMap.values());
+
+        // Sort families by latest created first
+        families.sort((a, b) => {
+          if (a.is_latest && !b.is_latest) return -1;
+          if (!a.is_latest && b.is_latest) return 1;
+          return (b.created || '').localeCompare(a.created || '');
+        });
+
+        allBlocks.forEach(block => {
+          const selectEl = block.querySelector('.ob-family, .ob-p-family');
+          if (!selectEl) return;
+
+          const currentVal = selectEl.value;
+          selectEl.innerHTML = '';
+
+          if (families.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '➕ New family (Default)';
+            selectEl.appendChild(opt);
+            selectEl.value = '';
+          } else {
+            families.forEach((fam, idx) => {
+              const opt = document.createElement('option');
+              opt.value = fam.id;
+              const isLatestTag = (idx === 0) ? ' (Latest)' : '';
+              const memberTag = fam.members.length > 0 ? ` [${fam.members.join(', ')}]` : '';
+              opt.textContent = `🏠 ${fam.name}${isLatestTag}${memberTag}`;
+              selectEl.appendChild(opt);
+            });
+
+            const newFamOpt = document.createElement('option');
+            newFamOpt.value = '__NEW__';
+            newFamOpt.textContent = '➕ Create a new family';
+            selectEl.appendChild(newFamOpt);
+
+            // If user explicitly chose a valid option before, preserve it
+            if (currentVal && Array.from(selectEl.options).some(o => o.value === currentVal)) {
+              selectEl.value = currentVal;
+            } else if (block._linkedCandidate && block._linkedCandidate.latest_family_id) {
+              selectEl.value = block._linkedCandidate.latest_family_id;
+            } else {
+              selectEl.value = families[0].id;
+            }
+          }
+        });
+      };
+      const updateFamilyAssignmentSection = updateFamilyOptionsAcrossBlocks;
+
+      // 3a-3. Real-time candidate duplicate search & adoption for Attendee / Companion blocks
+      const setupCandidateSearchForBlock = (block, isCompanion) => {
+        if (!block) return;
+        const matchesContainer = block.querySelector('.candidate-matches');
+        if (!matchesContainer) return;
+
+        const firstInput = block.querySelector(isCompanion ? '.ob-p-first-name' : '.ob-first-name');
+        const lastInput = block.querySelector(isCompanion ? '.ob-p-last-name' : '.ob-last-name');
+        const first2Input = block.querySelector(isCompanion ? '.ob-p-first-name2' : '.ob-first-name2');
+        const last2Input = block.querySelector(isCompanion ? '.ob-p-last-name2' : '.ob-last-name2');
+
+        const nameInputs = [firstInput, lastInput, first2Input, last2Input].filter(Boolean);
+        let debounceTimer = null;
+
+        const renderCandidateMatches = (candidates) => {
+          matchesContainer.innerHTML = '';
+          if (!candidates || candidates.length === 0) return;
+
+          const labelSpan = document.createElement('span');
+          labelSpan.className = 'text-danger fw-normal me-1';
+          labelSpan.textContent = 'Existing:';
+          matchesContainer.appendChild(labelSpan);
+
+          candidates.slice(0, 3).forEach((cand) => {
+            // Segmented pill container: distinct front (view link) and back (action button)
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'btn-group btn-group-sm rounded-pill border border-danger-subtle shadow-sm me-2 overflow-hidden candidate-pill-group';
+            btnGroup.style.fontSize = '0.75rem';
+            btnGroup.style.verticalAlign = 'middle';
+
+            // Left side: View profile in new tab (light bg, text link, external-link icon)
+            const viewLink = document.createElement('a');
+            viewLink.href = `/persons/attendee/${cand.id}`;
+            viewLink.target = '_blank';
+            viewLink.rel = 'noopener noreferrer';
+            viewLink.className = 'btn btn-outline-danger btn-xs py-0 px-2 d-inline-flex align-items-center border-0 bg-white text-danger fw-semibold';
+            viewLink.style.fontSize = '0.75rem';
+            viewLink.style.textDecoration = 'none';
+            viewLink.title = 'Single click: View in new tab; Double click: Link & copy';
+            viewLink.innerHTML = `${escapeHtml(cand.name)} <i class="fas fa-external-link-alt ms-1 text-danger-emphasis" style="font-size: 0.6rem; opacity: 0.75;"></i>`;
+            viewLink.addEventListener('click', (e) => {
+              e.stopPropagation();
+            });
+
+            // Right side: Action button (solid red bg, white text, link icon)
+            const adoptBtn = document.createElement('button');
+            adoptBtn.type = 'button';
+            adoptBtn.className = 'btn btn-danger btn-xs py-0 px-2 d-inline-flex align-items-center text-white border-0';
+            adoptBtn.style.fontSize = '0.72rem';
+            adoptBtn.title = 'Copy & link to this record';
+            adoptBtn.innerHTML = '<i class="fas fa-link me-1"></i>Link';
+            adoptBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              adoptCandidate(cand);
+            });
+
+            // Double click anywhere on the group also adopts candidate
+            btnGroup.addEventListener('dblclick', (e) => {
+              e.preventDefault();
+              adoptCandidate(cand);
+            });
+
+            btnGroup.appendChild(viewLink);
+            btnGroup.appendChild(adoptBtn);
+            matchesContainer.appendChild(btnGroup);
+          });
+        };
+
+        const adoptCandidate = (cand) => {
+          block.dataset.attendeeId = cand.id;
+          block._linkedCandidate = cand;
+
+          if (firstInput && cand.first_name) firstInput.value = cand.first_name;
+          if (lastInput && cand.last_name) lastInput.value = cand.last_name;
+          if (first2Input && cand.first_name2) first2Input.value = cand.first_name2;
+          if (last2Input && cand.last_name2) last2Input.value = cand.last_name2;
+
+          const genderSelect = block.querySelector(isCompanion ? '.ob-p-gender' : '.ob-gender');
+          if (genderSelect && cand.gender) {
+            genderSelect.value = String(cand.gender).toUpperCase();
+          }
+
+          const divSelect = block.querySelector(isCompanion ? '.ob-p-division' : '.ob-division');
+          if (divSelect && cand.division_id) {
+            const divTarget = String(cand.division_id);
+            const hasDivOpt = Array.from(divSelect.options).some(o => o.value === divTarget);
+            if (hasDivOpt) {
+              divSelect.value = divTarget;
+            }
+          }
+
+          const relSelect = block.querySelector(isCompanion ? '.ob-p-relationship' : '.ob-relationship');
+          if (relSelect) {
+            let matched = false;
+            if (cand.role_id) {
+              const roleTarget = String(cand.role_id);
+              const opt = Array.from(relSelect.options).find(o => o.value === roleTarget);
+              if (opt) {
+                relSelect.value = roleTarget;
+                matched = true;
+              }
+            }
+            if (!matched && cand.role_title) {
+              const normTitle = cand.role_title.trim().toLowerCase();
+              const opt = Array.from(relSelect.options).find(o =>
+                o.textContent.trim().toLowerCase() === normTitle || o.value.toLowerCase() === normTitle
+              );
+              if (opt) {
+                relSelect.value = opt.value;
+                matched = true;
+              }
+            }
+            if (!matched && Array.isArray(cand.folks)) {
+              for (const folk of cand.folks) {
+                if (folk.role_id) {
+                  const roleTarget = String(folk.role_id);
+                  const opt = Array.from(relSelect.options).find(o => o.value === roleTarget);
+                  if (opt) {
+                    relSelect.value = roleTarget;
+                    matched = true;
+                    break;
+                  }
+                }
+                if (folk.role_title) {
+                  const normTitle = folk.role_title.trim().toLowerCase();
+                  const opt = Array.from(relSelect.options).find(o =>
+                    o.textContent.trim().toLowerCase() === normTitle || o.value.toLowerCase() === normTitle
+                  );
+                  if (opt) {
+                    relSelect.value = opt.value;
+                    matched = true;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          if (!isCompanion) {
+            if (cand.grade_index !== null && cand.grade_index !== undefined) {
+              const gradeSelect = block.querySelector('.ob-grade');
+              if (gradeSelect) gradeSelect.value = String(cand.grade_index);
+            }
+            if (cand.food_pref) {
+              const foodInp = block.querySelector('.ob-food-pref');
+              if (foodInp) foodInp.value = cand.food_pref;
+            }
+            if (cand.insurer) {
+              const insurerInp = block.querySelector('.ob-insurer');
+              if (insurerInp) insurerInp.value = cand.insurer;
+            }
+            if (cand.actual_birthday) {
+              const parts = cand.actual_birthday.split('-');
+              if (parts.length === 3) {
+                const yInp = block.querySelector('.ob-byear');
+                const mSel = block.querySelector('.ob-bmonth');
+                const dSel = block.querySelector('.ob-bday');
+                if (yInp) yInp.value = parseInt(parts[0], 10);
+                if (mSel) mSel.value = parseInt(parts[1], 10);
+                if (dSel) dSel.value = parseInt(parts[2], 10);
+                if (mSel) mSel.dispatchEvent(new Event('change'));
+              }
+            }
+          }
+
+          matchesContainer.innerHTML = '';
+          const badge = document.createElement('span');
+          badge.className = 'badge bg-success-subtle text-success border border-success d-inline-flex align-items-center gap-1';
+          badge.style.fontSize = '0.75rem';
+          badge.title = 'Linked to existing record. Will update on submit.';
+          const famBadge = cand.latest_family_name ? ` (🏠 ${escapeHtml(cand.latest_family_name)})` : '';
+          badge.innerHTML = `
+            <i class="fas fa-check-circle"></i> Linked: ${escapeHtml(cand.name)}${famBadge}
+            <button type="button" class="btn-close btn-close-sm unlink-cand-btn" style="font-size: 0.55rem; filter: invert(0.3);" title="Unlink candidate"></button>
+          `;
+
+          const unlinkBtn = badge.querySelector('.unlink-cand-btn');
+          if (unlinkBtn) {
+            unlinkBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              delete block.dataset.attendeeId;
+              delete block._linkedCandidate;
+              matchesContainer.innerHTML = '';
+              updateFamilyAssignmentSection();
+            });
+          }
+
+          matchesContainer.appendChild(badge);
+          updateFamilyAssignmentSection();
+        };
+
+        const doCandidateSearch = async () => {
+          if (block.dataset.attendeeId) return;
+
+          const queryParts = [
+            firstInput ? firstInput.value.trim() : '',
+            lastInput ? lastInput.value.trim() : '',
+            first2Input ? first2Input.value.trim() : '',
+            last2Input ? last2Input.value.trim() : '',
+          ].filter(Boolean);
+
+          const query = queryParts.join(' ').replace(/\s+/g, ' ').trim();
+          if (query.length < 2) {
+            matchesContainer.innerHTML = '';
+            return;
+          }
+
+          try {
+            const res = await fetch(`${endpoints.searchAttendees}?meet_slug=${selectedMeetSlug}&q=${encodeURIComponent(query)}`);
+            if (!res.ok) return;
+            const results = await res.json();
+            if (!block.dataset.attendeeId) {
+              renderCandidateMatches(results);
+            }
+          } catch (e) {
+            // Silently ignore search error in candidate hints
+          }
+        };
+
+        nameInputs.forEach((input) => {
+          input.addEventListener('input', () => {
+            if (block.dataset.attendeeId) return;
+            if (debounceTimer) clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(doCandidateSearch, 350);
+          });
+        });
+      };
+      setupCandidateSearchForBlock(rootDiv.querySelector('.attendee-block-1'), false);
+
       // 3b. Additional Attendees setup (Attendee 1, 2, 3...)
       const moreAttendeesBtn = rootDiv.querySelector('.more-attendees-btn');
       const addAttendeesContainer = rootDiv.querySelector('.additional-attendees-container');
@@ -3168,6 +3525,12 @@
           const headerLabel = block.querySelector('.attendee-label');
           if (headerLabel) {
             headerLabel.textContent = visibleBlocks.length > 1 ? `Attendee ${curIndex} Information` : 'Attendee Information';
+          }
+          const famLabel = block.querySelector('.att-family-label');
+          if (famLabel) {
+            famLabel.innerHTML = visibleBlocks.length > 1
+              ? `<i class="fas fa-home text-secondary me-1"></i>Attendee ${curIndex} Family`
+              : `<i class="fas fa-home text-secondary me-1"></i>Family`;
           }
           const divLabel = block.querySelector('.att-division-label');
           if (divLabel) divLabel.innerHTML = visibleBlocks.length > 1 ? `Attendee ${curIndex} Division <span class="text-danger">*</span>` : `Division <span class="text-danger">*</span>`;
@@ -3221,12 +3584,15 @@
           removeBtn.addEventListener('click', () => {
             clone.remove();
             updateAttendeeLabels();
+            updateFamilyAssignmentSection();
           });
         }
 
         addAttendeesContainer.appendChild(clone);
         setupBirthdayDropdownSync(clone);
+        setupCandidateSearchForBlock(clone, false);
         updateAttendeeLabels();
+        updateFamilyOptionsAcrossBlocks();
 
         const newFnInput = clone.querySelector('.ob-first-name');
         if (newFnInput) newFnInput.focus();
@@ -3252,6 +3618,15 @@
         const content = rootDiv.querySelector('.guardian-section-content');
         if (content) {
           content.style.display = collapsed ? 'none' : '';
+        }
+        if (!collapsed && comp1Block) {
+          const visibleBlocks = Array.from(rootDiv.querySelectorAll('.companion-block')).filter(b => b.style.display !== 'none');
+          if (visibleBlocks.length === 0) {
+            comp1Block.style.display = '';
+            if (removeComp1Btn && !isKidMeet) removeComp1Btn.classList.remove('d-none');
+            if (typeof updateCompanionLabels === 'function') updateCompanionLabels();
+            if (typeof updateFamilyAssignmentSection === 'function') updateFamilyAssignmentSection();
+          }
         }
         const indicator = rootDiv.querySelector('.companion-toggle-indicator');
         if (indicator) {
@@ -3286,8 +3661,20 @@
         const visibleBlocks = Array.from(rootDiv.querySelectorAll('.companion-block')).filter(b => b.style.display !== 'none');
         visibleBlocks.forEach((block, idx) => {
           const curIndex = idx + 1;
-          const headerLabel = block.querySelector('.companion-label, .companion-1-label');
-          if (headerLabel) headerLabel.innerHTML = `<i class="fas fa-user me-1"></i> Companion ${curIndex}`;
+          const headerLabel = block.querySelector('.companion-1-label, .companion-title-text');
+          if (headerLabel) {
+            headerLabel.textContent = `Companion ${curIndex}`;
+          } else {
+            const legacyHeader = block.querySelector('.companion-label');
+            if (legacyHeader) {
+              const matchesEl = legacyHeader.querySelector('.candidate-matches');
+              legacyHeader.innerHTML = `<i class="fas fa-user me-1"></i> <span class="companion-title-text">Companion ${curIndex}</span>`;
+              if (matchesEl) legacyHeader.appendChild(matchesEl);
+            }
+          }
+
+          const famLabel = block.querySelector('.comp-family-label');
+          if (famLabel) famLabel.innerHTML = `<i class="fas fa-home text-secondary me-1"></i>Companion ${curIndex} Family`;
 
           const divLabel = block.querySelector('.comp-division-label');
           if (divLabel) divLabel.innerHTML = `Companion ${curIndex} Division <span class="text-danger">*</span>`;
@@ -3331,10 +3718,32 @@
             const extraGender = firstExtra.querySelector('.ob-p-gender');
             if (extraGender) comp1Block.querySelector('.ob-p-gender').value = extraGender.value;
             comp1Block.querySelector('.ob-p-relationship').value = firstExtra.querySelector('.ob-p-relationship').value;
+            const extraFam = firstExtra.querySelector('.ob-p-family');
+            if (extraFam) {
+              const comp1Fam = comp1Block.querySelector('.ob-p-family');
+              if (comp1Fam) comp1Fam.value = extraFam.value;
+            }
             comp1Block.querySelector('.ob-p-first-name').value = firstExtra.querySelector('.ob-p-first-name').value;
             comp1Block.querySelector('.ob-p-last-name').value = firstExtra.querySelector('.ob-p-last-name').value;
             comp1Block.querySelector('.ob-p-first-name2').value = firstExtra.querySelector('.ob-p-first-name2').value;
             comp1Block.querySelector('.ob-p-last-name2').value = firstExtra.querySelector('.ob-p-last-name2').value;
+
+            // Copy linked attendeeId & candidate matches
+            if (firstExtra.dataset.attendeeId) {
+              comp1Block.dataset.attendeeId = firstExtra.dataset.attendeeId;
+            } else {
+              delete comp1Block.dataset.attendeeId;
+            }
+            if (firstExtra._linkedCandidate) {
+              comp1Block._linkedCandidate = firstExtra._linkedCandidate;
+            } else {
+              delete comp1Block._linkedCandidate;
+            }
+            const comp1Matches = comp1Block.querySelector('.candidate-matches');
+            const extraMatches = firstExtra.querySelector('.candidate-matches');
+            if (comp1Matches && extraMatches) {
+              comp1Matches.innerHTML = extraMatches.innerHTML;
+            }
 
             // Replace companion 1 contacts with firstExtra's contacts
             const comp1ContactsContainer = comp1Block.querySelector('.companion-contacts-container');
@@ -3344,13 +3753,48 @@
             }
             firstExtra.remove();
           } else {
+            delete comp1Block.dataset.attendeeId;
+            delete comp1Block._linkedCandidate;
+            const matchesEl = comp1Block.querySelector('.candidate-matches');
+            if (matchesEl) matchesEl.innerHTML = '';
             comp1Block.querySelectorAll('input').forEach(inp => { inp.value = ''; });
+
+            // Reset dropdowns to defaults
+            const divSel = comp1Block.querySelector('.ob-p-division');
+            if (divSel) divSel.selectedIndex = 0;
+
+            const genderSel = comp1Block.querySelector('.ob-p-gender');
+            if (genderSel) genderSel.value = 'UNSPECIFIED';
+
+            const relSel = comp1Block.querySelector('.ob-p-relationship');
+            if (relSel) {
+              const defaultRel = isKidMeet ? 'parent' : 'spouse';
+              const matchOpt = Array.from(relSel.options).find(o => o.textContent.toLowerCase() === defaultRel || o.value.toLowerCase() === defaultRel);
+              if (matchOpt) {
+                relSel.value = matchOpt.value;
+              } else {
+                relSel.selectedIndex = 0;
+              }
+            }
+
+            const famSel = comp1Block.querySelector('.ob-p-family');
+            if (famSel) famSel.selectedIndex = 0;
+
+            // Reset contacts to single empty phone row
+            const extraContactRows = comp1Block.querySelectorAll('.contact-row:not(:first-child)');
+            extraContactRows.forEach(r => r.remove());
+            const firstContactType = comp1Block.querySelector('.ob-p-contact-type');
+            if (firstContactType) firstContactType.value = 'phone';
+
             comp1Block.style.display = 'none';
             setGuardianCollapsed(true);
           }
           updateCompanionLabels();
+          updateFamilyAssignmentSection();
         });
       }
+
+      setupCandidateSearchForBlock(comp1Block, true);
 
       // 4d. Companion block append helper (triggered by '+' buttons or legacy 'More Companions' button)
       const appendNewCompanionBlock = () => {
@@ -3363,6 +3807,7 @@
           comp1Block.style.display = '';
           if (removeComp1Btn && !isKidMeet) removeComp1Btn.classList.remove('d-none');
           updateCompanionLabels();
+          if (typeof updateFamilyAssignmentSection === 'function') updateFamilyAssignmentSection();
           const fnInp = comp1Block.querySelector('.ob-p-first-name');
           if (fnInp) fnInp.focus();
           return;
@@ -3387,11 +3832,14 @@
           removeBtn.addEventListener('click', () => {
             clone.remove();
             updateCompanionLabels();
+            updateFamilyAssignmentSection();
           });
         }
 
         addCompanionsContainer.appendChild(clone);
+        setupCandidateSearchForBlock(clone, true);
         updateCompanionLabels();
+        updateFamilyOptionsAcrossBlocks();
 
         const newFnInput = clone.querySelector('.ob-p-first-name');
         if (newFnInput) newFnInput.focus();
@@ -3482,6 +3930,12 @@
         onboardViewEl.style.display = 'none';
         searchViewEl.style.display = '';
         updatePopupTitle(false);
+        rootDiv.querySelectorAll('.attendee-block, .companion-block').forEach((b) => {
+          delete b.dataset.attendeeId;
+          delete b._linkedCandidate;
+          const cm = b.querySelector('.candidate-matches');
+          if (cm) cm.innerHTML = '';
+        });
         const searchInputEl = rootDiv.querySelector('.omni-search-box');
         if (searchInputEl) {
           searchInputEl.focus();
@@ -3523,6 +3977,7 @@
             }
           }
         }
+        updateFamilyAssignmentSection();
       };
 
       // C. Back to Search button
@@ -3582,6 +4037,7 @@
               if (block) {
                 block.remove();
                 updateCompanionLabels();
+                updateFamilyAssignmentSection();
               }
             }
             return;
@@ -4043,7 +4499,13 @@
           }
         }
 
+        const attFamSelect = block.querySelector('.ob-family');
+        const attFamVal = attFamSelect ? attFamSelect.value : '';
+
         attendeesList.push({
+          attendee_id: block.dataset.attendeeId || null,
+          target_folk_id: (attFamVal && attFamVal !== '__NEW__') ? attFamVal : null,
+          create_new_folk: attFamVal === '__NEW__',
           first_name: firstName || null,
           last_name: lastName || null,
           first_name2: firstName2 || null,
@@ -4145,7 +4607,13 @@
               }
             }
 
+            const compFamSelect = block.querySelector('.ob-p-family');
+            const compFamVal = compFamSelect ? compFamSelect.value : '';
+
             companionsList.push({
+              attendee_id: block.dataset.attendeeId || null,
+              target_folk_id: (compFamVal && compFamVal !== '__NEW__') ? compFamVal : null,
+              create_new_folk: compFamVal === '__NEW__',
               first_name: pFirst || null,
               last_name: pLast || null,
               first_name2: pFirst2 || null,
@@ -4218,7 +4686,13 @@
               return;
             }
 
+            const compFamSelect = block.querySelector('.ob-p-family');
+            const compFamVal = compFamSelect ? compFamSelect.value : '';
+
             companionsList.push({
+              attendee_id: block.dataset.attendeeId || null,
+              target_folk_id: (compFamVal && compFamVal !== '__NEW__') ? compFamVal : null,
+              create_new_folk: compFamVal === '__NEW__',
               first_name: pFirst || null,
               last_name: pLast || null,
               first_name2: pFirst2 || null,
@@ -4239,12 +4713,27 @@
       const gatheringSelect = rootDiv.querySelector('.target-gathering-dropdown');
       const gatheringId = gatheringSelect ? (gatheringSelect.value || selectedGatheringId || null) : (selectedGatheringId || null);
 
+      // Resolve global target_folk_id and create_new_folk from card selects
+      const allFamSelects = Array.from(rootDiv.querySelectorAll('.ob-family, .ob-p-family'));
+      const allFamVals = allFamSelects.map(s => s.value).filter(Boolean);
+      let targetFolkId = null;
+      let createNewFolk = false;
+      if (allFamVals.some(v => v === '__NEW__')) {
+        createNewFolk = true;
+      }
+      const chosenFolkId = allFamVals.find(v => v && v !== '__NEW__');
+      if (chosenFolkId) {
+        targetFolkId = chosenFolkId;
+      }
+
       const payload = {
         meet_slug: meet.slug,
         gathering_id: gatheringId,
         unaccompanied: isUnaccompanied,
         attendees_data: attendeesList,
         companions: companionsList,
+        target_folk_id: targetFolkId,
+        create_new_folk: createNewFolk,
       };
 
       submitBtn.disabled = true;
@@ -4280,7 +4769,10 @@
           : (result.attendee_name || 'attendee');
         DevExpress.ui.notify(`Registered ${registeredNames} and checked in successfully!`, 'success', SUCCESS_NOTIFY_TIME);
         if (popupInstance) popupInstance.hide();
-        await loadData(result.attendee_id, result.gathering_id || gatheringId);
+        const targetAttendeeIds = (result.attendees && result.attendees.length > 0)
+          ? result.attendees.map(a => a.attendee_id)
+          : (result.attendee_id ? [result.attendee_id] : null);
+        await loadData(targetAttendeeIds, result.gathering_id || gatheringId);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', WARNING_NOTIFY_TIME);
       } finally {

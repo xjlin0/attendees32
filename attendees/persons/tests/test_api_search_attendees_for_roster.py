@@ -399,3 +399,39 @@ class TestApiSearchAttendeesForRoster:
         assert "id" in pan_family_folk
         assert pan_family_folk["category_id"] == 0
         assert pan_family_folk["role_title"] == "child"
+
+        # Check candidate's division_id and role metadata for auto-populating form selects
+        assert wendy["division_id"] == self.child_attendee.division_id
+        assert wendy["role_title"] == "child"
+        assert wendy["role_id"] == self.relation_child.id
+        assert "food_pref" in wendy
+        assert "insurer" in wendy
+
+    def test_candidate_with_multiple_families_sorts_latest_first(self):
+        # Create a newer family for Wendy
+        newer_family = Folk.objects.create(
+            category=Category.objects.get(pk=Attendee.FAMILY_CATEGORY),
+            division=self.child_attendee.division,
+            display_name="Wendy New Family",
+        )
+        relation_mother = Relation.objects.filter(title__iexact="mother").first() or Relation.objects.first()
+        FolkAttendee.objects.create(
+            folk=newer_family,
+            attendee=self.child_attendee,
+            role=relation_mother,
+            display_order=1,
+        )
+
+        self.client.force_login(self.admin_user)
+        response = self.client.get(f"/persons/api/search_attendees_for_roster/?meet_slug={self.kid_meet.slug}&q=Wendy")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        wendy = next(item for item in data if "Wendy" in item["name"])
+
+        # Latest family should be prioritized
+        assert wendy["latest_family_id"] == str(newer_family.id)
+        assert wendy["latest_family_name"] == "Wendy New Family"
+        assert wendy["folks"][0]["id"] == str(newer_family.id)
+        assert wendy["folks"][0]["is_latest_family"] is True
+        assert wendy["role_id"] == relation_mother.id
+        assert wendy["role_title"] == relation_mother.title

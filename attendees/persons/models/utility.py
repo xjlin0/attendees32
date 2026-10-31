@@ -158,6 +158,155 @@ class Utility:
         return trimmed
 
     @staticmethod
+    def _contact_kind(key):
+        """
+        Extracts contact kind prefix without trailing digits, e.g. 'phone1' -> 'phone', 'email2' -> 'email'.
+        """
+        if not key or not isinstance(key, str):
+            return ""
+        return key.lower().rstrip("0123456789") or key.lower()
+
+    @staticmethod
+    def normalize_contact_value(kind, val):
+        """
+        Normalizes contact values for comparison and deduplication:
+        - phone & whatsapp: normalize using normalize_phone_number
+        - email: lowercase and strip
+        - others: strip
+        """
+        if not val or not isinstance(val, str):
+            return ""
+        trimmed = val.strip()
+        if not trimmed:
+            return ""
+        if kind in ("phone", "whatsapp"):
+            return Utility.normalize_phone_number(trimmed)
+        if kind == "email":
+            return trimmed.lower()
+        return trimmed
+
+    @staticmethod
+    def merge_contacts(existing_contacts=None, new_contacts=None):
+        """
+        Merges existing contacts and new contacts without losing data or creating duplicates.
+        Groups values by kind (phone, email, whatsapp, line, wechat, etc.).
+        Deduplicates values per kind using normalized values.
+        Outputs strictly numbered keys: phone1, phone2, email1, email2... (no unnumbered keys).
+        """
+        existing = existing_contacts if isinstance(existing_contacts, dict) else {}
+        incoming = new_contacts if isinstance(new_contacts, dict) else {}
+
+        groups = {}
+        seen_normalized = {}
+
+        # 1. Existing contacts: collect non-empty values grouped by kind
+        for k in sorted(existing.keys()):
+            v = existing[k]
+            if not v or not isinstance(v, str):
+                continue
+            v_str = v.strip()
+            if not v_str:
+                continue
+            kind = Utility._contact_kind(k)
+            if not kind:
+                continue
+            norm_v = Utility.normalize_contact_value(kind, v_str)
+            if not norm_v:
+                continue
+
+            if kind not in groups:
+                groups[kind] = []
+                seen_normalized[kind] = set()
+
+            if norm_v not in seen_normalized[kind]:
+                seen_normalized[kind].add(norm_v)
+                groups[kind].append(v_str)
+
+        # 2. Incoming contacts: append values if not already in that kind's set
+        for k in sorted(incoming.keys()):
+            v = incoming[k]
+            if not v or not isinstance(v, str):
+                continue
+            v_str = v.strip()
+            if not v_str:
+                continue
+            kind = Utility._contact_kind(k)
+            if not kind:
+                continue
+            norm_v = Utility.normalize_contact_value(kind, v_str)
+            if not norm_v:
+                continue
+
+            if kind not in groups:
+                groups[kind] = []
+                seen_normalized[kind] = set()
+
+            if norm_v not in seen_normalized[kind]:
+                seen_normalized[kind].add(norm_v)
+                final_val = norm_v if kind in ("phone", "whatsapp") else v_str
+                groups[kind].append(final_val)
+
+        # 3. Construct result dictionary strictly with numbered keys
+        result = {}
+        for kind in sorted(groups.keys()):
+            for idx, val in enumerate(groups[kind], 1):
+                result[f"{kind}{idx}"] = val
+
+        return result
+
+    @staticmethod
+    def deep_merge_attendee_infos(existing_infos=None, new_infos=None, current_user_attendee_id=None):
+        """
+        Safely merges existing attendee infos with new infos.
+        - contacts: merged and deduplicated by kind with strictly numbered keys.
+        - fixed: shallow updated with non-empty incoming values.
+        - emergency_contacts: merged dictionary without wiping existing keys.
+        - names: shallow updated with non-empty incoming values.
+        - updating_attendees: records modifier attendee id and timestamp.
+        """
+        existing = dict(existing_infos) if isinstance(existing_infos, dict) else {}
+        incoming = dict(new_infos) if isinstance(new_infos, dict) else {}
+
+        # Merge contacts
+        merged_contacts = Utility.merge_contacts(
+            existing.get("contacts"),
+            incoming.get("contacts"),
+        )
+        if merged_contacts:
+            existing["contacts"] = merged_contacts
+
+        # Merge fixed (food_pref, mobility, insurer, grade, etc.)
+        existing_fixed = dict(existing.get("fixed", {})) if isinstance(existing.get("fixed"), dict) else {}
+        incoming_fixed = incoming.get("fixed", {}) if isinstance(incoming.get("fixed"), dict) else {}
+        for k, v in incoming_fixed.items():
+            if v not in (None, ""):
+                existing_fixed[k] = v
+        if existing_fixed:
+            existing["fixed"] = existing_fixed
+
+        # Merge emergency_contacts
+        existing_ec = dict(existing.get("emergency_contacts", {})) if isinstance(existing.get("emergency_contacts"), dict) else {}
+        incoming_ec = incoming.get("emergency_contacts", {}) if isinstance(incoming.get("emergency_contacts"), dict) else {}
+        existing_ec.update(incoming_ec)
+        if existing_ec:
+            existing["emergency_contacts"] = existing_ec
+
+        # Merge names
+        existing_names = dict(existing.get("names", {})) if isinstance(existing.get("names"), dict) else {}
+        incoming_names = incoming.get("names", {}) if isinstance(incoming.get("names"), dict) else {}
+        for k, v in incoming_names.items():
+            if v not in (None, ""):
+                existing_names[k] = v
+        if existing_names:
+            existing["names"] = existing_names
+
+        # Updating attendees
+        if current_user_attendee_id:
+            existing.setdefault("updating_attendees", {})[str(current_user_attendee_id)] = Utility.now_with_timezone().isoformat()
+
+        return existing
+
+    @staticmethod
     def user_infos():
         return {"settings": {}}
 
