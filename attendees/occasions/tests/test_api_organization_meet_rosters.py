@@ -459,5 +459,77 @@ def test_organization_meet_rosters_restricted_user_without_attendee_sees_empty(a
     assert data["rows"] == []
 
 
+@pytest.mark.django_db
+def test_organization_meet_rosters_kid_meet_siblings(api_client, setup_objects):
+    meet = setup_objects["meet"]
+    division = meet.assembly.division
+    division.infos = {"show_attendee_infos": {"infos-grade": True}}
+    division.save()
+
+    now = datetime.now(timezone.utc)
+    category = setup_objects["category"]
+    character = setup_objects["attendance"].character
+
+    # Create 3 kids and 1 parent in the same Family Folk
+    family_cat, _ = Category.objects.get_or_create(id=Attendee.FAMILY_CATEGORY, defaults={"display_name": "Family", "type": "folk"})
+    family_folk = Folk.objects.create(category=family_cat, division=division, display_name="Family Sibling Test")
+
+    parent = Attendee.objects.create(first_name="Parent", last_name="Sim", gender=1, division=division)
+    kid1 = Attendee.objects.create(first_name="KidOne", last_name="Sim", gender=1, division=division)
+    kid2 = Attendee.objects.create(first_name="KidTwo", last_name="Sim", gender=2, division=division)
+    kid3 = Attendee.objects.create(first_name="KidThree", last_name="Sim", gender=1, division=division)
+
+    kid_rel, _ = Relation.objects.get_or_create(id=3, defaults={"title": "son", "relative": True, "display_order": 25, "gender": GenderEnum.UNSPECIFIED.value})
+    kid_rel.relative = True
+    kid_rel.save()
+    parent_rel, _ = Relation.objects.get_or_create(id=1, defaults={"title": "father", "relative": True, "display_order": 20, "gender": GenderEnum.UNSPECIFIED.value})
+    parent_rel.relative = True
+    parent_rel.save()
+
+    FolkAttendee.objects.create(folk=family_folk, attendee=parent, role=parent_rel, display_order=1)
+    FolkAttendee.objects.create(folk=family_folk, attendee=kid1, role=kid_rel, display_order=10)
+    FolkAttendee.objects.create(folk=family_folk, attendee=kid2, role=kid_rel, display_order=11)
+    FolkAttendee.objects.create(folk=family_folk, attendee=kid3, role=kid_rel, display_order=12)
+
+    # kid1 and kid2 are enrolled in the meet; kid3 is NOT enrolled
+    att1 = Attending.objects.create(attendee=kid1)
+    AttendingMeet.objects.create(attending=att1, meet=meet, character=character, category=category, start=now - timedelta(days=1), finish=now + timedelta(days=30))
+
+    att2 = Attending.objects.create(attendee=kid2)
+    AttendingMeet.objects.create(attending=att2, meet=meet, character=character, category=category, start=now - timedelta(days=1), finish=now + timedelta(days=30))
+
+    att3 = Attending.objects.create(attendee=kid3)
+
+    url = reverse("occasions:organization_meet_rosters-list")
+    api_client.force_login(setup_objects["user"])
+
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    rows = {r["attendee_name"]: r for r in data["rows"]}
+
+    assert "KidOne Sim" in rows
+    assert "KidTwo Sim" in rows
+
+    kid1_row = rows["KidOne Sim"]
+    assert "siblings" in kid1_row
+    assert len(kid1_row["siblings"]) == 2
+
+    # kid2 is attending (green), kid3 is not attending (gray)
+    sibling_map = {s["name"]: s["attending"] for s in kid1_row["siblings"]}
+    assert sibling_map.get("KidTwo Sim") is True
+    assert sibling_map.get("KidThree Sim") is False
+    assert "Parent Sim" not in sibling_map  # Parent has display_order < 10, not sibling
+
+
+
 
 

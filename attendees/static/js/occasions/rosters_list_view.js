@@ -1624,11 +1624,23 @@
         warningHtml = `<span class="text-danger fw-bold me-1" title="${warningMsg}" style="font-size: 1.1em; cursor: help;">⚠</span>`;
       }
 
+      let siblingsHtml = '';
+      if (Array.isArray(data.siblings) && data.siblings.length > 0) {
+        const siblingSpans = data.siblings.map(s => {
+          const colorClass = s.attending ? 'text-success fw-semibold' : 'text-muted';
+          return `<span class="${colorClass}">${s.name}</span>`;
+        }).join(', ');
+        siblingsHtml = `<div class="attendee-siblings" style="font-size: 0.82em; margin-top: 2px; line-height: 1.2;">
+          <span class="text-secondary me-1" style="font-size: 0.9em;">👥</span>${siblingSpans}
+        </div>`;
+      }
+
       wrapper.innerHTML = `
         ${photoHtml}
         <span class="attendee-links-container">
           ${warningHtml}<u><a href="/persons/attendee/${data.attendee_id}" target="_blank" class="attendee-info-link" title="Click to open a new page of attendee info">(Info)</a></u>
           <u class="attendee-name-link" role="button" title="Click to edit enrollment details">${data.attendee_name}</u>
+          ${siblingsHtml}
         </span>
       `;
 

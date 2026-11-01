@@ -11,8 +11,8 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce, Concat, Trim
 
-from attendees.occasions.models import Gathering
-from attendees.persons.models import Attendee
+from attendees.occasions.models import Gathering, Meet
+from attendees.persons.models import Attendee, AttendingMeet, FolkAttendee
 
 
 class RosterService:
@@ -196,7 +196,116 @@ class RosterService:
         total_count = attendees_qs.count()
         attendees_page = attendees_qs[skip: skip + take]
 
-        # 3. Build Response
+        # 3. If kid meet, resolve siblings (display_order >= 10) in 2 O(N) passes using dictionary
+        meets = list(Meet.objects.filter(slug__in=meet_slugs, is_removed=False).select_related("assembly__division"))
+        is_kid_meet = any(
+            bool(
+                (m.assembly and m.assembly.division and m.assembly.division.infos and (
+                    m.assembly.division.infos.get("show_attendee_infos", {}).get("infos-grade")
+                    or m.assembly.division.infos.get("show_attendee_infos", {}).get("grade")
+                ))
+                or (m.infos and m.infos.get("kid_search_families_show_grades"))
+            )
+            for m in meets
+        )
+
+        siblings_by_attendee = {}
+        if is_kid_meet and attendees_page:
+            page_att_ids = [a.id for a in attendees_page]
+            page_fa_rows = list(
+                FolkAttendee.objects.filter(
+                    attendee_id__in=page_att_ids,
+                    folk__category_id=Attendee.FAMILY_CATEGORY,
+                    folk__is_removed=False,
+                    is_removed=False,
+                ).values("attendee_id", "folk_id")
+            )
+
+            attendee_to_folk_ids = {}
+            all_family_folk_ids = set()
+            for r in page_fa_rows:
+                attendee_to_folk_ids.setdefault(r["attendee_id"], set()).add(r["folk_id"])
+                all_family_folk_ids.add(r["folk_id"])
+
+            if all_family_folk_ids:
+                sibling_fas = list(
+                    FolkAttendee.objects.filter(
+                        folk_id__in=all_family_folk_ids,
+                        folk__category_id=Attendee.FAMILY_CATEGORY,
+                        folk__is_removed=False,
+                        is_removed=False,
+                        attendee__is_removed=False,
+                        role__relative=True,
+                    )
+                    .filter(
+                        Q(role__title__in=["son", "daughter", "child", "ward"])
+                        | Q(role__title__icontains="brother")
+                        | Q(role__title__icontains="sister")
+                        | Q(role__title__icontains="sibling")
+                        | Q(display_order__gte=10)
+                    )
+                    .values(
+                        "folk_id",
+                        "attendee_id",
+                        "attendee__first_name",
+                        "attendee__last_name",
+                        "attendee__first_name2",
+                        "attendee__last_name2",
+                    )
+                    .distinct()
+                )
+
+                sibling_att_ids = {s["attendee_id"] for s in sibling_fas}
+
+                enrolled_sibling_ids = set(
+                    AttendingMeet.objects.filter(
+                        attending__attendee_id__in=sibling_att_ids,
+                        meet__slug__in=meet_slugs,
+                        is_removed=False,
+                        attending__is_removed=False,
+                    )
+                    .filter(
+                        Q(finish__isnull=True) | Q(finish__gte=start)
+                    )
+                    .filter(
+                        Q(start__isnull=True) | Q(start__lte=finish)
+                    )
+                    .values_list("attending__attendee_id", flat=True)
+                    .distinct()
+                )
+
+                # Pass 1: Build folk_id -> siblings dictionary
+                folk_to_siblings = {}
+                for s in sibling_fas:
+                    f_id = s["folk_id"]
+                    att_id = s["attendee_id"]
+                    fn = (s["attendee__first_name"] or "").strip()
+                    ln = (s["attendee__last_name"] or "").strip()
+                    fn2 = (s["attendee__first_name2"] or "").strip()
+                    ln2 = (s["attendee__last_name2"] or "").strip()
+                    name1 = f"{fn} {ln}".strip()
+                    name2 = f"{ln2}{fn2}".strip()
+                    name = f"{name1} {name2}".strip() if (name1 and name2) else (name1 or name2 or "Unknown")
+                    is_enrolled = att_id in enrolled_sibling_ids
+                    folk_to_siblings.setdefault(f_id, []).append({
+                        "id": str(att_id),
+                        "name": name,
+                        "attending": is_enrolled,
+                    })
+
+                # Pass 2: Map siblings to each attendee in current page (O(1) per attendee)
+                for a in attendees_page:
+                    a_folk_ids = attendee_to_folk_ids.get(a.id, set())
+                    seen_sibling_ids = {str(a.id)}
+                    att_siblings = []
+                    for f_id in a_folk_ids:
+                        for sib in folk_to_siblings.get(f_id, []):
+                            if sib["id"] not in seen_sibling_ids:
+                                seen_sibling_ids.add(sib["id"])
+                                att_siblings.append(sib)
+                    siblings_by_attendee[a.id] = att_siblings
+
+        # 4. Build Response
         rows = []
         for attendee in attendees_page:
             photo_url = None
@@ -228,6 +337,7 @@ class RosterService:
                 "attendances": attendee.attendances,
                 "attendingmeets": attendee.attendingmeets,
                 "total_attendances": attendee.total_attendances,
+                "siblings": siblings_by_attendee.get(attendee.id, []),
             })
 
         return columns, rows, total_count
