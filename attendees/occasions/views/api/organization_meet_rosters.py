@@ -1,4 +1,6 @@
+import json
 import time
+from itertools import groupby
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -6,7 +8,8 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from attendees.persons.services import AttendeeService
-from attendees.occasions.serializers.roster_serializer import RosterResponseSerializer
+from attendees.occasions.services import GatheringService
+from attendees.occasions.serializers import RosterResponseSerializer
 
 
 @method_decorator([login_required], name="dispatch")
@@ -16,6 +19,35 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
     """
 
     def list(self, request, *args, **kwargs):
+        """
+        Retrieves pivoted roster data for specified meets and date range for DevExtreme DataGrid.
+
+        Permissions:
+            - Requires authenticated user (`login_required`).
+            - Privileged users (belonging to groups configured in `user.organization.infos['groups_see_all_meets_attendees']`,
+              evaluated by `request.user.can_see_all_organizational_meets_attendees()`) can view all attendees in the meet.
+            - Standard users are restricted to viewing only attendees in their own family (`FAMILY_CATEGORY` folks)
+              or themselves. If the user has no linked attendee profile, 0 rows are returned.
+
+        Query Parameters:
+            meets[] (list of str, required): Slugs of the meets to query.
+            start (str, required): ISO datetime string specifying the start boundary of gatherings.
+            finish (str, required): ISO datetime string specifying the finish boundary of gatherings.
+            skip (int, optional, default=0): Number of records to skip for pagination.
+            take (int, optional, default=40): Number of records to return for pagination.
+            sort (str, optional): JSON string describing sorting criteria (e.g., '[{"selector": "attendee_name", "desc": false}]').
+            group (str, optional): JSON string describing grouping criteria (e.g., '[{"selector": "team__display_name", "desc": false}]').
+            searchValue (str, optional): Substring to search attendee names.
+            filter (str, optional): DevExtreme filter JSON expression; parsed as search substring if `searchValue` is not provided.
+
+        Returns:
+            Response: DRF Response with status 200 containing:
+                - totalCount (int): Total count of attendees matching criteria.
+                - columns (list of dict): Gathering column definitions (id, date, title, etc.).
+                - rows (list of dict): Flattened or grouped attendee rows containing attendance statuses per gathering.
+                - data (list of dict): Alias for `rows` for DevExtreme compatibility.
+            Response with status 400 if required parameters (`meets[]`, `start`, `finish`) are missing.
+        """
         current_user_organization = request.user.organization
         meet_slugs = request.query_params.getlist("meets[]", [])
         start = request.query_params.get("start")
@@ -39,7 +71,6 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         sort_list = []
         sort_param = request.query_params.get("sort")
         if sort_param:
-            import json
             try:
                 sort_parsed = json.loads(sort_param)
                 for s in sort_parsed:
@@ -60,7 +91,6 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         group_column = None
         group_desc = False
         if group_param:
-            import json
             try:
                 group_parsed = json.loads(group_param)
                 if isinstance(group_parsed, list) and len(group_parsed) > 0 and isinstance(group_parsed[0], dict):
@@ -91,7 +121,6 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         if not search_value:
             filter_param = request.query_params.get("filter")
             if filter_param:
-                import json
                 try:
                     filter_parsed = json.loads(filter_param)
                     def extract_search_value(filter_expr):
@@ -112,7 +141,14 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
                 except (ValueError, TypeError):
                     pass
 
-        columns, rows, total_count = AttendeeService.get_roster_data(
+        columns = GatheringService.get_roster_gatherings(
+            organization=current_user_organization,
+            meet_slugs=meet_slugs,
+            start=start,
+            finish=finish,
+        )
+
+        _, rows, total_count = AttendeeService.get_roster_data(
             current_user=request.user,
             organization=current_user_organization,
             meet_slugs=meet_slugs,
@@ -122,9 +158,9 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             take=take,
             sort_list=sort_list,
             search_value=search_value,
+            columns=columns,
         )
 
-        from itertools import groupby
         if group_column:
             grouped_data = []
             for key, items in groupby(rows, key=lambda r: r.get(group_column)):

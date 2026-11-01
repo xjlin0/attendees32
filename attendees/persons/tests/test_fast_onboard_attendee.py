@@ -1351,6 +1351,94 @@ class TestFastOnboardAttendee:
         assert kid_families[0].id != old_family.id
         assert kid_families[0].display_name == "Chen family"
 
+    def test_relation_relative_field_determines_family_vs_non_family_folk(self):
+        # 1. Custom relation with relative=True -> assigned to FAMILY_CATEGORY (0)
+        relative_rel, _ = Relation.objects.get_or_create(
+            id=101,
+            defaults={
+                "title": "godparent",
+                "gender": "unspecified",
+                "relative": True,
+                "consanguinity": False,
+            },
+        )
+        payload_relative = {
+            "meet_slug": self.kid_meet.slug,
+            "attendees_data": [
+                {
+                    "first_name": "RelativeKid",
+                    "last_name": "Lin",
+                    "gender": "FEMALE",
+                    "birthday_year": 2020,
+                    "birthday_month": 3,
+                    "birthday_day": 15,
+                    "grade": 1,
+                    "food_pref": "None",
+                }
+            ],
+            "companions": [
+                {
+                    "first_name": "Godparent",
+                    "last_name": "Lin",
+                    "relationship": str(relative_rel.id),
+                    "contacts": [{"type": "phone", "value": "510-777-8888"}],
+                }
+            ],
+        }
+        res1 = self.client.post("/persons/api/fast_onboard_attendee/", payload_relative, format="json")
+        assert res1.status_code == status.HTTP_201_CREATED
+        kid1 = Attendee.objects.get(first_name="RelativeKid")
+        assert kid1.folks.filter(category_id=Attendee.FAMILY_CATEGORY).count() == 1
+        assert FolkAttendee.objects.filter(
+            folk__category_id=Attendee.FAMILY_CATEGORY,
+            attendee__first_name="Godparent",
+            role=relative_rel,
+        ).exists()
+
+        # 2. Custom relation with relative=False -> assigned to NON_FAMILY_CATEGORY (25)
+        non_relative_rel, _ = Relation.objects.get_or_create(
+            id=102,
+            defaults={
+                "title": "tutor",
+                "gender": "unspecified",
+                "relative": False,
+                "consanguinity": False,
+            },
+        )
+        payload_non_relative = {
+            "meet_slug": self.kid_meet.slug,
+            "attendees_data": [
+                {
+                    "first_name": "TutorKid",
+                    "last_name": "Huang",
+                    "gender": "MALE",
+                    "birthday_year": 2019,
+                    "birthday_month": 4,
+                    "birthday_day": 10,
+                    "grade": 2,
+                    "food_pref": "None",
+                }
+            ],
+            "companions": [
+                {
+                    "first_name": "Private",
+                    "last_name": "Tutor",
+                    "relationship": str(non_relative_rel.id),
+                    "contacts": [{"type": "phone", "value": "510-999-0000"}],
+                }
+            ],
+        }
+        res2 = self.client.post("/persons/api/fast_onboard_attendee/", payload_non_relative, format="json")
+        assert res2.status_code == status.HTTP_201_CREATED
+        kid2 = Attendee.objects.get(first_name="TutorKid")
+        assert kid2.folks.filter(category_id=Attendee.FAMILY_CATEGORY).count() == 0
+        assert FolkAttendee.objects.filter(
+            folk__category_id=Attendee.NON_FAMILY_CATEGORY,
+            attendee__first_name="Private",
+            role=non_relative_rel,
+        ).exists()
+
+
 
 
 

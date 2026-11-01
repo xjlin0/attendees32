@@ -53,3 +53,21 @@ def test_userhistory_created_on_user_update():
     assert history.count() >= 2
     assert history.last().name == "new_name"
     assert history.first().name == "original_name"
+
+
+def test_can_see_all_organizational_meets_attendees():
+    from django.contrib.auth.models import Group
+    group = Group.objects.create(name="Coworkers")
+    org = Organization.objects.create(
+        display_name="Org With Groups",
+        slug="org-with-groups",
+        infos={"groups_see_all_meets_attendees": ["Coworkers"]},
+    )
+    # Superuser without group cannot see all
+    superuser = User.objects.create_superuser(username="super", email="super@example.com", password="pass", organization=org)
+    assert superuser.can_see_all_organizational_meets_attendees() is False
+
+    # Once added to the group, can see all
+    superuser.groups.add(group)
+    assert superuser.can_see_all_organizational_meets_attendees() is True
+

@@ -10,3 +10,6 @@ from .batch_gatherings_serializer import BatchGatheringsSerializer
 from .batch_attendances_serializer import BatchAttendancesSerializer
 from .calendar_serializer import CalendarSerializer
 from .occurrence_serializer import OccurrenceSerializer
+from .roster_column_serializer import RosterColumnSerializer
+from .roster_row_serializer import RosterRowSerializer
+from .roster_response_serializer import RosterResponseSerializer

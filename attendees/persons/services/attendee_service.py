@@ -12,6 +12,7 @@ from django.db.models import Case, F, Func, Q, When, CharField, JSONField, Count
 from django.db.models.functions import Cast, Substr, Coalesce, Greatest, Concat, Trim
 from django.db.models.expressions import OrderBy, Value
 from django.http import Http404
+from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.utils import json
 from attendees.occasions.models import Attendance, Character, Gathering, Meet
@@ -26,8 +27,9 @@ from attendees.persons.models import (  # , Relationship
     Registration,
     Relation,
     Utility, Past)
-from attendees.persons.services import AttendingService, FolkService
-from attendees.whereabouts.models import Division
+from .attending_service import AttendingService
+from .folk_service import FolkService
+from attendees.whereabouts.models import Division, Organization
 from attendees.whereabouts.services import PlaceService
 
 
@@ -511,7 +513,7 @@ class AttendeeService:
         return folk
 
     @staticmethod
-    def get_roster_data(organization, meet_slugs, start, finish, skip, take, sort_list=None, search_value=None, current_user=None):
+    def get_roster_data(organization, meet_slugs, start, finish, skip, take, sort_list=None, search_value=None, current_user=None, columns=None):
         if not sort_list:
             sort_list = ['first_name', 'last_name']
 
@@ -524,14 +526,19 @@ class AttendeeService:
             is_removed=False
         ).order_by('start', 'meet__display_name', 'id')
 
-        from attendees.occasions.services import GatheringService
-
-        gathering_list = GatheringService.get_roster_gatherings(
-            organization=organization,
-            meet_slugs=meet_slugs,
-            start=start,
-            finish=finish,
-        )
+        if columns is None:
+            columns = [
+                {
+                    "id": g.id,
+                    "display_name": g.display_name,
+                    "start": g.start.isoformat() if g.start else None,
+                    "meet_id": g.meet_id,
+                    "meet_display_name": g.meet.display_name if g.meet else "",
+                    "attendances_count": getattr(g, 'attendances_count', 0),
+                    "_start_dt": g.start,
+                }
+                for g in gatherings
+            ]
 
         # 2. Query Attendees (Rows) with Database Aggregation
         attendingmeet_filter = (
@@ -550,7 +557,7 @@ class AttendeeService:
         if current_user and not current_user.can_see_all_organizational_meets_attendees():
             user_attendee = getattr(current_user, "attendee", None)
             if not user_attendee:
-                return gathering_list, [], 0
+                return columns, [], 0
             user_folk_ids = list(
                 user_attendee.folks.filter(
                     is_removed=False,
@@ -708,7 +715,7 @@ class AttendeeService:
                 "total_attendances": attendee.total_attendances,
             })
 
-        return gathering_list, rows, total_count
+        return columns, rows, total_count
 
     @staticmethod
     def search_for_roster(current_user, meet_slug, query):
@@ -1137,7 +1144,6 @@ class AttendeeService:
         - Preserves and logs pghistory snapshot.
         - Returns a structured dictionary of results for Celery logs and admin commands.
         """
-        from attendees.whereabouts.models import Organization
 
         org_qs = Organization.objects.filter(is_removed=False)
         if organization_infos and isinstance(organization_infos, list):
@@ -1733,12 +1739,7 @@ class AttendeeService:
                                 or Relation.objects.first()
                             )
 
-                        is_family = bool(
-                            comp_role and (
-                                comp_role.consanguinity
-                                or (comp_role.title and comp_role.title.lower() in ("parent", "father", "mother", "child", "son", "daughter", "brother", "sister", "husband", "wife", "spouse"))
-                            )
-                        )
+                        is_family = bool(comp_role and comp_role.relative)
 
                         if is_family:
                             if not family_folk:
@@ -2009,7 +2010,7 @@ class AttendeeService:
                     gathering = Gathering.objects.filter(pk=int(gathering_id), meet=meet, is_removed=False).first()
                 elif str(gathering_id).startswith("start_"):
                     occ_iso = str(gathering_id).replace("start_", "")
-                    from django.utils.dateparse import parse_datetime
+
                     occ_dt = parse_datetime(occ_iso)
                     if occ_dt:
                         gathering = Gathering.objects.filter(meet=meet, start=occ_dt, is_removed=False).first()

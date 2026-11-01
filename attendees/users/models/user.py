@@ -91,8 +91,6 @@ class User(AbstractUser):
             return self.organization and self.organization.slug == organization_slug
 
     def can_see_all_organizational_meets_attendees(self):
-        if self.is_superuser:
-            return True
         if self.organization and self.organization.infos:
             return self.belongs_to_groups_of(
                 self.organization.infos.get("groups_see_all_meets_attendees", [])
