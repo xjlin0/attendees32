@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from attendees.persons.services import AttendeeService
+from attendees.persons.services import FastOnboardService
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class ApiFastOnboardAttendeeViewSet(viewsets.ViewSet):
         target_folk_id = request.data.get("target_folk_id") or request.data.get("folk_id")
         create_new_folk = bool(request.data.get("create_new_folk", False))
 
-        result = AttendeeService.fast_onboard(
+        result = FastOnboardService.fast_onboard(
             current_user=request.user,
             meet_slug=meet_slug,
             attendees_data=attendees_data,

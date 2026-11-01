@@ -16,7 +16,7 @@ from attendees.persons.models import (
     Relation,
 )
 from attendees.persons.models.enum import GenderEnum
-from attendees.persons.services.attendee_service import AttendeeService
+from attendees.persons.services import RosterSearchService
 from attendees.users.models import User
 from attendees.whereabouts.models import Division, Organization
 
@@ -355,7 +355,7 @@ class TestApiSearchAttendeesForRoster:
         self.client.force_login(self.admin_user)
 
         # 1. Not enrolled
-        res1 = AttendeeService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
+        res1 = RosterSearchService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
         assert res1[0]["meet_status"] == "not_enrolled"
         assert res1[0]["can_join"] is True
 
@@ -369,14 +369,14 @@ class TestApiSearchAttendeesForRoster:
             start=self.now,
             finish=self.now + timedelta(days=30),
         )
-        res2 = AttendeeService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
+        res2 = RosterSearchService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
         assert res2[0]["meet_status"] == "enrolled"
         assert res2[0]["can_join"] is False
 
         # 3. Paused (category_id == PAUSED_CATEGORY) -> CANNOT join
         am.category = self.paused_cat
         am.save()
-        res3 = AttendeeService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
+        res3 = RosterSearchService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
         assert res3[0]["meet_status"] == "paused"
         assert res3[0]["can_join"] is False
 
@@ -384,7 +384,7 @@ class TestApiSearchAttendeesForRoster:
         am.category = self.scheduled_cat
         am.finish = self.now - timedelta(days=1)
         am.save()
-        res4 = AttendeeService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
+        res4 = RosterSearchService.search_for_roster(self.admin_user, self.kid_meet.slug, "Wendy")
         assert res4[0]["meet_status"] == "expired"
         assert res4[0]["can_join"] is True
 

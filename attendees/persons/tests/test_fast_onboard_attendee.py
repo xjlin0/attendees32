@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 
 from attendees.occasions.models import Assembly, Attendance, Character, Gathering, Meet
 from attendees.persons.models import Attendee, AttendingMeet, Category, Folk, FolkAttendee, Relation
-from attendees.persons.services import AttendeeService
+from attendees.persons.services import FastOnboardService
 from attendees.users.models import User
 from attendees.whereabouts.models import Division, Organization
 
@@ -1061,7 +1061,7 @@ class TestFastOnboardAttendee:
                 }
             ],
         }
-        with patch.object(AttendeeService, "fast_onboard", side_effect=RuntimeError("Database explosion!")):
+        with patch.object(FastOnboardService, "fast_onboard", side_effect=RuntimeError("Database explosion!")):
             res = self.client.post("/persons/api/fast_onboard_attendee/", payload, format="json")
             assert res.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
             assert "application/json" in res.headers["content-type"]

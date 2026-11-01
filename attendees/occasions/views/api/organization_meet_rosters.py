@@ -7,8 +7,7 @@ from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from attendees.persons.services import AttendeeService
-from attendees.occasions.services import GatheringService
+from attendees.occasions.services import GatheringService, RosterService
 from attendees.occasions.serializers import RosterResponseSerializer
 
 
@@ -148,7 +147,7 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             finish=finish,
         )
 
-        _, rows, total_count = AttendeeService.get_roster_data(
+        _, rows, total_count = RosterService.get_roster_data(
             current_user=request.user,
             organization=current_user_organization,
             meet_slugs=meet_slugs,

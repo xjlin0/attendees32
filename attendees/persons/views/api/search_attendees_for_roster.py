@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from attendees.persons.services import AttendeeService
+from attendees.persons.services import RosterSearchService
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class ApiSearchAttendeesForRosterViewSet(viewsets.ViewSet):
             raise ValidationError({"detail": "meet_slug query parameter is required."})
 
         query = request.query_params.get("q", "")
-        results = AttendeeService.search_for_roster(
+        results = RosterSearchService.search_for_roster(
             current_user=request.user,
             meet_slug=meet_slug,
             query=query,

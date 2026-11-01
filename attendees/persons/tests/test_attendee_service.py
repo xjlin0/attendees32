@@ -8,7 +8,8 @@ from attendees.whereabouts.models import Organization, Division
 from attendees.persons.models import Attendee, Attending, AttendingMeet, Category, Registration, Relation, Folk, FolkAttendee, Past
 from attendees.persons.models.enum import GenderEnum
 from attendees.occasions.models import Meet, Character, Assembly, Gathering, Attendance
-from attendees.persons.services.attendee_service import AttendeeService
+from attendees.occasions.services import RosterService
+from attendees.persons.services import AttendeeService, FastOnboardService, RosterSearchService
 
 @pytest.mark.django_db
 class TestAttendeeService:
@@ -170,7 +171,7 @@ class TestAttendeeService:
             finish=self.now + timedelta(hours=2),
         )
 
-        columns, rows, total_count = AttendeeService.get_roster_data(
+        columns, rows, total_count = RosterService.get_roster_data(
             organization=self.organization,
             meet_slugs=meet_slugs,
             start=start_date,
@@ -213,7 +214,7 @@ class TestAttendeeService:
         assert AttendeeService.normalize_phone_number(123) == 123
 
     def test_search_for_roster(self):
-        results = AttendeeService.search_for_roster(self.user, self.meet.slug, "John")
+        results = RosterSearchService.search_for_roster(self.user, self.meet.slug, "John")
         assert len(results) >= 1
         matched = next((r for r in results if r["id"] == str(self.attendee.id)), None)
         assert matched is not None
@@ -229,7 +230,7 @@ class TestAttendeeService:
             "division_id": self.division.id,
             "relationship": "self",
         }]
-        result = AttendeeService.fast_onboard(
+        result = FastOnboardService.fast_onboard(
             current_user=self.user,
             meet_slug=self.meet.slug,
             attendees_data=attendees_data,
