@@ -3,11 +3,33 @@
   align-items: center;
 }
 .attendee-photo {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 2px;
   object-fit: cover;
   margin-right: 10px;
+  flex-shrink: 0;
+}
+.attendee-photo:hover {
+  box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+}
+.attendee-photo i {
+  font-size: 1.4rem;
+}
+.attendee-links-container {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.attendee-siblings {
+  font-size: 0.82em;
+  margin-top: 2px;
+  line-height: 1.25;
+}
+.attendee-sibling-item {
+  margin-top: 1px;
 }
 .attendee-info-link {
   color: #0d6efd;
@@ -33,6 +55,30 @@ body div.dx-overlay.dx-popup.attendingmeets-popup-wrapper div.dx-overlay-content
   border-radius: 6px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
   background-color: #fff;
+}
+
+.attendingmeets-modal-header {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+.attendingmeets-modal-photo {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+.attendingmeets-modal-photo:hover {
+  box-shadow: 0 0 4px 2px rgba(13, 110, 253, 0.4);
+}
+@media (max-width: 576px) {
+  .attendingmeets-modal-photo {
+    width: 90px;
+    height: 90px;
+  }
 }
 
 body div.attendingmeets-popup-wrapper div.dx-popup-content {

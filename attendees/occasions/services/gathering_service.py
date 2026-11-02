@@ -392,6 +392,7 @@ class GatheringService:
                 "id": g.id,
                 "display_name": g.display_name,
                 "start": g.start.isoformat() if g.start else None,
+                "finish": g.finish.isoformat() if g.finish else None,
                 "meet_id": g.meet_id,
                 "meet_display_name": g.meet.display_name if g.meet else "",
                 "attendances_count": getattr(g, 'attendances_count', 0),
@@ -444,10 +445,12 @@ class GatheringService:
                             site_name = getattr(meet.site, 'display_name', '')
 
                     display_name = f'{meet.display_name} {occ_start.strftime("%Y/%m/%d,%H:%M %p %Z")} at {site_name}'[0:254]
+                    finish_iso = occ.end.astimezone(canonical_tz).isoformat() if occ.end else None
                     columns.append({
                         "id": None,
                         "display_name": display_name,
                         "start": occ_start.isoformat(),
+                        "finish": finish_iso,
                         "meet_id": meet.id,
                         "meet_display_name": meet.display_name,
                         "attendances_count": 0,

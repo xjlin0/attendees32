@@ -198,112 +198,123 @@ class RosterService:
 
         # 3. If kid meet, resolve siblings (display_order >= 10) in 2 O(N) passes using dictionary
         meets = list(Meet.objects.filter(slug__in=meet_slugs, is_removed=False).select_related("assembly__division"))
-        is_kid_meet = any(
-            bool(
+        kid_meet_major_chars = {}
+        for m in meets:
+            m_is_kid = bool(
                 (m.assembly and m.assembly.division and m.assembly.division.infos and (
                     m.assembly.division.infos.get("show_attendee_infos", {}).get("infos-grade")
                     or m.assembly.division.infos.get("show_attendee_infos", {}).get("grade")
                 ))
                 or (m.infos and m.infos.get("kid_search_families_show_grades"))
             )
-            for m in meets
-        )
+            if m_is_kid and m.major_character_id:
+                kid_meet_major_chars[m.id] = m.major_character_id
+
+        def is_student_attendee(att):
+            for am in (getattr(att, 'attendingmeets', None) or []):
+                m_id = am.get('meet_id')
+                char_id = am.get('character_id')
+                if m_id in kid_meet_major_chars and str(char_id) == str(kid_meet_major_chars[m_id]):
+                    return True
+            return False
 
         siblings_by_attendee = {}
-        if is_kid_meet and attendees_page:
-            page_att_ids = [a.id for a in attendees_page]
-            page_fa_rows = list(
-                FolkAttendee.objects.filter(
-                    attendee_id__in=page_att_ids,
-                    folk__category_id=Attendee.FAMILY_CATEGORY,
-                    folk__is_removed=False,
-                    is_removed=False,
-                ).values("attendee_id", "folk_id")
-            )
-
-            attendee_to_folk_ids = {}
-            all_family_folk_ids = set()
-            for r in page_fa_rows:
-                attendee_to_folk_ids.setdefault(r["attendee_id"], set()).add(r["folk_id"])
-                all_family_folk_ids.add(r["folk_id"])
-
-            if all_family_folk_ids:
-                sibling_fas = list(
+        if kid_meet_major_chars and attendees_page:
+            student_attendees = [a for a in attendees_page if is_student_attendee(a)]
+            if student_attendees:
+                page_att_ids = [a.id for a in student_attendees]
+                page_fa_rows = list(
                     FolkAttendee.objects.filter(
-                        folk_id__in=all_family_folk_ids,
+                        attendee_id__in=page_att_ids,
                         folk__category_id=Attendee.FAMILY_CATEGORY,
                         folk__is_removed=False,
                         is_removed=False,
-                        attendee__is_removed=False,
-                        role__relative=True,
-                    )
-                    .filter(
-                        Q(role__title__in=["son", "daughter", "child", "ward"])
-                        | Q(role__title__icontains="brother")
-                        | Q(role__title__icontains="sister")
-                        | Q(role__title__icontains="sibling")
-                        | Q(display_order__gte=10)
-                    )
-                    .values(
-                        "folk_id",
-                        "attendee_id",
-                        "attendee__first_name",
-                        "attendee__last_name",
-                        "attendee__first_name2",
-                        "attendee__last_name2",
-                    )
-                    .distinct()
+                    ).values("attendee_id", "folk_id")
                 )
 
-                sibling_att_ids = {s["attendee_id"] for s in sibling_fas}
+                attendee_to_folk_ids = {}
+                all_family_folk_ids = set()
+                for r in page_fa_rows:
+                    attendee_to_folk_ids.setdefault(r["attendee_id"], set()).add(r["folk_id"])
+                    all_family_folk_ids.add(r["folk_id"])
 
-                enrolled_sibling_ids = set(
-                    AttendingMeet.objects.filter(
-                        attending__attendee_id__in=sibling_att_ids,
-                        meet__slug__in=meet_slugs,
-                        is_removed=False,
-                        attending__is_removed=False,
+                if all_family_folk_ids:
+                    sibling_fas = list(
+                        FolkAttendee.objects.filter(
+                            folk_id__in=all_family_folk_ids,
+                            folk__category_id=Attendee.FAMILY_CATEGORY,
+                            folk__is_removed=False,
+                            is_removed=False,
+                            attendee__is_removed=False,
+                            role__relative=True,
+                        )
+                        .filter(
+                            Q(role__title__in=["son", "daughter", "child", "ward"])
+                            | Q(role__title__icontains="brother")
+                            | Q(role__title__icontains="sister")
+                            | Q(role__title__icontains="sibling")
+                            | Q(display_order__gte=10)
+                        )
+                        .values(
+                            "folk_id",
+                            "attendee_id",
+                            "attendee__first_name",
+                            "attendee__last_name",
+                            "attendee__first_name2",
+                            "attendee__last_name2",
+                        )
+                        .distinct()
                     )
-                    .filter(
-                        Q(finish__isnull=True) | Q(finish__gte=start)
-                    )
-                    .filter(
-                        Q(start__isnull=True) | Q(start__lte=finish)
-                    )
-                    .values_list("attending__attendee_id", flat=True)
-                    .distinct()
-                )
 
-                # Pass 1: Build folk_id -> siblings dictionary
-                folk_to_siblings = {}
-                for s in sibling_fas:
-                    f_id = s["folk_id"]
-                    att_id = s["attendee_id"]
-                    fn = (s["attendee__first_name"] or "").strip()
-                    ln = (s["attendee__last_name"] or "").strip()
-                    fn2 = (s["attendee__first_name2"] or "").strip()
-                    ln2 = (s["attendee__last_name2"] or "").strip()
-                    name1 = f"{fn} {ln}".strip()
-                    name2 = f"{ln2}{fn2}".strip()
-                    name = f"{name1} {name2}".strip() if (name1 and name2) else (name1 or name2 or "Unknown")
-                    is_enrolled = att_id in enrolled_sibling_ids
-                    folk_to_siblings.setdefault(f_id, []).append({
-                        "id": str(att_id),
-                        "name": name,
-                        "attending": is_enrolled,
-                    })
+                    sibling_att_ids = {s["attendee_id"] for s in sibling_fas}
 
-                # Pass 2: Map siblings to each attendee in current page (O(1) per attendee)
-                for a in attendees_page:
-                    a_folk_ids = attendee_to_folk_ids.get(a.id, set())
-                    seen_sibling_ids = {str(a.id)}
-                    att_siblings = []
-                    for f_id in a_folk_ids:
-                        for sib in folk_to_siblings.get(f_id, []):
-                            if sib["id"] not in seen_sibling_ids:
-                                seen_sibling_ids.add(sib["id"])
-                                att_siblings.append(sib)
-                    siblings_by_attendee[a.id] = att_siblings
+                    enrolled_sibling_ids = set(
+                        AttendingMeet.objects.filter(
+                            attending__attendee_id__in=sibling_att_ids,
+                            meet__slug__in=meet_slugs,
+                            is_removed=False,
+                            attending__is_removed=False,
+                        )
+                        .filter(
+                            Q(finish__isnull=True) | Q(finish__gte=start)
+                        )
+                        .filter(
+                            Q(start__isnull=True) | Q(start__lte=finish)
+                        )
+                        .values_list("attending__attendee_id", flat=True)
+                        .distinct()
+                    )
+
+                    # Pass 1: Build folk_id -> siblings dictionary
+                    folk_to_siblings = {}
+                    for s in sibling_fas:
+                        f_id = s["folk_id"]
+                        att_id = s["attendee_id"]
+                        fn = (s["attendee__first_name"] or "").strip()
+                        ln = (s["attendee__last_name"] or "").strip()
+                        fn2 = (s["attendee__first_name2"] or "").strip()
+                        ln2 = (s["attendee__last_name2"] or "").strip()
+                        name1 = f"{fn} {ln}".strip()
+                        name2 = f"{ln2}{fn2}".strip()
+                        name = f"{name1} {name2}".strip() if (name1 and name2) else (name1 or name2 or "Unknown")
+                        is_enrolled = att_id in enrolled_sibling_ids
+                        folk_to_siblings.setdefault(f_id, []).append({
+                            "id": str(att_id),
+                            "name": name,
+                            "attending": is_enrolled,
+                        })
+
+                    # Pass 2: Map siblings to each student attendee in current page (O(1) per attendee)
+                    for a in student_attendees:
+                        a_folk_ids = attendee_to_folk_ids.get(a.id, set())
+                        seen_sibling_ids = {str(a.id)}
+                        att_siblings = []
+                        for f_id in a_folk_ids:
+                            for sib in folk_to_siblings.get(f_id, []):
+                                if sib["id"] not in seen_sibling_ids:
+                                    seen_sibling_ids.add(sib["id"])
+                                    att_siblings.append(sib)
+                        siblings_by_attendee[a.id] = att_siblings
 
         # 4. Build Response
         rows = []

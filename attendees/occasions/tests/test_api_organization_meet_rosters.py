@@ -469,6 +469,10 @@ def test_organization_meet_rosters_kid_meet_siblings(api_client, setup_objects):
     now = datetime.now(timezone.utc)
     category = setup_objects["category"]
     character = setup_objects["attendance"].character
+    meet.major_character = character
+    meet.save()
+
+    teacher_char = Character.objects.create(display_name="Teacher Leader", slug="teacher-leader", assembly=meet.assembly)
 
     # Create 3 kids and 1 parent in the same Family Folk
     family_cat, _ = Category.objects.get_or_create(id=Attendee.FAMILY_CATEGORY, defaults={"display_name": "Family", "type": "folk"})
@@ -478,6 +482,9 @@ def test_organization_meet_rosters_kid_meet_siblings(api_client, setup_objects):
     kid1 = Attendee.objects.create(first_name="KidOne", last_name="Sim", gender=1, division=division)
     kid2 = Attendee.objects.create(first_name="KidTwo", last_name="Sim", gender=2, division=division)
     kid3 = Attendee.objects.create(first_name="KidThree", last_name="Sim", gender=1, division=division)
+
+    # Also create a teacher in the meet who has a family
+    teacher = Attendee.objects.create(first_name="Teacher", last_name="Sim", gender=1, division=division)
 
     kid_rel, _ = Relation.objects.get_or_create(id=3, defaults={"title": "son", "relative": True, "display_order": 25, "gender": GenderEnum.UNSPECIFIED.value})
     kid_rel.relative = True
@@ -490,8 +497,9 @@ def test_organization_meet_rosters_kid_meet_siblings(api_client, setup_objects):
     FolkAttendee.objects.create(folk=family_folk, attendee=kid1, role=kid_rel, display_order=10)
     FolkAttendee.objects.create(folk=family_folk, attendee=kid2, role=kid_rel, display_order=11)
     FolkAttendee.objects.create(folk=family_folk, attendee=kid3, role=kid_rel, display_order=12)
+    FolkAttendee.objects.create(folk=family_folk, attendee=teacher, role=kid_rel, display_order=13)
 
-    # kid1 and kid2 are enrolled in the meet; kid3 is NOT enrolled
+    # kid1 and kid2 are enrolled in the meet as students (major_character); kid3 is NOT enrolled
     att1 = Attending.objects.create(attendee=kid1)
     AttendingMeet.objects.create(attending=att1, meet=meet, character=character, category=category, start=now - timedelta(days=1), finish=now + timedelta(days=30))
 
@@ -499,6 +507,10 @@ def test_organization_meet_rosters_kid_meet_siblings(api_client, setup_objects):
     AttendingMeet.objects.create(attending=att2, meet=meet, character=character, category=category, start=now - timedelta(days=1), finish=now + timedelta(days=30))
 
     att3 = Attending.objects.create(attendee=kid3)
+
+    # teacher is enrolled in the meet as a teacher/leader (non-major character)
+    att_teacher = Attending.objects.create(attendee=teacher)
+    AttendingMeet.objects.create(attending=att_teacher, meet=meet, character=teacher_char, category=category, start=now - timedelta(days=1), finish=now + timedelta(days=30))
 
     url = reverse("occasions:organization_meet_rosters-list")
     api_client.force_login(setup_objects["user"])
@@ -518,16 +530,23 @@ def test_organization_meet_rosters_kid_meet_siblings(api_client, setup_objects):
 
     assert "KidOne Sim" in rows
     assert "KidTwo Sim" in rows
+    assert "Teacher Sim" in rows
 
     kid1_row = rows["KidOne Sim"]
     assert "siblings" in kid1_row
-    assert len(kid1_row["siblings"]) == 2
+    assert len(kid1_row["siblings"]) == 3
 
-    # kid2 is attending (green), kid3 is not attending (gray)
+    # kid2 is attending (green), kid3 is not attending (gray), teacher is attending
     sibling_map = {s["name"]: s["attending"] for s in kid1_row["siblings"]}
     assert sibling_map.get("KidTwo Sim") is True
     assert sibling_map.get("KidThree Sim") is False
+    assert sibling_map.get("Teacher Sim") is True
     assert "Parent Sim" not in sibling_map  # Parent has display_order < 10, not sibling
+
+    # Non-student participant (Teacher) must NOT show siblings
+    teacher_row = rows["Teacher Sim"]
+    assert "siblings" in teacher_row
+    assert teacher_row["siblings"] == []
 
 
 

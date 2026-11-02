@@ -1290,10 +1290,47 @@
     const renderPopupContent = (container) => {
       container.innerHTML = '';
 
-      if (!currentSortedMeets.length) {
-        container.innerHTML = `
-          <div class="alert alert-info" style="margin-top: 15px;">No enrollments (attendingmeets) found for this attendee under the selected meet(s).</div>
+      if (currentAttendeeData) {
+        const headerEl = document.createElement('div');
+        headerEl.className = 'attendingmeets-modal-header d-flex align-items-center p-2 mb-3 bg-light rounded border';
+
+        let photoHtml = '';
+        if (currentAttendeeData.photo_url) {
+          photoHtml = `
+            <a href="${currentAttendeeData.photo_url}" target="_blank" title="Click to view full image" class="me-3 d-inline-block flex-shrink-0">
+              <img src="${currentAttendeeData.photo_url}" class="attendingmeets-modal-photo" alt="${currentAttendeeData.attendee_name || 'Attendee'}">
+            </a>
+          `;
+        } else {
+          photoHtml = `
+            <div class="attendingmeets-modal-photo d-flex justify-content-center align-items-center bg-white text-muted me-3 flex-shrink-0">
+              <i class="fas fa-user fa-3x text-secondary"></i>
+            </div>
+          `;
+        }
+
+        const attendeeId = currentAttendeeData.attendee_id || '';
+        const attendeeName = currentAttendeeData.attendee_name || '';
+        const contactsStr = currentAttendeeData.contacts || '';
+
+        headerEl.innerHTML = `
+          ${photoHtml}
+          <div class="attendingmeets-modal-info flex-grow-1" style="min-width: 0;">
+            <div class="d-flex align-items-center flex-wrap">
+              <span class="fs-5 fw-bold text-dark me-2">${attendeeName}</span>
+              ${attendeeId ? `<u><a href="/persons/attendee/${attendeeId}" target="_blank" class="attendee-info-link" title="Open attendee profile page">(Info)</a></u>` : ''}
+            </div>
+            ${contactsStr ? `<div class="text-muted small mt-1 text-truncate" title="${contactsStr}"><i class="fas fa-address-book me-1"></i>${contactsStr}</div>` : ''}
+          </div>
         `;
+        container.appendChild(headerEl);
+      }
+
+      if (!currentSortedMeets.length) {
+        const alertEl = document.createElement('div');
+        alertEl.className = 'alert alert-info mt-3';
+        alertEl.textContent = 'No enrollments (attendingmeets) found for this attendee under the selected meet(s).';
+        container.appendChild(alertEl);
         return;
       }
 
@@ -1625,23 +1662,23 @@
       }
 
       let siblingsHtml = '';
-      if (Array.isArray(data.siblings) && data.siblings.length > 0) {
-        const siblingSpans = data.siblings.map(s => {
+      if (filterData.showSiblings && Array.isArray(data.siblings) && data.siblings.length > 0) {
+        const siblingLines = data.siblings.map(s => {
           const colorClass = s.attending ? 'text-success fw-semibold' : 'text-muted';
-          return `<span class="${colorClass}">${s.name}</span>`;
-        }).join(', ');
-        siblingsHtml = `<div class="attendee-siblings" style="font-size: 0.82em; margin-top: 2px; line-height: 1.2;">
-          <span class="text-secondary me-1" style="font-size: 0.9em;">👥</span>${siblingSpans}
-        </div>`;
+          return `<div class="attendee-sibling-item text-truncate" title="${s.name} (${s.attending ? 'Attending' : 'Not attending'})"><span class="text-secondary me-1" style="font-size: 0.85em;">👥</span><span class="${colorClass}">${s.name}</span></div>`;
+        }).join('');
+        siblingsHtml = `<div class="attendee-siblings">${siblingLines}</div>`;
       }
 
       wrapper.innerHTML = `
         ${photoHtml}
-        <span class="attendee-links-container">
-          ${warningHtml}<u><a href="/persons/attendee/${data.attendee_id}" target="_blank" class="attendee-info-link" title="Click to open a new page of attendee info">(Info)</a></u>
-          <u class="attendee-name-link" role="button" title="Click to edit enrollment details">${data.attendee_name}</u>
+        <div class="attendee-links-container" style="min-width: 0;">
+          <div class="attendee-primary-line text-truncate">
+            ${warningHtml}<u><a href="/persons/attendee/${data.attendee_id}" target="_blank" class="attendee-info-link" title="Click to open a new page of attendee info">(Info)</a></u>
+            <u class="attendee-name-link" role="button" title="Click to edit enrollment details">${data.attendee_name}</u>
+          </div>
           ${siblingsHtml}
-        </span>
+        </div>
       `;
 
       wrapper.querySelector('.attendee-name-link').addEventListener('click', (e) => {
@@ -1971,7 +2008,8 @@
             caption: 'Attendee',
             fixed: true,
             fixedPosition: 'left',
-            width: 200,
+            width: 220,
+            minWidth: 200,
             cellTemplate: attendeeCellTemplate,
             allowSorting: true,
             allowHiding: false
@@ -2516,7 +2554,8 @@
             caption: 'Attendee',
             fixed: true,
             fixedPosition: 'left',
-            width: 200,
+            width: 220,
+            minWidth: 200,
             cellTemplate: attendeeCellTemplate,
             allowSorting: true,
             allowHiding: false
@@ -2623,6 +2662,15 @@
     let formInstance = null;
     const storageOptsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
 
+    const checkHasKidMeet = (selectedSlugs) => {
+      const slugs = selectedSlugs || filterData.meets || [];
+      return slugs.some(slug => {
+        const m = meetsMap.get(slug) || meetsMap.get(String(slug));
+        const showInfos = m?.show_attendee_infos || (m?.infos && m.infos.show_attendee_infos) || {};
+        return Boolean(showInfos['infos-grade'] || showInfos['grade']);
+      });
+    };
+
     const resetFilters = () => {
       const defaultStart = new Date(new Date().setDate(new Date().getDate() - 5));
       const defaultEnd = new Date(new Date().setMonth(new Date().getMonth() + 1));
@@ -2630,11 +2678,15 @@
       filterData.startDate = defaultStart;
       filterData.endDate = defaultEnd;
       filterData.showPhotos = false;
+      filterData.showSiblings = true;
 
       if (formInstance) {
         formInstance.getEditor('startDate').option('value', defaultStart);
         formInstance.getEditor('endDate').option('value', defaultEnd);
         formInstance.getEditor('showPhotos').option('value', false);
+        const sibEditor = formInstance.getEditor('showSiblings');
+        if (sibEditor) sibEditor.option('value', true);
+        formInstance.itemOption('showSiblings', 'visible', false);
         formInstance.getEditor('meets').option('value', []);
       }
       if (gridInstanceRef.value) {
@@ -2645,7 +2697,13 @@
     const initFilterForm = (filterFormEl) => {
       formInstance = new DevExpress.ui.dxForm(filterFormEl, {
         formData: filterData,
-        colCount: 4,
+        colCount: 5,
+        colCountByScreen: {
+          xs: 1,
+          sm: 2,
+          md: 3,
+          lg: 5
+        },
         onFieldDataChanged: (e) => {
           filterData[e.dataField] = e.value;
           
@@ -2666,14 +2724,24 @@
           }
           if (e.dataField === 'meets') {
             Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'selectedMeetSlugs', e.value || []);
+            if (formInstance) {
+              const shouldShow = checkHasKidMeet(e.value);
+              const currentItem = formInstance.itemOption('showSiblings');
+              if (currentItem && currentItem.visible !== shouldShow) {
+                formInstance.itemOption('showSiblings', 'visible', shouldShow);
+              }
+            }
           }
           if (e.dataField === 'showPhotos') {
             Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'showPhotos', !!e.value);
           }
+          if (e.dataField === 'showSiblings') {
+            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'showSiblings', !!e.value);
+          }
 
           if (['meets', 'startDate', 'endDate'].includes(e.dataField)) {
             reloadCallback();
-          } else if (e.dataField === 'showPhotos' && gridInstanceRef.value) {
+          } else if (['showPhotos', 'showSiblings'].includes(e.dataField) && gridInstanceRef.value) {
             gridInstanceRef.value.repaint();
           }
         },
@@ -2760,6 +2828,14 @@
                       }
                     });
 
+                    if (formInstance) {
+                      const shouldShow = checkHasKidMeet(filterData.meets);
+                      const currentItem = formInstance.itemOption('showSiblings');
+                      if (currentItem && currentItem.visible !== shouldShow) {
+                        formInstance.itemOption('showSiblings', 'visible', shouldShow);
+                      }
+                    }
+
                     // Backend (Utility.transform_result) already formats groups as { key, items }
                     return rawData;
                   }
@@ -2769,8 +2845,16 @@
           },
           {
             dataField: 'showPhotos',
+            name: 'showPhotos',
             editorType: 'dxCheckBox',
-            label: { text: 'Show Photos' }
+            label: { text: 'Photo' }
+          },
+          {
+            dataField: 'showSiblings',
+            name: 'showSiblings',
+            editorType: 'dxCheckBox',
+            label: { text: 'Show Siblings' },
+            visible: checkHasKidMeet(filterData.meets)
           }
         ]
       });
@@ -2788,8 +2872,18 @@
     const isAnyGatheringActiveNow = () => {
       const now = Date.now();
       const fifteenMinutesMs = 15 * 60 * 1000;
+      const selectedMeetIds = new Set(
+        (filterData.meets || []).map(slug => {
+          const m = meetsMap.get(slug) || meetsMap.get(String(slug));
+          return m ? String(m.id) : null;
+        }).filter(Boolean)
+      );
+
       for (const g of gatheringsRegistry.values()) {
         if (!g || !g.start) continue;
+        if (selectedMeetIds.size > 0 && g.meet_id && !selectedMeetIds.has(String(g.meet_id))) {
+          continue;
+        }
         const gStart = new Date(g.start).getTime();
         if (isNaN(gStart)) continue;
         let gFinish = g.finish ? new Date(g.finish).getTime() : NaN;
@@ -4944,6 +5038,7 @@
       const storedFrom = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterFromString');
       const storedTill = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterTillString');
       const storedShowPhotos = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'showPhotos');
+      const storedShowSiblings = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'showSiblings');
 
       const defaultStartDate = new Date(new Date().setMonth(new Date().getMonth() - 3));
       const defaultEndDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
@@ -4968,7 +5063,8 @@
         meets: Array.isArray(storedMeets) ? storedMeets : [],
         startDate: initialStart,
         endDate: initialEnd,
-        showPhotos: storedShowPhotos === true || storedShowPhotos === 'true'
+        showPhotos: storedShowPhotos === true || storedShowPhotos === 'true',
+        showSiblings: storedShowSiblings === undefined || storedShowSiblings === null ? true : (storedShowSiblings === true || storedShowSiblings === 'true')
       });
 
       // Composables Hookup
