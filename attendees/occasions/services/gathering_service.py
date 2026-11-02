@@ -349,11 +349,13 @@ class GatheringService:
         return gathering, created
 
     @staticmethod
-    def get_roster_gatherings(organization, meet_slugs, start, finish):
+    def get_roster_gatherings(organization, meet_slugs, start, finish, current_user=None):
         """
         Returns a list of gathering column dicts for rosters datagrid.
         Merges existing database gatherings and future occurrences forecasted from meet source event relations.
         """
+        from attendees.persons.models import AttendingMeet
+
         if isinstance(start, str):
             start_dt = parse_datetime(start)
         else:
@@ -363,6 +365,47 @@ class GatheringService:
             finish_dt = parse_datetime(finish)
         else:
             finish_dt = finish
+
+        enrolled_filter = (
+            Q(meet__slug__in=meet_slugs) &
+            Q(meet__assembly__division__organization=organization) &
+            Q(is_removed=False) &
+            Q(attending__is_removed=False) &
+            Q(attending__attendee__is_removed=False)
+        )
+        if start_dt:
+            enrolled_filter &= (Q(finish__isnull=True) | Q(finish__gte=start_dt))
+        if finish_dt:
+            enrolled_filter &= (Q(start__isnull=True) | Q(start__lte=finish_dt))
+
+        if current_user and not current_user.can_see_all_organizational_meets_attendees():
+            user_attendee = getattr(current_user, "attendee", None)
+            if not user_attendee:
+                enrolled_by_meet = {}
+            else:
+                user_folk_ids = list(
+                    user_attendee.folks.filter(
+                        is_removed=False,
+                        folkattendee__is_removed=False,
+                    ).values_list("id", flat=True)
+                )
+                enrolled_by_meet = dict(
+                    AttendingMeet.objects.filter(enrolled_filter)
+                    .filter(
+                        Q(attending__attendee__folkattendee__folk__in=user_folk_ids, attending__attendee__folkattendee__is_removed=False) |
+                        Q(attending__attendee_id=user_attendee.id)
+                    )
+                    .values('meet_id')
+                    .annotate(attendee_count=Count('attending__attendee_id', distinct=True))
+                    .values_list('meet_id', 'attendee_count')
+                )
+        else:
+            enrolled_by_meet = dict(
+                AttendingMeet.objects.filter(enrolled_filter)
+                .values('meet_id')
+                .annotate(attendee_count=Count('attending__attendee_id', distinct=True))
+                .values_list('meet_id', 'attendee_count')
+            )
 
         existing_gatherings_qs = Gathering.objects.filter(
             meet__slug__in=meet_slugs,
@@ -396,6 +439,7 @@ class GatheringService:
                 "meet_id": g.meet_id,
                 "meet_display_name": g.meet.display_name if g.meet else "",
                 "attendances_count": getattr(g, 'attendances_count', 0),
+                "enrolled_count": enrolled_by_meet.get(g.meet_id, 0),
                 "_start_dt": g.start,
             })
             if g.start:
@@ -454,6 +498,7 @@ class GatheringService:
                         "meet_id": meet.id,
                         "meet_display_name": meet.display_name,
                         "attendances_count": 0,
+                        "enrolled_count": enrolled_by_meet.get(meet.id, 0),
                         "_start_dt": occ_start,
                     })
 

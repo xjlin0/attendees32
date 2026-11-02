@@ -61,10 +61,21 @@ body div.dx-overlay.dx-popup.attendingmeets-popup-wrapper div.dx-overlay-content
   background-color: #f8f9fa;
   border-radius: 6px;
   border: 1px solid #dee2e6;
+  height: 100%;
+  box-sizing: border-box;
+}
+.attendingmeets-top-left-header-item {
+  height: 100%;
+}
+.attendingmeets-top-left-header-item > .dx-field-item-content {
+  height: 100%;
+}
+.attendingmeets-top-right-group .dx-form-group-content {
+  padding: 0 !important;
 }
 .attendingmeets-modal-photo {
-  width: 130px;
-  height: 130px;
+  width: 110px;
+  height: 110px;
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid #ced4da;
@@ -74,10 +85,18 @@ body div.dx-overlay.dx-popup.attendingmeets-popup-wrapper div.dx-overlay-content
 .attendingmeets-modal-photo:hover {
   box-shadow: 0 0 4px 2px rgba(13, 110, 253, 0.4);
 }
+.attendingmeets-modal-siblings {
+  max-height: 110px;
+  overflow-y: auto;
+}
+.attendingmeets-sibling-item {
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
 @media (max-width: 576px) {
   .attendingmeets-modal-photo {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
   }
 }
 

@@ -23,6 +23,13 @@
     return (gathering && gathering.id) ? String(gathering.id) : `future_${gathering ? gathering.meet_id : ''}_${gathering ? gathering.start : ''}`;
   };
 
+  const formatAttendanceDisplay = (count, enrolled) => {
+    if (enrolled !== undefined && enrolled !== null && enrolled > 0) {
+      return `${count}/${enrolled}`;
+    }
+    return String(count);
+  };
+
   const registerGathering = (gathering) => {
     if (!gathering) return null;
     const meetStartKey = (gathering.meet_id && gathering.start) ? `${gathering.meet_id}_${gathering.start}` : '';
@@ -34,7 +41,8 @@
         meet_display_name: gathering.meet_display_name || '',
         start: gathering.start,
         finish: gathering.finish,
-        attendances_count: (gathering.attendances_count !== undefined) ? gathering.attendances_count : 0
+        attendances_count: (gathering.attendances_count !== undefined) ? gathering.attendances_count : 0,
+        enrolled_count: (gathering.enrolled_count !== undefined) ? gathering.enrolled_count : null
       };
       if (meetStartKey) gatheringsRegistry.set(meetStartKey, existing);
     } else {
@@ -46,6 +54,7 @@
       if (gathering.start && !existing.start) existing.start = gathering.start;
       if (gathering.finish && !existing.finish) existing.finish = gathering.finish;
       if (gathering.attendances_count !== undefined) existing.attendances_count = gathering.attendances_count;
+      if (gathering.enrolled_count !== undefined) existing.enrolled_count = gathering.enrolled_count;
     }
 
     if (existing.id) {
@@ -340,10 +349,15 @@
       const regCol = gatheringsRegistry.get(colId);
       if (regCol) regCol.attendances_count = newCount;
 
+      const enrolled = targetGathering.enrolled_count !== undefined && targetGathering.enrolled_count !== null
+        ? targetGathering.enrolled_count
+        : ((targetGathering.id && gatheringsRegistry.get(String(targetGathering.id))?.enrolled_count) ?? gatheringsRegistry.get(colId)?.enrolled_count);
+      const displayCount = formatAttendanceDisplay(newCount, enrolled);
+
       // 1. Update Header count in DOM
       const headerEls = document.querySelectorAll(`.roster-header-count[data-col-id="${colId}"]`);
       headerEls.forEach(el => {
-        el.textContent = `(${newCount})`;
+        el.textContent = `(${displayCount})`;
       });
 
       // 2. Update Footer count in DOM
@@ -359,12 +373,12 @@
         const footerCells = document.querySelectorAll(`.dx-datagrid-total-footer td.roster-col-idx-${targetColIdx}, .dx-datagrid-total-footer .roster-col-idx-${targetColIdx}`);
         footerCells.forEach(cell => {
           const item = cell.querySelector('.dx-datagrid-summary-item') || cell;
-          item.textContent = `${newCount}`;
+          item.textContent = displayCount;
         });
       }
       const customFooterEls = document.querySelectorAll(`.roster-footer-count[data-col-id="${colId}"]`);
       customFooterEls.forEach(el => {
-        el.textContent = `${newCount}`;
+        el.textContent = displayCount;
       });
     };
 
@@ -1109,6 +1123,127 @@
       }
     };
 
+    const formatContactLinks = (attendeeData) => {
+      if (!attendeeData) return '';
+      const contactsDict = attendeeData.infos_contacts || {};
+      const links = [];
+
+      // If infos_contacts dict is present and non-empty, use it
+      if (typeof contactsDict === 'object' && contactsDict !== null && Object.keys(contactsDict).length > 0) {
+        for (const [key, rawVal] of Object.entries(contactsDict)) {
+          if (!rawVal) continue;
+          const val = String(rawVal).trim();
+          if (!val) continue;
+
+          if (key.toLowerCase().includes('email') || val.includes('@')) {
+            links.push(`
+              <a href="mailto:${val}" class="text-decoration-none text-primary me-2 d-inline-flex align-items-center" title="Send email: ${val}">
+                <i class="fas fa-envelope me-1 text-secondary"></i>${val}
+              </a>
+            `);
+          } else if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('tel') || key.toLowerCase().includes('mobile') || key.toLowerCase().includes('cell')) {
+            const cleanPhone = val.replace(/[^0-9+]/g, '');
+            links.push(`
+              <span class="d-inline-flex align-items-center me-2">
+                <a href="tel:${cleanPhone}" class="text-decoration-none text-primary me-1" title="Call: ${val}">
+                  <i class="fas fa-phone me-1 text-secondary"></i>${val}
+                </a>
+                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small" title="Send text: ${val}">(Text)</a>
+              </span>
+            `);
+          } else {
+            links.push(`<span class="text-muted me-2">${val}</span>`);
+          }
+        }
+      }
+
+      // If no links built from dict but contacts string exists (fallback)
+      if (links.length === 0 && attendeeData.contacts) {
+        const parts = String(attendeeData.contacts).split(',').map(s => s.trim()).filter(Boolean);
+        for (const part of parts) {
+          if (part.includes('@')) {
+            links.push(`
+              <a href="mailto:${part}" class="text-decoration-none text-primary me-2 d-inline-flex align-items-center" title="Send email: ${part}">
+                <i class="fas fa-envelope me-1 text-secondary"></i>${part}
+              </a>
+            `);
+          } else if (/[0-9]{7,}/.test(part.replace(/[^0-9]/g, ''))) {
+            const cleanPhone = part.replace(/[^0-9+]/g, '');
+            links.push(`
+              <span class="d-inline-flex align-items-center me-2">
+                <a href="tel:${cleanPhone}" class="text-decoration-none text-primary me-1" title="Call: ${part}">
+                  <i class="fas fa-phone me-1 text-secondary"></i>${part}
+                </a>
+                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small" title="Send text: ${part}">(Text)</a>
+              </span>
+            `);
+          } else {
+            links.push(`<span class="text-muted me-2">${part}</span>`);
+          }
+        }
+      }
+
+      if (links.length === 0) return '';
+      return `<div class="attendingmeets-modal-contacts d-flex flex-wrap align-items-center small mt-1">${links.join('')}</div>`;
+    };
+
+    const createHeaderElement = (attendeeData) => {
+      const headerEl = document.createElement('div');
+      headerEl.className = 'attendingmeets-modal-header d-flex align-items-start p-2 bg-light rounded border';
+
+      let photoHtml = '';
+      if (attendeeData && attendeeData.photo_url) {
+        photoHtml = `
+          <a href="${attendeeData.photo_url}" target="_blank" title="Click to view full image" class="me-3 d-inline-block flex-shrink-0">
+            <img src="${attendeeData.photo_url}" class="attendingmeets-modal-photo" alt="${attendeeData.attendee_name || 'Attendee'}">
+          </a>
+        `;
+      } else {
+        photoHtml = `
+          <div class="attendingmeets-modal-photo d-flex justify-content-center align-items-center bg-white text-muted me-3 flex-shrink-0">
+            <i class="fas fa-user fa-3x text-secondary"></i>
+          </div>
+        `;
+      }
+
+      const attendeeId = (attendeeData && attendeeData.attendee_id) || '';
+      const attendeeName = (attendeeData && attendeeData.attendee_name) || '';
+      const contactsHtml = formatContactLinks(attendeeData);
+
+      let siblingsHtml = '';
+      if (attendeeData && Array.isArray(attendeeData.siblings) && attendeeData.siblings.length > 0) {
+        const siblingItems = attendeeData.siblings.map(s => {
+          const colorClass = s.attending ? 'text-success fw-semibold' : 'text-muted';
+          const infoLink = s.id ? ` <u><a href="/persons/attendee/${s.id}" target="_blank" class="attendee-info-link small" title="Open sibling profile page">(Info)</a></u>` : '';
+          return `
+            <div class="attendingmeets-sibling-item text-truncate" title="${s.name} (${s.attending ? 'Attending' : 'Not attending'})">
+              <span class="${colorClass}">• ${s.name}</span>${infoLink}
+            </div>
+          `;
+        }).join('');
+
+        siblingsHtml = `
+          <div class="attendingmeets-modal-siblings mt-2 pt-1 border-top">
+            <div class="text-muted small fw-semibold mb-1"><i class="fas fa-user-friends me-1"></i>Siblings:</div>
+            ${siblingItems}
+          </div>
+        `;
+      }
+
+      headerEl.innerHTML = `
+        ${photoHtml}
+        <div class="attendingmeets-modal-info flex-grow-1" style="min-width: 0;">
+          <div class="d-flex align-items-center flex-wrap">
+            <span class="fs-5 fw-bold text-dark me-2">${attendeeName}</span>
+            ${attendeeId ? `<u><a href="/persons/attendee/${attendeeId}" target="_blank" class="attendee-info-link" title="Open attendee profile page">(Info)</a></u>` : ''}
+          </div>
+          ${contactsHtml}
+          ${siblingsHtml}
+        </div>
+      `;
+      return headerEl;
+    };
+
     const createFormConfig = (am) => {
       const isMobile = window.innerWidth < 768;
       const selectedAssemblies = getSelectedAssemblies();
@@ -1169,53 +1304,75 @@
         },
         items: [
           {
-            dataField: 'meet',
-            editorType: 'dxSelectBox',
-            label: { text: 'Meet' },
-            helpText: "What's the activity?",
-            validationRules: [{ type: 'required' }],
-            editorOptions: {
-              value: am.meet,
-              dataSource: availableMeets,
-              valueExpr: 'id',
-              displayExpr: 'display_name',
-              searchEnabled: true,
-              placeholder: 'Select meet...'
+            colSpan: 1,
+            cssClass: 'attendingmeets-top-left-header-item',
+            label: { visible: false },
+            template: (data, itemElement) => {
+              if (currentAttendeeData) {
+                const headerEl = createHeaderElement(currentAttendeeData);
+                const target = (itemElement && itemElement.jquery) ? itemElement[0] : itemElement;
+                if (target && target.appendChild) {
+                  target.appendChild(headerEl);
+                }
+              }
             }
           },
           {
-            dataField: 'attending',
-            editorType: 'dxSelectBox',
-            label: { text: 'Attending' },
-            helpText: "who?",
-            validationRules: [{ type: 'required' }],
-            editorOptions: {
-              value: am.attending,
-              dataSource: [attendingItem],
-              valueExpr: 'id',
-              displayExpr: 'attending_label',
-              readOnly: true,
-              placeholder: 'Select attending...'
-            }
-          },
-          {
-            dataField: 'character',
-            editorType: 'dxSelectBox',
-            label: { text: 'Character' },
-            helpText: 'define participation role',
-            validationRules: [{ type: 'required' }],
-            editorOptions: {
-              value: am.character,
-              dataSource: availableCharacters,
-              valueExpr: 'id',
-              displayExpr: 'display_name',
-              searchEnabled: true,
-              placeholder: 'Select character...'
-            }
+            itemType: 'group',
+            colSpan: 1,
+            cssClass: 'attendingmeets-top-right-group',
+            items: [
+              {
+                dataField: 'meet',
+                editorType: 'dxSelectBox',
+                label: { text: 'Meet' },
+                helpText: "What's the activity?",
+                validationRules: [{ type: 'required' }],
+                editorOptions: {
+                  value: am.meet,
+                  dataSource: availableMeets,
+                  valueExpr: 'id',
+                  displayExpr: 'display_name',
+                  searchEnabled: true,
+                  placeholder: 'Select meet...'
+                }
+              },
+              {
+                dataField: 'attending',
+                editorType: 'dxSelectBox',
+                label: { text: 'Attending' },
+                helpText: "who?",
+                validationRules: [{ type: 'required' }],
+                editorOptions: {
+                  value: am.attending,
+                  dataSource: [attendingItem],
+                  valueExpr: 'id',
+                  displayExpr: 'attending_label',
+                  readOnly: true,
+                  placeholder: 'Select attending...'
+                }
+              },
+              {
+                dataField: 'character',
+                editorType: 'dxSelectBox',
+                label: { text: 'Character' },
+                helpText: 'define participation role',
+                validationRules: [{ type: 'required' }],
+                editorOptions: {
+                  value: am.character,
+                  dataSource: availableCharacters,
+                  valueExpr: 'id',
+                  displayExpr: 'display_name',
+                  searchEnabled: true,
+                  placeholder: 'Select character...'
+                }
+              }
+            ]
           },
           {
             dataField: 'team',
             editorType: 'dxSelectBox',
+            colSpan: 1,
             label: { text: 'Team' },
             helpText: '(Optional) joining team',
             editorOptions: {
@@ -1231,6 +1388,7 @@
           {
             dataField: 'category',
             editorType: 'dxSelectBox',
+            colSpan: 1,
             label: { text: 'Category' },
             helpText: 'What type of participation?',
             validationRules: [{ type: 'required' }],
@@ -1247,6 +1405,7 @@
           {
             dataField: 'start',
             editorType: 'dxDateBox',
+            colSpan: 1,
             label: { text: 'Start' },
             helpText: 'participation start time in browser timezone',
             validationRules: [{ type: 'required' }],
@@ -1260,6 +1419,7 @@
           {
             dataField: 'finish',
             editorType: 'dxDateBox',
+            colSpan: 1,
             label: { text: 'Finish' },
             helpText: 'participation end time in browser timezone',
             validationRules: [{ type: 'required' }],
@@ -1290,43 +1450,11 @@
     const renderPopupContent = (container) => {
       container.innerHTML = '';
 
-      if (currentAttendeeData) {
-        const headerEl = document.createElement('div');
-        headerEl.className = 'attendingmeets-modal-header d-flex align-items-center p-2 mb-3 bg-light rounded border';
-
-        let photoHtml = '';
-        if (currentAttendeeData.photo_url) {
-          photoHtml = `
-            <a href="${currentAttendeeData.photo_url}" target="_blank" title="Click to view full image" class="me-3 d-inline-block flex-shrink-0">
-              <img src="${currentAttendeeData.photo_url}" class="attendingmeets-modal-photo" alt="${currentAttendeeData.attendee_name || 'Attendee'}">
-            </a>
-          `;
-        } else {
-          photoHtml = `
-            <div class="attendingmeets-modal-photo d-flex justify-content-center align-items-center bg-white text-muted me-3 flex-shrink-0">
-              <i class="fas fa-user fa-3x text-secondary"></i>
-            </div>
-          `;
-        }
-
-        const attendeeId = currentAttendeeData.attendee_id || '';
-        const attendeeName = currentAttendeeData.attendee_name || '';
-        const contactsStr = currentAttendeeData.contacts || '';
-
-        headerEl.innerHTML = `
-          ${photoHtml}
-          <div class="attendingmeets-modal-info flex-grow-1" style="min-width: 0;">
-            <div class="d-flex align-items-center flex-wrap">
-              <span class="fs-5 fw-bold text-dark me-2">${attendeeName}</span>
-              ${attendeeId ? `<u><a href="/persons/attendee/${attendeeId}" target="_blank" class="attendee-info-link" title="Open attendee profile page">(Info)</a></u>` : ''}
-            </div>
-            ${contactsStr ? `<div class="text-muted small mt-1 text-truncate" title="${contactsStr}"><i class="fas fa-address-book me-1"></i>${contactsStr}</div>` : ''}
-          </div>
-        `;
-        container.appendChild(headerEl);
-      }
-
       if (!currentSortedMeets.length) {
+        if (currentAttendeeData) {
+          const headerEl = createHeaderElement(currentAttendeeData);
+          container.appendChild(headerEl);
+        }
         const alertEl = document.createElement('div');
         alertEl.className = 'alert alert-info mt-3';
         alertEl.textContent = 'No enrollments (attendingmeets) found for this attendee under the selected meet(s).';
@@ -1609,15 +1737,17 @@
         || '';
       const timeStr = formatDate(colMeta ? colMeta.start : '');
       const count = (colMeta && colMeta.attendances_count !== undefined) ? colMeta.attendances_count : 0;
+      const enrolled = (colMeta && colMeta.enrolled_count !== undefined) ? colMeta.enrolled_count : null;
+      const displayCount = formatAttendanceDisplay(count, enrolled);
       const colId = options.column.name || (colMeta ? getColumnIdentifier(colMeta) : '');
 
       const wrapper = document.createElement('div');
       wrapper.className = 'text-center roster-header-cell';
       wrapper.style.cursor = 'pointer';
       if (isMultiMeet && meetName) {
-        wrapper.innerHTML = `<div class="roster-header-meet">${meetName}</div><div class="roster-header-time">${timeStr}</div><div class="roster-header-count" data-col-id="${colId}">(${count})</div>`;
+        wrapper.innerHTML = `<div class="roster-header-meet">${meetName}</div><div class="roster-header-time">${timeStr}</div><div class="roster-header-count" data-col-id="${colId}">(${displayCount})</div>`;
       } else {
-        wrapper.innerHTML = `<div class="roster-header-time single">${timeStr}</div><div class="roster-header-count" data-col-id="${colId}">(${count})</div>`;
+        wrapper.innerHTML = `<div class="roster-header-time single">${timeStr}</div><div class="roster-header-count" data-col-id="${colId}">(${displayCount})</div>`;
       }
 
       wrapper.addEventListener('click', () => {
@@ -2094,7 +2224,8 @@
             customizeText: (itemInfo) => {
               const reg = gatheringsRegistry.get(colId);
               const count = (reg && reg.attendances_count !== undefined) ? reg.attendances_count : (itemInfo && itemInfo.value !== undefined ? itemInfo.value : 0);
-              return String(count);
+              const enrolled = (reg && reg.enrolled_count !== undefined) ? reg.enrolled_count : null;
+              return formatAttendanceDisplay(count, enrolled);
             }
           });
         });
@@ -2166,9 +2297,11 @@
             gridInstanceRef.value.columnOption(colId, 'caption', targetCaption);
           }
           const count = (registered && registered.attendances_count !== undefined) ? registered.attendances_count : 0;
+          const enrolled = (registered && registered.enrolled_count !== undefined) ? registered.enrolled_count : null;
+          const displayCount = formatAttendanceDisplay(count, enrolled);
           const headerEls = document.querySelectorAll(`.roster-header-count[data-col-id="${colId}"]`);
           headerEls.forEach(el => {
-            el.textContent = `(${count})`;
+            el.textContent = `(${displayCount})`;
           });
         });
         if (gridInstanceRef.value && typeof gridInstanceRef.value.repaint === 'function') {
@@ -2421,6 +2554,7 @@
     const initDataGrid = (dataGridEl) => {
       gridInstanceRef.value = new DevExpress.ui.dxDataGrid(dataGridEl, {
         dataSource: [],
+        repaintChangesOnly: true,
         showBorders: true,
         rowAlternationEnabled: true,
         allowColumnResizing: true,

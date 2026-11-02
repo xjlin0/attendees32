@@ -145,6 +145,7 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             meet_slugs=meet_slugs,
             start=start,
             finish=finish,
+            current_user=request.user,
         )
 
         _, rows, total_count = RosterService.get_roster_data(

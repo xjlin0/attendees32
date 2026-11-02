@@ -47,9 +47,11 @@ class RosterService:
                     "id": g.id,
                     "display_name": g.display_name,
                     "start": g.start.isoformat() if g.start else None,
+                    "finish": g.finish.isoformat() if g.finish else None,
                     "meet_id": g.meet_id,
                     "meet_display_name": g.meet.display_name if g.meet else "",
                     "attendances_count": getattr(g, 'attendances_count', 0),
+                    "enrolled_count": getattr(g, 'enrolled_count', 0),
                     "_start_dt": g.start,
                 }
                 for g in gatherings
@@ -345,6 +347,7 @@ class RosterService:
                 "team__display_order": attendee.team__display_order,
                 "character__display_name": attendee.character__display_name,
                 "contacts": contacts_str,
+                "infos_contacts": contacts_dict,
                 "attendances": attendee.attendances,
                 "attendingmeets": attendee.attendingmeets,
                 "total_attendances": attendee.total_attendances,
