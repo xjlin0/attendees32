@@ -83,13 +83,13 @@ test.describe('Rosters List Page', () => {
       expect(dataRowCount).toBeGreaterThan(0);
     }).toPass({ timeout: 15000 });
 
-    // 6. Test the "Show Photos" checkbox behavior
+    // 6. Test the "Photo" checkbox behavior
     // By default, photos are not shown, so .attendee-photo should not exist
     const photoElements = page.locator('td:not(.dx-hidden-cell) .attendee-photo');
     await expect(photoElements).toHaveCount(0);
 
-    // Click the "Show Photos" checkbox label
-    await page.locator('text=Show Photos').click();
+    // Click the "Photo" checkbox label
+    await page.locator('text=Photo').click();
 
     // Now .attendee-photo elements should appear in the visible grid
     await expect(photoElements.first()).toBeVisible({ timeout: 5000 });

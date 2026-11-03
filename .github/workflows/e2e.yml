@@ -26,8 +26,6 @@ jobs:
     - name: Install Playwright Browsers
       timeout-minutes: 15
       run: npx playwright install --with-deps chromium
-      env:
-        DEBUG: "pw:install"
 
     - name: Build and Start Django Docker Environment
       run: |
