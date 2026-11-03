@@ -17,13 +17,17 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: lts/*
+        node-version: 22
+        cache: npm
 
     - name: Install Node dependencies
-      run: npm install
+      run: npm ci
 
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      timeout-minutes: 15
+      run: npx playwright install --with-deps chromium
+      env:
+        DEBUG: "pw:install"
 
     - name: Build and Start Django Docker Environment
       run: |
