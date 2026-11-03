@@ -237,9 +237,24 @@ def test_organization_meet_rosters_grouping(api_client, setup_objects):
     group_item = data["rows"][0]
     assert group_item["key"] == "Test Team"
     assert "items" in group_item
-    assert len(group_item["items"]) == 1
+    assert group_item["items"] is None
     assert group_item["count"] == 1
-    assert group_item["items"][0]["attendee_name"] == "John Doe"
+
+    # In DevExtreme groupPaging, child rows are loaded remotely via filter
+    filter_param = json.dumps([["team__display_name", "=", "Test Team"]])
+    child_response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "filter": filter_param,
+        },
+    )
+    assert child_response.status_code == 200
+    child_data = child_response.json()
+    assert len(child_data["rows"]) == 1
+    assert child_data["rows"][0]["attendee_name"] == "John Doe"
 
 
 @pytest.mark.django_db

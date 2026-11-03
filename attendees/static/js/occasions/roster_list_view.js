@@ -711,7 +711,7 @@ Attendees.roster = {
     },
     pager: {
       visible: true,
-      allowedPageSizes: [40, 200, 9999],
+      allowedPageSizes: [20, 40, 200, 9999],
       showPageSizeSelector: true,
       showInfo: true,
       showNavigationButtons: true,

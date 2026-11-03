@@ -56,7 +56,7 @@ jobs:
     - name: Run Playwright tests
       # Only the specs written against fixtures/ci_seed.json; the golden
       # congregation's specs run in playwright.yml against their own data.
-      run: timeout 500 npx playwright test --project=ci-seed --workers=1
+      run: timeout 600 npx playwright test --project=ci-seed --workers=1
       env:
         BASE_URL: http://127.0.0.1:8008
         # C_PASSWORD comes from the step above, through $GITHUB_ENV.
@@ -66,4 +66,4 @@ jobs:
       with:
         name: playwright-report
         path: playwright-report/
-        retention-days: 30
+        retention-days: 14

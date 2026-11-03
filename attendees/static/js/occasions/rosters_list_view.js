@@ -19,6 +19,15 @@
     return (m && m.infos) ? m.infos.signature_required_at : null;
   };
 
+  const checkHasKidMeet = (selectedSlugs) => {
+    const slugs = selectedSlugs || [];
+    return slugs.some(slug => {
+      const m = meetsMap.get(slug) || meetsMap.get(String(slug));
+      const showInfos = m?.show_attendee_infos || (m?.infos && m.infos.show_attendee_infos) || {};
+      return Boolean(showInfos['infos-grade'] || showInfos['grade']);
+    });
+  };
+
   const getColumnIdentifier = (gathering) => {
     return (gathering && gathering.id) ? String(gathering.id) : `future_${gathering ? gathering.meet_id : ''}_${gathering ? gathering.start : ''}`;
   };
@@ -354,8 +363,19 @@
         : ((targetGathering.id && gatheringsRegistry.get(String(targetGathering.id))?.enrolled_count) ?? gatheringsRegistry.get(colId)?.enrolled_count);
       const displayCount = formatAttendanceDisplay(newCount, enrolled);
 
+      // Keep columnOption gatheringMeta up to date so any subsequent re-render reads newCount
+      if (gridInstanceRef && gridInstanceRef.value && colId) {
+        const colMeta = gridInstanceRef.value.columnOption(colId, 'gatheringMeta');
+        if (colMeta) {
+          colMeta.attendances_count = newCount;
+          colMeta.enrolled_count = enrolled;
+        }
+      }
+
       // 1. Update Header count in DOM
-      const headerEls = document.querySelectorAll(`.roster-header-count[data-col-id="${colId}"]`);
+      const targetIds = [colId, targetGathering.id ? String(targetGathering.id) : null].filter(Boolean);
+      const headerSelector = targetIds.map(id => `.roster-header-count[data-col-id="${id}"]`).join(', ');
+      const headerEls = document.querySelectorAll(headerSelector);
       headerEls.forEach(el => {
         el.textContent = `(${displayCount})`;
       });
@@ -1123,32 +1143,77 @@
       }
     };
 
-    const formatContactLinks = (attendeeData) => {
-      if (!attendeeData) return '';
-      const contactsDict = attendeeData.infos_contacts || {};
-      const links = [];
+    const endCurrentEnrollment = async () => {
+      if (!currentSortedMeets.length || !currentAttendeeData) return;
+      const targetAm = currentSortedMeets[currentActiveIndex];
+      if (!targetAm) return;
 
-      // If infos_contacts dict is present and non-empty, use it
-      if (typeof contactsDict === 'object' && contactsDict !== null && Object.keys(contactsDict).length > 0) {
-        for (const [key, rawVal] of Object.entries(contactsDict)) {
+      const nowIso = new Date().toISOString();
+      const payload = {
+        finish: nowIso
+      };
+
+      try {
+        const updateRes = await fetch(`${endpoints.attendingmeets}${targetAm.id}/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Target-Attendee-Id': String(currentAttendeeData.attendee_id)
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!updateRes.ok) {
+          const errData = await updateRes.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Failed to end attendingmeet');
+        }
+
+        DevExpress.ui.notify(
+          {
+            message: 'Enrollment ended successfully',
+            position: { my: 'center', at: 'center', of: window }
+          },
+          'success',
+          2000
+        );
+
+        if (popupInstance) popupInstance.hide();
+        if (gridInstanceRef && gridInstanceRef.value) {
+          gridInstanceRef.value.refresh();
+        }
+      } catch (err) {
+        console.error('Error ending attendingmeet:', err);
+        DevExpress.ui.notify(err.message || 'Error ending attendingmeet', 'error', WARNING_NOTIFY_TIME);
+      }
+    };
+
+    const extractContactElements = (contactsDict, fallbackContactsStr, includeTypeIcons = true) => {
+      const links = [];
+      const dict = contactsDict || {};
+
+      if (typeof dict === 'object' && dict !== null && Object.keys(dict).length > 0) {
+        for (const [key, rawVal] of Object.entries(dict)) {
           if (!rawVal) continue;
           const val = String(rawVal).trim();
           if (!val) continue;
 
           if (key.toLowerCase().includes('email') || val.includes('@')) {
+            const iconHtml = includeTypeIcons ? '<i class="fas fa-envelope me-1 text-secondary"></i>' : '';
             links.push(`
               <a href="mailto:${val}" class="text-decoration-none text-primary me-2 d-inline-flex align-items-center" title="Send email: ${val}">
-                <i class="fas fa-envelope me-1 text-secondary"></i>${val}
+                ${iconHtml}${val}
               </a>
             `);
           } else if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('tel') || key.toLowerCase().includes('mobile') || key.toLowerCase().includes('cell')) {
             const cleanPhone = val.replace(/[^0-9+]/g, '');
+            const iconHtml = includeTypeIcons ? '<i class="fas fa-phone me-1 text-secondary"></i>' : '';
             links.push(`
               <span class="d-inline-flex align-items-center me-2">
                 <a href="tel:${cleanPhone}" class="text-decoration-none text-primary me-1" title="Call: ${val}">
-                  <i class="fas fa-phone me-1 text-secondary"></i>${val}
+                  ${iconHtml}${val}
                 </a>
-                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small" title="Send text: ${val}">(Text)</a>
+                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small d-inline-flex align-items-center" title="Send text: ${val}"><i class="fas fa-comment me-1 text-success"></i>text</a>
               </span>
             `);
           } else {
@@ -1157,24 +1222,25 @@
         }
       }
 
-      // If no links built from dict but contacts string exists (fallback)
-      if (links.length === 0 && attendeeData.contacts) {
-        const parts = String(attendeeData.contacts).split(',').map(s => s.trim()).filter(Boolean);
+      if (links.length === 0 && fallbackContactsStr) {
+        const parts = String(fallbackContactsStr).split(',').map(s => s.trim()).filter(Boolean);
         for (const part of parts) {
           if (part.includes('@')) {
+            const iconHtml = includeTypeIcons ? '<i class="fas fa-envelope me-1 text-secondary"></i>' : '';
             links.push(`
               <a href="mailto:${part}" class="text-decoration-none text-primary me-2 d-inline-flex align-items-center" title="Send email: ${part}">
-                <i class="fas fa-envelope me-1 text-secondary"></i>${part}
+                ${iconHtml}${part}
               </a>
             `);
           } else if (/[0-9]{7,}/.test(part.replace(/[^0-9]/g, ''))) {
             const cleanPhone = part.replace(/[^0-9+]/g, '');
+            const iconHtml = includeTypeIcons ? '<i class="fas fa-phone me-1 text-secondary"></i>' : '';
             links.push(`
               <span class="d-inline-flex align-items-center me-2">
                 <a href="tel:${cleanPhone}" class="text-decoration-none text-primary me-1" title="Call: ${part}">
-                  <i class="fas fa-phone me-1 text-secondary"></i>${part}
+                  ${iconHtml}${part}
                 </a>
-                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small" title="Send text: ${part}">(Text)</a>
+                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small d-inline-flex align-items-center" title="Send text: ${part}"><i class="fas fa-comment me-1 text-success"></i>text</a>
               </span>
             `);
           } else {
@@ -1183,8 +1249,50 @@
         }
       }
 
+      return links;
+    };
+
+    const formatContactLinks = (attendeeData) => {
+      if (!attendeeData) return '';
+      const links = extractContactElements(attendeeData.infos_contacts, attendeeData.contacts, true);
       if (links.length === 0) return '';
       return `<div class="attendingmeets-modal-contacts d-flex flex-wrap align-items-center small mt-1">${links.join('')}</div>`;
+    };
+
+    const formatParentsContactLinks = (attendeeData) => {
+      if (!attendeeData || !Array.isArray(attendeeData.parents) || attendeeData.parents.length === 0) {
+        return '';
+      }
+
+      const parentBlocks = [];
+      for (const parent of attendeeData.parents) {
+        const parentName = parent.name || 'Parent';
+        const pId = parent.id || '';
+        const nameHtml = pId
+          ? `<u><a href="/persons/attendee/${pId}" target="_blank" class="attendee-info-link text-secondary fw-semibold me-1" title="Open parent profile page">${parentName}:</a></u>`
+          : `<span class="fw-semibold text-secondary me-1">${parentName}:</span>`;
+
+        const contactElements = extractContactElements(parent.infos_contacts, parent.contacts, false);
+        const contactsContent = contactElements.length > 0
+          ? contactElements.join('')
+          : `<span class="text-muted me-2">(no contacts)</span>`;
+
+        parentBlocks.push(`
+          <span class="d-inline-flex align-items-center me-3 my-1 flex-wrap">
+            ${nameHtml}
+            ${contactsContent}
+          </span>
+        `);
+      }
+
+      if (parentBlocks.length === 0) return '';
+
+      return `
+        <div class="attendingmeets-modal-parents d-flex flex-wrap align-items-center small mt-1">
+          <i class="fas fa-people-roof me-2 text-secondary" title="Parents / Guardians"></i>
+          ${parentBlocks.join('')}
+        </div>
+      `;
     };
 
     const createHeaderElement = (attendeeData) => {
@@ -1209,6 +1317,7 @@
       const attendeeId = (attendeeData && attendeeData.attendee_id) || '';
       const attendeeName = (attendeeData && attendeeData.attendee_name) || '';
       const contactsHtml = formatContactLinks(attendeeData);
+      const parentsHtml = formatParentsContactLinks(attendeeData);
 
       let siblingsHtml = '';
       if (attendeeData && Array.isArray(attendeeData.siblings) && attendeeData.siblings.length > 0) {
@@ -1217,7 +1326,7 @@
           const infoLink = s.id ? ` <u><a href="/persons/attendee/${s.id}" target="_blank" class="attendee-info-link small" title="Open sibling profile page">(Info)</a></u>` : '';
           return `
             <div class="attendingmeets-sibling-item text-truncate" title="${s.name} (${s.attending ? 'Attending' : 'Not attending'})">
-              <span class="${colorClass}">• ${s.name}</span>${infoLink}
+              <u class="sibling-search-link ${colorClass}" role="button" data-name="${s.name}" title="Click to search this sibling in the roster">• ${s.name}</u>${infoLink}
             </div>
           `;
         }).join('');
@@ -1238,9 +1347,22 @@
             ${attendeeId ? `<u><a href="/persons/attendee/${attendeeId}" target="_blank" class="attendee-info-link" title="Open attendee profile page">(Info)</a></u>` : ''}
           </div>
           ${contactsHtml}
+          ${parentsHtml}
           ${siblingsHtml}
         </div>
       `;
+
+      headerEl.querySelectorAll('.sibling-search-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const name = link.getAttribute('data-name');
+          if (popupInstance) popupInstance.hide();
+          if (name && gridInstanceRef && gridInstanceRef.value) {
+            gridInstanceRef.value.searchByText(name);
+          }
+        });
+      });
+
       return headerEl;
     };
 
@@ -1557,12 +1679,11 @@
           location: 'after',
           widget: 'dxButton',
           options: {
-            text: 'Save',
-            type: 'success',
-            icon: 'save',
+            text: 'End',
+            type: 'danger',
             stylingMode: 'contained',
             visible: currentSortedMeets.length > 0,
-            onClick: saveCurrentForm
+            onClick: endCurrentEnrollment
           }
         },
         {
@@ -1570,10 +1691,12 @@
           location: 'after',
           widget: 'dxButton',
           options: {
-            text: 'Cancel',
-            icon: 'close',
-            stylingMode: 'outlined',
-            onClick: () => popupInstance.hide()
+            text: 'Save',
+            type: 'success',
+            icon: 'save',
+            stylingMode: 'contained',
+            visible: currentSortedMeets.length > 0,
+            onClick: saveCurrentForm
           }
         }
       ];
@@ -1728,7 +1851,10 @@
     });
 
     const gatheringHeaderTemplate = (container, options) => {
-      const colMeta = options.column.gatheringMeta || (options.column.name && gatheringsRegistry.get(options.column.name));
+      const regMeta = (options.column.name && gatheringsRegistry.get(options.column.name))
+        || (options.column.gatheringMeta && options.column.gatheringMeta.id && gatheringsRegistry.get(String(options.column.gatheringMeta.id)))
+        || options.column.gatheringMeta;
+      const colMeta = regMeta || options.column.gatheringMeta;
       const colIdx = options.column.colIndex !== undefined ? options.column.colIndex : (options.columnIndex - 5);
       const isMultiMeet = filterData && filterData.meets && filterData.meets.length > 1;
       const meetName = (colMeta && colMeta.meet_display_name)
@@ -1795,7 +1921,7 @@
       if (filterData.showSiblings && Array.isArray(data.siblings) && data.siblings.length > 0) {
         const siblingLines = data.siblings.map(s => {
           const colorClass = s.attending ? 'text-success fw-semibold' : 'text-muted';
-          return `<div class="attendee-sibling-item text-truncate" title="${s.name} (${s.attending ? 'Attending' : 'Not attending'})"><span class="text-secondary me-1" style="font-size: 0.85em;">👥</span><span class="${colorClass}">${s.name}</span></div>`;
+          return `<div class="attendee-sibling-item text-truncate" title="${s.name} (${s.attending ? 'Attending' : 'Not attending'})"><span class="text-secondary me-1" style="font-size: 0.85em;">👥</span><u class="sibling-search-link ${colorClass}" role="button" data-name="${s.name}" title="Click to search this sibling in the roster">${s.name}</u></div>`;
         }).join('');
         siblingsHtml = `<div class="attendee-siblings">${siblingLines}</div>`;
       }
@@ -1816,6 +1942,17 @@
         if (attendingMeetsEditor) {
           attendingMeetsEditor.openAttendingMeetsPopup(data);
         }
+      });
+
+      wrapper.querySelectorAll('.sibling-search-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const name = link.getAttribute('data-name');
+          if (name && gridInstanceRef && gridInstanceRef.value) {
+            gridInstanceRef.value.searchByText(name);
+          }
+        });
       });
 
       container.append(wrapper);
@@ -2045,6 +2182,144 @@
       container.append(linesWrapper);
     };
 
+    const gradeCellTemplate = (container, options) => {
+      const data = options.data;
+      if (!data) return;
+      const attendeeId = data.attendee_id;
+      if (!attendeeId) return;
+
+      loadGradeConverter();
+      const gradeOptions = [
+        { id: null, label: '(None)' },
+        ...gradeConverter
+      ];
+
+      const rawGrade = data.grade !== undefined ? data.grade : null;
+      const currentGrade = (rawGrade !== null && rawGrade !== '') ? Number(rawGrade) : null;
+      const currentGradeObj = gradeOptions.find(g => g.id === currentGrade);
+      const displayLabel = currentGradeObj ? currentGradeObj.label : (currentGrade !== null ? String(currentGrade) : '(None)');
+
+      const lineContainer = document.createElement('div');
+      lineContainer.className = 'roster-inline-cell-line';
+
+      const valSpan = document.createElement('span');
+      valSpan.innerText = displayLabel;
+      if (!currentGradeObj || currentGradeObj.id === null) {
+        valSpan.classList.add('empty-val');
+      }
+
+      if (endpoints.userCanWrite) {
+        valSpan.className += ' roster-editable-val';
+        let isEditing = false;
+        valSpan.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (isEditing) return;
+          isEditing = true;
+
+          const editorContainer = document.createElement('div');
+          editorContainer.className = 'roster-inline-editor-container';
+
+          valSpan.style.display = 'none';
+          lineContainer.appendChild(editorContainer);
+
+          let selectBoxInstance = null;
+          let changeHandled = false;
+
+          const cleanup = () => {
+            if (selectBoxInstance) {
+              try {
+                selectBoxInstance.dispose();
+              } catch (ignore) {}
+              selectBoxInstance = null;
+            }
+            if (editorContainer.parentNode) {
+              editorContainer.parentNode.removeChild(editorContainer);
+            }
+            valSpan.style.display = '';
+            isEditing = false;
+          };
+
+          selectBoxInstance = new DevExpress.ui.dxSelectBox(editorContainer, {
+            dataSource: gradeOptions,
+            valueExpr: 'id',
+            displayExpr: 'label',
+            value: currentGrade,
+            searchEnabled: true,
+            width: '100%',
+            dropDownOptions: {
+              minWidth: 140,
+            },
+            onValueChanged: async (event) => {
+              if (event.value === currentGrade) {
+                cleanup();
+                return;
+              }
+              changeHandled = true;
+              try {
+                const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                const newGrade = (event.value !== null && event.value !== undefined) ? Number(event.value) : null;
+                const payload = {
+                  infos: {
+                    fixed: {
+                      grade: newGrade
+                    }
+                  }
+                };
+
+                const patchUrl = `/persons/api/datagrid_data_attendee/${attendeeId}/`;
+                const response = await fetch(patchUrl, {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf,
+                    'X-Target-Attendee-Id': String(attendeeId),
+                  },
+                  body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                  const errJson = await response.json().catch(() => ({}));
+                  throw new Error(errJson.detail || errJson.error || 'Failed to update grade');
+                }
+
+                data.grade = newGrade;
+                const updatedObj = gradeOptions.find(item => item.id === newGrade);
+                valSpan.innerText = updatedObj ? updatedObj.label : '(None)';
+                if (updatedObj && updatedObj.id !== null) {
+                  valSpan.classList.remove('empty-val');
+                } else {
+                  valSpan.classList.add('empty-val');
+                }
+
+                DevExpress.ui.notify('Grade updated successfully', 'success', 2000);
+              } catch (err) {
+                console.error('Error patching grade', err);
+                DevExpress.ui.notify('Update failed: ' + err.message, 'error', WARNING_NOTIFY_TIME);
+              } finally {
+                cleanup();
+              }
+            },
+            onClosed: () => {
+              setTimeout(() => {
+                if (!changeHandled && isEditing) {
+                  cleanup();
+                }
+              }, 100);
+            }
+          });
+
+          setTimeout(() => {
+            if (selectBoxInstance) {
+              selectBoxInstance.open();
+            }
+          }, 50);
+        });
+      }
+
+      lineContainer.appendChild(valSpan);
+      container.append(lineContainer);
+    };
+
     const attendanceCellTemplate = (container, options) => {
       const data = options.data;
       const colName = options.column.name;
@@ -2114,7 +2389,7 @@
       const currentCols = gridInstanceRef.value.option('columns');
       let colsChanged = false;
       
-      const FIXED_PREFIX_COUNT = 5;
+      const FIXED_PREFIX_COUNT = 6;
       const TOTAL_EXTRA_COLS = FIXED_PREFIX_COUNT + 1; // plus 1 dummy-column
 
       if (!currentCols || currentCols.length !== serverColumns.length + TOTAL_EXTRA_COLS) {
@@ -2143,6 +2418,17 @@
             cellTemplate: attendeeCellTemplate,
             allowSorting: true,
             allowHiding: false
+          },
+          {
+            dataField: 'grade',
+            caption: 'Grade',
+            visible: checkHasKidMeet(filterData.meets),
+            allowHiding: true,
+            fixed: true,
+            fixedPosition: 'left',
+            width: 85,
+            cellTemplate: gradeCellTemplate,
+            allowSorting: true
           },
           {
             dataField: 'team__display_name',
@@ -2313,6 +2599,8 @@
     const loadData = (targetAttendeeId, targetGatheringId) => {
       return new Promise(async (resolve) => {
         if (!filterData.meets || !filterData.meets.length) {
+          gatheringsRegistry.clear();
+          updateGridColumns([], []);
           if (gridInstanceRef.value) {
             gridInstanceRef.value.option('dataSource', []);
           }
@@ -2380,18 +2668,25 @@
                   pageParams.set('skip', loadOptions.skip || 0);
                   pageParams.set('take', loadOptions.take || currentTake || 40);
 
+                  if (loadOptions.requireTotalCount !== undefined) {
+                    pageParams.set('requireTotalCount', loadOptions.requireTotalCount);
+                  }
+                  if (loadOptions.requireGroupCount !== undefined) {
+                    pageParams.set('requireGroupCount', loadOptions.requireGroupCount);
+                  }
+
                   if (loadOptions.sort) {
                     pageParams.set('sort', JSON.stringify(loadOptions.sort));
                   }
 
                   if (loadOptions.group) {
-                    const adjustedGroup = loadOptions.group.map(g => ({ ...g, isExpanded: true }));
-                    pageParams.set('group', JSON.stringify(adjustedGroup));
+                    pageParams.set('group', JSON.stringify(loadOptions.group));
                   }
 
                   if (loadOptions.searchValue) {
                     pageParams.set('searchValue', loadOptions.searchValue);
-                  } else if (loadOptions.filter) {
+                  }
+                  if (loadOptions.filter) {
                     pageParams.set('filter', JSON.stringify(loadOptions.filter));
                   }
 
@@ -2402,7 +2697,8 @@
                   isStoreLoadCompleted = true;
                   return {
                     data: pageData.data || pageData.rows,
-                    totalCount: pageData.totalCount
+                    totalCount: pageData.totalCount,
+                    groupCount: pageData.groupCount,
                   };
 
                 } catch (error) {
@@ -2562,7 +2858,9 @@
         columnAutoWidth: true,
         hoverStateEnabled: true,
         noDataText: "No data found. Please select a meet to load.",
-        remoteOperations: { groupPaging: true },
+        remoteOperations: {
+          groupPaging: true
+        },
         paging: {
           enabled: true,
           pageSize: 40,
@@ -2695,6 +2993,17 @@
             allowHiding: false
           },
           {
+            dataField: 'grade',
+            caption: 'Grade',
+            visible: checkHasKidMeet(filterData.meets),
+            allowHiding: true,
+            fixed: true,
+            fixedPosition: 'left',
+            width: 85,
+            cellTemplate: gradeCellTemplate,
+            allowSorting: true
+          },
+          {
             dataField: 'team__display_name',
             caption: 'Team',
             fixed: true,
@@ -2766,7 +3075,11 @@
                   const gridKey = Attendees.utilities.datagridStorageKeys['rostersListView'];
                   window.sessionStorage.removeItem(optsKey);
                   window.sessionStorage.removeItem(gridKey);
+                  gatheringsRegistry.clear();
+                  updateGridColumns([], []);
                   if (gridInstanceRef.value) {
+                    gridInstanceRef.value.clearGrouping();
+                    gridInstanceRef.value.clearSorting();
                     gridInstanceRef.value.state(null);
                   }
                   if (typeof onResetCallback === 'function') {
@@ -2821,9 +3134,13 @@
         const sibEditor = formInstance.getEditor('showSiblings');
         if (sibEditor) sibEditor.option('value', true);
         formInstance.itemOption('showSiblings', 'visible', false);
+        formInstance.itemOption('meets', 'colSpan', 12);
         formInstance.getEditor('meets').option('value', []);
       }
+      gatheringsRegistry.clear();
       if (gridInstanceRef.value) {
+        gridInstanceRef.value.clearGrouping();
+        gridInstanceRef.value.clearSorting();
         gridInstanceRef.value.option('dataSource', []);
       }
     };
@@ -2831,12 +3148,12 @@
     const initFilterForm = (filterFormEl) => {
       formInstance = new DevExpress.ui.dxForm(filterFormEl, {
         formData: filterData,
-        colCount: 5,
+        colCount: 24,
         colCountByScreen: {
           xs: 1,
           sm: 2,
-          md: 3,
-          lg: 5
+          md: 4,
+          lg: 24
         },
         onFieldDataChanged: (e) => {
           filterData[e.dataField] = e.value;
@@ -2863,6 +3180,7 @@
               const currentItem = formInstance.itemOption('showSiblings');
               if (currentItem && currentItem.visible !== shouldShow) {
                 formInstance.itemOption('showSiblings', 'visible', shouldShow);
+                formInstance.itemOption('meets', 'colSpan', shouldShow ? 10 : 12);
               }
             }
           }
@@ -2883,6 +3201,7 @@
           {
             dataField: 'startDate',
             editorType: 'dxDateBox',
+            colSpan: 5,
             label: { text: 'From' },
             editorOptions: { 
               type: 'datetime', 
@@ -2894,6 +3213,7 @@
           {
             dataField: 'endDate',
             editorType: 'dxDateBox',
+            colSpan: 5,
             label: { text: 'To' },
             editorOptions: { 
               type: 'datetime', 
@@ -2905,6 +3225,8 @@
           {
             dataField: 'meets',
             editorType: 'dxTagBox',
+            colSpan: checkHasKidMeet(filterData.meets) ? 10 : 12,
+            cssClass: 'filter-item-meets',
             label: { text: 'Meets' },
             editorOptions: {
               grouped: true,
@@ -2967,6 +3289,7 @@
                       const currentItem = formInstance.itemOption('showSiblings');
                       if (currentItem && currentItem.visible !== shouldShow) {
                         formInstance.itemOption('showSiblings', 'visible', shouldShow);
+                        formInstance.itemOption('meets', 'colSpan', shouldShow ? 10 : 12);
                       }
                     }
 
@@ -2981,12 +3304,16 @@
             dataField: 'showPhotos',
             name: 'showPhotos',
             editorType: 'dxCheckBox',
+            colSpan: 2,
+            cssClass: 'filter-item-checkbox',
             label: { text: 'Photo' }
           },
           {
             dataField: 'showSiblings',
             name: 'showSiblings',
             editorType: 'dxCheckBox',
+            colSpan: 2,
+            cssClass: 'filter-item-checkbox',
             label: { text: 'Show Siblings' },
             visible: checkHasKidMeet(filterData.meets)
           }
