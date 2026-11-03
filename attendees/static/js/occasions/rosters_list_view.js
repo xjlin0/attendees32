@@ -1213,7 +1213,7 @@
                 <a href="tel:${cleanPhone}" class="text-decoration-none text-primary me-1" title="Call: ${val}">
                   ${iconHtml}${val}
                 </a>
-                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small d-inline-flex align-items-center" title="Send text: ${val}"><i class="fas fa-comment me-1 text-success"></i>text</a>
+                <a href="sms:${cleanPhone}" class="text-decoration-none text-success d-inline-flex align-items-center" title="Send text: ${val}"><i class="fas fa-comment me-1 text-success"></i>text</a>
               </span>
             `);
           } else {
@@ -1240,7 +1240,7 @@
                 <a href="tel:${cleanPhone}" class="text-decoration-none text-primary me-1" title="Call: ${part}">
                   ${iconHtml}${part}
                 </a>
-                <a href="sms:${cleanPhone}" class="text-decoration-none text-success small d-inline-flex align-items-center" title="Send text: ${part}"><i class="fas fa-comment me-1 text-success"></i>text</a>
+                <a href="sms:${cleanPhone}" class="text-decoration-none text-success d-inline-flex align-items-center" title="Send text: ${part}"><i class="fas fa-comment me-1 text-success"></i>text</a>
               </span>
             `);
           } else {
@@ -1289,7 +1289,7 @@
 
       return `
         <div class="attendingmeets-modal-parents d-flex flex-wrap align-items-center small mt-1">
-          <i class="fas fa-people-roof me-2 text-secondary" title="Parents / Guardians"></i>
+          <i class="fas fa-home me-2 text-secondary" title="Parents / Guardians"></i>Parents:
           ${parentBlocks.join('')}
         </div>
       `;
@@ -1681,6 +1681,7 @@
           options: {
             text: 'End',
             type: 'danger',
+            icon: 'trash',
             stylingMode: 'contained',
             visible: currentSortedMeets.length > 0,
             onClick: endCurrentEnrollment

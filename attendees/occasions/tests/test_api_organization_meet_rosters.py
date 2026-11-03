@@ -564,6 +564,63 @@ def test_organization_meet_rosters_kid_meet_siblings(api_client, setup_objects):
     assert teacher_row["siblings"] == []
 
 
+@pytest.mark.django_db
+def test_organization_meet_rosters_filter_by_contacts_and_search_by_text(api_client, setup_objects):
+    import json
+    url = reverse("occasions:organization_meet_rosters-list")
+    api_client.force_login(setup_objects["user"])
+    meet = setup_objects["meet"]
+
+    # Set contact on John Doe
+    john = setup_objects["attendee"]
+    john.infos = {
+        **(john.infos or {}),
+        "contacts": {"phone1": "510-555-1234", "email1": "johndoe@example.com"}
+    }
+    john.save()
+
+    # 1. DevExtreme searchByText sends a compound OR filter including contacts
+    filter_expr = [
+        ["attendee_name", "contains", "John Doe"],
+        "or",
+        ["team__display_name", "contains", "John Doe"],
+        "or",
+        ["character__display_name", "contains", "John Doe"],
+        "or",
+        ["contacts", "contains", "John Doe"]
+    ]
+
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "filter": json.dumps(filter_expr),
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["totalCount"] == 1
+    assert data["rows"][0]["attendee_name"] == "John Doe"
+
+    # 2. Searching directly for a contact info (e.g. phone number)
+    phone_filter = [["contacts", "contains", "510-555"]]
+    response_phone = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "filter": json.dumps(phone_filter),
+        },
+    )
+    assert response_phone.status_code == 200
+    assert response_phone.json()["totalCount"] == 1
+
+
+
 
 
 

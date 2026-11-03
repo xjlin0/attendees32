@@ -1,4 +1,5 @@
 from django.contrib.postgres.aggregates import JSONBAgg, StringAgg
+from django.core.exceptions import FieldError
 from django.db.models import (
     CharField,
     Count,
@@ -207,7 +208,10 @@ class RosterService:
         ).distinct().order_by(*normalized_sort_list)
 
         if extra_filters:
-            attendees_qs = attendees_qs.filter(extra_filters)
+            try:
+                attendees_qs = attendees_qs.filter(extra_filters)
+            except FieldError:
+                pass
 
         total_count = attendees_qs.count()
         attendees_page = attendees_qs[skip: skip + take]
@@ -478,26 +482,57 @@ class RosterService:
             if len(expr) == 3 and isinstance(expr[1], str):
                 field, operator, val = expr[0], expr[1].lower(), expr[2]
                 if field in ("team", "team__display_name"):
-                    target_field = "team__display_name"
+                    target_field = "attendings__attendingmeet__team__display_name" if operator == "contains" else "team__display_name"
                 elif field in ("character", "character__display_name"):
-                    target_field = "character__display_name"
+                    target_field = "attendings__attendingmeet__character__display_name" if operator == "contains" else "character__display_name"
                 elif field == "grade":
                     target_field = "grade"
                 elif field == "attendee_name":
+                    parts = str(val).split() if val else []
                     if operator == "contains":
-                        return (
+                        name_q = (
                             Q(first_name__icontains=val) |
                             Q(last_name__icontains=val) |
                             Q(first_name2__icontains=val) |
                             Q(last_name2__icontains=val) |
                             Q(infos__names__original__icontains=val)
                         )
+                        if len(parts) >= 2:
+                            name_q |= (
+                                (Q(first_name__icontains=parts[0]) & Q(last_name__icontains=parts[-1])) |
+                                (Q(last_name__icontains=parts[0]) & Q(first_name__icontains=parts[-1])) |
+                                (Q(first_name2__icontains=parts[0]) & Q(last_name2__icontains=parts[-1])) |
+                                (Q(last_name2__icontains=parts[0]) & Q(first_name2__icontains=parts[-1]))
+                            )
+                        return name_q
                     elif operator == "=":
                         return (
                             Q(first_name=val) |
                             Q(last_name=val) |
                             Q(infos__names__original=val)
                         )
+                    return Q()
+                elif field in ("contacts", "infos_contacts"):
+                    if operator == "contains":
+                        return Q(infos__contacts__icontains=val) | Q(infos__icontains=val)
+                    elif operator == "notcontains":
+                        return ~(Q(infos__contacts__icontains=val) | Q(infos__icontains=val))
+                    elif operator == "=":
+                        if val is None or val == "":
+                            return Q(infos__contacts__isnull=True) | Q(infos__isnull=True)
+                        return Q(infos__contacts__icontains=val)
+                    elif operator == "<>":
+                        if val is None or val == "":
+                            return Q(infos__contacts__isnull=False) & ~Q(infos__isnull=True)
+                        return ~Q(infos__contacts__icontains=val)
+                    return Q()
+                elif field == "total_attendances":
+                    target_field = "total_attendances"
+                elif field in ("attendee_id", "id"):
+                    target_field = "id"
+                elif field == "attending_id":
+                    target_field = "attendings__id"
+                elif field in ("siblings", "parents", "attendances", "attendingmeets", "photo_url"):
                     return Q()
                 else:
                     target_field = field
@@ -610,7 +645,10 @@ class RosterService:
             attendees_qs = attendees_qs.filter(search_filter)
 
         if extra_filters:
-            attendees_qs = attendees_qs.filter(extra_filters)
+            try:
+                attendees_qs = attendees_qs.filter(extra_filters)
+            except FieldError:
+                pass
 
         if group_column in ("team__display_name", "team"):
             db_field = 'attendings__attendingmeet__team__display_name'
