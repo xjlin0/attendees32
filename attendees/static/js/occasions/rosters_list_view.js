@@ -13,6 +13,17 @@
   const meetsInfoMap = new Map();
   const meetsMap = new Map();
 
+  const escapeHtml = (str) => {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[m]);
+  };
+
   const getMeetSignatureRequiredAt = (meetId) => {
     if (!meetId) return null;
     const m = meetsMap.get(meetId) || meetsMap.get(String(meetId));
@@ -1786,6 +1797,188 @@
     let activeHighlightedIndex = null;
     let lastHighlightedGathering = null;
     let highlightStyleEl = null;
+    let lastNewcomer = null;
+    let newcomerPopupInstance = null;
+
+    const setLastNewcomer = (info) => {
+      lastNewcomer = info;
+      renderFooterNewcomer();
+    };
+
+    const clearLastNewcomer = () => {
+      lastNewcomer = null;
+      renderFooterNewcomer();
+    };
+
+    const locateAttendeeInGrid = (newcomer) => {
+      if (!gridInstanceRef.value || !newcomer) return;
+      const rawId = newcomer.id != null ? newcomer.id : newcomer.attendee_id;
+      const numId = Number(rawId);
+      const targetId = !isNaN(numId) ? numId : rawId;
+
+      const getRowIndex = () => {
+        let idx = gridInstanceRef.value.getRowIndexByKey(targetId);
+        if (idx < 0 && typeof targetId === 'number') idx = gridInstanceRef.value.getRowIndexByKey(String(targetId));
+        if (idx < 0 && !isNaN(numId)) idx = gridInstanceRef.value.getRowIndexByKey(numId);
+        return idx;
+      };
+
+      const applySelectionAndVisuals = () => {
+        try {
+          const keysToSelect = [targetId];
+          if (typeof targetId === 'number') keysToSelect.push(String(targetId));
+          gridInstanceRef.value.selectRows(keysToSelect, false);
+          const rIdx = getRowIndex();
+          if (rIdx >= 0) {
+            const rowEl = gridInstanceRef.value.getRowElement(rIdx);
+            const domEl = rowEl && (rowEl[0] || (rowEl.length ? rowEl[0] : rowEl));
+            if (domEl) {
+              if (typeof domEl.scrollIntoView === 'function') {
+                domEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+              domEl.classList.add('roster-row-newly-added');
+              setTimeout(() => domEl.classList.remove('roster-row-newly-added'), 3500);
+            }
+          }
+        } catch (e) {
+          console.warn('Error applying row selection:', e);
+        }
+      };
+
+      // 1. Check if the attendee is already on the current visible page
+      const rowIndex = getRowIndex();
+      if (rowIndex >= 0) {
+        applySelectionAndVisuals();
+        DevExpress.ui.notify(`Located: ${newcomer.name}`, 'success', 2000);
+        return;
+      }
+
+      // 2. If not on current page, filter grid to this newcomer
+      if (typeof gridInstanceRef.value.searchByText === 'function') {
+        const onContentReady = () => {
+          gridInstanceRef.value.off('contentReady', onContentReady);
+          applySelectionAndVisuals();
+        };
+        gridInstanceRef.value.on('contentReady', onContentReady);
+        gridInstanceRef.value.searchByText(newcomer.name);
+        DevExpress.ui.notify(`Filtered roster for: ${newcomer.name}`, 'info', 2500);
+      }
+    };
+
+    const showNewcomerCard = (newcomer) => {
+      if (!newcomer) return;
+      let container = document.getElementById('roster-newcomer-popup');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'roster-newcomer-popup';
+        document.body.appendChild(container);
+      }
+
+      if (newcomerPopupInstance) {
+        newcomerPopupInstance.dispose();
+      }
+
+      const gradeText = (newcomer.grade !== '' && newcomer.grade !== undefined && newcomer.grade !== null)
+        ? (window.Attendees?.utilities?.gradeNames ? window.Attendees.utilities.gradeNames[newcomer.grade] || `Grade ${newcomer.grade}` : `Grade ${newcomer.grade}`)
+        : '';
+
+      newcomerPopupInstance = new DevExpress.ui.dxPopup(container, {
+        width: 320,
+        height: 'auto',
+        showTitle: true,
+        title: 'Newcomer Added',
+        showCloseButton: true,
+        dragEnabled: true,
+        wrapperAttr: {
+          class: 'newcomer-card-popup'
+        },
+        contentTemplate: (contentElement) => {
+          const contentEl = (contentElement && contentElement[0]) ? contentElement[0] : contentElement;
+          contentEl.innerHTML = `
+            <div class="newcomer-card-body p-2">
+              <div class="d-flex align-items-center mb-3">
+                <div class="avatar-circle bg-success-subtle text-success border border-success-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; font-weight: bold; font-size: 1.1em;">
+                  <i class="fas fa-user-check"></i>
+                </div>
+                <div class="flex-grow-1 overflow-hidden">
+                  <div class="fw-bold text-truncate fs-6" title="${escapeHtml(newcomer.name)}">${escapeHtml(newcomer.name)}</div>
+                  <div class="text-muted small">${escapeHtml(newcomer.gender || '')}${gradeText ? ` · ${escapeHtml(gradeText)}` : ''}</div>
+                </div>
+              </div>
+              
+              <div class="mb-3 p-2 bg-light rounded border">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-secondary small"><i class="fas fa-users me-1"></i>Team:</span>
+                  <span class="fw-semibold small">${escapeHtml(newcomer.team || 'Unassigned')}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-secondary small"><i class="fas fa-check-circle me-1 text-success"></i>Status:</span>
+                  <span class="badge bg-success-subtle text-success border border-success"><i class="fas fa-check me-1"></i>Checked In</span>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-primary btn-sm btn-locate-in-roster">
+                  <i class="fas fa-search me-1"></i>Locate in Roster
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm btn-close-newcomer-card">
+                  Close
+                </button>
+              </div>
+            </div>
+          `;
+
+          contentEl.querySelector('.btn-close-newcomer-card')?.addEventListener('click', () => {
+            newcomerPopupInstance.hide();
+          });
+
+          contentEl.querySelector('.btn-locate-in-roster')?.addEventListener('click', () => {
+            newcomerPopupInstance.hide();
+            locateAttendeeInGrid(newcomer);
+          });
+        }
+      });
+
+      newcomerPopupInstance.show();
+    };
+
+    const renderFooterNewcomer = () => {
+      const cells = document.querySelectorAll('.roster-footer-newcomer-cell');
+      if (!cells || cells.length === 0) return;
+
+      cells.forEach(cell => {
+        const targetEl = cell.querySelector('.dx-datagrid-summary-item') || cell;
+        if (!lastNewcomer) {
+          targetEl.innerHTML = '';
+          return;
+        }
+
+        targetEl.innerHTML = `
+          <div class="roster-footer-newcomer-pill" title="Last added attendee, click to view details">
+            <i class="fas fa-address-card text-warning me-1"></i>
+            <span class="roster-footer-newcomer-name">${escapeHtml(lastNewcomer.name || 'New Attendee')}</span>
+            <span class="badge bg-success text-white ms-1 px-1 py-0" style="font-size: 0.7em;" title="Checked in"><i class="fas fa-check"></i></span>
+            <button type="button" class="roster-footer-newcomer-close ms-2" aria-label="Dismiss" title="Dismiss">&times;</button>
+          </div>
+        `;
+
+        const closeBtn = targetEl.querySelector('.roster-footer-newcomer-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearLastNewcomer();
+          });
+        }
+
+        const pill = targetEl.querySelector('.roster-footer-newcomer-pill');
+        if (pill) {
+          pill.addEventListener('click', (e) => {
+            if (e.target.closest('.roster-footer-newcomer-close')) return;
+            showNewcomerCard(lastNewcomer);
+          });
+        }
+      });
+    };
 
     const getHighlightStyleEl = () => {
       if (!highlightStyleEl) {
@@ -2476,9 +2669,16 @@
           {
             column: 'attendee_name',
             summaryType: 'custom',
+            alignment: 'left',
+            cssClass: 'roster-footer-newcomer-cell',
+            customizeText: () => ''
+          },
+          {
+            column: 'total_attendances',
+            summaryType: 'custom',
             alignment: 'right',
             cssClass: 'roster-footer-label-cell',
-            customizeText: () => 'Total Check-ins:'
+            customizeText: () => 'Attendance:'
           }
         ];
 
@@ -2748,44 +2948,8 @@
                 await applySelectionAndVisuals();
                 return;
               }
-
-              // If not on current page, check where the attendee is located across the roster
-              try {
-                const findParams = new URLSearchParams();
-                filterData.meets.forEach(meet => findParams.append('meets[]', meet));
-                if (filterData.startDate) findParams.set('start', filterData.startDate.toISOString());
-                if (filterData.endDate) findParams.set('finish', filterData.endDate.toISOString());
-                findParams.set('skip', 0);
-                findParams.set('take', 9999);
-
-                const allRes = await fetch(`${endpoints.rosters}?${findParams.toString()}`);
-                if (allRes.ok) {
-                  const allData = await allRes.json();
-                  const allRows = allData.data || allData.rows || [];
-                  const foundIdx = allRows.findIndex(r => String(r.attendee_id) === primaryId);
-                  if (foundIdx >= 0) {
-                    const pageSize = gridInstanceRef.value.pageSize() || 40;
-                    const targetPage = Math.floor(foundIdx / pageSize);
-                    if (gridInstanceRef.value.pageIndex() !== targetPage) {
-                      const onTargetPageReady = async () => {
-                        gridInstanceRef.value.off('contentReady', onTargetPageReady);
-                        await applySelectionAndVisuals();
-                      };
-                      gridInstanceRef.value.on('contentReady', onTargetPageReady);
-                      gridInstanceRef.value.pageIndex(targetPage);
-                      return;
-                    }
-                  }
-                }
-              } catch (e) {
-                console.warn('Auto page navigation error:', e);
-              }
-
-              // Fallback
-              await applySelectionAndVisuals();
-              if (typeof gridInstanceRef.value.navigateToRow === 'function') {
-                gridInstanceRef.value.navigateToRow(primaryId);
-              }
+              // If not on the current page, do NOT force page change away from Page 1!
+              // The newcomer status is safely and prominently shown in the footer before 'Attendance:'.
             };
 
             let safetyTimer = null;
@@ -2800,6 +2964,7 @@
               if (targetGatheringId) {
                 highlightGatheringColumn(targetGatheringId);
               }
+              renderFooterNewcomer();
               resolve();
             };
 
@@ -2812,6 +2977,7 @@
                 if (targetGatheringId) {
                   highlightGatheringColumn(targetGatheringId);
                 }
+                renderFooterNewcomer();
               }
               resolve();
             }, 1000);
@@ -3090,6 +3256,9 @@
               }
             }
           });
+        },
+        onContentReady: () => {
+          renderFooterNewcomer();
         }
       });
     };
@@ -3099,7 +3268,9 @@
       loadData,
       getHighlightedGathering: () => activeHighlightedIndex !== null ? lastHighlightedGathering : null,
       clearColumnHighlight,
-      highlightGatheringColumn
+      highlightGatheringColumn,
+      setLastNewcomer,
+      clearLastNewcomer
     };
   }
 
@@ -3397,7 +3568,7 @@
   // ==========================================================
   // 6. Add Attendee / Fast Onboarding Logic
   // ==========================================================
-  function useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering, highlightGatheringColumn) {
+  function useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering, highlightGatheringColumn, setLastNewcomer) {
     let popupInstance = null;
     let selectedMeetSlug = '';
     let selectedGatheringId = null;
@@ -4938,6 +5109,18 @@
         const attData = await attRes.json().catch(() => ({}));
         const confirmedGatheringId = attData.gathering || targetGatheringId || null;
 
+        if (typeof setLastNewcomer === 'function') {
+          setLastNewcomer({
+            id: cand.id,
+            name: cand.name || `${cand.first_name || ''} ${cand.last_name || ''}`.trim(),
+            grade: cand.infos?.grade ?? cand.grade ?? '',
+            team: cand.team_name || cand.team || '',
+            gender: cand.gender || '',
+            gatheringId: confirmedGatheringId,
+            checkedIn: true
+          });
+        }
+
         DevExpress.ui.notify(`Enrolled and checked in ${cand.name} successfully!`, 'success', 2500);
         if (popupInstance) popupInstance.hide();
         await loadData(cand.id, confirmedGatheringId);
@@ -5335,6 +5518,23 @@
         const registeredNames = (result.attendees && result.attendees.length > 1)
           ? result.attendees.map(a => a.attendee_name).join(', ')
           : (result.attendee_name || 'attendee');
+
+        if (typeof setLastNewcomer === 'function') {
+          const createdList = (result.attendees && result.attendees.length > 0)
+            ? result.attendees
+            : [result];
+          const lastCreated = createdList[createdList.length - 1];
+          setLastNewcomer({
+            id: lastCreated.attendee_id || result.attendee_id,
+            name: lastCreated.attendee_name || result.attendee_name,
+            grade: lastCreated.grade ?? '',
+            team: lastCreated.team_name ?? '',
+            gender: lastCreated.gender ?? result.gender ?? '',
+            gatheringId: result.gathering_id || gatheringId,
+            checkedIn: true
+          });
+        }
+
         DevExpress.ui.notify(`Registered ${registeredNames} and checked in successfully!`, 'success', SUCCESS_NOTIFY_TIME);
         if (popupInstance) popupInstance.hide();
         const targetAttendeeIds = (result.attendees && result.attendees.length > 0)
@@ -5534,7 +5734,14 @@
       const attendanceLogic = useAttendanceLogic(endpoints, gridInstanceRef);
       const attendingMeetsEditor = useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData);
       const resetFiltersRef = { current: null };
-      const { initDataGrid, loadData, getHighlightedGathering, highlightGatheringColumn } = useRosterGrid(
+      const {
+        initDataGrid,
+        loadData,
+        getHighlightedGathering,
+        highlightGatheringColumn,
+        setLastNewcomer,
+        clearLastNewcomer
+      } = useRosterGrid(
         endpoints, 
         filterData, 
         gridInstanceRef, 
@@ -5546,7 +5753,15 @@
       resetFiltersRef.current = resetFilters;
 
       const { startPolling, stopPolling } = useSmartPolling(gridInstanceRef, filterData);
-      const { initAddAttendeePopup, openAddAttendeePopup } = useAddAttendee(endpoints, filterData, gridInstanceRef, loadData, getHighlightedGathering, highlightGatheringColumn);
+      const { initAddAttendeePopup, openAddAttendeePopup } = useAddAttendee(
+        endpoints, 
+        filterData, 
+        gridInstanceRef, 
+        loadData, 
+        getHighlightedGathering, 
+        highlightGatheringColumn,
+        setLastNewcomer
+      );
 
       // Lifecycle
       onMounted(() => {

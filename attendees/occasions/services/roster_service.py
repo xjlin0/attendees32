@@ -209,11 +209,14 @@ class RosterService:
 
         if extra_filters:
             try:
-                attendees_qs = attendees_qs.filter(extra_filters)
-            except FieldError:
-                pass
+                filtered_qs = attendees_qs.filter(extra_filters)
+                total_count = filtered_qs.count()
+                attendees_qs = filtered_qs
+            except (FieldError, ValueError):
+                total_count = attendees_qs.count()
+        else:
+            total_count = attendees_qs.count()
 
-        total_count = attendees_qs.count()
         attendees_page = attendees_qs[skip: skip + take]
 
         # 3. If kid meet, resolve siblings (display_order >= 10) in 2 O(N) passes using dictionary
@@ -458,6 +461,38 @@ class RosterService:
         return columns, rows, total_count
 
     @staticmethod
+    def _parse_numeric_filter(target_field, operator, val, is_nullable=True):
+        if val is None or val == "":
+            if operator == "=":
+                return Q(**{f"{target_field}__isnull": True}) if is_nullable else Q(id__isnull=True)
+            elif operator == "<>":
+                return Q(**{f"{target_field}__isnull": False}) if is_nullable else ~Q(id__isnull=True)
+            return Q()
+
+        try:
+            int_val = int(float(val))
+        except (ValueError, TypeError):
+            if operator in ("=", "contains", "startswith", "endswith", ">", ">=", "<", "<="):
+                return Q(id__isnull=True)
+            elif operator in ("<>", "notcontains"):
+                return Q(**{f"{target_field}__isnull": False}) if is_nullable else ~Q(id__isnull=True)
+            return Q(id__isnull=True)
+
+        if operator in ("=", "contains"):
+            return Q(**{target_field: int_val})
+        elif operator in ("<>", "notcontains"):
+            return ~Q(**{target_field: int_val})
+        elif operator == ">":
+            return Q(**{f"{target_field}__gt": int_val})
+        elif operator == ">=":
+            return Q(**{f"{target_field}__gte": int_val})
+        elif operator == "<":
+            return Q(**{f"{target_field}__lt": int_val})
+        elif operator == "<=":
+            return Q(**{f"{target_field}__lte": int_val})
+        return Q(**{target_field: int_val})
+
+    @staticmethod
     def parse_filter_expr(expr):
         if not expr:
             return Q()
@@ -486,7 +521,15 @@ class RosterService:
                 elif field in ("character", "character__display_name"):
                     target_field = "attendings__attendingmeet__character__display_name" if operator == "contains" else "character__display_name"
                 elif field == "grade":
-                    target_field = "grade"
+                    return RosterService._parse_numeric_filter("grade", operator, val, is_nullable=True)
+                elif field == "total_attendances":
+                    return RosterService._parse_numeric_filter("total_attendances", operator, val, is_nullable=False)
+                elif field in ("attendee_id", "id"):
+                    return RosterService._parse_numeric_filter("id", operator, val, is_nullable=False)
+                elif field == "attending_id":
+                    return RosterService._parse_numeric_filter("attendings__id", operator, val, is_nullable=False)
+                elif field in ("gender",):
+                    return RosterService._parse_numeric_filter("gender", operator, val, is_nullable=True)
                 elif field == "attendee_name":
                     parts = str(val).split() if val else []
                     if operator == "contains":
@@ -526,12 +569,6 @@ class RosterService:
                             return Q(infos__contacts__isnull=False) & ~Q(infos__isnull=True)
                         return ~Q(infos__contacts__icontains=val)
                     return Q()
-                elif field == "total_attendances":
-                    target_field = "total_attendances"
-                elif field in ("attendee_id", "id"):
-                    target_field = "id"
-                elif field == "attending_id":
-                    target_field = "attendings__id"
                 elif field in ("siblings", "parents", "attendances", "attendingmeets", "photo_url"):
                     return Q()
                 else:
@@ -647,7 +684,7 @@ class RosterService:
         if extra_filters:
             try:
                 attendees_qs = attendees_qs.filter(extra_filters)
-            except FieldError:
+            except (FieldError, ValueError):
                 pass
 
         if group_column in ("team__display_name", "team"):

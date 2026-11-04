@@ -620,6 +620,42 @@ def test_organization_meet_rosters_filter_by_contacts_and_search_by_text(api_cli
     assert response_phone.json()["totalCount"] == 1
 
 
+@pytest.mark.django_db
+def test_organization_meet_rosters_search_with_numeric_columns_and_groups(api_client, setup_objects):
+    import json
+    url = reverse("occasions:organization_meet_rosters-list")
+    api_client.force_login(setup_objects["user"])
+    meet = setup_objects["meet"]
+
+    # DevExtreme searchByText sends compound OR filter including numeric columns like grade
+    filter_expr = [
+        [
+            ["attendee_name", "contains", "zzza"],
+            "or",
+            ["grade", "=", "zzza"],
+            "or",
+            ["team__display_name", "=", "zzza"],
+            "or",
+            ["character__display_name", "contains", "zzza"],
+            "or",
+            ["contacts", "contains", "zzza"],
+        ],
+        "and",
+        ["team__display_name", "=", None],
+    ]
+
+    response = api_client.get(
+        url,
+        {
+            "meets[]": meet.slug,
+            "start": "2020-01-01T00:00:00Z",
+            "finish": "2030-12-31T23:59:59Z",
+            "filter": json.dumps(filter_expr),
+        },
+    )
+    assert response.status_code == 200
+
+
 
 
 

@@ -570,6 +570,18 @@ test.describe('Rosters List Page', () => {
     // 3a. Verify only ONE name is sufficient: Fill ONLY first_name, leave last_name and Chinese names empty
     await page.locator('.add-attendee-popup-wrapper input.ob-first-name').fill(uniqueFirstName);
 
+    // Ensure division is selected if required
+    const divSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-division');
+    if (await divSelect.isVisible()) {
+      const divVal = await divSelect.inputValue();
+      if (!divVal) {
+        const divOpts = await divSelect.locator('option').all();
+        if (divOpts.length > 1) {
+          await divSelect.selectOption({ index: 1 });
+        }
+      }
+    }
+
     // Check if this meet requires kid fields or guardian fields
     const isKidSectionVisible = await page.locator('.add-attendee-popup-wrapper .kid-specific-fields').isVisible();
     if (isKidSectionVisible) {
@@ -594,6 +606,21 @@ test.describe('Rosters List Page', () => {
 
     // Verify popup closes on success
     await expect(page.locator('.add-attendee-popup-wrapper')).toBeHidden({ timeout: 15000 });
+
+    // 5. Verify the newly onboarded attendee is shown in the footer pill before Attendance:
+    const newcomerPill = page.locator('.roster-footer-newcomer-pill').first();
+    await expect(newcomerPill).toBeVisible({ timeout: 10000 });
+    await expect(newcomerPill).toContainText(uniqueFirstName);
+
+    // Verify Attendance label in footer
+    const attendanceFooterLabel = page.locator('.roster-footer-label-cell').first();
+    await expect(attendanceFooterLabel).toContainText('Attendance:');
+
+    // Click newcomer pill to open details card and locate in roster
+    await newcomerPill.click();
+    const locateBtn = page.locator('.btn-locate-in-roster');
+    await expect(locateBtn).toBeVisible({ timeout: 5000 });
+    await locateBtn.click();
 
     // 5. Verify the newly onboarded attendee row is highlighted (selected) on the grid
     const selectedRow = page.locator('.dx-datagrid-rowsview .dx-data-row.dx-selection').first();
