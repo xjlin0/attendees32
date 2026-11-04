@@ -1,5 +1,5 @@
 import re
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
@@ -8,7 +8,6 @@ from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from attendees.occasions.models import Attendance, Character, Gathering, Meet
-from attendees.whereabouts.models import Division
 from attendees.persons.models import (
     Attendee,
     Attending,
@@ -20,6 +19,7 @@ from attendees.persons.models import (
     Relation,
     Utility,
 )
+from attendees.whereabouts.models import Division
 
 
 class FastOnboardService:
@@ -31,10 +31,22 @@ class FastOnboardService:
 
     @staticmethod
     def normalize_phone_number(val):
+        """
+        Normalizes a phone number string by stripping non-essential formatting characters.
+
+        :param val: Raw phone number string.
+        :return: Normalized phone number string, or empty string if input is falsy.
+        """
         return Utility.normalize_phone_number(val)
 
     @classmethod
     def _extract_contacts(cls, att_data):
+        """
+        Extracts and normalizes phone and email contacts from raw input data into an infos contacts dict.
+
+        :param att_data: Dictionary containing attendee or companion input fields.
+        :return: Dict of formatted contact entries (e.g. {'phone1': '...', 'email1': '...'}).
+        """
         contacts = {}
         raw_contacts = att_data.get("contacts")
         if isinstance(raw_contacts, list):
@@ -74,6 +86,22 @@ class FastOnboardService:
 
     @classmethod
     def _validate_and_normalize_attendees(cls, attendees_data, is_kid_meet, show_insurer, current_year, now_date, current_user, meet):
+        """
+        Validates, parses, and normalizes input dictionaries for all onboarded attendees.
+
+        Resolves actual/estimated birthdays, maps grade indices, validates divisions,
+        and constructs the fixed infos dictionary.
+
+        :param attendees_data: List of attendee input dicts.
+        :param is_kid_meet: Boolean indicating if target meet is configured as a kid meet.
+        :param show_insurer: Boolean indicating if medical insurer fields are captured.
+        :param current_year: Integer current year.
+        :param now_date: date object for today.
+        :param current_user: User instance executing the request.
+        :param meet: Meet instance being joined.
+        :return: List of validated attendee data dicts.
+        :raises ValidationError: If validation rules fail for any attendee.
+        """
         validated_attendees = []
 
         for idx, att_data in enumerate(attendees_data):
@@ -195,6 +223,15 @@ class FastOnboardService:
 
     @classmethod
     def _validate_companions(cls, companions, is_kid_meet, unaccompanied):
+        """
+        Validates companion list for kid meets and handles unaccompanied attendee flags.
+
+        :param companions: List of companion dictionaries.
+        :param is_kid_meet: Boolean indicating if target meet is for kids.
+        :param unaccompanied: Boolean flag indicating if child arrived alone.
+        :return: Warning string if unaccompanied, or None if valid.
+        :raises ValidationError: If companion data is missing or incomplete for a kid meet.
+        """
         if unaccompanied:
             return "⚠Missing companion info"
 
@@ -220,6 +257,22 @@ class FastOnboardService:
 
     @classmethod
     def _upsert_attendee(cls, att_id, first_name, last_name, first_name2, last_name2, gender, division, infos, actual_birthday=None, estimated_birthday=None, current_user=None):
+        """
+        Creates or updates an Attendee record and merges their infos JSON data.
+
+        :param att_id: Optional ID of existing Attendee to update.
+        :param first_name: First name (Latin/English).
+        :param last_name: Last name (Latin/English).
+        :param first_name2: First name (native script / alias).
+        :param last_name2: Last name (native script / alias).
+        :param gender: GenderEnum string value.
+        :param division: Division model instance.
+        :param infos: Dict of additional info fields to merge.
+        :param actual_birthday: Optional date for actual birthday.
+        :param estimated_birthday: Optional date for estimated birthday.
+        :param current_user: User instance performing the operation.
+        :return: Saved Attendee model instance.
+        """
         attendee = None
         if att_id:
             attendee = Attendee.objects.filter(pk=att_id, division__organization=current_user.organization).first()
@@ -262,6 +315,18 @@ class FastOnboardService:
 
     @classmethod
     def _link_kid_meet_folks(cls, created_attendees, created_companions, target_folk_id, create_new_folk):
+        """
+        Links child attendees and adult companions in family or non-family folk structures.
+
+        Derives reciprocal roles (parent/child, guardian/ward) and gender-specific roles
+        (father/mother, son/daughter), assigns display orders, and sets up emergency contact flags.
+
+        :param created_attendees: List of primary child Attendee instances.
+        :param created_companions: List of tuples (companion_attendee, raw_companion_dict).
+        :param target_folk_id: Optional target Folk ID to join.
+        :param create_new_folk: Boolean flag forcing creation of a new Folk family.
+        :return: The associated Folk instance for the family, or None.
+        """
         family_folk = None
         if not create_new_folk:
             if target_folk_id:
@@ -452,6 +517,19 @@ class FastOnboardService:
 
     @classmethod
     def _link_adult_meet_folks(cls, created_attendees, created_companions, target_folk_id, create_new_folk):
+        """
+        Links adult attendees and accompanying members into family folk structures.
+
+        Derives roles (husband, wife, spouse, child) according to gender and existing folk
+        composition, assigns display orders (1 for husband, 2 for wife, 11+ for children),
+        and establishes mutual emergency contacts.
+
+        :param created_attendees: List of primary adult Attendee instances.
+        :param created_companions: List of tuples (companion_attendee, raw_companion_dict).
+        :param target_folk_id: Optional target Folk ID to join.
+        :param create_new_folk: Boolean flag forcing creation of a new Folk family.
+        :return: The associated Folk family instance.
+        """
         all_family_members = list(created_attendees) + [c[0] for c in created_companions]
         primary_adult = created_attendees[0]
         first_comp = created_companions[0][0] if created_companions else None
@@ -597,6 +675,16 @@ class FastOnboardService:
 
     @classmethod
     def _resolve_gathering(cls, meet, gathering_id):
+        """
+        Resolves or dynamically creates a Gathering instance for the specified meet and occurrence time.
+
+        Supports existing gathering PKs, start timestamp strings (prefixed with 'start_'),
+        active gatherings, or defaults to the closest/new gathering for today.
+
+        :param meet: Meet model instance.
+        :param gathering_id: Integer PK, 'start_{iso_timestamp}' string, or None.
+        :return: Resolved or created Gathering instance.
+        """
         gathering = None
         if gathering_id:
             if str(gathering_id).isdigit():
@@ -655,6 +743,15 @@ class FastOnboardService:
 
     @classmethod
     def _enroll_and_record_attendance(cls, created_attendees, meet, gathering, special_check_in):
+        """
+        Enrolls attendees into the meet (via Attending and AttendingMeet) and records their Attendance.
+
+        :param created_attendees: List of Attendee instances to enroll.
+        :param meet: Meet model instance.
+        :param gathering: Gathering model instance (optional).
+        :param special_check_in: Optional check-in warning or note stored in AttendingMeet.infos.
+        :return: List of summary dicts with attendee, attending, attendingmeet, and attendance IDs.
+        """
         scheduled_cat = (
             Category.objects.filter(id=Attendee.SCHEDULED_CATEGORY).first()
             or Category.objects.filter(id=1).first()
@@ -749,7 +846,29 @@ class FastOnboardService:
         create_new_folk=False,
     ):
         """
-        Fast onboard one or more attendees (and optional companions) into a meet.
+        Fast onboards one or more attendees (and optional companions) into a meet.
+
+        Performs end-to-end processing within an atomic transaction:
+        1. Validates permissions, meet eligibility, attendee data, and companion requirements.
+        2. Upserts Attendee records for primary attendees and companions.
+        3. Dynamically resolves family/non-family relationships and reciprocal roles.
+        4. Resolves the appropriate Gathering occurrence.
+        5. Enrolls attendees (Attending, AttendingMeet) and records attendance.
+
+        :param current_user: Authenticated user executing the request.
+        :param meet_slug: String slug of the destination Meet.
+        :param attendees_data: List of attendee dicts (or single attendee dict).
+        :param companions: Optional list of companion dicts (or single companion dict).
+        :param unaccompanied: Boolean flag if child attendee has no companion.
+        :param gathering_id: Optional gathering ID or start timestamp string.
+        :param kid_data: Backward compatibility alias for attendees_data.
+        :param parent_data: Backward compatibility alias for companions.
+        :param target_folk_id: Optional existing Folk ID to attach attendees to.
+        :param create_new_folk: Boolean flag forcing creation of a new Folk.
+        :return: Dict containing primary attendee info, IDs, warnings, and family details.
+        :raises PermissionDenied: If user is not authenticated or lacks organization access.
+        :raises ValidationError: If required fields or business constraints fail validation.
+        :raises Http404: If the meet slug is not found.
         """
         if not current_user or not current_user.is_authenticated or not getattr(current_user, "organization", None):
             raise PermissionDenied("Authentication and organization are required.")

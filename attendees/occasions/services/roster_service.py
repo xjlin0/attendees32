@@ -17,8 +17,50 @@ from django.db.models.functions import Cast, Coalesce, Concat, Trim
 from attendees.occasions.models import Gathering, Meet
 from attendees.persons.models import Attendee, AttendingMeet, FolkAttendee
 
-
 class RosterService:
+    """
+    Service responsible for fetching, filtering, grouping, and transforming attendee roster data.
+    """
+
+    NUMERIC_FIELD_CONFIG = {
+        "grade": ("grade", True),
+        "total_attendances": ("total_attendances", False),
+        "id": ("id", False),
+        "attendee_id": ("id", False),
+        "attending_id": ("attendings__id", False),
+        "gender": ("gender", True),
+    }
+
+    NUMERIC_LOOKUPS = {
+        "=": "",
+        "contains": "",
+        ">": "__gt",
+        ">=": "__gte",
+        "<": "__lt",
+        "<=": "__lte",
+    }
+
+    STRING_LOOKUPS = {
+        "contains": "__icontains",
+        "notcontains": "__icontains",
+        "startswith": "__istartswith",
+        "endswith": "__iendswith",
+        ">": "__gt",
+        ">=": "__gte",
+        "<": "__lt",
+        "<=": "__lte",
+        "=": "",
+        "<>": "",
+    }
+
+    IGNORED_FILTER_FIELDS = {
+        "siblings",
+        "parents",
+        "attendances",
+        "attendingmeets",
+        "photo_url",
+    }
+
     @staticmethod
     def get_roster_data(
         organization,
@@ -33,6 +75,22 @@ class RosterService:
         current_user=None,
         columns=None,
     ):
+        """
+        Retrieves paginated, pivoted roster rows and columns for given meets and date range.
+
+        :param organization: Organization instance to scope queries.
+        :param meet_slugs: List of meet slug strings to filter by.
+        :param start: ISO datetime string or datetime boundary for gathering start.
+        :param finish: ISO datetime string or datetime boundary for gathering finish.
+        :param skip: Integer offset for pagination.
+        :param take: Integer count limit for pagination.
+        :param sort_list: Optional list of sort column strings (e.g. ['first_name', 'last_name']).
+        :param search_value: Optional text string for full-text / multi-field search.
+        :param extra_filters: Optional Q expression or DevExtreme compound filter.
+        :param current_user: User instance requesting roster, evaluated for permissions.
+        :param columns: Optional precomputed gathering columns list.
+        :return: Tuple of (columns, rows, total_count).
+        """
         if not sort_list:
             sort_list = ['first_name', 'last_name']
 
@@ -118,26 +176,25 @@ class RosterService:
 
         normalized_sort_list = []
         for s in sort_list:
-            if s.startswith('-attendee__'):
-                normalized_sort_list.append('-' + s[11:])
-            elif s.startswith('attendee__'):
-                normalized_sort_list.append(s[10:])
-            elif s in ('team__display_order', 'team__display_name', 'team'):
-                normalized_sort_list.append(F('team__display_order').asc(nulls_last=True))
-                normalized_sort_list.append('team__display_name')
-            elif s in ('-team__display_order', '-team__display_name', '-team'):
-                normalized_sort_list.append(F('team__display_order').desc(nulls_last=True))
-                normalized_sort_list.append('-team__display_name')
-            elif s in ('character__display_name', 'character'):
-                normalized_sort_list.append('character__display_name')
-            elif s in ('-character__display_name', '-character'):
-                normalized_sort_list.append('-character__display_name')
-            elif s == 'grade':
-                normalized_sort_list.append(F('grade').asc(nulls_last=True))
-            elif s == '-grade':
-                normalized_sort_list.append(F('grade').desc(nulls_last=True))
-            else:
-                normalized_sort_list.append(s)
+            match s:
+                case _ if s.startswith('-attendee__'):
+                    normalized_sort_list.append('-' + s[11:])
+                case _ if s.startswith('attendee__'):
+                    normalized_sort_list.append(s[10:])
+                case 'team__display_order' | 'team__display_name' | 'team':
+                    normalized_sort_list.extend([F('team__display_order').asc(nulls_last=True), 'team__display_name'])
+                case '-team__display_order' | '-team__display_name' | '-team':
+                    normalized_sort_list.extend([F('team__display_order').desc(nulls_last=True), '-team__display_name'])
+                case 'character__display_name' | 'character':
+                    normalized_sort_list.append('character__display_name')
+                case '-character__display_name' | '-character':
+                    normalized_sort_list.append('-character__display_name')
+                case 'grade':
+                    normalized_sort_list.append(F('grade').asc(nulls_last=True))
+                case '-grade':
+                    normalized_sort_list.append(F('grade').desc(nulls_last=True))
+                case _:
+                    normalized_sort_list.append(s)
 
         attendees_qs = attendees_qs.annotate(
             grade=Coalesce(
@@ -233,18 +290,10 @@ class RosterService:
             if m_is_kid and m.major_character_id:
                 kid_meet_major_chars[m.id] = m.major_character_id
 
-        def is_student_attendee(att):
-            for am in (getattr(att, 'attendingmeets', None) or []):
-                m_id = am.get('meet_id')
-                char_id = am.get('character_id')
-                if m_id in kid_meet_major_chars and str(char_id) == str(kid_meet_major_chars[m_id]):
-                    return True
-            return False
-
         siblings_by_attendee = {}
         parents_by_attendee = {}
         if kid_meet_major_chars and attendees_page:
-            student_attendees = [a for a in attendees_page if is_student_attendee(a)]
+            student_attendees = [a for a in attendees_page if RosterService.is_student_attendee(a, kid_meet_major_chars)]
             if student_attendees:
                 page_att_ids = [a.id for a in student_attendees]
                 page_fa_rows = list(
@@ -461,39 +510,71 @@ class RosterService:
         return columns, rows, total_count
 
     @staticmethod
-    def _parse_numeric_filter(target_field, operator, val, is_nullable=True):
+    def is_student_attendee(attendee, kid_meet_major_chars):
+        """
+        Checks whether an attendee participates as a primary student in any kid meet.
+
+        :param attendee: Attendee model instance (or annotated object) with attendingmeets.
+        :param kid_meet_major_chars: Dict mapping kid meet ID to its major_character_id.
+        :return: Boolean True if the attendee is enrolled as a major character in a kid meet, False otherwise.
+        """
+        if not kid_meet_major_chars:
+            return False
+        attendingmeets = getattr(attendee, 'attendingmeets', None) or []
+        return any(
+            am.get('meet_id') in kid_meet_major_chars
+            and str(am.get('character_id')) == str(kid_meet_major_chars[am.get('meet_id')])
+            for am in attendingmeets
+        )
+
+    @classmethod
+    def _parse_numeric_filter(cls, target_field, operator, val, is_nullable=True):
+        """
+        Builds a type-safe Django Q object for numeric fields, safely handling non-numeric strings and nulls.
+
+        :param target_field: Database column name or annotated field name (e.g. 'grade', 'total_attendances').
+        :param operator: Comparison operator string (e.g. '=', '<>', '>', '>=', '<', '<=', 'contains', 'notcontains').
+        :param val: Comparison value; may be integer, float, numeric string, non-numeric text, or None.
+        :param is_nullable: Boolean indicating whether the field allows null values.
+        :return: Django Q object evaluating the filter safely without throwing ValueError on integer fields.
+        """
         if val is None or val == "":
-            if operator == "=":
-                return Q(**{f"{target_field}__isnull": True}) if is_nullable else Q(id__isnull=True)
-            elif operator == "<>":
-                return Q(**{f"{target_field}__isnull": False}) if is_nullable else ~Q(id__isnull=True)
-            return Q()
+            match operator:
+                case "=":
+                    return Q(**{f"{target_field}__isnull": True}) if is_nullable else Q(id__isnull=True)
+                case "<>":
+                    return Q(**{f"{target_field}__isnull": False}) if is_nullable else ~Q(id__isnull=True)
+                case _:
+                    return Q()
 
         try:
             int_val = int(float(val))
         except (ValueError, TypeError):
-            if operator in ("=", "contains", "startswith", "endswith", ">", ">=", "<", "<="):
-                return Q(id__isnull=True)
-            elif operator in ("<>", "notcontains"):
-                return Q(**{f"{target_field}__isnull": False}) if is_nullable else ~Q(id__isnull=True)
-            return Q(id__isnull=True)
+            match operator:
+                case "<>" | "notcontains":
+                    return Q(**{f"{target_field}__isnull": False}) if is_nullable else ~Q(id__isnull=True)
+                case _:
+                    return Q(id__isnull=True)
 
-        if operator in ("=", "contains"):
-            return Q(**{target_field: int_val})
-        elif operator in ("<>", "notcontains"):
-            return ~Q(**{target_field: int_val})
-        elif operator == ">":
-            return Q(**{f"{target_field}__gt": int_val})
-        elif operator == ">=":
-            return Q(**{f"{target_field}__gte": int_val})
-        elif operator == "<":
-            return Q(**{f"{target_field}__lt": int_val})
-        elif operator == "<=":
-            return Q(**{f"{target_field}__lte": int_val})
-        return Q(**{target_field: int_val})
+        is_negative = operator in ("<>", "notcontains")
+        suffix = cls.NUMERIC_LOOKUPS.get("=" if is_negative else operator)
+        if suffix is None:
+            return Q()
 
-    @staticmethod
-    def parse_filter_expr(expr):
+        query = Q(**{f"{target_field}{suffix}": int_val})
+        return ~query if is_negative else query
+
+    @classmethod
+    def parse_filter_expr(cls, expr):
+        """
+        Recursively parses DevExtreme DataGrid filter expressions into Django Q query objects.
+
+        Supports negation ('!'), logical groups ('and', 'or'), and ternary predicates ([field, operator, value]).
+        Dispatches numeric fields via NUMERIC_FIELD_CONFIG, ignores non-queryable fields, and maps string operators.
+
+        :param expr: DevExtreme filter expression list or None.
+        :return: Combined Django Q query object.
+        """
         if not expr:
             return Q()
         if isinstance(expr, list):
@@ -501,107 +582,109 @@ class RosterService:
                 expr = expr[0]
             if not expr:
                 return Q()
-            if expr[0] == "!":
-                return ~RosterService.parse_filter_expr(expr[1])
-            if len(expr) >= 3 and any(op in expr for op in ("and", "or")):
-                op = "or" if "or" in expr else "and"
-                clauses = [e for e in expr if e != op]
-                res = RosterService.parse_filter_expr(clauses[0])
-                for c in clauses[1:]:
-                    sub_q = RosterService.parse_filter_expr(c)
-                    if op == "or":
-                        res = res | sub_q
-                    else:
-                        res = res & sub_q
-                return res
-            if len(expr) == 3 and isinstance(expr[1], str):
-                field, operator, val = expr[0], expr[1].lower(), expr[2]
-                if field in ("team", "team__display_name"):
-                    target_field = "attendings__attendingmeet__team__display_name" if operator == "contains" else "team__display_name"
-                elif field in ("character", "character__display_name"):
-                    target_field = "attendings__attendingmeet__character__display_name" if operator == "contains" else "character__display_name"
-                elif field == "grade":
-                    return RosterService._parse_numeric_filter("grade", operator, val, is_nullable=True)
-                elif field == "total_attendances":
-                    return RosterService._parse_numeric_filter("total_attendances", operator, val, is_nullable=False)
-                elif field in ("attendee_id", "id"):
-                    return RosterService._parse_numeric_filter("id", operator, val, is_nullable=False)
-                elif field == "attending_id":
-                    return RosterService._parse_numeric_filter("attendings__id", operator, val, is_nullable=False)
-                elif field in ("gender",):
-                    return RosterService._parse_numeric_filter("gender", operator, val, is_nullable=True)
-                elif field == "attendee_name":
-                    parts = str(val).split() if val else []
-                    if operator == "contains":
-                        name_q = (
-                            Q(first_name__icontains=val) |
-                            Q(last_name__icontains=val) |
-                            Q(first_name2__icontains=val) |
-                            Q(last_name2__icontains=val) |
-                            Q(infos__names__original__icontains=val)
-                        )
-                        if len(parts) >= 2:
-                            name_q |= (
-                                (Q(first_name__icontains=parts[0]) & Q(last_name__icontains=parts[-1])) |
-                                (Q(last_name__icontains=parts[0]) & Q(first_name__icontains=parts[-1])) |
-                                (Q(first_name2__icontains=parts[0]) & Q(last_name2__icontains=parts[-1])) |
-                                (Q(last_name2__icontains=parts[0]) & Q(first_name2__icontains=parts[-1]))
-                            )
-                        return name_q
-                    elif operator == "=":
-                        return (
-                            Q(first_name=val) |
-                            Q(last_name=val) |
-                            Q(infos__names__original=val)
-                        )
-                    return Q()
-                elif field in ("contacts", "infos_contacts"):
-                    if operator == "contains":
-                        return Q(infos__contacts__icontains=val) | Q(infos__icontains=val)
-                    elif operator == "notcontains":
-                        return ~(Q(infos__contacts__icontains=val) | Q(infos__icontains=val))
-                    elif operator == "=":
-                        if val is None or val == "":
-                            return Q(infos__contacts__isnull=True) | Q(infos__isnull=True)
-                        return Q(infos__contacts__icontains=val)
-                    elif operator == "<>":
-                        if val is None or val == "":
-                            return Q(infos__contacts__isnull=False) & ~Q(infos__isnull=True)
-                        return ~Q(infos__contacts__icontains=val)
-                    return Q()
-                elif field in ("siblings", "parents", "attendances", "attendingmeets", "photo_url"):
-                    return Q()
-                else:
-                    target_field = field
 
-                if operator == "=":
+            match expr:
+                case ["!", sub_expr]:
+                    return ~cls.parse_filter_expr(sub_expr)
+
+                case [*clauses] if len(clauses) >= 3 and any(op in clauses for op in ("and", "or")) and not (len(clauses) == 3 and isinstance(clauses[1], str) and clauses[1].lower() in cls.STRING_LOOKUPS):
+                    op = "or" if "or" in clauses else "and"
+                    sub_clauses = [e for e in clauses if e != op]
+                    res = cls.parse_filter_expr(sub_clauses[0])
+                    for c in sub_clauses[1:]:
+                        sub_q = cls.parse_filter_expr(c)
+                        res = (res | sub_q) if op == "or" else (res & sub_q)
+                    return res
+
+                case [str(field), str(op_raw), val]:
+                    operator = op_raw.lower()
+
+                    match field:
+                        case _ if field in cls.IGNORED_FILTER_FIELDS:
+                            return Q()
+
+                        case _ if field in cls.NUMERIC_FIELD_CONFIG:
+                            db_col, nullable = cls.NUMERIC_FIELD_CONFIG[field]
+                            return cls._parse_numeric_filter(db_col, operator, val, is_nullable=nullable)
+
+                        case "team" | "team__display_name":
+                            target_field = "attendings__attendingmeet__team__display_name" if operator == "contains" else "team__display_name"
+
+                        case "character" | "character__display_name":
+                            target_field = "attendings__attendingmeet__character__display_name" if operator == "contains" else "character__display_name"
+
+                        case "attendee_name":
+                            parts = str(val).split() if val else []
+                            match operator:
+                                case "contains":
+                                    name_q = (
+                                        Q(first_name__icontains=val) |
+                                        Q(last_name__icontains=val) |
+                                        Q(first_name2__icontains=val) |
+                                        Q(last_name2__icontains=val) |
+                                        Q(infos__names__original__icontains=val)
+                                    )
+                                    if len(parts) >= 2:
+                                        name_q |= (
+                                            (Q(first_name__icontains=parts[0]) & Q(last_name__icontains=parts[-1])) |
+                                            (Q(last_name__icontains=parts[0]) & Q(first_name__icontains=parts[-1])) |
+                                            (Q(first_name2__icontains=parts[0]) & Q(last_name2__icontains=parts[-1])) |
+                                            (Q(last_name2__icontains=parts[0]) & Q(first_name2__icontains=parts[-1]))
+                                        )
+                                    return name_q
+                                case "=":
+                                    return (
+                                        Q(first_name=val) |
+                                        Q(last_name=val) |
+                                        Q(infos__names__original=val)
+                                    )
+                                case _:
+                                    return Q()
+
+                        case "contacts" | "infos_contacts":
+                            match operator:
+                                case "contains":
+                                    return Q(infos__contacts__icontains=val) | Q(infos__icontains=val)
+                                case "notcontains":
+                                    return ~(Q(infos__contacts__icontains=val) | Q(infos__icontains=val))
+                                case "=" if not val:
+                                    return Q(infos__contacts__isnull=True) | Q(infos__isnull=True)
+                                case "=":
+                                    return Q(infos__contacts__icontains=val)
+                                case "<>" if not val:
+                                    return Q(infos__contacts__isnull=False) & ~Q(infos__isnull=True)
+                                case "<>":
+                                    return ~Q(infos__contacts__icontains=val)
+                                case _:
+                                    return Q()
+
+                        case _:
+                            target_field = field
+
                     if val is None or val == "":
-                        return Q(**{f"{target_field}__isnull": True}) | Q(**{target_field: ""})
-                    return Q(**{target_field: val})
-                elif operator == "<>":
-                    if val is None or val == "":
-                        return Q(**{f"{target_field}__isnull": False}) & ~Q(**{target_field: ""})
-                    return ~Q(**{target_field: val})
-                elif operator == "contains":
-                    return Q(**{f"{target_field}__icontains": val})
-                elif operator == "notcontains":
-                    return ~Q(**{f"{target_field}__icontains": val})
-                elif operator == "startswith":
-                    return Q(**{f"{target_field}__istartswith": val})
-                elif operator == "endswith":
-                    return Q(**{f"{target_field}__iendswith": val})
-                elif operator == ">":
-                    return Q(**{f"{target_field}__gt": val})
-                elif operator == ">=":
-                    return Q(**{f"{target_field}__gte": val})
-                elif operator == "<":
-                    return Q(**{f"{target_field}__lt": val})
-                elif operator == "<=":
-                    return Q(**{f"{target_field}__lte": val})
+                        match operator:
+                            case "=":
+                                return Q(**{f"{target_field}__isnull": True}) | Q(**{target_field: ""})
+                            case "<>":
+                                return Q(**{f"{target_field}__isnull": False}) & ~Q(**{target_field: ""})
+                            case _:
+                                return Q()
+
+                    lookup = cls.STRING_LOOKUPS.get(operator)
+                    if lookup is not None:
+                        query = Q(**{f"{target_field}{lookup}": val})
+                        return ~query if operator in ("<>", "notcontains") else query
+
         return Q()
 
     @staticmethod
     def extract_search_value(filter_expr):
+        """
+        Extracts the search string value from DevExtreme filter expressions when searchValue is not explicitly provided.
+
+        :param filter_expr: Nested list representing DevExtreme filter expression.
+        :return: Extracted string search value, or None if not found.
+        """
         if not filter_expr or not isinstance(filter_expr, list):
             return None
         while len(filter_expr) == 1 and isinstance(filter_expr[0], list):
@@ -627,6 +710,20 @@ class RosterService:
         extra_filters=None,
         current_user=None,
     ):
+        """
+        Computes grouped row counts for DevExtreme DataGrid grouping panels (e.g. group by team, character, or grade).
+
+        :param organization: Organization instance to scope queries.
+        :param meet_slugs: List of meet slug strings.
+        :param start: ISO datetime string or datetime boundary for gathering start.
+        :param finish: ISO datetime string or datetime boundary for gathering finish.
+        :param group_column: Grouping selector string (e.g. 'team__display_name', 'character__display_name', 'grade').
+        :param group_desc: Boolean indicating descending sort order for groups.
+        :param search_value: Optional text string for attendee search.
+        :param extra_filters: Optional Q expression or DevExtreme compound filter.
+        :param current_user: User instance requesting roster, evaluated for permissions.
+        :return: List of dicts containing group value and 'count' for each group item.
+        """
         attendingmeet_filter = (
             Q(attendings__attendingmeet__meet__slug__in=meet_slugs) &
             Q(attendings__attendingmeet__is_removed=False) &
@@ -687,55 +784,56 @@ class RosterService:
             except (FieldError, ValueError):
                 pass
 
-        if group_column in ("team__display_name", "team"):
-            db_field = 'attendings__attendingmeet__team__display_name'
-            if group_desc:
-                order_exprs = [F('team_order').desc(nulls_last=True), f"-{db_field}"]
-            else:
-                order_exprs = [F('team_order').asc(nulls_last=True), db_field]
-            counters = list(
-                attendees_qs.values(db_field)
-                .annotate(
-                    count=Count('id', distinct=True),
-                    team_order=Min('attendings__attendingmeet__team__display_order')
+        match group_column:
+            case "team__display_name" | "team":
+                db_field = 'attendings__attendingmeet__team__display_name'
+                order_exprs = [F('team_order').desc(nulls_last=True), f"-{db_field}"] if group_desc else [F('team_order').asc(nulls_last=True), db_field]
+                counters = list(
+                    attendees_qs.values(db_field)
+                    .annotate(
+                        count=Count('id', distinct=True),
+                        team_order=Min('attendings__attendingmeet__team__display_order')
+                    )
+                    .order_by(*order_exprs)
                 )
-                .order_by(*order_exprs)
-            )
-            return [
-                {group_column: item[db_field], 'count': item['count']}
-                for item in counters
-            ]
+                return [
+                    {group_column: item[db_field], 'count': item['count']}
+                    for item in counters
+                ]
 
-        if group_column in ("character__display_name", "character"):
-            db_field = 'attendings__attendingmeet__character__display_name'
-            order_field = f"-{db_field}" if group_desc else db_field
-            counters = list(
-                attendees_qs.values(db_field)
-                .annotate(count=Count('id', distinct=True))
-                .order_by(order_field)
-            )
-            return [
-                {group_column: item[db_field], 'count': item['count']}
-                for item in counters
-            ]
-
-        if group_column == "grade":
-            attendees_qs = attendees_qs.annotate(
-                grade=Coalesce(
-                    Cast(KeyTextTransform('grade', KeyTextTransform('fixed', 'infos')), output_field=IntegerField()),
-                    Cast(KeyTextTransform('grade', 'infos'), output_field=IntegerField())
+            case "character__display_name" | "character":
+                db_field = 'attendings__attendingmeet__character__display_name'
+                order_field = f"-{db_field}" if group_desc else db_field
+                counters = list(
+                    attendees_qs.values(db_field)
+                    .annotate(count=Count('id', distinct=True))
+                    .order_by(order_field)
                 )
-            )
-            order_field = "-grade" if group_desc else "grade"
-            counters = list(
-                attendees_qs.values('grade')
-                .annotate(count=Count('id', distinct=True))
-                .order_by(order_field)
-            )
-            return [
-                {'grade': item['grade'], 'count': item['count']}
-                for item in counters
-            ]
+                return [
+                    {group_column: item[db_field], 'count': item['count']}
+                    for item in counters
+                ]
+
+            case "grade":
+                attendees_qs = attendees_qs.annotate(
+                    grade=Coalesce(
+                        Cast(KeyTextTransform('grade', KeyTextTransform('fixed', 'infos')), output_field=IntegerField()),
+                        Cast(KeyTextTransform('grade', 'infos'), output_field=IntegerField())
+                    )
+                )
+                order_field = "-grade" if group_desc else "grade"
+                counters = list(
+                    attendees_qs.values('grade')
+                    .annotate(count=Count('id', distinct=True))
+                    .order_by(order_field)
+                )
+                return [
+                    {'grade': item['grade'], 'count': item['count']}
+                    for item in counters
+                ]
+
+            case _:
+                return []
 
         if group_column == "attendee_name":
             attendees_qs = attendees_qs.annotate(
