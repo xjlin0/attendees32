@@ -60,7 +60,7 @@ class ApiUserAssemblyMeetsViewSet(viewsets.ModelViewSet):
             )
 
             return (
-                Meet.objects.filter(**filters)
+                Meet.objects.select_related('assembly__division').filter(**filters)
                 .annotate(
                     assembly_name=F("assembly__display_name"),
                 )

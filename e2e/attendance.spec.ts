@@ -114,8 +114,11 @@ async function toggleCheckIn(
 
     await page.locator(`label[for="in-${attendanceId}"]`).click();
     if (!wanted) {
-      // Unchecking asks before it throws the arrival time away.
-      await answerDialog(page, 'Yes');
+      // Unchecking asks before it throws the arrival time away only if signature was required
+      const dialog = page.locator('.dx-dialog-wrapper');
+      if (await dialog.isVisible({ timeout: 1500 }).catch(() => false)) {
+        await answerDialog(page, 'Yes');
+      }  // signature requirement is controlled by meet.infos["signature_required_at"]
     }
 
     try {

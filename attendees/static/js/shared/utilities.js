@@ -17,7 +17,10 @@ Attendees.utilities = {
     attendeeListViewOpts: "attendeesListOpts",
     rollCallListView: "rollCallList",
     rollCallListViewOpts: "rollCallListOpts",
+    rostersListView: "rostersListView",
+    rostersListViewOpts: "rostersListViewOpts",
   },
+
 
   init: () => {
     console.log("attendees/static/js/shared/utilities.js");
@@ -349,6 +352,140 @@ Attendees.utilities = {
         args[i] = JSON.stringify(loadOptions[i]);
     });
     return args
+  },
+
+  normalizePhoneNumber: (val) => {
+    if (!val || typeof val !== 'string') return val;
+    const trimmed = val.trim();
+    if (!trimmed) return trimmed;
+    const digitsOnly = trimmed.replace(/\D/g, '');
+    if (digitsOnly.length === 10) {
+      return `+1${digitsOnly}`;
+    }
+    if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+      return `+${digitsOnly}`;
+    }
+    if (trimmed.startsWith('+') && digitsOnly.length >= 7) {
+      return `+${digitsOnly}`;
+    }
+    if (digitsOnly.length >= 10) {
+      return `+1${digitsOnly.slice(-10)}`;
+    }
+    return trimmed;
+  },
+
+  getDaysInMonth: (year, month) => {
+    const m = parseInt(month, 10);
+    if (isNaN(m) || m < 1 || m > 12) return 31;
+    const y = parseInt(year, 10);
+    if (!isNaN(y) && y >= 1000 && y <= 9999) {
+      return new Date(y, m, 0).getDate();
+    }
+    if (m === 2) return 29;
+    if ([4, 6, 9, 11].includes(m)) return 30;
+    return 31;
+  },
+
+  adjustBirthdayDayOptions: (yearVal, monthVal, daySelectEl) => {
+    if (!daySelectEl) return;
+    const maxDays = Attendees.utilities.getDaysInMonth(yearVal, monthVal);
+    const currentVal = daySelectEl.value;
+
+    daySelectEl.innerHTML = '<option value="">Day</option>';
+    for (let i = 1; i <= maxDays; i++) {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = String(i);
+      if (currentVal && String(currentVal) === String(i)) {
+        opt.selected = true;
+      }
+      daySelectEl.appendChild(opt);
+    }
+
+    if (currentVal && parseInt(currentVal, 10) > maxDays) {
+      daySelectEl.value = '';
+    }
+  },
+
+  validateFastInputBirthday: (year, month, day) => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const hasYear = year !== undefined && year !== null && String(year).trim() !== '';
+    const hasMonth = month !== undefined && month !== null && String(month).trim() !== '';
+    const hasDay = day !== undefined && day !== null && String(day).trim() !== '';
+
+    if (!hasYear && !hasMonth && !hasDay) {
+      return { valid: true };
+    }
+
+    if (hasDay && !hasMonth) {
+      return { valid: false, message: 'Birth month is required when birth day is specified.' };
+    }
+
+    let y = 2000;
+    if (hasYear) {
+      y = parseInt(year, 10);
+      if (isNaN(y)) {
+        return { valid: false, message: 'Invalid birth year.' };
+      }
+      if (y > currentYear) {
+        return { valid: false, message: `Birth year cannot exceed ${currentYear}.` };
+      }
+      if (y < 1900) {
+        return { valid: false, message: 'Birth year must be 1900 or later.' };
+      }
+    }
+
+    const m = hasMonth ? parseInt(month, 10) : null;
+    const d = hasDay ? parseInt(day, 10) : null;
+
+    if (m !== null) {
+      if (isNaN(m) || m < 1 || m > 12) {
+        return { valid: false, message: 'Invalid birth month.' };
+      }
+    }
+
+    if (m !== null && d !== null) {
+      if (isNaN(d) || d < 1 || d > 31) {
+        return { valid: false, message: 'Invalid birth day.' };
+      }
+      const bDate = new Date(y, m - 1, d);
+      if (bDate.getFullYear() !== y || bDate.getMonth() !== m - 1 || bDate.getDate() !== d) {
+        return { valid: false, message: 'Invalid calendar date.' };
+      }
+      if (hasYear) {
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+        if (bDate > endOfToday) {
+          return { valid: false, message: 'Birthday cannot be in the future.' };
+        }
+      }
+    }
+
+    return { valid: true };
+  },
+
+  validateFastInputPhoneNumber: (val) => {
+    if (!val || typeof val !== 'string') return false;
+    const digitsOnly = val.replace(/\D/g, '');
+    return digitsOnly.length >= 10;
+  },
+
+  validateFastInputEmail: (val) => {
+    if (!val || typeof val !== 'string') return false;
+    const trimmed = val.trim();
+    return trimmed.length >= 5 && trimmed.includes('.') && trimmed.includes('@');
+  },
+
+  validateFastInputContact: (type, val) => {
+    if (!val || typeof val !== 'string' || !val.trim()) return false;
+    const normalizedType = (type || 'phone').toLowerCase();
+    if (normalizedType === 'phone' || normalizedType === 'whatsapp') {
+      return Attendees.utilities.validateFastInputPhoneNumber(val);
+    } else if (normalizedType === 'email') {
+      return Attendees.utilities.validateFastInputEmail(val);
+    }
+    return val.trim().length >= 2;
   },
 };
 

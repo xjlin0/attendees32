@@ -34,6 +34,8 @@ const CI_SEED_SPECS = [
   'directoryReport.spec.ts',
   'errorPages.spec.ts',
   'neighbors.spec.ts',
+  'rosterList.spec.ts',
+  'rostersList.spec.ts',
 ].map((spec) => `**/${spec}`);
 
 export default defineConfig({

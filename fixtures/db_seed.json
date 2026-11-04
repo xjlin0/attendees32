@@ -2145,7 +2145,7 @@
       "data-bs-toggle": "dropdown"
     },
     "lft": 1,
-    "rght": 24,
+    "rght": 26,
     "tree_id": 14,
     "level": 0
   }
@@ -2218,8 +2218,8 @@
       "class": "dropdown-item",
       "title": "Leader List"
     },
-    "lft": 10,
-    "rght": 11,
+    "lft": 12,
+    "rght": 13,
     "tree_id": 14,
     "level": 1
   }
@@ -2721,8 +2721,8 @@
       "class": "dropdown-item",
       "title": "directory pdf"
     },
-    "lft": 16,
-    "rght": 17,
+    "lft": 18,
+    "rght": 19,
     "tree_id": 14,
     "level": 1
   }
@@ -2746,8 +2746,8 @@
       "class": "dropdown-item",
       "title": "directory print"
     },
-    "lft": 12,
-    "rght": 13,
+    "lft": 14,
+    "rght": 15,
     "tree_id": 14,
     "level": 1
   }
@@ -2870,8 +2870,8 @@
       "class": "dropdown-item",
       "title": "attendingmeet print"
     },
-    "lft": 14,
-    "rght": 15,
+    "lft": 16,
+    "rght": 17,
     "tree_id": 14,
     "level": 1
   }
@@ -2895,8 +2895,8 @@
       "class": "dropdown-item",
       "title": "attendingmeet pdf"
     },
-    "lft": 18,
-    "rght": 19,
+    "lft": 20,
+    "rght": 21,
     "tree_id": 14,
     "level": 1
   }
@@ -2920,8 +2920,8 @@
       "class": "dropdown-item",
       "title": "attendingmeet envelopes"
     },
-    "lft": 20,
-    "rght": 21,
+    "lft": 22,
+    "rght": 23,
     "tree_id": 14,
     "level": 1
   }
@@ -2945,8 +2945,33 @@
       "class": "dropdown-item",
       "title": "attandance statistics"
     },
-    "lft": 22,
-    "rght": 23,
+    "lft": 24,
+    "rght": 25,
+    "tree_id": 14,
+    "level": 1
+  }
+},
+{
+  "model": "users.menu",
+  "pk": 43,
+  "fields": {
+    "created": "2026-10-17T17:50:57.692Z",
+    "modified": "2026-10-17T17:50:57.692Z",
+    "is_removed": false,
+    "organization": 1,
+    "category": "main",
+    "parent": 4,
+    "html_type": "a",
+    "urn": "/occasions/rosters/",
+    "url_name": "rosters_list_view",
+    "display_name": "Rosters 點名表格",
+    "display_order": 2450,
+    "infos": {
+      "class": "dropdown-item",
+      "title": "Roster"
+    },
+    "lft": 10,
+    "rght": 11,
     "tree_id": 14,
     "level": 1
   }
@@ -10819,6 +10844,7 @@
         "Gathering": true,
         "Attendance": true
       },
+      "signature_required_at": "check_out",
       "default_attendingmeet_in_weeks": 53
     },
     "site_type": [
@@ -10869,6 +10895,7 @@
         "Gathering": true,
         "Attendance": true
       },
+      "signature_required_at": "check_out",
       "default_attendingmeet_in_weeks": 53
     },
     "site_type": [
@@ -23515,6 +23542,81 @@
   }
 },
 {
+  "model": "users.menuauthgroup",
+  "pk": 157,
+  "fields": {
+    "created": "2026-10-17T17:50:57.700Z",
+    "modified": "2026-10-17T17:50:57.700Z",
+    "is_removed": false,
+    "auth_group": [
+      "data_organizer"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 158,
+  "fields": {
+    "created": "2026-10-17T17:50:57.701Z",
+    "modified": "2026-10-17T17:50:57.701Z",
+    "is_removed": false,
+    "auth_group": [
+      "conference_organizer"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 159,
+  "fields": {
+    "created": "2026-10-17T17:50:57.701Z",
+    "modified": "2026-10-17T17:50:57.701Z",
+    "is_removed": false,
+    "auth_group": [
+      "children_organizer"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 160,
+  "fields": {
+    "created": "2026-10-17T17:50:57.701Z",
+    "modified": "2026-10-17T17:50:57.701Z",
+    "is_removed": false,
+    "auth_group": [
+      "data_counselor"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
+  "model": "users.menuauthgroup",
+  "pk": 161,
+  "fields": {
+    "created": "2026-10-17T17:50:57.701Z",
+    "modified": "2026-10-17T17:50:57.701Z",
+    "is_removed": false,
+    "auth_group": [
+      "children_coworker"
+    ],
+    "read": true,
+    "write": true,
+    "menu": 43
+  }
+},
+{
   "model": "whereabouts.division",
   "pk": 0,
   "fields": {
@@ -23686,6 +23788,7 @@
     "estimated_birthday": "2011-12-13",
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 100
@@ -23723,6 +23826,7 @@
     "estimated_birthday": "1800-12",
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -23758,6 +23862,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -23794,6 +23899,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -23831,6 +23937,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -23867,6 +23974,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -23903,6 +24011,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -23938,6 +24047,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -23973,6 +24083,7 @@
     "estimated_birthday": "2010-02-04",
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "grade": 2,
@@ -24018,6 +24129,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24053,6 +24165,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24090,6 +24203,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2,
@@ -24134,6 +24248,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24176,6 +24291,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24211,6 +24327,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24247,6 +24364,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24283,6 +24401,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24323,6 +24442,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2
@@ -24359,6 +24479,7 @@
     "estimated_birthday": null,
     "deathday": null,
     "photo": "",
+    "merged_into": null,
     "infos": {
       "fixed": {
         "mobility": 2

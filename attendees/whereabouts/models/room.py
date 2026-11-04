@@ -46,7 +46,7 @@ class Room(TimeStampedModel, SoftDeletableModel, Utility):
 
     def __str__(self):
         return "%s %s %s" % (
-            self.suite.display_name,
+            self.suite.display_name if self.suite else "",
             self.display_name,
             self.label or "",
         )

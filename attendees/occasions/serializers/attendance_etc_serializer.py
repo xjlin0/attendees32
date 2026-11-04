@@ -28,6 +28,11 @@ class AttendanceEtcSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = "__all__"
+        validators = []
+        extra_kwargs = {
+            "start": {"required": False, "allow_null": True},
+            "finish": {"required": False, "allow_null": True},
+        }
 
     def create(self, validated_data):
         """

@@ -1,8 +1,10 @@
+import logging
 import time
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models.aggregates import Count
 from django.db.models import Q
-from rest_framework import viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.utils import json
@@ -11,6 +13,8 @@ from attendees.occasions.models import Attendance
 from attendees.occasions.serializers import AttendanceEtcSerializer
 from attendees.occasions.services import AttendanceService
 from attendees.persons.models import Utility
+
+logger = logging.getLogger(__name__)
 
 
 class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
@@ -21,6 +25,42 @@ class ApiOrganizationMeetCharacterAttendancesViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = AttendanceEtcSerializer
+
+    def handle_exception(self, exc):
+        if isinstance(exc, (DjangoValidationError, serializers.ValidationError)):
+            messages = exc.messages if hasattr(exc, "messages") else (exc.detail if hasattr(exc, "detail") else [str(exc)])
+            detail_msg = " ".join([str(m) for m in messages]) if isinstance(messages, (list, tuple)) else str(messages)
+            return Response(
+                {"detail": detail_msg},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            return super().handle_exception(exc)
+        except Exception as unhandled_exc:
+            logger.exception(f"Unhandled exception in {self.__class__.__name__}: {unhandled_exc}")
+            return Response(
+                {
+                    "detail": f"Internal server error: {str(unhandled_exc)}",
+                    "error": str(unhandled_exc),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def create(self, request, *args, **kwargs):
+        attendance = AttendanceService.create_or_update_attendance(
+            user=request.user,
+            data=request.data,
+            context=self.get_serializer_context(),
+        )
+        serializer = self.get_serializer(attendance)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_update(self, serializer):
+        attendance = serializer.save()
+        AttendanceService.extend_attending_meet_if_needed(attendance)
+
 
     def list(self, request, *args, **kwargs):
         attendee = self.request.query_params.get("attendee")

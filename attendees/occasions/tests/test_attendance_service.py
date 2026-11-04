@@ -23,6 +23,7 @@ class TestAttendanceService:
         )
         self.category = Category.objects.create(id=25, display_name="Test Cat")
         self.category_1 = Category.objects.create(id=1, display_name="Scheduled")
+        self.category_9 = Category.objects.create(id=9, display_name="Attended")
         self.family_category = Category.objects.create(id=0, display_name="Family")
         self.relation = Relation.objects.create(id=0, title="test relation", gender=GenderEnum.UNSPECIFIED.value)
         
@@ -217,3 +218,61 @@ class TestAttendanceService:
         orderbys = [{"selector": "character", "desc": True}, {"selector": "start", "desc": False}]
         parsed = list(AttendanceService.orderby_parser(orderbys))
         assert parsed == ["-character__display_name", "start"]
+
+    def test_create_or_update_attendance_with_existing_gathering(self):
+        data = {
+            'gathering': self.gathering.id,
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        att = AttendanceService.create_or_update_attendance(self.user, data)
+        assert att.id is not None
+        assert att.gathering_id == self.gathering.id
+        assert att.category_id == 9
+
+    def test_create_or_update_attendance_on_demand_gathering(self):
+        start_time = self.now + timedelta(days=5)
+        data = {
+            'gathering': None,
+            'meet': self.meet.id,
+            'gathering_start': start_time.isoformat(),
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        att = AttendanceService.create_or_update_attendance(self.user, data)
+        assert att.id is not None
+        assert att.gathering is not None
+        assert att.gathering.meet_id == self.meet.id
+        assert att.category_id == 9
+
+    def test_create_or_update_attendance_rejects_virtual_start_string_with_validation_error(self):
+        from rest_framework import serializers
+        start_time = self.now + timedelta(days=7)
+        data = {
+            'gathering': f'start_{start_time.isoformat()}',
+            'meet': self.meet.id,
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        with pytest.raises(serializers.ValidationError) as excinfo:
+            AttendanceService.create_or_update_attendance(self.user, data)
+        assert 'gathering' in excinfo.value.detail
+        assert 'Expected an integer ID or null' in str(excinfo.value.detail['gathering'])
+
+    def test_create_or_update_attendance_with_null_gathering_and_inferred_meet(self):
+        start_time = self.now + timedelta(days=10)
+        data = {
+            'gathering': None,
+            'gathering_start': start_time.isoformat(),
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        att = AttendanceService.create_or_update_attendance(self.user, data)
+        assert att.id is not None
+        assert isinstance(att.gathering_id, int)
+        assert att.gathering.meet_id == self.meet.id
+        assert att.category_id == 9

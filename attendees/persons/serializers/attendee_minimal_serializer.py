@@ -57,7 +57,8 @@ class AttendeeMinimalSerializer(serializers.ModelSerializer):
         Update and return an existing `AttendingMeet` instance, given the validated data.
 
         """
-        deleting_photo = self._kwargs["data"].get("photo-clear", None)
+        kwargs_data = self._kwargs.get("data", {}) if (hasattr(self, "_kwargs") and isinstance(self._kwargs, dict)) else {}
+        deleting_photo = kwargs_data.get("photo-clear", None) if isinstance(kwargs_data, dict) else None
 
         if instance:
             if deleting_photo or validated_data.get("photo", None):
@@ -67,6 +68,15 @@ class AttendeeMinimalSerializer(serializers.ModelSerializer):
                     old_file.unlink(missing_ok=True)
                 if deleting_photo:
                     validated_data["photo"] = None
+
+            if "infos" in validated_data and isinstance(instance.infos, dict) and isinstance(validated_data["infos"], dict):
+                merged_infos = dict(instance.infos)
+                for k, v in validated_data["infos"].items():
+                    if isinstance(v, dict) and isinstance(merged_infos.get(k), dict):
+                        merged_infos[k] = {**merged_infos[k], **v}
+                    else:
+                        merged_infos[k] = v
+                validated_data["infos"] = merged_infos
 
             obj, created = Attendee.objects.update_or_create(
                 id=instance.id,
