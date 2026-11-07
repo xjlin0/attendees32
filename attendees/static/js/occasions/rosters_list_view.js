@@ -3499,7 +3499,7 @@
             editorType: 'dxCheckBox',
             colSpan: 2,
             cssClass: 'filter-item-checkbox',
-            label: { text: 'Show Siblings' },
+            label: { text: 'Siblings' },
             visible: checkHasKidMeet(filterData.meets)
           }
         ]

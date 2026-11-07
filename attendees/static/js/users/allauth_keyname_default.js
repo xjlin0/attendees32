@@ -1,4 +1,5 @@
 window.addEventListener('DOMContentLoaded', () => {
+  console.log("keyname_default loaded");
   const loginInput = document.getElementById('id_login') || document.querySelector('input[name="login"]');
   if (loginInput) {
     loginInput.focus();
