@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from django.conf import settings
@@ -6,8 +6,8 @@ from django.db.models import F, Q, CharField, Value, When, Case, Count
 from django.db.models.functions import Concat, Trim
 from django.contrib.postgres.aggregates.general import StringAgg
 from rest_framework.utils import json
-from attendees.occasions.models import Attendance, Meet
-from attendees.persons.models import AttendingMeet
+from attendees.occasions.models import Attendance, Character, Gathering, Meet
+from attendees.persons.models import Attendee, AttendingMeet, Category, Utility
 from attendees.persons.services import AttendeeService
 
 
@@ -484,6 +484,23 @@ class AttendanceService:
 
         # Check if attendance already exists for this attending and gathering
         attendance_id = data_dict.get('id')
+        if gathering_id:
+            gathering_obj = Gathering.objects.filter(pk=gathering_id).select_related('meet').first()
+            if gathering_obj and gathering_obj.meet:
+                char_id = data_dict.get('character')
+                if char_id:
+                    char_obj = Character.objects.filter(pk=char_id).first()
+                    if not char_obj or char_obj.assembly_id != gathering_obj.meet.assembly_id:
+                        data_dict['character'] = (
+                            gathering_obj.meet.major_character_id
+                            or Character.objects.filter(assembly=gathering_obj.meet.assembly).values_list('id', flat=True).first()
+                        )
+                elif not char_id:
+                    data_dict['character'] = (
+                        gathering_obj.meet.major_character_id
+                        or Character.objects.filter(assembly=gathering_obj.meet.assembly).values_list('id', flat=True).first()
+                    )
+
         if not attendance_id:
             existing_attendance = Attendance.objects.filter(
                 attending_id=data_dict.get('attending'),
@@ -508,21 +525,50 @@ class AttendanceService:
     @staticmethod
     def extend_attending_meet_if_needed(attendance):
         """
-        Extends AttendingMeet finish date to end of gathering day if attendingmeet was expired.
+        Extends AttendingMeet finish date using meet.infos['default_attendingmeet_in_weeks'] (default 53 weeks)
+        if attendingmeet was expired, or creates a new AttendingMeet if none exists.
         """
-        if attendance and attendance.category_id != 1:  # Attended / Checked in
+        if attendance and attendance.category_id != Attendee.SCHEDULED_CATEGORY:  # Attended / Checked in
             gathering = attendance.gathering
             if gathering and gathering.meet and gathering.finish:
+                weeks = (
+                    gathering.meet.infos.get("default_attendingmeet_in_weeks", 53)
+                    if isinstance(gathering.meet.infos, dict)
+                    else 53
+                )
+                default_finish = Utility.now_with_timezone() + timedelta(weeks=weeks)
+                target_finish = max(gathering.finish, default_finish)
+
                 attending_meet = AttendingMeet.objects.filter(
                     attending=attendance.attending,
                     meet=gathering.meet,
                     is_removed=False,
                 ).order_by('-finish').first()
-                if attending_meet and attending_meet.finish and attending_meet.finish < gathering.finish:
-                    end_of_day = gathering.finish.replace(hour=23, minute=59, second=59, microsecond=999999)
-                    attending_meet.finish = max(gathering.finish, end_of_day)
-                    attending_meet.save(update_fields=['finish', 'modified'])
-                    return attending_meet
+                if attending_meet:
+                    if attending_meet.finish and attending_meet.finish < gathering.finish:
+                        attending_meet.finish = target_finish
+                        attending_meet.save(update_fields=['finish', 'modified'])
+                        return attending_meet
+                else:
+                    scheduled_cat = (
+                        Category.objects.filter(id=Attendee.SCHEDULED_CATEGORY).first()
+                        or Category.objects.filter(id=1).first()
+                    )
+                    character = (
+                        attendance.character
+                        if attendance.character and attendance.character.assembly_id == gathering.meet.assembly_id
+                        else (gathering.meet.major_character or Character.objects.filter(assembly=gathering.meet.assembly).first())
+                    )
+                    if character and scheduled_cat:
+                        attending_meet = AttendingMeet.objects.create(
+                            attending=attendance.attending,
+                            meet=gathering.meet,
+                            character=character,
+                            category=scheduled_cat,
+                            start=gathering.start or Utility.now_with_timezone(),
+                            finish=target_finish,
+                        )
+                        return attending_meet
         return None
 
 

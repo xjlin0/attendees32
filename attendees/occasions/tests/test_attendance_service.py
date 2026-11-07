@@ -269,10 +269,59 @@ class TestAttendanceService:
             'gathering_start': start_time.isoformat(),
             'attending': self.attending.id,
             'character': self.character.id,
-            'category': 9,
+            'category': Attendee.ATTENDED_CATEGORY,
         }
         att = AttendanceService.create_or_update_attendance(self.user, data)
         assert att.id is not None
         assert isinstance(att.gathering_id, int)
         assert att.gathering.meet_id == self.meet.id
-        assert att.category_id == 9
+        assert att.category_id == Attendee.ATTENDED_CATEGORY
+
+    def test_extend_attending_meet_if_needed_when_expired(self):
+        self.attendingmeet.finish = self.gathering.finish - timedelta(hours=1)
+        self.attendingmeet.save()
+
+        self.attendance.category_id = Attendee.ATTENDED_CATEGORY
+        self.attendance.save()
+
+        updated_am = AttendanceService.extend_attending_meet_if_needed(self.attendance)
+        assert updated_am is not None
+        assert updated_am.id == self.attendingmeet.id
+        assert updated_am.finish >= self.gathering.finish
+
+    def test_extend_attending_meet_if_needed_creates_new_attendingmeet_when_none_exists(self):
+        # Create a second meet in same assembly
+        meet2 = Meet.objects.create(
+            assembly=self.assembly,
+            display_name="Second Meet",
+            slug="second-meet",
+            major_character=self.character,
+            site_type=self.site_type,
+            site_id=self.room.id,
+            start=self.now,
+            finish=self.now + timedelta(days=10),
+            infos={"default_attendingmeet_in_weeks": 2},
+        )
+        gathering2 = Gathering.objects.create(
+            meet=meet2,
+            start=self.now,
+            finish=self.now + timedelta(hours=2),
+            display_name="Gathering 2",
+            site_type=self.site_type,
+            site_id=str(self.room.id),
+        )
+        attendance2 = Attendance.objects.create(
+            gathering=gathering2,
+            attending=self.attending,
+            character=self.character,
+            category_id=Attendee.ATTENDED_CATEGORY,
+        )
+
+        assert not AttendingMeet.objects.filter(attending=self.attending, meet=meet2).exists()
+
+        created_am = AttendanceService.extend_attending_meet_if_needed(attendance2)
+        assert created_am is not None
+        assert created_am.attending == self.attending
+        assert created_am.meet == meet2
+        assert created_am.character == self.character
+        assert created_am.finish >= gathering2.finish

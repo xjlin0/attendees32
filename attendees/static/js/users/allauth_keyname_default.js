@@ -1,4 +1,9 @@
 window.addEventListener('DOMContentLoaded', () => {
+  const loginInput = document.getElementById('id_login') || document.querySelector('input[name="login"]');
+  if (loginInput) {
+    loginInput.focus();
+  }
+
   if (window.location.pathname.includes('webauthn/add') || window.location.pathname.includes('mfa/add')) {
     const nameInput = document.querySelector('input[name="name"]');
     if (nameInput) {

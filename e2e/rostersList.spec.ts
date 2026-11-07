@@ -313,6 +313,15 @@ test.describe('Rosters List Page', () => {
         const hasMeetNameInHeader = headerTexts.some(t => t.includes(meet1Name));
         expect(hasMeetNameInHeader).toBe(true);
       }).toPass({ timeout: 15000 });
+
+      // Verify no 'Not Attending' text is displayed in any roster cell for multi-meet view
+      const notAttendingEls = page.locator('.not-attending-text');
+      await expect(notAttendingEls).toHaveCount(0);
+
+      // Verify check-in buttons exist across roster columns
+      const checkInBtns = page.locator('.roster-cell-wrapper button.roster-btn');
+      const count = await checkInBtns.count();
+      expect(count).toBeGreaterThan(0);
     }
   });
 

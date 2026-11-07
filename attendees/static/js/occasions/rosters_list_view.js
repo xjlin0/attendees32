@@ -333,9 +333,9 @@
     };
 
     const getAttendingMeetStatus = (rowData, gathering) => {
-      if (!rowData.attendingmeets || !rowData.attendingmeets.length) return 'not_attending';
+      if (!rowData || !rowData.attendingmeets || !rowData.attendingmeets.length) return 'expired';
       const am = getAttendingMeetForGathering(rowData, gathering);
-      if (!am) return 'not_attending';
+      if (!am) return 'expired';
       if (!gathering || !gathering.start) return 'active';
 
       const gStart = new Date(gathering.start);
@@ -517,6 +517,18 @@
                 endOfDay.setHours(23, 59, 59, 999);
                 targetAm.finish = endOfDay.toISOString();
               }
+            } else if (!targetAm && gatheringMeta) {
+              const endOfDay = gatheringMeta.start ? new Date(gatheringMeta.start) : new Date();
+              endOfDay.setHours(23, 59, 59, 999);
+              const newAm = {
+                attending_id: attendingId,
+                meet_id: gatheringMeta.meet_id,
+                character_id: characterId,
+                start: gatheringMeta.start || new Date().toISOString(),
+                finish: endOfDay.toISOString(),
+              };
+              if (!rowData.attendingmeets) rowData.attendingmeets = [];
+              rowData.attendingmeets.push(newAm);
             }
             if (domElements.checkInBtn) {
               domElements.checkInBtn.className = 'roster-btn checked-in';
@@ -534,7 +546,8 @@
             }
           } else { // Undone check in
             if (domElements.checkInBtn) {
-              domElements.checkInBtn.className = 'roster-btn';
+              const amStatus = getAttendingMeetStatus(rowData, gatheringMeta || gathering);
+              domElements.checkInBtn.className = (amStatus === 'active') ? 'roster-btn' : 'roster-btn roster-btn-normal';
               domElements.checkInBtn.innerText = 'Check In';
             }
             if (domElements.outBtn) {
@@ -2525,16 +2538,16 @@
       const wrapper = document.createElement('div');
       wrapper.className = 'text-center roster-cell-wrapper';
 
+      const gatheringId = gatheringMeta && gatheringMeta.id;
+      const checkedIn = gatheringId ? attendanceLogic.isCheckedIn(data, gatheringId) : false;
+      const checkedOut = gatheringId ? attendanceLogic.isCheckedOut(data, gatheringId) : false;
+
       const status = attendanceLogic.getAttendingMeetStatus(data, gatheringMeta);
-      if (status === 'not_attending') {
+      if (!checkedIn && status === 'not_attending') {
         wrapper.innerHTML = `<span class="not-attending-text">Not Attending</span>`;
         container.append(wrapper);
         return;
       }
-
-      const gatheringId = gatheringMeta && gatheringMeta.id;
-      const checkedIn = gatheringId ? attendanceLogic.isCheckedIn(data, gatheringId) : false;
-      const checkedOut = gatheringId ? attendanceLogic.isCheckedOut(data, gatheringId) : false;
 
       const checkInBtn = document.createElement('button');
       if (checkedIn) {
