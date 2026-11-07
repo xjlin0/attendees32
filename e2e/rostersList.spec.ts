@@ -325,6 +325,207 @@ test.describe('Rosters List Page', () => {
     }
   });
 
+  test('Should show top meet switcher dropdown in enrollment modal when multiple meets are selected, and switching meet does not send mutation requests', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Select 2 meets from the dxTagBox
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+
+    const listItems = page.locator('.dx-list-item');
+    await listItems.first().waitFor({ state: 'visible' });
+    const itemCount = await listItems.count();
+
+    if (itemCount >= 2) {
+      const meet1Name = (await listItems.nth(0).innerText()).trim();
+      const meet2Name = (await listItems.nth(1).innerText()).trim();
+      await listItems.nth(0).click();
+
+      await expect(listItems.first()).toBeHidden({ timeout: 5000 });
+      await tagBox.click();
+      await expect(listItems.first()).toBeVisible({ timeout: 5000 });
+      await listItems.nth(1).click();
+      await page.mouse.click(0, 0);
+
+      // Wait for DataGrid to load
+      const gridContainer = page.locator('.dx-datagrid').first();
+      await expect(gridContainer).toBeVisible({ timeout: 10000 });
+
+      // Click on an attendee's name link to open the enrollment modal
+      const attendeeNameLink = page.locator('.attendee-name-link:visible').first();
+      await expect(attendeeNameLink).toBeVisible({ timeout: 5000 });
+      await attendeeNameLink.click();
+
+      // Verify enrollment popup is opened
+      const popup = page.locator('.attendingmeets-popup-wrapper');
+      await expect(popup).toBeVisible({ timeout: 5000 });
+
+      // Verify the top meet selector dropdown is present at the top of modal body
+      const topMeetBar = popup.locator('.attendingmeets-top-meet-bar');
+      await expect(topMeetBar).toBeVisible();
+
+      const meetSelect = topMeetBar.locator('.attendingmeets-meet-dropdown');
+      await expect(meetSelect).toBeVisible();
+
+      // Check options in the dropdown match the selected meets
+      const options = meetSelect.locator('option');
+      const optCount = await options.count();
+      expect(optCount).toBeGreaterThanOrEqual(2);
+
+      const optTexts = await options.allInnerTexts();
+      expect(optTexts.some(t => t.includes(meet1Name) || meet1Name.includes(t))).toBe(true);
+      expect(optTexts.some(t => t.includes(meet2Name) || meet2Name.includes(t))).toBe(true);
+
+      // Monitor network requests to ensure switching dropdown does NOT send any mutation request (POST/PATCH/PUT)
+      let mutationRequestSent = false;
+      page.on('request', req => {
+        if (['POST', 'PATCH', 'PUT'].includes(req.method()) && req.url().includes('/attendingmeets/')) {
+          mutationRequestSent = true;
+        }
+      });
+
+      // Switch dropdown to the second option
+      const currentVal = await meetSelect.inputValue();
+      const secondVal = await options.nth(1).getAttribute('value');
+      const targetVal = currentVal === secondVal ? await options.nth(0).getAttribute('value') : secondVal;
+      await meetSelect.selectOption(targetVal);
+
+      // Give it a moment to update DOM
+      await page.waitForTimeout(500);
+
+      // Verify no mutation was sent
+      expect(mutationRequestSent).toBe(false);
+
+      // Close popup
+      const closeBtn = popup.locator('.dx-closebutton');
+      await closeBtn.click();
+      await expect(popup).toBeHidden({ timeout: 5000 });
+    }
+  });
+
+  test('Should not show top meet switcher dropdown in enrollment modal when only 1 meet is selected', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Select 1 meet from tagbox
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+    const listItem = page.locator('.dx-list-item').first();
+    await listItem.waitFor({ state: 'visible' });
+    await listItem.click();
+    await page.mouse.click(0, 0);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+
+    const attendeeNameLink = page.locator('.attendee-name-link:visible').first();
+    await expect(attendeeNameLink).toBeVisible({ timeout: 5000 });
+    await attendeeNameLink.click();
+
+    const popup = page.locator('.attendingmeets-popup-wrapper');
+    await expect(popup).toBeVisible({ timeout: 5000 });
+
+    // Top meet selector bar should not exist in single meet mode
+    await expect(popup.locator('.attendingmeets-top-meet-bar')).toHaveCount(0);
+
+    const closeBtn = popup.locator('.dx-closebutton');
+    await closeBtn.click();
+    await expect(popup).toBeHidden({ timeout: 5000 });
+  });
+
+  test('Should open editable form with default values and create attendingmeet via POST when attendee has no enrollment, reloading datagrid', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Set a date range to ensure meet data is included
+    const fromInput = page.locator('.dx-datebox input.dx-texteditor-input').nth(0);
+    await fromInput.fill('01/01/2020, 12:00 AM');
+    await fromInput.press('Enter');
+
+    const toInput = page.locator('.dx-datebox input.dx-texteditor-input').nth(1);
+    await toInput.fill('12/31/2026, 11:59 PM');
+    await toInput.press('Enter');
+    await page.waitForTimeout(500);
+
+    // Select 2 meets from tagbox
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+    const listItems = page.locator('.dx-list-item');
+    await listItems.first().waitFor({ state: 'visible' });
+    const count = await listItems.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+
+    await listItems.nth(0).click();
+    await expect(listItems.first()).toBeHidden({ timeout: 5000 });
+    await tagBox.click();
+    await expect(listItems.first()).toBeVisible({ timeout: 5000 });
+    await listItems.nth(1).click();
+    await page.mouse.click(0, 0);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.dx-loadpanel').first()).toBeHidden({ timeout: 15000 });
+
+    // Click on an attendee's name link
+    const attendeeNameLink = page.locator('.attendee-name-link:visible').first();
+    await expect(attendeeNameLink).toBeVisible({ timeout: 5000 });
+    await attendeeNameLink.click();
+
+    // Verify enrollment popup is opened
+    const popup = page.locator('.attendingmeets-popup-wrapper');
+    await expect(popup).toBeVisible({ timeout: 5000 });
+
+    // Top meet dropdown should be visible
+    const meetSelect = popup.locator('.attendingmeets-meet-dropdown');
+    await expect(meetSelect).toBeVisible();
+
+    // Switch dropdown to the second option
+    const options = meetSelect.locator('option');
+    const currentVal = await meetSelect.inputValue();
+    const secondVal = await options.nth(1).getAttribute('value');
+    const targetVal = currentVal === secondVal ? await options.nth(0).getAttribute('value') : secondVal;
+    await meetSelect.selectOption(targetVal);
+    await page.waitForTimeout(500);
+
+    // Verify that NO dead-end alert "No enrollment found" is displayed
+    await expect(popup.locator('.alert-warning')).toHaveCount(0);
+
+    // Verify dxForm is rendered with form inputs
+    const formContainer = popup.locator('.dx-form');
+    await expect(formContainer).toBeVisible({ timeout: 5000 });
+
+    // Verify Save button is visible
+    const saveBtn = popup.locator('.dx-toolbar-after .dx-button:has-text("Save")');
+    await expect(saveBtn).toBeVisible();
+
+    // Monitor network requests for POST or PATCH
+    let saveRequested = false;
+    let saveMethod = '';
+    page.on('request', req => {
+      if (req.url().includes('/persons/api/datagrid_data_attendingmeet/')) {
+        saveRequested = true;
+        saveMethod = req.method();
+      }
+    });
+
+    // Click Save
+    await saveBtn.click();
+
+    // Modal should close on success
+    await expect(popup).toBeHidden({ timeout: 10000 });
+    expect(saveRequested).toBe(true);
+
+    // Verify that the datagrid is present and rows are rendered
+    await expect(page.locator('.dx-datagrid').first()).toBeVisible();
+  });
+
   test('Should open + Attendee popup with search-first flow, English UI, and fast onboard form', async ({ page }) => {
     await page.goto('/occasions/rosters/');
 

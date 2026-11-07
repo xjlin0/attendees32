@@ -313,7 +313,7 @@
     const getAttendingMeetForGathering = (rowData, gathering) => {
       if (!rowData.attendingmeets || !rowData.attendingmeets.length) return null;
       if (!gathering || !gathering.meet_id) return rowData.attendingmeets[0];
-      return rowData.attendingmeets.find(am => String(am.meet_id) === String(gathering.meet_id)) || null;
+      return rowData.attendingmeets.find(am => String(am.meet_id != null ? am.meet_id : am.meet) === String(gathering.meet_id)) || null;
     };
 
     const getActiveAttendingMeet = (rowData, gathering) => {
@@ -323,7 +323,8 @@
       }
       const gStart = new Date(gathering.start);
       return rowData.attendingmeets.find(am => {
-        if (gathering.meet_id && String(am.meet_id) !== String(gathering.meet_id)) {
+        const amMeetId = am.meet_id != null ? am.meet_id : am.meet;
+        if (gathering.meet_id && String(amMeetId) !== String(gathering.meet_id)) {
           return false;
         }
         const amStart = am.start ? new Date(am.start) : new Date('1970-01-01');
@@ -421,8 +422,8 @@
 
       const targetAm = getActiveAttendingMeet(rowData, gatheringMeta || gathering)
                     || getAttendingMeetForGathering(rowData, gatheringMeta || gathering);
-      const attendingId = targetAm ? targetAm.attending_id : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].attending_id : null));
-      const characterId = targetAm ? targetAm.character_id : (rowData.attendingmeets && rowData.attendingmeets[0] ? rowData.attendingmeets[0].character_id : 1);
+      const attendingId = targetAm ? (targetAm.attending_id || targetAm.attending) : (rowData.attending_id || (rowData.attendingmeets && rowData.attendingmeets[0] ? (rowData.attendingmeets[0].attending_id || rowData.attendingmeets[0].attending) : null));
+      const characterId = targetAm ? (targetAm.character_id || targetAm.character) : (rowData.attendingmeets && rowData.attendingmeets[0] ? (rowData.attendingmeets[0].character_id || rowData.attendingmeets[0].character) : 1);
 
       if (window.Attendees && window.Attendees.utilities) {
         window.Attendees.utilities.editingEnabled = true;
@@ -1009,13 +1010,15 @@
   // ==========================================================
   // 3. AttendingMeets Editor Logic (dxPopup & dxForm)
   // ==========================================================
-  function useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData) {
+  function useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData, reloadCallback) {
     let popupInstance = null;
     let popupElement = null;
     let currentAttendeeData = null;
+    let currentRawMeets = [];
     let currentSortedMeets = [];
     let currentFormInstances = [];
     let currentActiveIndex = 0;
+    let currentSelectedMeetId = null;
 
     const lookupsCache = {
       loaded: false,
@@ -1105,6 +1108,61 @@
       return allowedIds;
     };
 
+    const ensureAttendingId = async () => {
+      let attendingId = (currentAttendeeData && (currentAttendeeData.attending_id || currentAttendeeData.attending))
+        || (currentRawMeets[0] && currentRawMeets[0].attending);
+      if (attendingId) {
+        if (currentAttendeeData) currentAttendeeData.attending_id = attendingId;
+        return attendingId;
+      }
+
+      if (!currentAttendeeData || !currentAttendeeData.attendee_id) return null;
+
+      if (endpoints.attendings) {
+        try {
+          const getRes = await fetch(`${endpoints.attendings}?take=1`, {
+            headers: {
+              'X-Target-Attendee-Id': String(currentAttendeeData.attendee_id)
+            }
+          });
+          if (getRes.ok) {
+            const data = await getRes.json();
+            const items = data.data || data.results || (Array.isArray(data) ? data : []);
+            if (items.length > 0 && items[0].id) {
+              currentAttendeeData.attending_id = items[0].id;
+              return items[0].id;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch attending:', e);
+        }
+
+        try {
+          const attgRes = await fetch(endpoints.attendings, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Target-Attendee-Id': String(currentAttendeeData.attendee_id),
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+              attendee: currentAttendeeData.attendee_id,
+              registration: null
+            })
+          });
+          if (attgRes.ok) {
+            const newAttending = await attgRes.json();
+            currentAttendeeData.attending_id = newAttending.id;
+            return newAttending.id;
+          }
+        } catch (e) {
+          console.warn('Could not initialize attending:', e);
+        }
+      }
+
+      return null;
+    };
+
     const saveCurrentForm = async () => {
       if (!currentSortedMeets.length || !currentAttendeeData) return;
       const form = currentFormInstances[currentActiveIndex];
@@ -1118,10 +1176,16 @@
 
       const formData = form.option('formData');
       const targetAm = currentSortedMeets[currentActiveIndex];
+      const isNew = !targetAm.id || targetAm.isNew;
+
+      let attendingId = formData.attending || targetAm.attending;
+      if (!attendingId) {
+        attendingId = await ensureAttendingId();
+      }
 
       const payload = {
         meet: formData.meet,
-        attending: formData.attending,
+        attending: attendingId,
         character: formData.character,
         team: formData.team || null,
         category: formData.category,
@@ -1134,8 +1198,11 @@
       };
 
       try {
-        const updateRes = await fetch(`${endpoints.attendingmeets}${targetAm.id}/`, {
-          method: 'PATCH',
+        const url = isNew ? endpoints.attendingmeets : `${endpoints.attendingmeets}${targetAm.id}/`;
+        const method = isNew ? 'POST' : 'PATCH';
+
+        const updateRes = await fetch(url, {
+          method: method,
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
@@ -1146,12 +1213,69 @@
 
         if (!updateRes.ok) {
           const errData = await updateRes.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Failed to update attendingmeet');
+          throw new Error(errData.detail || `Failed to ${isNew ? 'create' : 'update'} attendingmeet`);
+        }
+
+        const resData = await updateRes.json().catch(() => ({}));
+        const savedAm = resData.data || resData;
+        if (isNew && savedAm && savedAm.id) {
+          targetAm.id = savedAm.id;
+          targetAm.isNew = false;
+          currentRawMeets.push(savedAm);
+        }
+
+        // Update currentAttendeeData in memory so check-in buttons immediately get active state
+        if (currentAttendeeData) {
+          if (!currentAttendeeData.attendingmeets) {
+            currentAttendeeData.attendingmeets = [];
+          }
+          const savedAmId = (savedAm && savedAm.id) || targetAm.id;
+          const targetMeetId = Number(formData.meet || targetAm.meet);
+          const targetCharId = Number(formData.character || targetAm.character);
+          const targetCatId = Number(formData.category || targetAm.category);
+          const targetTeamId = formData.team || targetAm.team || null;
+          const updatedAmItem = {
+            ...(savedAm || {}),
+            id: savedAmId,
+            attendingmeet_id: savedAmId,
+            meet_id: targetMeetId,
+            meet: targetMeetId,
+            start: payload.start,
+            finish: payload.finish,
+            character_id: targetCharId,
+            character: targetCharId,
+            category_id: targetCatId,
+            category: targetCatId,
+            team_id: targetTeamId,
+            team: targetTeamId,
+            infos: payload.infos
+          };
+
+          const amIndex = currentAttendeeData.attendingmeets.findIndex(
+            am => (am.id && am.id === savedAmId) ||
+                  (am.attendingmeet_id && am.attendingmeet_id === savedAmId) ||
+                  Number(am.meet_id || am.meet) === targetMeetId
+          );
+          if (amIndex >= 0) {
+            currentAttendeeData.attendingmeets[amIndex] = {
+              ...currentAttendeeData.attendingmeets[amIndex],
+              ...updatedAmItem
+            };
+          } else {
+            currentAttendeeData.attendingmeets.push(updatedAmItem);
+          }
+
+          if (gridInstanceRef && gridInstanceRef.value) {
+            const rIdx = gridInstanceRef.value.getRowIndexByKey(currentAttendeeData.attendee_id);
+            if (rIdx >= 0) {
+              gridInstanceRef.value.repaintRows([rIdx]);
+            }
+          }
         }
 
         DevExpress.ui.notify(
           {
-            message: 'Update attendingmeet success',
+            message: `${isNew ? 'Create' : 'Update'} attendingmeet success`,
             position: { my: 'center', at: 'center', of: window }
           },
           'success',
@@ -1159,7 +1283,9 @@
         );
 
         if (popupInstance) popupInstance.hide();
-        if (gridInstanceRef && gridInstanceRef.value) {
+        if (typeof reloadCallback === 'function') {
+          await reloadCallback(currentAttendeeData.attendee_id);
+        } else if (gridInstanceRef && gridInstanceRef.value) {
           gridInstanceRef.value.refresh();
         }
       } catch (saveErr) {
@@ -1170,7 +1296,7 @@
     const endCurrentEnrollment = async () => {
       if (!currentSortedMeets.length || !currentAttendeeData) return;
       const targetAm = currentSortedMeets[currentActiveIndex];
-      if (!targetAm) return;
+      if (!targetAm || !targetAm.id || targetAm.isNew) return;
 
       const nowIso = new Date().toISOString();
       const payload = {
@@ -1193,6 +1319,24 @@
           throw new Error(errData.detail || 'Failed to end attendingmeet');
         }
 
+        if (currentAttendeeData && currentAttendeeData.attendingmeets) {
+          const targetMeetId = Number(targetAm.meet);
+          const amIndex = currentAttendeeData.attendingmeets.findIndex(
+            am => (am.id && am.id === targetAm.id) ||
+                  (am.attendingmeet_id && am.attendingmeet_id === targetAm.id) ||
+                  Number(am.meet_id || am.meet) === targetMeetId
+          );
+          if (amIndex >= 0) {
+            currentAttendeeData.attendingmeets[amIndex].finish = nowIso;
+          }
+          if (gridInstanceRef && gridInstanceRef.value) {
+            const rIdx = gridInstanceRef.value.getRowIndexByKey(currentAttendeeData.attendee_id);
+            if (rIdx >= 0) {
+              gridInstanceRef.value.repaintRows([rIdx]);
+            }
+          }
+        }
+
         DevExpress.ui.notify(
           {
             message: 'Enrollment ended successfully',
@@ -1203,7 +1347,9 @@
         );
 
         if (popupInstance) popupInstance.hide();
-        if (gridInstanceRef && gridInstanceRef.value) {
+        if (typeof reloadCallback === 'function') {
+          await reloadCallback(currentAttendeeData.attendee_id);
+        } else if (gridInstanceRef && gridInstanceRef.value) {
           gridInstanceRef.value.refresh();
         }
       } catch (err) {
@@ -1593,64 +1739,291 @@
       };
     };
 
-    const renderPopupContent = (container) => {
-      container.innerHTML = '';
+    const updateToolbarVisibility = (hasAm, isNewAm = false) => {
+      if (!popupInstance) return;
+      const items = popupInstance.option('toolbarItems');
+      if (Array.isArray(items)) {
+        const updated = items.map(item => {
+          if (item.options && item.options.text === 'Save') {
+            return {
+              ...item,
+              options: {
+                ...item.options,
+                visible: Boolean(hasAm)
+              }
+            };
+          }
+          if (item.options && item.options.text === 'End') {
+            return {
+              ...item,
+              options: {
+                ...item.options,
+                visible: Boolean(hasAm) && !isNewAm
+              }
+            };
+          }
+          return item;
+        });
+        popupInstance.option('toolbarItems', updated);
+      }
+    };
 
-      if (!currentSortedMeets.length) {
-        if (currentAttendeeData) {
-          const headerEl = createHeaderElement(currentAttendeeData);
-          container.appendChild(headerEl);
-        }
-        const alertEl = document.createElement('div');
-        alertEl.className = 'alert alert-info mt-3';
-        alertEl.textContent = 'No enrollments (attendingmeets) found for this attendee under the selected meet(s).';
-        container.appendChild(alertEl);
-        return;
+    const createDefaultAttendingMeet = (meetId) => {
+      const meetObj = (lookupsCache.meets || []).find(m => String(m.id) === String(meetId) || m.slug === meetId)
+        || meetsMap.get(meetId)
+        || meetsMap.get(String(meetId));
+
+      const defaultWeeks = (meetObj && meetObj.infos && meetObj.infos.default_attendingmeet_in_weeks)
+        ? Number(meetObj.infos.default_attendingmeet_in_weeks)
+        : 53;
+
+      const startDate = new Date();
+      const finishDate = new Date(Date.now() + defaultWeeks * 7 * 24 * 60 * 60 * 1000);
+
+      let defaultCharacter = meetObj && meetObj.major_character;
+      if (!defaultCharacter && meetObj && meetObj.assembly && lookupsCache.characters) {
+        const charInAssembly = lookupsCache.characters.find(c => c.assembly === meetObj.assembly && (c.slug === 'attendee' || c.display_name === 'Attendee'))
+          || lookupsCache.characters.find(c => c.assembly === meetObj.assembly);
+        if (charInAssembly) defaultCharacter = charInAssembly.id;
+      }
+      if (!defaultCharacter) {
+        defaultCharacter = (lookupsCache.characters && lookupsCache.characters[0] && lookupsCache.characters[0].id) || 1;
       }
 
-      // Content Area: Single Form or TabPanel for multiple attendingmeets
-      const contentArea = document.createElement('div');
-      contentArea.className = 'attendingmeets-content-area';
-      container.appendChild(contentArea);
+      const defaultCategory = (lookupsCache.categories && lookupsCache.categories.find(c => c.display_name === 'Scheduled' || c.name === 'Scheduled')?.id)
+        || (lookupsCache.categories && lookupsCache.categories[0]?.id)
+        || 1;
 
+      const attendingId = (currentAttendeeData && (currentAttendeeData.attending_id || currentAttendeeData.attending))
+        || (currentRawMeets[0] && currentRawMeets[0].attending)
+        || null;
+
+      const parsedMeetId = meetObj ? meetObj.id : (Number(meetId) || meetId);
+
+      return {
+        isNew: true,
+        meet: parsedMeetId,
+        attending: attendingId,
+        character: defaultCharacter,
+        team: null,
+        category: defaultCategory,
+        start: startDate.toISOString(),
+        finish: finishDate.toISOString(),
+        infos: { note: '' }
+      };
+    };
+
+    const getPageMeets = () => {
+      const selectedSlugsOrIds = filterData && filterData.meets ? filterData.meets : [];
+      const result = [];
+      const seenIds = new Set();
+
+      selectedSlugsOrIds.forEach(slugOrId => {
+        let meetObj = (lookupsCache.meets || []).find(m =>
+          m.slug === slugOrId || m.id === slugOrId || String(m.id) === String(slugOrId)
+        ) || meetsMap.get(slugOrId) || meetsMap.get(String(slugOrId));
+
+        const id = meetObj ? meetObj.id : slugOrId;
+        const displayName = meetObj ? (meetObj.display_name || meetObj.name || slugOrId) : (meetsInfoMap.get(slugOrId) || String(slugOrId));
+
+        if (!seenIds.has(String(id))) {
+          seenIds.add(String(id));
+          result.push({
+            id: id,
+            slug: meetObj ? meetObj.slug : slugOrId,
+            display_name: displayName
+          });
+        }
+      });
+
+      return result;
+    };
+
+    const renderSelectedMeetContent = (meetId, contentArea, pageMeets) => {
+      contentArea.innerHTML = '';
       currentFormInstances = [];
       currentActiveIndex = 0;
 
-      if (currentSortedMeets.length === 1) {
-        const formEl = document.createElement('div');
-        contentArea.appendChild(formEl);
-        const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(currentSortedMeets[0]));
-        currentFormInstances.push(formInst);
-      } else {
-        // Multiple attendingmeets -> dxTabPanel
-        const tabItems = currentSortedMeets.map((am, i) => {
-          const meetName = lookupsCache.meetNames[am.meet] || am.meet__display_name || `Meet #${am.meet}`;
-          const finishLabel = am.finish ? am.finish.substring(0, 10) : 'Ongoing';
-          return {
-            title: `${meetName} (${finishLabel})`,
-            am: am,
-            index: i
-          };
+      // Find attendingmeets for this meet
+      const matched = currentRawMeets.filter(am => am.meet === meetId || String(am.meet) === String(meetId));
+      if (matched.length > 0) {
+        currentSortedMeets = matched.slice().sort((a, b) => {
+          if (!a.finish && !b.finish) return 0;
+          if (!a.finish) return -1;
+          if (!b.finish) return 1;
+          return new Date(b.finish) - new Date(a.finish);
         });
 
-        new DevExpress.ui.dxTabPanel(contentArea, {
-          dataSource: tabItems,
-          width: '100%',
-          selectedIndex: 0,
-          deferRendering: false,
-          loop: false,
-          animationEnabled: true,
-          swipeEnabled: false,
-          onSelectionChanged: (e) => {
-            currentActiveIndex = e.component.option('selectedIndex');
-          },
-          itemTemplate: (itemData, itemIndex, itemElement) => {
-            const formEl = document.createElement('div');
-            itemElement.append(formEl);
-            const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(itemData.am));
-            currentFormInstances[itemIndex] = formInst;
+        updateToolbarVisibility(true, false);
+
+        if (currentSortedMeets.length === 1) {
+          const formEl = document.createElement('div');
+          contentArea.appendChild(formEl);
+          const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(currentSortedMeets[0]));
+          currentFormInstances.push(formInst);
+        } else {
+          const tabItems = currentSortedMeets.map((am, i) => {
+            const meetName = lookupsCache.meetNames[am.meet] || am.meet__display_name || `Meet #${am.meet}`;
+            const finishLabel = am.finish ? am.finish.substring(0, 10) : 'Ongoing';
+            return {
+              title: `${meetName} (${finishLabel})`,
+              am: am,
+              index: i
+            };
+          });
+
+          new DevExpress.ui.dxTabPanel(contentArea, {
+            dataSource: tabItems,
+            width: '100%',
+            selectedIndex: 0,
+            deferRendering: false,
+            loop: false,
+            animationEnabled: true,
+            swipeEnabled: false,
+            onSelectionChanged: (e) => {
+              currentActiveIndex = e.component.option('selectedIndex');
+            },
+            itemTemplate: (itemData, itemIndex, itemElement) => {
+              const formEl = document.createElement('div');
+              itemElement.append(formEl);
+              const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(itemData.am));
+              currentFormInstances[itemIndex] = formInst;
+            }
+          });
+        }
+      } else {
+        // No existing enrollment -> open form with default values so user can create attendingmeet
+        const defaultAm = createDefaultAttendingMeet(meetId);
+        currentSortedMeets = [defaultAm];
+
+        updateToolbarVisibility(true, true);
+
+        const formEl = document.createElement('div');
+        contentArea.appendChild(formEl);
+        const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(defaultAm));
+        currentFormInstances.push(formInst);
+      }
+    };
+
+    const renderPopupContent = (container) => {
+      container.innerHTML = '';
+
+      const pageMeets = getPageMeets();
+      const isMultiMeet = pageMeets.length > 1;
+
+      if (isMultiMeet) {
+        // Top Meet Selector dropdown
+        const topBar = document.createElement('div');
+        topBar.className = 'attendingmeets-top-meet-bar d-flex align-items-center mb-3 p-2 bg-light rounded border';
+
+        const label = document.createElement('label');
+        label.className = 'form-label mb-0 me-2 fw-semibold text-secondary text-nowrap';
+        label.htmlFor = 'attendingmeets-meet-select';
+        label.innerHTML = '<i class="fas fa-calendar-alt me-1"></i>Meet:';
+        topBar.appendChild(label);
+
+        const selectEl = document.createElement('select');
+        selectEl.id = 'attendingmeets-meet-select';
+        selectEl.className = 'form-select form-select-sm attendingmeets-meet-dropdown flex-grow-1';
+        pageMeets.forEach(pm => {
+          const opt = document.createElement('option');
+          opt.value = String(pm.id);
+          opt.textContent = pm.display_name;
+          if (String(pm.id) === String(currentSelectedMeetId)) {
+            opt.selected = true;
           }
+          selectEl.appendChild(opt);
         });
+
+        topBar.appendChild(selectEl);
+        container.appendChild(topBar);
+
+        const contentArea = document.createElement('div');
+        contentArea.className = 'attendingmeets-content-area';
+        container.appendChild(contentArea);
+
+        selectEl.addEventListener('change', (e) => {
+          currentSelectedMeetId = e.target.value;
+          renderSelectedMeetContent(currentSelectedMeetId, contentArea, pageMeets);
+        });
+
+        renderSelectedMeetContent(currentSelectedMeetId, contentArea, pageMeets);
+      } else {
+        // Single meet mode or 0 meets
+        const allowedMeetIds = getSelectedMeetIds();
+        const matchedMeets = currentRawMeets.filter(am => allowedMeetIds.has(am.meet));
+        if (matchedMeets.length > 0) {
+          currentSortedMeets = matchedMeets.slice().sort((a, b) => {
+            if (!a.finish && !b.finish) return 0;
+            if (!a.finish) return -1;
+            if (!b.finish) return 1;
+            return new Date(b.finish) - new Date(a.finish);
+          });
+
+          updateToolbarVisibility(true, false);
+
+          const contentArea = document.createElement('div');
+          contentArea.className = 'attendingmeets-content-area';
+          container.appendChild(contentArea);
+
+          currentFormInstances = [];
+          currentActiveIndex = 0;
+
+          if (currentSortedMeets.length === 1) {
+            const formEl = document.createElement('div');
+            contentArea.appendChild(formEl);
+            const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(currentSortedMeets[0]));
+            currentFormInstances.push(formInst);
+          } else {
+            const tabItems = currentSortedMeets.map((am, i) => {
+              const meetName = lookupsCache.meetNames[am.meet] || am.meet__display_name || `Meet #${am.meet}`;
+              const finishLabel = am.finish ? am.finish.substring(0, 10) : 'Ongoing';
+              return {
+                title: `${meetName} (${finishLabel})`,
+                am: am,
+                index: i
+              };
+            });
+
+            new DevExpress.ui.dxTabPanel(contentArea, {
+              dataSource: tabItems,
+              width: '100%',
+              selectedIndex: 0,
+              deferRendering: false,
+              loop: false,
+              animationEnabled: true,
+              swipeEnabled: false,
+              onSelectionChanged: (e) => {
+                currentActiveIndex = e.component.option('selectedIndex');
+              },
+              itemTemplate: (itemData, itemIndex, itemElement) => {
+                const formEl = document.createElement('div');
+                itemElement.append(formEl);
+                const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(itemData.am));
+                currentFormInstances[itemIndex] = formInst;
+              }
+            });
+          }
+        } else {
+          // No enrollment in single meet mode -> create default attendingmeet
+          const singleMeetId = allowedMeetIds.size > 0 ? Array.from(allowedMeetIds)[0] : (pageMeets[0] ? pageMeets[0].id : null);
+          const defaultAm = createDefaultAttendingMeet(singleMeetId);
+          currentSortedMeets = [defaultAm];
+
+          updateToolbarVisibility(true, true);
+
+          const contentArea = document.createElement('div');
+          contentArea.className = 'attendingmeets-content-area';
+          container.appendChild(contentArea);
+
+          currentFormInstances = [];
+          currentActiveIndex = 0;
+
+          const formEl = document.createElement('div');
+          contentArea.appendChild(formEl);
+          const formInst = new DevExpress.ui.dxForm(formEl, createFormConfig(defaultAm));
+          currentFormInstances.push(formInst);
+        }
       }
     };
 
@@ -1664,8 +2037,6 @@
 
       await preloadLookups();
 
-      const allowedMeetIds = getSelectedMeetIds();
-      let rawMeets = [];
       try {
         const res = await fetch(endpoints.attendingmeets, {
           headers: {
@@ -1675,28 +2046,57 @@
         });
         if (!res.ok) throw new Error('Failed to load attendee enrollments');
         const json = await res.json();
-        rawMeets = json.data || [];
+        currentRawMeets = json.data || [];
       } catch (err) {
         DevExpress.ui.notify(`Error loading enrollments: ${err.message}`, 'error', WARNING_NOTIFY_TIME);
         return;
       }
 
-      // Filter: only keep attendingmeets matching the currently selected meets on the page
-      const matchedMeets = rawMeets.filter(am => allowedMeetIds.has(am.meet));
+      const pageMeets = getPageMeets();
+      const isMultiMeet = pageMeets.length > 1;
 
-      // Sort by finish descending (ongoing/null finish first, then newest to oldest)
-      currentSortedMeets = matchedMeets.slice().sort((a, b) => {
-        if (!a.finish && !b.finish) return 0;
-        if (!a.finish) return -1;
-        if (!b.finish) return 1;
-        return new Date(b.finish) - new Date(a.finish);
-      });
+      // Ensure attendee has attending_id
+      await ensureAttendingId();
+
+      if (isMultiMeet) {
+        const firstEnrolledMeet = pageMeets.find(pm =>
+          currentRawMeets.some(am => am.meet === pm.id || String(am.meet) === String(pm.id))
+        );
+        currentSelectedMeetId = firstEnrolledMeet ? firstEnrolledMeet.id : pageMeets[0].id;
+
+        const matched = currentRawMeets.filter(am => am.meet === currentSelectedMeetId || String(am.meet) === String(currentSelectedMeetId));
+        if (matched.length > 0) {
+          currentSortedMeets = matched.slice().sort((a, b) => {
+            if (!a.finish && !b.finish) return 0;
+            if (!a.finish) return -1;
+            if (!b.finish) return 1;
+            return new Date(b.finish) - new Date(a.finish);
+          });
+        } else {
+          currentSortedMeets = [createDefaultAttendingMeet(currentSelectedMeetId)];
+        }
+      } else {
+        const allowedMeetIds = getSelectedMeetIds();
+        const matchedMeets = currentRawMeets.filter(am => allowedMeetIds.has(am.meet));
+        if (matchedMeets.length > 0) {
+          currentSortedMeets = matchedMeets.slice().sort((a, b) => {
+            if (!a.finish && !b.finish) return 0;
+            if (!a.finish) return -1;
+            if (!b.finish) return 1;
+            return new Date(b.finish) - new Date(a.finish);
+          });
+        } else {
+          const singleMeetId = allowedMeetIds.size > 0 ? Array.from(allowedMeetIds)[0] : (pageMeets[0] ? pageMeets[0].id : null);
+          currentSortedMeets = [createDefaultAttendingMeet(singleMeetId)];
+        }
+      }
 
       const isMobile = window.innerWidth < 768;
       const popupWidth = isMobile ? '92%' : '70%';
       const popupHeight = isMobile ? 'auto' : '70%';
       const popupTitle = `${attendeeData.attendee_name} enrollment`;
 
+      const isFirstNew = currentSortedMeets.length > 0 && (currentSortedMeets[0].isNew || !currentSortedMeets[0].id);
       const toolbarItems = [
         {
           toolbar: 'top',
@@ -1707,7 +2107,7 @@
             type: 'danger',
             icon: 'trash',
             stylingMode: 'contained',
-            visible: currentSortedMeets.length > 0,
+            visible: currentSortedMeets.length > 0 && !isFirstNew,
             onClick: endCurrentEnrollment
           }
         },
@@ -1967,7 +2367,7 @@
         }
 
         targetEl.innerHTML = `
-          <div class="roster-footer-newcomer-pill" title="Last added attendee, click to view details">
+          <div class="roster-footer-newcomer-pill" title="Last added record, click to view details">
             <i class="fas fa-address-card text-warning me-1"></i>
             <span class="roster-footer-newcomer-name">${escapeHtml(lastNewcomer.name || 'New Attendee')}</span>
             <span class="badge bg-success text-white ms-1 px-1 py-0" style="font-size: 0.7em;" title="Checked in"><i class="fas fa-check"></i></span>
@@ -5745,7 +6145,17 @@
       // Composables Hookup
       const { endpoints, initEndpoints } = useEndpoints();
       const attendanceLogic = useAttendanceLogic(endpoints, gridInstanceRef);
-      const attendingMeetsEditor = useAttendingMeetsEditor(endpoints, gridInstanceRef, filterData);
+      const reloadDataRef = { current: null };
+      const attendingMeetsEditor = useAttendingMeetsEditor(
+        endpoints, 
+        gridInstanceRef, 
+        filterData,
+        (targetAttendeeId) => {
+          if (reloadDataRef.current) {
+            return reloadDataRef.current(targetAttendeeId);
+          }
+        }
+      );
       const resetFiltersRef = { current: null };
       const {
         initDataGrid,
@@ -5764,6 +6174,7 @@
       );
       const { initFilterForm, resetFilters } = useRosterFilter(endpoints, filterData, loadData, gridInstanceRef);
       resetFiltersRef.current = resetFilters;
+      reloadDataRef.current = loadData;
 
       const { startPolling, stopPolling } = useSmartPolling(gridInstanceRef, filterData);
       const { initAddAttendeePopup, openAddAttendeePopup } = useAddAttendee(

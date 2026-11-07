@@ -57,6 +57,18 @@ body div.dx-overlay.dx-popup.attendingmeets-popup-wrapper div.dx-overlay-content
   background-color: #fff;
 }
 
+.attendingmeets-top-meet-bar {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+.attendingmeets-top-meet-bar label {
+  font-size: 0.95rem;
+}
+.attendingmeets-meet-dropdown {
+  max-width: 450px;
+}
+
 .attendingmeets-modal-header {
   background-color: #f8f9fa;
   border-radius: 6px;
