@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.db.transaction import non_atomic_requests
 from django.urls import include, path, re_path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
@@ -27,15 +28,15 @@ def trigger_error(request):
 
 urlpatterns = [
     re_path("^private-media/", include(private_storage.urls)),
-    re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
+    re_path(r"^static/(?P<path>.*)$", non_atomic_requests(serve), {"document_root": settings.STATIC_ROOT}),
     path(
         "",
         kwargs={"repo_version": f'{"DETACHED_" if repo.head.is_detached else repo.active_branch.name}/{sha}'},
-        view=TemplateView.as_view(template_name="pages/home.html"),
+        view=non_atomic_requests(TemplateView.as_view(template_name="pages/home.html")),
         name="home",
     ),
     path(
-        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
+        "about/", non_atomic_requests(TemplateView.as_view(template_name="pages/about.html")), name="about"
     ),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
@@ -71,15 +72,15 @@ urlpatterns = [
     path("auth-token/", obtain_auth_token),      # DRF auth token
     path(
         "robots.txt",
-        TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
+        non_atomic_requests(TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     ),
     path(
         "humans.txt",
-        TemplateView.as_view(template_name="humans.txt", content_type="text/plain"),
+        non_atomic_requests(TemplateView.as_view(template_name="humans.txt", content_type="text/plain")),
     ),
     path(
         "ads.txt",
-        TemplateView.as_view(template_name="ads.txt", content_type="text/plain"),
+        non_atomic_requests(TemplateView.as_view(template_name="ads.txt", content_type="text/plain")),
     ),
     # re_path(
     #     r"[^\.](.*)(\.jsp|\.php|\.cgi|log_upload_wsgi.py|admin/controller|wp-content)(.*)",  # need precedings

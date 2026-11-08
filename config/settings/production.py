@@ -26,7 +26,10 @@ for host in ALLOWED_HOSTS:
 # ------------------------------------------------------------------------------
 # DATABASES["default"] = env.db("DATABASE_URL")  # noqa F405
 # DATABASES["default"]["ATOMIC_REQUESTS"] = True  # noqa F405
-DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)  # noqa F405
+# Under ASGI (UvicornWorker) without PgBouncer, CONN_MAX_AGE > 0 causes thread pool
+# workers to accumulate persistent connections, rapidly exhausting PostgreSQL max_connections.
+# Setting default to 0 closes connections at request end to prevent connection pool exhaustion.
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=0)  # noqa F405
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -42,6 +45,12 @@ CACHES = {
         },
     }
 }
+
+# SESSIONS
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/topics/http/sessions/#using-cached-sessions
+# Read from Redis cache (ultra-fast, zero DB hits on read), write-through to PostgreSQL for backup.
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # SECURITY
 # ------------------------------------------------------------------------------

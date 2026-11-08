@@ -43,3 +43,13 @@ class TestViewHelpers:
         assert "Page Not Found (404)" in content
         assert "Go Back" in content
         assert "Secret exception" not in content
+
+    @pytest.mark.parametrize("path", ["/", "/about/", "/robots.txt", "/humans.txt", "/ads.txt", "/static/test.css"])
+    def test_static_routes_have_non_atomic_requests(self, path):
+        """
+        Static views must be decorated with non_atomic_requests to prevent ATOMIC_REQUESTS
+        from opening database transactions on static/display requests.
+        """
+        from django.urls import resolve
+        resolved = resolve(path)
+        assert getattr(resolved.func, "_non_atomic_requests", None) == {"default"}
