@@ -1098,6 +1098,114 @@ test.describe('Rosters List Page', () => {
     // Verify popup closes on success
     await expect(page.locator('.add-attendee-popup-wrapper')).toBeHidden({ timeout: 15000 });
   });
+
+  test('Should copy contacts when linking an existing attendee record in onboard form and allow saving without companion contact error', async ({ page }) => {
+    await page.goto('/occasions/rosters/');
+
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // Select meet
+    const tagBox = page.locator('.dx-tagbox').first();
+    await tagBox.click();
+    const listItem = page.locator('.dx-list-item').first();
+    await listItem.waitFor({ state: 'visible' });
+    await listItem.click();
+    await page.mouse.click(0, 0);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+
+    const addAttendeeBtn = page.locator('a.add-attendee');
+    await expect(addAttendeeBtn).toBeVisible();
+    await addAttendeeBtn.click();
+
+    const popupWrapper = page.locator('.add-attendee-popup-wrapper');
+    await expect(popupWrapper).toBeVisible();
+
+    // Trigger search with query that has no direct match so we can switch to onboard form
+    const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
+    await expect(searchInput).toBeVisible();
+    await searchInput.click();
+    await searchInput.fill(`Nobody_${Date.now()}`);
+    await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
+
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn').first();
+    await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
+    await switchToOnboardBtn.click();
+
+    // Onboard view is displayed
+    const att1Block = page.locator('.add-attendee-popup-wrapper .attendee-block-1');
+    await expect(att1Block).toBeVisible();
+
+    // Fill Attendee 1
+    const ts = Date.now();
+    await page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-first-name').fill(`Kid_${ts}`);
+    await page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-last-name').fill('TestFamily');
+
+    const isKidSectionVisible = await page.locator('.add-attendee-popup-wrapper .attendee-block-1 .kid-specific-fields').isVisible();
+    if (isKidSectionVisible) {
+      await page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-byear').fill('2018');
+      await page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bmonth').selectOption('5');
+      await page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-bday').selectOption('15');
+      const g = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-grade');
+      if ((await g.locator('option').all()).length > 1) await g.selectOption({ index: 1 });
+      await page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-food-pref').fill('None');
+
+      // Ensure unaccompanied is unchecked so companion 1 is active
+      const unacc = page.locator('.add-attendee-popup-wrapper input.ob-unaccompanied');
+      if (await unacc.isChecked()) {
+        await unacc.uncheck();
+      }
+    }
+
+    // Ensure companion section is expanded
+    const guardianHeader = page.locator('.add-attendee-popup-wrapper .guardian-section-header');
+    const guardianContent = page.locator('.add-attendee-popup-wrapper .guardian-section-content');
+    if (await guardianHeader.isVisible() && !(await guardianContent.isVisible())) {
+      await guardianHeader.click();
+    }
+
+    // Now in Companion 1, type "Sarah" to trigger candidate duplicate search
+    const comp1Block = page.locator('.add-attendee-popup-wrapper .companion-block-1');
+    await expect(comp1Block).toBeVisible();
+
+    // Contact value before linking is empty
+    const contactValueInput = comp1Block.locator('input.ob-p-contact-value').first();
+    await expect(contactValueInput).toHaveValue('');
+
+    const comp1FirstName = comp1Block.locator('input.ob-p-first-name');
+    await comp1FirstName.fill('Sarah');
+
+    // Wait for candidate pill group to render
+    const candPillGroup = comp1Block.locator('.candidate-pill-group').first();
+    await expect(candPillGroup).toBeVisible({ timeout: 5000 });
+
+    // Click "Link" button to adopt candidate
+    const linkBtn = candPillGroup.locator('button');
+    await linkBtn.click();
+
+    // Verify linked badge appears
+    await expect(comp1Block.locator('.badge:has-text("Linked")')).toBeVisible({ timeout: 5000 });
+
+    // Verify contact value was copied and is now visible in the input field!
+    await expect(contactValueInput).toHaveValue('+18888888888');
+
+    // If division is unselected for companion, pick one
+    const compDiv = comp1Block.locator('select.ob-p-division');
+    if (await compDiv.isVisible()) {
+      const curDiv = await compDiv.inputValue();
+      if (!curDiv) {
+        await compDiv.selectOption({ index: 1 });
+      }
+    }
+
+    // Submit the form
+    await page.locator('.add-attendee-popup-wrapper button.ob-submit-btn').click();
+
+    // Verify popup closes successfully without complaining about companion contact
+    await expect(popupWrapper).toBeHidden({ timeout: 15000 });
+  });
 });
 
 

@@ -24,8 +24,7 @@ class RosterSearchService:
         - If meet.infos['kid_search_families_show_grades'] is True:
             - Performs cross-relation search: includes other members sharing a Folk with matched attendees.
             - Includes age, grade_name (mapped via organization.infos['grade_converter']), grade_index, and guardians.
-        - Phone masking: first phone displays only last 2 digits (***-**99).
-        - Returns complete folks array for each candidate.
+        - Returns contacts dictionary and complete folks array for each candidate.
         - Identifies meet_status ('paused', 'enrolled', 'expired', 'not_enrolled') and can_join boolean.
           PAUSED status CANNOT be auto-joined (can_join=False).
         """
@@ -293,23 +292,8 @@ class RosterSearchService:
                 except Exception:
                     pass
 
-            # Masked phone (last 2 digits of first phone)
+            # Contacts dictionary
             contacts = attendee.infos.get("contacts", {}) if isinstance(attendee.infos, dict) else {}
-            phone_val = None
-            if isinstance(contacts, dict):
-                phone_val = contacts.get("phone1")
-                if not phone_val:
-                    for k, v in contacts.items():
-                        if "phone" in k.lower() and v:
-                            phone_val = str(v)
-                            break
-            masked_phone = None
-            if phone_val:
-                p_digits = re.sub(r"\D", "", str(phone_val))
-                if len(p_digits) >= 2:
-                    masked_phone = f"***-**{p_digits[-2:]}"
-                else:
-                    masked_phone = "***"
 
             # Age, grade, and guardians
             if is_kid_meet:
@@ -398,7 +382,7 @@ class RosterSearchService:
                 "actual_birthday": attendee.actual_birthday.isoformat() if attendee.actual_birthday else None,
                 "estimated_birthday": str(attendee.estimated_birthday) if attendee.estimated_birthday else None,
                 "photo_url": photo_url,
-                "masked_phone": masked_phone,
+                "contacts": contacts,
                 "age": age,
                 "grade_name": grade_name,
                 "grade_index": grade_index,

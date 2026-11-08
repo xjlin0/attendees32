@@ -4136,6 +4136,73 @@
       return row;
     };
 
+    const parseCandidateContacts = (contacts) => {
+      if (!contacts) return [];
+      let cData = contacts;
+      if (typeof cData === 'string') {
+        try {
+          cData = JSON.parse(cData);
+        } catch (e) {
+          const trimmed = cData.trim();
+          if (trimmed.includes('@')) {
+            return [{ type: 'email', value: trimmed }];
+          } else if (trimmed) {
+            return [{ type: 'phone', value: trimmed }];
+          }
+          return [];
+        }
+      }
+      if (Array.isArray(cData)) {
+        return cData.map(c => {
+          if (!c) return null;
+          if (typeof c === 'string') {
+            const trimmed = c.trim();
+            return trimmed.includes('@') ? { type: 'email', value: trimmed } : { type: 'phone', value: trimmed };
+          }
+          return (c.value || c.contact_value) ? {
+            type: (c.type || c.contact_type || 'phone').toLowerCase(),
+            value: String(c.value || c.contact_value).trim()
+          } : null;
+        }).filter(Boolean);
+      }
+      if (typeof cData === 'object' && cData !== null) {
+        const list = [];
+        for (const [key, rawVal] of Object.entries(cData)) {
+          if (!rawVal) continue;
+          const val = String(rawVal).trim();
+          if (!val) continue;
+
+          const k = key.toLowerCase();
+          let type = 'phone';
+          if (k.includes('email') || val.includes('@')) {
+            type = 'email';
+          } else if (k.includes('wechat')) {
+            type = 'wechat';
+          } else if (k.includes('whatsapp')) {
+            type = 'whatsapp';
+          } else if (k.includes('line')) {
+            type = 'line';
+          } else if (k.includes('phone') || k.includes('tel') || k.includes('cell') || k.includes('mobile')) {
+            type = 'phone';
+          }
+          list.push({ type, value: val });
+        }
+        const typePriority = { phone: 1, whatsapp: 2, email: 3, wechat: 4, line: 5 };
+        list.sort((a, b) => (typePriority[a.type] || 99) - (typePriority[b.type] || 99));
+        return list;
+      }
+      return [];
+    };
+
+    const getMaskedPhone = (contacts) => {
+      if (!contacts) return '';
+      const entries = parseCandidateContacts(contacts);
+      const phoneEntry = entries.find(e => e.type === 'phone' || e.type === 'whatsapp');
+      if (!phoneEntry || !phoneEntry.value) return '';
+      const digits = phoneEntry.value.replace(/\D/g, '');
+      return digits.length >= 2 ? `***-**${digits.slice(-2)}` : '***';
+    };
+
     const getContactValidationError = (type, val, targetName = 'Contact') => {
       if (!window.Attendees || !window.Attendees.utilities) return null;
       const normType = (type || 'phone').toLowerCase();
@@ -4600,6 +4667,43 @@
             }
           }
 
+          // Populate contacts from linked candidate
+          const contactsContainer = block.querySelector(isCompanion ? '.companion-contacts-container' : '.attendee-contacts-container');
+          if (contactsContainer) {
+            const contactEntries = parseCandidateContacts(cand.contacts);
+            if (contactEntries.length > 0) {
+              const existingRows = Array.from(contactsContainer.querySelectorAll('.contact-row'));
+              for (let i = 1; i < existingRows.length; i++) {
+                existingRows[i].remove();
+              }
+              const firstRow = existingRows[0];
+              if (firstRow) {
+                const typeSelect = firstRow.querySelector(isCompanion ? '.ob-p-contact-type' : '.ob-contact-type');
+                const valInput = firstRow.querySelector(isCompanion ? '.ob-p-contact-value' : '.ob-contact-value');
+                if (typeSelect && contactEntries[0].type) {
+                  typeSelect.value = contactEntries[0].type;
+                }
+                if (valInput) {
+                  valInput.value = contactEntries[0].value;
+                  valInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  valInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              }
+              for (let i = 1; i < contactEntries.length; i++) {
+                const newRow = createContactRow(isCompanion);
+                const typeSelect = newRow.querySelector(isCompanion ? '.ob-p-contact-type' : '.ob-contact-type');
+                const valInput = newRow.querySelector(isCompanion ? '.ob-p-contact-value' : '.ob-contact-value');
+                if (typeSelect && contactEntries[i].type) {
+                  typeSelect.value = contactEntries[i].type;
+                }
+                if (valInput) {
+                  valInput.value = contactEntries[i].value;
+                }
+                contactsContainer.appendChild(newRow);
+              }
+            }
+          }
+
           matchesContainer.innerHTML = '';
           const badge = document.createElement('span');
           badge.className = 'badge bg-success-subtle text-success border border-success d-inline-flex align-items-center gap-1';
@@ -4608,7 +4712,7 @@
           const famBadge = cand.latest_family_name ? ` (🏠 ${escapeHtml(cand.latest_family_name)})` : '';
           badge.innerHTML = `
             <i class="fas fa-check-circle"></i> Linked: ${escapeHtml(cand.name)}${famBadge}
-            <button type="button" class="btn-close btn-close-sm unlink-cand-btn" style="font-size: 0.55rem; filter: invert(0.3);" title="Unlink candidate"></button>
+            <button type="button" class="btn-close btn-close-sm unlink-cand-btn" style="font-size: 0.55rem; filter: invert(0.3);" title="Not this one, Unlink candidate"></button>
           `;
 
           const unlinkBtn = badge.querySelector('.unlink-cand-btn');
@@ -5351,7 +5455,8 @@
         }
         if (cand.grade_name) detailsParts.push(`Grade: ${cand.grade_name}`);
         if (cand.age !== null && cand.age !== undefined) detailsParts.push(`Age: ${cand.age}`);
-        if (cand.masked_phone) detailsParts.push(`Phone: ${cand.masked_phone}`);
+        const maskedPhone = getMaskedPhone(cand.contacts);
+        if (maskedPhone) detailsParts.push(`Phone: ${maskedPhone}`);
         if (cand.guardians) detailsParts.push(`Guardian: ${cand.guardians}`);
 
         const photoContainer = itemEl.querySelector('.attendee-photo-container');

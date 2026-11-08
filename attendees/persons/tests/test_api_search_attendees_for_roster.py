@@ -258,7 +258,7 @@ class TestApiSearchAttendeesForRoster:
         assert len(data2) >= 1
         assert "ChildOf" in data2[0]["name"]
 
-    def test_phone_search_last_4_digits_and_masking(self):
+    def test_phone_search_last_4_digits_and_contacts(self):
         self.client.force_login(self.admin_user)
         # Search phone1 last 4 digits
         response1 = self.client.get(f"/persons/api/search_attendees_for_roster/?meet_slug={self.adult_meet.slug}&q=1234")
@@ -266,7 +266,8 @@ class TestApiSearchAttendeesForRoster:
         data1 = response1.json()
         assert len(data1) >= 1
         peter = next(item for item in data1 if "Peter" in item["name"])
-        assert peter["masked_phone"] == "***-**34"
+        assert "contacts" in peter
+        assert "1234" in str(peter["contacts"].get("phone1", ""))
 
         # Search phone3 last 4 digits
         response3 = self.client.get(f"/persons/api/search_attendees_for_roster/?meet_slug={self.adult_meet.slug}&q=3210")
