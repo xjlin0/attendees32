@@ -487,6 +487,17 @@ Attendees.utilities = {
     }
     return val.trim().length >= 2;
   },
+
+  escapeHtml: (str) => {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[m]);
+  },
 };
 
 $(document).ready(() => {

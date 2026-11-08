@@ -6,22 +6,23 @@
   }
 
   const { createApp, ref, reactive, onMounted } = Vue;
+  const MAX_DATE_RANGE_YEARS = 5;
   const WARNING_NOTIFY_TIME = 5000;
   const SUCCESS_NOTIFY_TIME = 3000;
+  const SYNC_POLLING_INTERVAL = 15000;
   // Shared registry of gatherings for columns:
   const gatheringsRegistry = new Map();
   const meetsInfoMap = new Map();
   const meetsMap = new Map();
 
-  const escapeHtml = (str) => {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, (m) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    })[m]);
+  const escapeHtml = (str) => (window.Attendees?.utilities?.escapeHtml ? window.Attendees.utilities.escapeHtml(str) : String(str || ''));
+
+  const addYears = (date, years) => {
+    if (!date) return null;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return null;
+    d.setFullYear(d.getFullYear() + years);
+    return d;
   };
 
   const getMeetSignatureRequiredAt = (meetId) => {
@@ -252,6 +253,7 @@
       attendances: '', // '/occasions/api/organization_meet_character_attendances/',
       assemblies: '',
       categories: '',
+      scheduledCategory: 1,
       attendingmeets: '',
       attendings: '',
       characters: '',
@@ -272,6 +274,7 @@
         endpoints.meets = appEl.dataset.meetsEndpointBySlug || '';
         endpoints.assemblies = appEl.dataset.assembliesEndpoint || '';
         endpoints.categories = appEl.dataset.categoriesEndpoint || '';
+        endpoints.scheduledCategory = parseInt(appEl.dataset.scheduledCategory, 10) || 1;
         endpoints.attendingmeets = appEl.dataset.attendingmeetsEndpoint || '';
         endpoints.attendings = appEl.dataset.attendingsEndpoint || '';
         endpoints.characters = appEl.dataset.charactersEndpoint || '';
@@ -1790,9 +1793,11 @@
         defaultCharacter = (lookupsCache.characters && lookupsCache.characters[0] && lookupsCache.characters[0].id) || 1;
       }
 
-      const defaultCategory = (lookupsCache.categories && lookupsCache.categories.find(c => c.display_name === 'Scheduled' || c.name === 'Scheduled')?.id)
-        || (lookupsCache.categories && lookupsCache.categories[0]?.id)
-        || 1;
+      const scheduledCategory = endpoints.scheduledCategory
+        || (document.getElementById('app')?.dataset?.scheduledCategory ? parseInt(document.getElementById('app').dataset.scheduledCategory, 10) : 1);
+
+      const defaultCategory = (meetObj && meetObj.infos && meetObj.infos.active_category)
+        || scheduledCategory;
 
       const attendingId = (currentAttendeeData && (currentAttendeeData.attending_id || currentAttendeeData.attending))
         || (currentRawMeets[0] && currentRawMeets[0].attending)
@@ -3713,8 +3718,14 @@
       filterData.showSiblings = true;
 
       if (formInstance) {
-        formInstance.getEditor('startDate').option('value', defaultStart);
-        formInstance.getEditor('endDate').option('value', defaultEnd);
+        const startEd = formInstance.getEditor('startDate');
+        const endEd = formInstance.getEditor('endDate');
+        if (startEd) {
+          startEd.option({ value: defaultStart, isValid: true, validationError: null });
+        }
+        if (endEd) {
+          endEd.option({ value: defaultEnd, isValid: true, validationError: null });
+        }
         formInstance.getEditor('showPhotos').option('value', false);
         const sibEditor = formInstance.getEditor('showSiblings');
         if (sibEditor) sibEditor.option('value', true);
@@ -3743,19 +3754,59 @@
         onFieldDataChanged: (e) => {
           filterData[e.dataField] = e.value;
           
-          // Date Validation constraints & saving to sessionStorage
-          if (e.dataField === 'startDate') {
-            formInstance.getEditor('endDate').option('min', e.value);
-            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterFromString', e.value ? e.value.toJSON() : null);
+          // Date Validation & saving to sessionStorage
+          if (e.dataField === 'startDate' || e.dataField === 'endDate') {
+            const startEd = formInstance.getEditor('startDate');
+            const endEd = formInstance.getEditor('endDate');
+            const startVal = startEd ? startEd.option('value') : filterData.startDate;
+            const endVal = endEd ? endEd.option('value') : filterData.endDate;
+
+            if (e.dataField === 'startDate') {
+              Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterFromString', e.value ? e.value.toJSON() : null);
+            }
+            if (e.dataField === 'endDate') {
+              Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterTillString', e.value ? e.value.toJSON() : null);
+            }
             if (formInstance.getEditor('meets')) {
               formInstance.getEditor('meets').getDataSource().reload();
             }
-          }
-          if (e.dataField === 'endDate') {
-            formInstance.getEditor('startDate').option('max', e.value);
-            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterTillString', e.value ? e.value.toJSON() : null);
-            if (formInstance.getEditor('meets')) {
-              formInstance.getEditor('meets').getDataSource().reload();
+
+            if (startVal && endVal) {
+              const startMs = new Date(startVal).getTime();
+              const endMs = new Date(endVal).getTime();
+              const diffMs = endMs - startMs;
+              const FIVE_YEARS_MS = MAX_DATE_RANGE_YEARS * 365.25 * 24 * 60 * 60 * 1000;
+
+              if (diffMs < 0) {
+                const errMsg = 'From date cannot be after To date';
+                startEd?.option({ isValid: false, validationError: { message: errMsg } });
+                endEd?.option({ isValid: false, validationError: { message: errMsg } });
+                DevExpress.ui.notify({ message: errMsg, type: 'warning', displayTime: 4000 });
+                return;
+              } else if (diffMs > FIVE_YEARS_MS) {
+                const yearsDiff = (diffMs / (365.25 * 24 * 60 * 60 * 1000)).toFixed(1);
+                const errMsg = `Date range cannot exceed 5 years (selected: ${yearsDiff} years)`;
+                startEd?.option({ isValid: false, validationError: { message: errMsg } });
+                endEd?.option({ isValid: false, validationError: { message: errMsg } });
+                DevExpress.ui.notify({ message: errMsg, type: 'warning', displayTime: 4500 });
+                return;
+              } else {
+                // Range is valid! Clear any invalid state on both
+                if (startEd && startEd.option('isValid') === false) {
+                  startEd.option({ isValid: true, validationError: null });
+                }
+                if (endEd && endEd.option('isValid') === false) {
+                  endEd.option({ isValid: true, validationError: null });
+                }
+              }
+            } else {
+              // One of the dates is empty/cleared
+              if (startEd && startEd.option('isValid') === false) {
+                startEd.option({ isValid: true, validationError: null });
+              }
+              if (endEd && endEd.option('isValid') === false) {
+                endEd.option({ isValid: true, validationError: null });
+              }
             }
           }
           if (e.dataField === 'meets') {
@@ -3791,8 +3842,7 @@
             editorOptions: { 
               type: 'datetime', 
               displayFormat: 'shortDateShortTime',
-              showClearButton: true,
-              max: filterData.endDate
+              showClearButton: true
             }
           },
           {
@@ -3803,8 +3853,7 @@
             editorOptions: { 
               type: 'datetime', 
               displayFormat: 'shortDateShortTime',
-              showClearButton: true,
-              min: filterData.startDate
+              showClearButton: true
             }
           },
           {
@@ -3918,6 +3967,21 @@
     const isAnyGatheringActiveNow = () => {
       const now = Date.now();
       const fifteenMinutesMs = 15 * 60 * 1000;
+
+      // Defense line 3: If selected date range filter does not cover current time, short-circuit immediately
+      if (filterData.startDate) {
+        const startMs = new Date(filterData.startDate).getTime();
+        if (!isNaN(startMs) && now < startMs - fifteenMinutesMs) {
+          return false;
+        }
+      }
+      if (filterData.endDate) {
+        const endMs = new Date(filterData.endDate).getTime();
+        if (!isNaN(endMs) && now > endMs + fifteenMinutesMs) {
+          return false;
+        }
+      }
+
       const selectedMeetIds = new Set(
         (filterData.meets || []).map(slug => {
           const m = meetsMap.get(slug) || meetsMap.get(String(slug));
@@ -3961,7 +4025,7 @@
 
     const startPolling = () => {
       if (pollingTimer) clearInterval(pollingTimer);
-      pollingTimer = setInterval(poll, 15000);
+      pollingTimer = setInterval(poll, SYNC_POLLING_INTERVAL);
     };
 
     const stopPolling = () => {
@@ -3986,17 +4050,6 @@
     let selectedMeetSlug = '';
     let selectedGatheringId = null;
     let currentSwitchToSearch = null;
-
-    const escapeHtml = (str) => {
-      if (!str) return '';
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      })[m]);
-    };
 
     const getGatheringsForMeet = (meetId) => {
       if (!meetId) return [];
@@ -5545,11 +5598,14 @@
           cand.attending_id = attendingId;
         }
 
+        const scheduledCategory = endpoints.scheduledCategory
+          || (document.getElementById('app')?.dataset?.scheduledCategory ? parseInt(document.getElementById('app').dataset.scheduledCategory, 10) : 1);
+
         const amPayload = {
           attending: attendingId,
           meet: meetObj.id,
           character: meetObj.major_character || 1,
-          category: 1, // Scheduled
+          category: (meetObj && meetObj.infos && meetObj.infos.active_category) || scheduledCategory,
           finish: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
         };
 
@@ -6231,6 +6287,13 @@
       if (storedTill) {
         const d = new Date(storedTill);
         if (!isNaN(d.getTime())) initialEnd = d;
+      }
+
+      if (initialStart && initialEnd) {
+        const maxAllowedEnd = addYears(initialStart, MAX_DATE_RANGE_YEARS);
+        if (maxAllowedEnd && initialEnd > maxAllowedEnd) {
+          initialEnd = maxAllowedEnd;
+        }
       }
 
       // DOM Refs

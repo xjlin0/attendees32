@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic.list import ListView
 
+from attendees.persons.models import Attendee
 from attendees.users.authorization import RouteGuard
 from attendees.users.services import MenuService
 from attendees.whereabouts.services import DivisionService
@@ -18,6 +19,7 @@ class RostersListView(RouteGuard, ListView):
         context.update(
             {
                 "user_can_write": MenuService.is_user_allowed_to_write(self.request),
+                "scheduled_category": Attendee.SCHEDULED_CATEGORY,
                 "grade_converter": self.request.user.organization.infos.get('grade_converter', []) if (self.request.user and getattr(self.request.user, "organization", None) and isinstance(self.request.user.organization.infos, dict)) else [],
                 "divisions": list(DivisionService.by_organization(self.request.user.organization.slug).values("id", "display_name")) if (self.request.user and getattr(self.request.user, "organization", None)) else [],
                 "divisions_endpoint": "/whereabouts/api/user_divisions/",
