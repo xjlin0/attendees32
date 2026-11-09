@@ -783,12 +783,18 @@ class FastOnboardService:
                 is_removed=False,
             ).first()
             if not attendingmeet:
+                now_tz = Utility.now_with_timezone()
+                am_start = gathering.start if gathering and gathering.start and gathering.start < now_tz else now_tz
+                am_finish = now_tz + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999))
+                if gathering and gathering.finish and gathering.finish > am_finish:
+                    am_finish = gathering.finish
                 attendingmeet = AttendingMeet.objects.create(
                     attending=attending,
                     meet=meet,
                     character=major_char,
                     category=scheduled_cat,
-                    finish=Utility.now_with_timezone() + timedelta(weeks=meet.infos.get('default_attendingmeet_in_weeks', 99999)),
+                    start=am_start,
+                    finish=am_finish,
                     infos=am_infos,
                 )
             elif special_check_in:

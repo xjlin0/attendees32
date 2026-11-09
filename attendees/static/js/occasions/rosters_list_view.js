@@ -1780,8 +1780,18 @@
         ? Number(meetObj.infos.default_attendingmeet_in_weeks)
         : 53;
 
-      const startDate = new Date();
-      const finishDate = new Date(Date.now() + defaultWeeks * 7 * 24 * 60 * 60 * 1000);
+      const nowTime = Date.now();
+      let baseStartMs = nowTime;
+      if (filterData && filterData.startDate && filterData.endDate) {
+        const filterStartMs = new Date(filterData.startDate).getTime();
+        const filterEndMs = new Date(filterData.endDate).getTime();
+        if (nowTime < filterStartMs || nowTime > filterEndMs) {
+          baseStartMs = filterStartMs;
+        }
+      }
+
+      const startDate = new Date(baseStartMs);
+      const finishDate = new Date(baseStartMs + defaultWeeks * 7 * 24 * 60 * 60 * 1000);
 
       let defaultCharacter = meetObj && meetObj.major_character;
       if (!defaultCharacter && meetObj && meetObj.assembly && lookupsCache.characters) {
@@ -5598,33 +5608,7 @@
           cand.attending_id = attendingId;
         }
 
-        const scheduledCategory = endpoints.scheduledCategory
-          || (document.getElementById('app')?.dataset?.scheduledCategory ? parseInt(document.getElementById('app').dataset.scheduledCategory, 10) : 1);
-
-        const amPayload = {
-          attending: attendingId,
-          meet: meetObj.id,
-          character: meetObj.major_character || 1,
-          category: (meetObj && meetObj.infos && meetObj.infos.active_category) || scheduledCategory,
-          finish: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-        };
-
-        const amRes = await fetch(endpoints.attendingmeets, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Target-Attendee-Id': String(cand.id),
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          },
-          body: JSON.stringify(amPayload)
-        });
-
-        if (!amRes.ok) {
-          const amErr = await amRes.json().catch(() => ({}));
-          throw new Error(amErr.detail || amErr.error || `Failed to enroll in meet (HTTP ${amRes.status})`);
-        }
-
-        // 2. Mark check-in with selected gathering
+        // 2. Resolve selected target gathering
         const gatheringDropdown = document.querySelector('.target-gathering-dropdown');
         const chosenGatheringVal = (gatheringDropdown && gatheringDropdown.value) || selectedGatheringId || '';
 
@@ -5651,11 +5635,65 @@
           }
         }
 
+        const scheduledCategory = endpoints.scheduledCategory
+          || (document.getElementById('app')?.dataset?.scheduledCategory ? parseInt(document.getElementById('app').dataset.scheduledCategory, 10) : 1);
+
+        const nowTime = Date.now();
+        const defaultWeeks = (meetObj && meetObj.infos && meetObj.infos.default_attendingmeet_in_weeks)
+          ? Number(meetObj.infos.default_attendingmeet_in_weeks)
+          : 53;
+
+        let baseStartMs = nowTime;
+        if (targetGatheringStart) {
+          baseStartMs = new Date(targetGatheringStart).getTime();
+        } else if (filterData && filterData.startDate && filterData.endDate) {
+          const filterStartMs = new Date(filterData.startDate).getTime();
+          const filterEndMs = new Date(filterData.endDate).getTime();
+          if (nowTime < filterStartMs || nowTime > filterEndMs) {
+            baseStartMs = filterStartMs;
+          }
+        }
+
+        const effectiveStartMs = baseStartMs;
+        const effectiveFinishMs = effectiveStartMs + defaultWeeks * 7 * 24 * 60 * 60 * 1000;
+
+        const amPayload = {
+          attending: attendingId,
+          meet: meetObj.id,
+          character: meetObj.major_character || 1,
+          category: (meetObj && meetObj.infos && meetObj.infos.active_category) || scheduledCategory,
+          start: new Date(effectiveStartMs).toISOString(),
+          finish: new Date(effectiveFinishMs).toISOString()
+        };
+
+        const isUpdateAm = Boolean(cand.attendingmeet_id);
+        const amEndpoint = (endpoints.attendingmeets || '').endsWith('/')
+          ? endpoints.attendingmeets
+          : `${endpoints.attendingmeets}/`;
+        const amUrl = isUpdateAm ? `${amEndpoint}${cand.attendingmeet_id}/` : amEndpoint;
+        const amMethod = isUpdateAm ? 'PATCH' : 'POST';
+
+        const amRes = await fetch(amUrl, {
+          method: amMethod,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Target-Attendee-Id': String(cand.id),
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify(amPayload)
+        });
+
+        if (!amRes.ok) {
+          const amErr = await amRes.json().catch(() => ({}));
+          throw new Error(amErr.detail || amErr.error || `Failed to enroll in meet (HTTP ${amRes.status})`);
+        }
+
+        // 3. Mark check-in with selected gathering
         const attPayload = {
           attending: attendingId,
           character: meetObj.major_character || 1,
           category: 9, // Attended
-          start: new Date().toISOString(),
+          start: targetGatheringStart || new Date().toISOString(),
           meet: meetObj.id
         };
 

@@ -545,9 +545,16 @@ class AttendanceService:
                     is_removed=False,
                 ).order_by('-finish').first()
                 if attending_meet:
+                    updated_fields = []
                     if attending_meet.finish and attending_meet.finish < gathering.finish:
                         attending_meet.finish = target_finish
-                        attending_meet.save(update_fields=['finish', 'modified'])
+                        updated_fields.append('finish')
+                    if attending_meet.start and gathering.start and attending_meet.start > gathering.start:
+                        attending_meet.start = gathering.start
+                        updated_fields.append('start')
+                    if updated_fields:
+                        updated_fields.append('modified')
+                        attending_meet.save(update_fields=updated_fields)
                         return attending_meet
                 else:
                     scheduled_cat = (
