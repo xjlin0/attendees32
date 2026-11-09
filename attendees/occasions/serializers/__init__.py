@@ -10,3 +10,5 @@ from .batch_gatherings_serializer import BatchGatheringsSerializer
 from .batch_attendances_serializer import BatchAttendancesSerializer
 from .calendar_serializer import CalendarSerializer
 from .occurrence_serializer import OccurrenceSerializer
+from .meet_list_serializer import MeetListSerializer
+from .meet import MeetSerializer

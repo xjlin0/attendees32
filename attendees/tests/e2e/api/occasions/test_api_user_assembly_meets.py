@@ -49,3 +49,37 @@ class TestUserAssemblyMeets:
         first_page = [row["slug"] for row in body["data"]]
         assert joined <= set(first_page)
         assert all(slug in joined for slug in first_page[: len(joined)])
+
+    def test_user_assembly_meets_no_n_plus_one_location_queries(
+        self, golden, api_login
+    ):
+        """Serialization of meets should batch-preload event locations (rooms/suites)
+        rather than firing an individual query per meet (N+1 prevention)."""
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        grace = golden.attendee("chen_grace")
+        client = api_login("golden_data_organizer")
+        client.credentials(HTTP_X_TARGET_ATTENDEE_ID=str(grace.id))
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = client.get(
+                "/occasions/api/user_assembly_meets/",
+                {"searchOperation": "contains", "searchValue": ""},
+            )
+
+        assert response.status_code == 200
+        # Count queries targeting whereabouts_rooms and whereabouts_suites as the primary table
+        room_queries = [
+            q["sql"]
+            for q in ctx.captured_queries
+            if 'FROM "whereabouts_rooms"' in q["sql"]
+        ]
+        suite_queries = [
+            q["sql"]
+            for q in ctx.captured_queries
+            if 'FROM "whereabouts_suites"' in q["sql"]
+        ]
+        # Must be at most 1 batch query each for rooms and suites, NEVER N+1 individual queries
+        assert len(room_queries) <= 1
+        assert len(suite_queries) <= 1
