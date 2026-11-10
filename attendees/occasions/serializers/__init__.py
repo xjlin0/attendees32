@@ -13,3 +13,5 @@ from .occurrence_serializer import OccurrenceSerializer
 from .roster_column_serializer import RosterColumnSerializer
 from .roster_row_serializer import RosterRowSerializer
 from .roster_response_serializer import RosterResponseSerializer
+from .meet_list_serializer import MeetListSerializer
+from .meet import MeetSerializer

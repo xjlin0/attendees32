@@ -538,14 +538,53 @@ class Utility:
         return cls._model_cache.get(name)
 
     @classmethod
+    def batch_preload_object_names(cls, instances, method_name='description'):
+        """
+        Batch-queries and populates `_location_name` for a collection of instances (e.g. Events)
+        in a single query per model type (Direction B: no global cache, scoped to this request).
+        """
+        needed = {}
+        for inst in instances:
+            field_val = getattr(inst, method_name, None)
+            if field_val and '#' in field_val and not hasattr(inst, '_location_name'):
+                parts = field_val.split("#", 1)
+                if len(parts) == 2 and parts[0]:
+                    needed.setdefault(parts[0].lower(), []).append((parts[1], inst))
+
+        for model_name, pairs in needed.items():
+            model_cls = cls.get_model_by_name(model_name)
+            if not model_cls:
+                continue
+            ids = list({p[0] for p in pairs})
+            qs = model_cls.objects.filter(pk__in=ids)
+            if model_name == 'room' and hasattr(model_cls, 'suite'):
+                qs = qs.select_related('suite__property')
+            elif model_name == 'suite' and hasattr(model_cls, 'property'):
+                qs = qs.select_related('property')
+
+            name_map = {str(obj.pk): str(obj).strip() for obj in qs}
+            for obj_id, inst in pairs:
+                inst._location_name = name_map.get(str(obj_id))
+
+    @classmethod
     def get_object_name(cls, instance, method_name='description', object_field=None):
+        if hasattr(instance, '_location_name') and method_name == 'description' and object_field is None:
+            return instance._location_name
+
         instance_field = getattr(instance, method_name, None)
         if instance_field and '#' in instance_field:
-            model_name, object_id = instance_field.split("#")
-            if model_name:
+            parts = instance_field.split("#", 1)
+            if len(parts) == 2 and parts[0]:
+                model_name, object_id = parts
                 model_cls = cls.get_model_by_name(model_name)
                 if model_cls:
-                    target = model_cls.objects.filter(pk=object_id).first()
+                    qs = model_cls.objects.filter(pk=object_id)
+                    if model_name == 'room' and hasattr(model_cls, 'suite'):
+                        qs = qs.select_related('suite__property')
+                    elif model_name == 'suite' and hasattr(model_cls, 'property'):
+                        qs = qs.select_related('property')
+
+                    target = qs.first()
                     if target:
                         if object_field:
                             return getattr(target, object_field)

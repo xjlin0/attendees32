@@ -93,11 +93,7 @@ class Meet(TimeStampedModel, SoftDeletableModel, Utility):
 
     @property
     def schedule_rules(self):
-        ers = (
-            [er for er in self.event_relations.all() if er.distinction == 'source']
-            if hasattr(self, '_prefetched_objects_cache') and 'event_relations' in self._prefetched_objects_cache
-            else self.event_relations.filter(distinction='source')
-        )
+        ers = [er for er in self.event_relations.all() if er.distinction == 'source']
         return [
             {
                 "rule": er.event.rule.name if er.event.rule else None,
