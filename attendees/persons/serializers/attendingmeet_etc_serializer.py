@@ -47,4 +47,26 @@ class AttendingMeetEtcSerializer(serializers.ModelSerializer):
         instance.team = validated_data.get("team", instance.team)
         instance.infos = {**instance.infos, **validated_data.get("infos", {})}
         instance.save()
+
+        if "team" in validated_data or "character" in validated_data:
+            from attendees.occasions.models import Attendance
+            from attendees.persons.models import Utility
+
+            try:
+                future_attendances = Attendance.objects.filter(
+                    attending=instance.attending,
+                    gathering__meet=instance.meet,
+                    gathering__start__gte=Utility.now_with_timezone(),
+                    is_removed=False,
+                )
+                update_fields = {}
+                if "team" in validated_data:
+                    update_fields["team"] = instance.team
+                if "character" in validated_data:
+                    update_fields["character"] = instance.character
+                if update_fields:
+                    future_attendances.update(**update_fields)
+            except Exception:
+                pass
+
         return instance

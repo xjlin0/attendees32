@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from django.conf import settings
@@ -6,8 +6,8 @@ from django.db.models import F, Q, CharField, Value, When, Case, Count
 from django.db.models.functions import Concat, Trim
 from django.contrib.postgres.aggregates.general import StringAgg
 from rest_framework.utils import json
-from attendees.occasions.models import Attendance, Meet
-from attendees.persons.models import AttendingMeet
+from attendees.occasions.models import Attendance, Character, Gathering, Meet
+from attendees.persons.models import Attendee, AttendingMeet, Category, Utility
 from attendees.persons.services import AttendeeService
 
 
@@ -436,3 +436,146 @@ class AttendanceService:
             orderby_dict[direction + field] = True
 
         return orderby_dict.keys()
+
+    @staticmethod
+    def create_or_update_attendance(user, data, context=None):
+        """
+        Creates or updates an Attendance record.
+        If gathering is missing or null, finds or creates the gathering first using GatheringService.
+        """
+        from rest_framework import serializers
+        from attendees.occasions.serializers import AttendanceEtcSerializer
+        from attendees.occasions.services import GatheringService
+
+        data_dict = data.copy() if hasattr(data, 'copy') else dict(data)
+        gathering_id = data_dict.get('gathering')
+
+        # Strict validation: gathering must be an integer ID, integer string, or null/empty
+        if gathering_id is not None and gathering_id != '':
+            if not (isinstance(gathering_id, int) or (isinstance(gathering_id, str) and gathering_id.isdigit())):
+                raise serializers.ValidationError({
+                    "gathering": f"Expected an integer ID or null, but got '{gathering_id}'."
+                })
+            gathering_id = int(gathering_id)
+            data_dict['gathering'] = gathering_id
+        else:
+            gathering_id = None
+            data_dict['gathering'] = None
+
+        if not gathering_id:
+            meet = data_dict.get('meet')
+            if not meet and data_dict.get('attending'):
+                from attendees.persons.models import AttendingMeet
+                attending_meet = AttendingMeet.objects.filter(
+                    attending_id=data_dict.get('attending'),
+                    is_removed=False,
+                ).order_by('-finish').first()
+                if attending_meet:
+                    meet = attending_meet.meet_id
+            start = data_dict.get('gathering_start') or data_dict.get('start')
+            if not meet or not start:
+                raise serializers.ValidationError({"gathering": "Gathering ID or (meet and start time) is required."})
+            try:
+                gathering_obj, _ = GatheringService.get_or_create_single_gathering(meet, start)
+            except Exception as e:
+                raise serializers.ValidationError({"gathering": str(e)})
+            gathering_id = gathering_obj.id
+            data_dict['gathering'] = gathering_id
+
+        # Check if attendance already exists for this attending and gathering
+        attendance_id = data_dict.get('id')
+        if gathering_id:
+            gathering_obj = Gathering.objects.filter(pk=gathering_id).select_related('meet').first()
+            if gathering_obj and gathering_obj.meet:
+                char_id = data_dict.get('character')
+                if char_id:
+                    char_obj = Character.objects.filter(pk=char_id).first()
+                    if not char_obj or char_obj.assembly_id != gathering_obj.meet.assembly_id:
+                        data_dict['character'] = (
+                            gathering_obj.meet.major_character_id
+                            or Character.objects.filter(assembly=gathering_obj.meet.assembly).values_list('id', flat=True).first()
+                        )
+                elif not char_id:
+                    data_dict['character'] = (
+                        gathering_obj.meet.major_character_id
+                        or Character.objects.filter(assembly=gathering_obj.meet.assembly).values_list('id', flat=True).first()
+                    )
+
+        if not attendance_id:
+            existing_attendance = Attendance.objects.filter(
+                attending_id=data_dict.get('attending'),
+                gathering_id=gathering_id,
+                is_removed=False
+            ).first()
+            if existing_attendance:
+                attendance_id = existing_attendance.id
+                data_dict['id'] = attendance_id
+
+        if attendance_id:
+            instance = Attendance.objects.get(pk=attendance_id)
+            serializer = AttendanceEtcSerializer(instance, data=data_dict, partial=True, context=context)
+        else:
+            serializer = AttendanceEtcSerializer(data=data_dict, context=context)
+
+        serializer.is_valid(raise_exception=True)
+        attendance = serializer.save()
+        AttendanceService.extend_attending_meet_if_needed(attendance)
+        return attendance
+
+    @staticmethod
+    def extend_attending_meet_if_needed(attendance):
+        """
+        Extends AttendingMeet finish date using meet.infos['default_attendingmeet_in_weeks'] (default 53 weeks)
+        if attendingmeet was expired, or creates a new AttendingMeet if none exists.
+        """
+        if attendance and attendance.category_id != Attendee.SCHEDULED_CATEGORY:  # Attended / Checked in
+            gathering = attendance.gathering
+            if gathering and gathering.meet and gathering.finish:
+                weeks = (
+                    gathering.meet.infos.get("default_attendingmeet_in_weeks", 53)
+                    if isinstance(gathering.meet.infos, dict)
+                    else 53
+                )
+                default_finish = Utility.now_with_timezone() + timedelta(weeks=weeks)
+                target_finish = max(gathering.finish, default_finish)
+
+                attending_meet = AttendingMeet.objects.filter(
+                    attending=attendance.attending,
+                    meet=gathering.meet,
+                    is_removed=False,
+                ).order_by('-finish').first()
+                if attending_meet:
+                    updated_fields = []
+                    if attending_meet.finish and attending_meet.finish < gathering.finish:
+                        attending_meet.finish = target_finish
+                        updated_fields.append('finish')
+                    if attending_meet.start and gathering.start and attending_meet.start > gathering.start:
+                        attending_meet.start = gathering.start
+                        updated_fields.append('start')
+                    if updated_fields:
+                        updated_fields.append('modified')
+                        attending_meet.save(update_fields=updated_fields)
+                        return attending_meet
+                else:
+                    scheduled_cat = (
+                        Category.objects.filter(id=Attendee.SCHEDULED_CATEGORY).first()
+                        or Category.objects.filter(id=1).first()
+                    )
+                    character = (
+                        attendance.character
+                        if attendance.character and attendance.character.assembly_id == gathering.meet.assembly_id
+                        else (gathering.meet.major_character or Character.objects.filter(assembly=gathering.meet.assembly).first())
+                    )
+                    if character and scheduled_cat:
+                        attending_meet = AttendingMeet.objects.create(
+                            attending=attendance.attending,
+                            meet=gathering.meet,
+                            character=character,
+                            category=scheduled_cat,
+                            start=gathering.start or Utility.now_with_timezone(),
+                            finish=target_finish,
+                        )
+                        return attending_meet
+        return None
+
+

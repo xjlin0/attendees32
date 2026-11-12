@@ -73,7 +73,7 @@ class OrganizationMeetsViewSet(viewsets.ModelViewSet):
             )
 
             return (
-                Meet.objects.select_related('assembly').filter(extra_filter)
+                Meet.objects.select_related('assembly__division').filter(extra_filter)
                 .annotate(
                     assembly_name=F("assembly__display_name"),
                 )

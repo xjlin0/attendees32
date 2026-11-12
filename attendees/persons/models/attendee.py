@@ -94,14 +94,8 @@ class Attendee(Utility, TimeStampedModel, SoftDeletableModel):
 
     @property
     def display_label(self):
-        return (
-            (self.first_name or "")
-            + " "
-            + (self.last_name or "")
-            + " "
-            + (self.last_name2 or "")
-            + (self.first_name2 or "")
-        ).strip()
+        return f"{self.name1()} {self.name2()}".strip()
+
 
     @property
     def division_label(self):

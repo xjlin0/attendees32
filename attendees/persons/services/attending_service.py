@@ -145,20 +145,3 @@ class AttendingService:
     #         filters.add((Q(attendingmeet__start__isnull=True) | Q(attendingmeet__start__lte=finish)), Q.AND)
     #     return Attending.objects.annotate(assembly=F("meet__assembly")).filter(filters).order_by(*orderby_list)
     #
-    # @staticmethod
-    # def orderby_parser(orderbys):
-    #     """
-    #     generates sorter (column) based on user's choice
-    #     :param orderbys: list of search params
-    #     :return: a List of sorter for order_by()
-    #     """
-    #     orderby_list = (
-    #         []
-    #     )  # sort attendingmeets is [{"selector":"<<dataField value in DataGrid>>","desc":false}]
-    #
-    #     for orderby_dict in orderbys:
-    #         field = orderby_dict.get("selector", "id").replace(".", "__")
-    #         direction = "-" if orderby_dict.get("desc", False) else ""
-    #         orderby_list.append(direction + field)
-    #
-    #     return orderby_list

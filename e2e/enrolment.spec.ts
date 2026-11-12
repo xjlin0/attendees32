@@ -29,6 +29,12 @@ async function selectEverything(page: Page) {
   // Each box fills from an endpoint of its own, so a press can land before the
   // choices have arrived and quietly select nothing. The tags are the proof it
   // took, and the press is repeated until they appear.
+  await page.waitForFunction(() => {
+    const editor = (window as any).Attendees?.attendingmeets?.filtersForm?.getEditor('meets');
+    const items = editor?.getDataSource()?.items() || editor?.option('items');
+    return items && items.length > 0;
+  }, { timeout: 15_000 }).catch(() => {});
+
   const tags = page.locator('div.selected-meets .dx-tag');
 
   for (let attempt = 0; attempt < 3; attempt += 1) {

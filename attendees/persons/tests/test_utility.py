@@ -18,6 +18,17 @@ class TestUtility:
         assert Utility.phone_number_formatter("+11234567890") == "(123)456-7890"
         assert Utility.phone_number_formatter("") == ""
 
+    def test_normalize_phone_number(self):
+        assert Utility.normalize_phone_number("510-123-4567") == "+15101234567"
+        assert Utility.normalize_phone_number("(510) 123-4567") == "+15101234567"
+        assert Utility.normalize_phone_number("15101234567") == "+15101234567"
+        assert Utility.normalize_phone_number("+886912345678") == "+886912345678"
+        assert Utility.normalize_phone_number("510123456789") == "+10123456789"
+        assert Utility.normalize_phone_number("12345") == "12345"
+        assert Utility.normalize_phone_number("") == ""
+        assert Utility.normalize_phone_number(None) is None
+        assert Utility.normalize_phone_number(123) == 123
+
     def test_user_infos(self):
         assert Utility.user_infos() == {"settings": {}}
 
@@ -123,3 +134,74 @@ class TestUtility:
         with django_assert_num_queries(1):
             name = Utility.get_object_name(fake_event, object_field='display_name')
             assert name == "Sanctuary"
+
+    def test_merge_contacts_deduplication_and_strictly_numbered_keys(self):
+        # 1. Deduplication across different keys
+        existing = {"phone1": "+15101112222", "phone2": "+15103334444"}
+        incoming = {"phone1": "(510) 333-4444"}  # matches phone2
+        merged = Utility.merge_contacts(existing, incoming)
+        assert merged == {"phone1": "+15101112222", "phone2": "+15103334444"}
+        assert "phone" not in merged
+
+        # 2. Append new phone without overwriting
+        incoming_new = {"phone1": "510-777-8888"}
+        merged2 = Utility.merge_contacts(existing, incoming_new)
+        assert merged2 == {
+            "phone1": "+15101112222",
+            "phone2": "+15103334444",
+            "phone3": "+15107778888",
+        }
+        assert "phone" not in merged2
+
+        # 3. Email deduplication with case-insensitivity
+        existing_email = {"email1": "John@Example.COM"}
+        incoming_email = {"email1": "john@example.com", "email2": "work@company.com"}
+        merged_email = Utility.merge_contacts(existing_email, incoming_email)
+        assert merged_email == {
+            "email1": "John@Example.COM",
+            "email2": "work@company.com",
+        }
+        assert "email" not in merged_email
+
+        # 4. Multi-type contacts: wechat, line, whatsapp
+        existing_multi = {"wechat1": "wx_john", "phone1": "+15101112222"}
+        incoming_multi = {"line1": "line_john", "wechat1": "wx_john", "whatsapp1": "5101112222"}
+        merged_multi = Utility.merge_contacts(existing_multi, incoming_multi)
+        assert merged_multi == {
+            "line1": "line_john",
+            "phone1": "+15101112222",
+            "wechat1": "wx_john",
+            "whatsapp1": "+15101112222",
+        }
+
+        # 5. Legacy unnumbered keys in existing dict get cleaned up to numbered keys
+        legacy_existing = {"phone": "+15101112222", "email": "a@b.com"}
+        cleaned = Utility.merge_contacts(legacy_existing, {})
+        assert cleaned == {"phone1": "+15101112222", "email1": "a@b.com"}
+        assert "phone" not in cleaned
+        assert "email" not in cleaned
+
+    def test_deep_merge_attendee_infos(self):
+        existing_infos = {
+            "fixed": {"food_pref": "Peanuts allergy", "mobility": 2, "grade": 1},
+            "contacts": {"phone1": "+15101112222"},
+            "emergency_contacts": {"101": True},
+        }
+        new_infos = {
+            "fixed": {"grade": 2, "food_pref": ""},  # empty food_pref should NOT wipe existing
+            "contacts": {"phone1": "+15109990000", "email1": "kid@example.com"},
+            "emergency_contacts": {"102": True},
+        }
+        merged = Utility.deep_merge_attendee_infos(existing_infos, new_infos, current_user_attendee_id="admin-999")
+
+        assert merged["fixed"]["mobility"] == 2
+        assert merged["fixed"]["food_pref"] == "Peanuts allergy"
+        assert merged["fixed"]["grade"] == 2
+
+        assert merged["contacts"]["phone1"] == "+15101112222"
+        assert merged["contacts"]["phone2"] == "+15109990000"
+        assert merged["contacts"]["email1"] == "kid@example.com"
+        assert "phone" not in merged["contacts"]
+
+        assert merged["emergency_contacts"] == {"101": True, "102": True}
+        assert "admin-999" in merged["updating_attendees"]

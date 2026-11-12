@@ -23,6 +23,7 @@ class TestAttendanceService:
         )
         self.category = Category.objects.create(id=25, display_name="Test Cat")
         self.category_1 = Category.objects.create(id=1, display_name="Scheduled")
+        self.category_9 = Category.objects.create(id=9, display_name="Attended")
         self.family_category = Category.objects.create(id=0, display_name="Family")
         self.relation = Relation.objects.create(id=0, title="test relation", gender=GenderEnum.UNSPECIFIED.value)
         
@@ -217,3 +218,110 @@ class TestAttendanceService:
         orderbys = [{"selector": "character", "desc": True}, {"selector": "start", "desc": False}]
         parsed = list(AttendanceService.orderby_parser(orderbys))
         assert parsed == ["-character__display_name", "start"]
+
+    def test_create_or_update_attendance_with_existing_gathering(self):
+        data = {
+            'gathering': self.gathering.id,
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        att = AttendanceService.create_or_update_attendance(self.user, data)
+        assert att.id is not None
+        assert att.gathering_id == self.gathering.id
+        assert att.category_id == 9
+
+    def test_create_or_update_attendance_on_demand_gathering(self):
+        start_time = self.now + timedelta(days=5)
+        data = {
+            'gathering': None,
+            'meet': self.meet.id,
+            'gathering_start': start_time.isoformat(),
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        att = AttendanceService.create_or_update_attendance(self.user, data)
+        assert att.id is not None
+        assert att.gathering is not None
+        assert att.gathering.meet_id == self.meet.id
+        assert att.category_id == 9
+
+    def test_create_or_update_attendance_rejects_virtual_start_string_with_validation_error(self):
+        from rest_framework import serializers
+        start_time = self.now + timedelta(days=7)
+        data = {
+            'gathering': f'start_{start_time.isoformat()}',
+            'meet': self.meet.id,
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': 9,
+        }
+        with pytest.raises(serializers.ValidationError) as excinfo:
+            AttendanceService.create_or_update_attendance(self.user, data)
+        assert 'gathering' in excinfo.value.detail
+        assert 'Expected an integer ID or null' in str(excinfo.value.detail['gathering'])
+
+    def test_create_or_update_attendance_with_null_gathering_and_inferred_meet(self):
+        start_time = self.now + timedelta(days=10)
+        data = {
+            'gathering': None,
+            'gathering_start': start_time.isoformat(),
+            'attending': self.attending.id,
+            'character': self.character.id,
+            'category': Attendee.ATTENDED_CATEGORY,
+        }
+        att = AttendanceService.create_or_update_attendance(self.user, data)
+        assert att.id is not None
+        assert isinstance(att.gathering_id, int)
+        assert att.gathering.meet_id == self.meet.id
+        assert att.category_id == Attendee.ATTENDED_CATEGORY
+
+    def test_extend_attending_meet_if_needed_when_expired(self):
+        self.attendingmeet.finish = self.gathering.finish - timedelta(hours=1)
+        self.attendingmeet.save()
+
+        self.attendance.category_id = Attendee.ATTENDED_CATEGORY
+        self.attendance.save()
+
+        updated_am = AttendanceService.extend_attending_meet_if_needed(self.attendance)
+        assert updated_am is not None
+        assert updated_am.id == self.attendingmeet.id
+        assert updated_am.finish >= self.gathering.finish
+
+    def test_extend_attending_meet_if_needed_creates_new_attendingmeet_when_none_exists(self):
+        # Create a second meet in same assembly
+        meet2 = Meet.objects.create(
+            assembly=self.assembly,
+            display_name="Second Meet",
+            slug="second-meet",
+            major_character=self.character,
+            site_type=self.site_type,
+            site_id=self.room.id,
+            start=self.now,
+            finish=self.now + timedelta(days=10),
+            infos={"default_attendingmeet_in_weeks": 2},
+        )
+        gathering2 = Gathering.objects.create(
+            meet=meet2,
+            start=self.now,
+            finish=self.now + timedelta(hours=2),
+            display_name="Gathering 2",
+            site_type=self.site_type,
+            site_id=str(self.room.id),
+        )
+        attendance2 = Attendance.objects.create(
+            gathering=gathering2,
+            attending=self.attending,
+            character=self.character,
+            category_id=Attendee.ATTENDED_CATEGORY,
+        )
+
+        assert not AttendingMeet.objects.filter(attending=self.attending, meet=meet2).exists()
+
+        created_am = AttendanceService.extend_attending_meet_if_needed(attendance2)
+        assert created_am is not None
+        assert created_am.attending == self.attending
+        assert created_am.meet == meet2
+        assert created_am.character == self.character
+        assert created_am.finish >= gathering2.finish
