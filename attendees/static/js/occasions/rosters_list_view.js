@@ -25,6 +25,24 @@
     return d;
   };
 
+  const addMonths = (date, months) => {
+    if (!date) return null;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return null;
+    const currentDay = d.getDate();
+    d.setMonth(d.getMonth() + months);
+    if (d.getDate() !== currentDay) {
+      d.setDate(0); // If day overflowed (e.g. Jan 31 -> Feb 28), set to last day of target month
+    }
+    return d;
+  };
+
+  const isValidDate = (date) => {
+    if (!date) return false;
+    const d = new Date(date);
+    return !isNaN(d.getTime());
+  };
+
   const getMeetSignatureRequiredAt = (meetId) => {
     if (!meetId) return null;
     const m = meetsMap.get(meetId) || meetsMap.get(String(meetId));
@@ -3227,7 +3245,7 @@
 
     const loadData = (targetAttendeeId, targetGatheringId) => {
       return new Promise(async (resolve) => {
-        if (!filterData.meets || !filterData.meets.length) {
+        if (!filterData.meets || !filterData.meets.length || !isValidDate(filterData.startDate) || !isValidDate(filterData.endDate)) {
           gatheringsRegistry.clear();
           updateGridColumns([], []);
           if (gridInstanceRef.value) {
@@ -3251,8 +3269,8 @@
             const queryParams = new URLSearchParams();
             filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
             
-            if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
-            if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
+            if (isValidDate(filterData.startDate)) queryParams.set('start', new Date(filterData.startDate).toISOString());
+            if (isValidDate(filterData.endDate)) queryParams.set('finish', new Date(filterData.endDate).toISOString());
 
             queryParams.set('skip', 0);
             queryParams.set('take', currentTake || 40);
@@ -3269,6 +3287,10 @@
               key: 'attendee_id',
               load: async (loadOptions) => {
                 try {
+                  if (!isValidDate(filterData.startDate) || !isValidDate(filterData.endDate) || !filterData.meets || !filterData.meets.length) {
+                    return { data: [], totalCount: 0 };
+                  }
+
                   // If initial load with skip=0 and no custom sort/search/filter/group, consume preloaded data
                   const isInitialOptions = (!loadOptions.skip || loadOptions.skip === 0) 
                     && !loadOptions.sort 
@@ -3291,8 +3313,8 @@
                   const pageParams = new URLSearchParams();
                   filterData.meets.forEach(meet => pageParams.append('meets[]', meet));
                   
-                  if (filterData.startDate) pageParams.set('start', filterData.startDate.toISOString());
-                  if (filterData.endDate) pageParams.set('finish', filterData.endDate.toISOString());
+                  if (isValidDate(filterData.startDate)) pageParams.set('start', new Date(filterData.startDate).toISOString());
+                  if (isValidDate(filterData.endDate)) pageParams.set('finish', new Date(filterData.endDate).toISOString());
 
                   pageParams.set('skip', loadOptions.skip || 0);
                   pageParams.set('take', loadOptions.take || currentTake || 40);
@@ -3772,16 +3794,16 @@
             const endVal = endEd ? endEd.option('value') : filterData.endDate;
 
             if (e.dataField === 'startDate') {
-              Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterFromString', e.value ? e.value.toJSON() : null);
+              Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterFromString', isValidDate(e.value) ? new Date(e.value).toJSON() : null);
             }
             if (e.dataField === 'endDate') {
-              Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterTillString', e.value ? e.value.toJSON() : null);
+              Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'filterTillString', isValidDate(e.value) ? new Date(e.value).toJSON() : null);
             }
             if (formInstance.getEditor('meets')) {
               formInstance.getEditor('meets').getDataSource().reload();
             }
 
-            if (startVal && endVal) {
+            if (isValidDate(startVal) && isValidDate(endVal)) {
               const startMs = new Date(startVal).getTime();
               const endMs = new Date(endVal).getTime();
               const diffMs = endMs - startMs;
@@ -3810,11 +3832,15 @@
                 }
               }
             } else {
-              // One of the dates is empty/cleared
-              if (startEd && startEd.option('isValid') === false) {
+              // One or both dates are empty/invalid
+              if (!isValidDate(startVal)) {
+                startEd?.option({ isValid: false, validationError: { message: 'From date is required' } });
+              } else if (startEd && startEd.option('isValid') === false) {
                 startEd.option({ isValid: true, validationError: null });
               }
-              if (endEd && endEd.option('isValid') === false) {
+              if (!isValidDate(endVal)) {
+                endEd?.option({ isValid: false, validationError: { message: 'To date is required' } });
+              } else if (endEd && endEd.option('isValid') === false) {
                 endEd.option({ isValid: true, validationError: null });
               }
             }
@@ -3863,7 +3889,53 @@
             editorOptions: { 
               type: 'datetime', 
               displayFormat: 'shortDateShortTime',
-              showClearButton: true
+              showClearButton: true,
+              buttons: [
+                'clear',
+                'dropDown',
+                {
+                  name: 'fastForwardMonth',
+                  location: 'after',
+                  options: {
+                    icon: 'fas fa-forward',
+                    stylingMode: 'text',
+                    hint: 'extend range by 1 month',
+                    elementAttr: {
+                      title: 'extend range by 1 month',
+                      'aria-label': 'extend range by 1 month',
+                      class: 'btn-extend-range-month'
+                    },
+                    onClick: () => {
+                      const endEd = formInstance.getEditor('endDate');
+                      const startEd = formInstance.getEditor('startDate');
+                      const startVal = (startEd && startEd.option('value')) || filterData.startDate;
+                      const currentEnd = (endEd && endEd.option('value')) || filterData.endDate;
+                      const baseDate = (isValidDate(currentEnd) ? new Date(currentEnd) : (isValidDate(startVal) ? new Date(startVal) : new Date()));
+                      const newEnd = isValidDate(currentEnd) ? addMonths(currentEnd, 1) : addMonths(baseDate, 1);
+
+                      if (startVal && newEnd) {
+                        const startMs = new Date(startVal).getTime();
+                        const endMs = newEnd.getTime();
+                        const diffMs = endMs - startMs;
+                        const FIVE_YEARS_MS = MAX_DATE_RANGE_YEARS * 365.25 * 24 * 60 * 60 * 1000;
+                        if (diffMs > FIVE_YEARS_MS) {
+                          const yearsDiff = (diffMs / (365.25 * 24 * 60 * 60 * 1000)).toFixed(1);
+                          const errMsg = `Date range cannot exceed 5 years (selected: ${yearsDiff} years)`;
+                          DevExpress.ui.notify({ message: errMsg, type: 'warning', displayTime: 4500 });
+                          return;
+                        }
+                      }
+
+                      if (endEd) {
+                        endEd.option('value', newEnd);
+                      } else {
+                        filterData.endDate = newEnd;
+                        formInstance.updateData('endDate', newEnd);
+                      }
+                    }
+                  }
+                }
+              ]
             }
           },
           {
@@ -3891,8 +3963,8 @@
                       model: 'attendance'
                     });
                     
-                    if (filterData.startDate) queryParams.set('start', filterData.startDate.toISOString());
-                    if (filterData.endDate) queryParams.set('finish', filterData.endDate.toISOString());
+                    if (isValidDate(filterData.startDate)) queryParams.set('start', new Date(filterData.startDate).toISOString());
+                    if (isValidDate(filterData.endDate)) queryParams.set('finish', new Date(filterData.endDate).toISOString());
 
                     const response = await fetch(`${endpoints.meets}?${queryParams.toString()}`);
                     if (!response.ok) throw new Error('Failed to load meets');

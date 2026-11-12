@@ -558,6 +558,17 @@ body div#rosters-filter-form-container .dx-field-item.filter-item-checkbox .dx-c
   max-width: fit-content;
 }
 
+.btn-extend-range-month {
+  cursor: pointer;
+  color: #495057;
+}
+.btn-extend-range-month:hover {
+  color: #0d6efd;
+}
+.btn-extend-range-month .dx-icon {
+  font-size: 13px;
+}
+
 
 
 
