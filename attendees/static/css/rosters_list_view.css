@@ -569,6 +569,25 @@ body div#rosters-filter-form-container .dx-field-item.filter-item-checkbox .dx-c
   font-size: 13px;
 }
 
+body div#rosters-filter-form-container .dx-invalid.dx-datebox .dx-texteditor-input-container::after {
+  pointer-events: none;
+  font-weight: 700;
+  position: absolute;
+  top: 50%;
+  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  line-height: 16px;
+  font-size: 11px;
+  background-color: #d9534f;
+  color: #fff;
+  content: "!";
+  border-radius: 50%;
+  right: 2px;
+}
+
+
 
 
 
