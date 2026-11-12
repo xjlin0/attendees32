@@ -49,6 +49,33 @@
     return (m && m.infos) ? m.infos.signature_required_at : null;
   };
 
+  let isProgrammaticGradeChange = false;
+
+  const getUserGradeVisiblePreference = () => {
+    const storageOptsKey = Attendees.utilities.datagridStorageKeys?.['rostersListViewOpts'];
+    if (!storageOptsKey) return null;
+    const val = Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'userGradeVisible');
+    if (val === true || val === 'true') return true;
+    if (val === false || val === 'false') return false;
+    return null;
+  };
+
+  const setUserGradeVisiblePreference = (val) => {
+    const storageOptsKey = Attendees.utilities.datagridStorageKeys?.['rostersListViewOpts'];
+    if (!storageOptsKey) return;
+    if (val === null || val === undefined) {
+      try {
+        const storedObject = JSON.parse(window.sessionStorage.getItem(storageOptsKey) || '{}');
+        delete storedObject['userGradeVisible'];
+        window.sessionStorage.setItem(storageOptsKey, JSON.stringify(storedObject));
+      } catch (e) {
+        console.error('Error clearing userGradeVisible in sessionStorage:', e);
+      }
+    } else {
+      Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'userGradeVisible', Boolean(val));
+    }
+  };
+
   const checkHasKidMeet = (selectedSlugs) => {
     const slugs = selectedSlugs || [];
     return slugs.some(slug => {
@@ -56,6 +83,14 @@
       const showInfos = m?.show_attendee_infos || (m?.infos && m.infos.show_attendee_infos) || {};
       return Boolean(showInfos['infos-grade'] || showInfos['grade']);
     });
+  };
+
+  const resolveGradeVisible = (selectedSlugs) => {
+    const userChoice = getUserGradeVisiblePreference();
+    if (userChoice !== null && userChoice !== undefined) {
+      return userChoice;
+    }
+    return checkHasKidMeet(selectedSlugs);
   };
 
   const getColumnIdentifier = (gathering) => {
@@ -3032,6 +3067,14 @@
       const FIXED_PREFIX_COUNT = 6;
       const TOTAL_EXTRA_COLS = FIXED_PREFIX_COUNT + 1; // plus 1 dummy-column
 
+      const expectedGradeVisible = resolveGradeVisible(filterData.meets);
+      const currentGradeVisible = (gridInstanceRef.value && typeof gridInstanceRef.value.columnOption === 'function')
+        ? gridInstanceRef.value.columnOption('grade', 'visible')
+        : false;
+      if (currentGradeVisible !== expectedGradeVisible) {
+        colsChanged = true;
+      }
+
       if (!currentCols || currentCols.length !== serverColumns.length + TOTAL_EXTRA_COLS) {
         colsChanged = true;
       } else {
@@ -3062,7 +3105,7 @@
           {
             dataField: 'grade',
             caption: 'Grade',
-            visible: checkHasKidMeet(filterData.meets),
+            visible: resolveGradeVisible(filterData.meets),
             allowHiding: true,
             fixed: true,
             fixedPosition: 'left',
@@ -3187,9 +3230,13 @@
             if (sortIndex !== undefined && sortIndex !== null) {
               col.sortIndex = sortIndex;
             }
-            const visible = gridInstanceRef.value.columnOption(col.dataField, 'visible');
-            if (visible !== undefined && visible !== null) {
-              col.visible = visible;
+            if (col.dataField === 'grade') {
+              col.visible = resolveGradeVisible(filterData.meets);
+            } else {
+              const visible = gridInstanceRef.value.columnOption(col.dataField, 'visible');
+              if (visible !== undefined && visible !== null) {
+                col.visible = visible;
+              }
             }
             const width = gridInstanceRef.value.columnOption(col.dataField, 'width');
             if (width !== undefined && width !== null && !(col.dataField === 'team__display_name' && width > 100)) {
@@ -3441,6 +3488,15 @@
             if (curTeamWidth && curTeamWidth > 100) {
               gridInstanceRef.value.columnOption('team__display_name', 'width', 80);
             }
+            const targetGradeVis = resolveGradeVisible(filterData.meets);
+            if (gridInstanceRef.value.columnOption('grade', 'visible') !== targetGradeVis) {
+              isProgrammaticGradeChange = true;
+              try {
+                gridInstanceRef.value.columnOption('grade', 'visible', targetGradeVis);
+              } finally {
+                isProgrammaticGradeChange = false;
+              }
+            }
             gridInstanceRef.value.option('dataSource', customStore);
             gridInstanceRef.value.endUpdate();
 
@@ -3612,7 +3668,7 @@
           {
             dataField: 'grade',
             caption: 'Grade',
-            visible: checkHasKidMeet(filterData.meets),
+            visible: resolveGradeVisible(filterData.meets),
             allowHiding: true,
             fixed: true,
             fixedPosition: 'left',
@@ -3678,6 +3734,25 @@
           enabled: true,
           mode: 'select',
         },
+        onOptionChanged: (e) => {
+          if (e.name === 'columns' && typeof e.fullName === 'string' && e.fullName.endsWith('.visible')) {
+            if (isProgrammaticGradeChange) return;
+
+            let targetField = null;
+            const match = e.fullName.match(/columns\[(\d+)\]\.visible/);
+            if (match) {
+              const index = parseInt(match[1], 10);
+              const col = e.component.columnOption(index) || e.component.option('columns')?.[index];
+              targetField = col?.dataField;
+            } else {
+              targetField = e.fullName.slice(0, -8).replace(/^columns\./, '');
+            }
+
+            if (targetField === 'grade') {
+              setUserGradeVisiblePreference(Boolean(e.value));
+            }
+          }
+        },
         onToolbarPreparing: (e) => {
           const toolbarItems = e.toolbarOptions.items;
           toolbarItems.unshift({
@@ -3692,6 +3767,7 @@
                   const gridKey = Attendees.utilities.datagridStorageKeys['rostersListView'];
                   window.sessionStorage.removeItem(optsKey);
                   window.sessionStorage.removeItem(gridKey);
+                  setUserGradeVisiblePreference(null);
                   gatheringsRegistry.clear();
                   updateGridColumns([], []);
                   if (gridInstanceRef.value) {
@@ -3766,7 +3842,16 @@
         formInstance.getEditor('meets').option('value', []);
       }
       gatheringsRegistry.clear();
+      setUserGradeVisiblePreference(null);
       if (gridInstanceRef.value) {
+        if (typeof gridInstanceRef.value.columnOption === 'function') {
+          isProgrammaticGradeChange = true;
+          try {
+            gridInstanceRef.value.columnOption('grade', 'visible', false);
+          } finally {
+            isProgrammaticGradeChange = false;
+          }
+        }
         gridInstanceRef.value.clearGrouping();
         gridInstanceRef.value.clearSorting();
         gridInstanceRef.value.option('dataSource', []);
@@ -3847,12 +3932,22 @@
           }
           if (e.dataField === 'meets') {
             Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'selectedMeetSlugs', e.value || []);
+            const shouldShow = checkHasKidMeet(e.value);
             if (formInstance) {
-              const shouldShow = checkHasKidMeet(e.value);
               const currentItem = formInstance.itemOption('showSiblings');
               if (currentItem && currentItem.visible !== shouldShow) {
                 formInstance.itemOption('showSiblings', 'visible', shouldShow);
                 formInstance.itemOption('meets', 'colSpan', shouldShow ? 10 : 12);
+              }
+            }
+            if (getUserGradeVisiblePreference() === null) {
+              if (gridInstanceRef.value && typeof gridInstanceRef.value.columnOption === 'function') {
+                isProgrammaticGradeChange = true;
+                try {
+                  gridInstanceRef.value.columnOption('grade', 'visible', shouldShow);
+                } finally {
+                  isProgrammaticGradeChange = false;
+                }
               }
             }
           }
