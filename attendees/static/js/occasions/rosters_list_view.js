@@ -14,6 +14,7 @@
   const gatheringsRegistry = new Map();
   const meetsInfoMap = new Map();
   const meetsMap = new Map();
+  const charactersMap = new Map();
 
   const escapeHtml = (str) => (window.Attendees?.utilities?.escapeHtml ? window.Attendees.utilities.escapeHtml(str) : String(str || ''));
 
@@ -1102,6 +1103,12 @@
 
           lookupsCache.meets = meetsRes.data || meetsRes.results || meetsRes || [];
           lookupsCache.characters = charsRes.data || charsRes.results || charsRes || [];
+          lookupsCache.characters.forEach(c => {
+            if (c.id !== undefined && c.id !== null) {
+              charactersMap.set(c.id, c);
+              charactersMap.set(String(c.id), c);
+            }
+          });
           lookupsCache.categories = catsRes.data || catsRes.results || catsRes || [];
           lookupsCache.teams = teamsRes.data || teamsRes.results || teamsRes || [];
 
@@ -2293,6 +2300,22 @@
 
     const locateAttendeeInGrid = (newcomer) => {
       if (!gridInstanceRef.value || !newcomer) return;
+      if (!filterData.meets || filterData.meets.length === 0) {
+        DevExpress.ui.notify({
+          message: 'Please select a meet first to locate attendee in roster.',
+          type: 'warning',
+          displayTime: 3500
+        });
+        return;
+      }
+      if (newcomer.meetSlug && !filterData.meets.includes(newcomer.meetSlug)) {
+        DevExpress.ui.notify({
+          message: `Cannot locate attendee because "${newcomer.meetName || newcomer.meetSlug}" is not selected in the filter.`,
+          type: 'warning',
+          displayTime: 3500
+        });
+        return;
+      }
       const rawId = newcomer.id != null ? newcomer.id : newcomer.attendee_id;
       const numId = Number(rawId);
       const targetId = !isNaN(numId) ? numId : rawId;
@@ -2364,7 +2387,8 @@
         : '';
 
       newcomerPopupInstance = new DevExpress.ui.dxPopup(container, {
-        width: 320,
+        width: window.innerWidth < 768 ? '80%' : '30%',
+        minWidth: 320,
         height: 'auto',
         showTitle: true,
         title: 'Newcomer Added',
@@ -2372,6 +2396,16 @@
         dragEnabled: true,
         wrapperAttr: {
           class: 'newcomer-card-popup'
+        },
+        onShowing: (e) => {
+          const updateWidth = () => {
+            if (e.component) {
+              e.component.option('width', window.innerWidth < 768 ? '80%' : '30%');
+            }
+          };
+          window.addEventListener('resize', updateWidth);
+          e.component.on('hiding', () => window.removeEventListener('resize', updateWidth));
+          e.component.on('disposing', () => window.removeEventListener('resize', updateWidth));
         },
         contentTemplate: (contentElement) => {
           const contentEl = (contentElement && contentElement[0]) ? contentElement[0] : contentElement;
@@ -2388,6 +2422,14 @@
               </div>
               
               <div class="mb-3 p-2 bg-light rounded border">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-secondary small"><i class="fas fa-calendar-check me-1"></i>Meet:</span>
+                  <span class="fw-semibold small">${escapeHtml(newcomer.meetName || newcomer.meetSlug || 'Unknown')}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-secondary small"><i class="fas fa-user-tag me-1"></i>Character:</span>
+                  <span class="fw-semibold small">${escapeHtml(newcomer.character || 'Attendee')}</span>
+                </div>
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <span class="text-secondary small"><i class="fas fa-users me-1"></i>Team:</span>
                   <span class="fw-semibold small">${escapeHtml(newcomer.team || 'Unassigned')}</span>
@@ -3768,6 +3810,7 @@
                   window.sessionStorage.removeItem(optsKey);
                   window.sessionStorage.removeItem(gridKey);
                   setUserGradeVisiblePreference(null);
+                  clearLastNewcomer();
                   gatheringsRegistry.clear();
                   updateGridColumns([], []);
                   if (gridInstanceRef.value) {
@@ -3796,14 +3839,15 @@
       clearColumnHighlight,
       highlightGatheringColumn,
       setLastNewcomer,
-      clearLastNewcomer
+      clearLastNewcomer,
+      getLastNewcomer: () => lastNewcomer
     };
   }
 
   // ==========================================================
   // 4. Filters Form Logic
   // ==========================================================
-  function useRosterFilter(endpoints, filterData, reloadCallback, gridInstanceRef) {
+  function useRosterFilter(endpoints, filterData, reloadCallback, gridInstanceRef, clearLastNewcomer, getLastNewcomer) {
     let formInstance = null;
     const storageOptsKey = Attendees.utilities.datagridStorageKeys['rostersListViewOpts'];
 
@@ -3824,6 +3868,10 @@
       filterData.endDate = defaultEnd;
       filterData.showPhotos = false;
       filterData.showSiblings = true;
+
+      if (typeof clearLastNewcomer === 'function') {
+        clearLastNewcomer();
+      }
 
       if (formInstance) {
         const startEd = formInstance.getEditor('startDate');
@@ -3931,8 +3979,19 @@
             }
           }
           if (e.dataField === 'meets') {
-            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'selectedMeetSlugs', e.value || []);
-            const shouldShow = checkHasKidMeet(e.value);
+            const selectedMeets = e.value || [];
+            if (typeof clearLastNewcomer === 'function') {
+              if (selectedMeets.length === 0) {
+                clearLastNewcomer();
+              } else if (typeof getLastNewcomer === 'function') {
+                const currentNewcomer = getLastNewcomer();
+                if (currentNewcomer && currentNewcomer.meetSlug && !selectedMeets.includes(currentNewcomer.meetSlug)) {
+                  clearLastNewcomer();
+                }
+              }
+            }
+            Attendees.utilities.accessItemFromSessionStorage(storageOptsKey, 'selectedMeetSlugs', selectedMeets);
+            const shouldShow = checkHasKidMeet(selectedMeets);
             if (formInstance) {
               const currentItem = formInstance.itemOption('showSiblings');
               if (currentItem && currentItem.visible !== shouldShow) {
@@ -5889,12 +5948,18 @@
         const confirmedGatheringId = attData.gathering || targetGatheringId || null;
 
         if (typeof setLastNewcomer === 'function') {
+          const candChar = (meetObj?.major_character ? (charactersMap.get(meetObj.major_character)?.display_name || charactersMap.get(String(meetObj.major_character))?.display_name) : null)
+            || cand.character_name
+            || 'Attendee';
           setLastNewcomer({
             id: cand.id,
             name: cand.name || `${cand.first_name || ''} ${cand.last_name || ''}`.trim(),
             grade: cand.infos?.grade ?? cand.grade ?? '',
             team: cand.team_name || cand.team || '',
             gender: cand.gender || '',
+            character: candChar,
+            meetSlug: selectedMeetSlug,
+            meetName: meetObj?.display_name || selectedMeetSlug || '',
             gatheringId: confirmedGatheringId,
             checkedIn: true
           });
@@ -6299,16 +6364,25 @@
           : (result.attendee_name || 'attendee');
 
         if (typeof setLastNewcomer === 'function') {
+          const meetObj = meetsMap.get(selectedMeetSlug) || meetsMap.get(String(selectedMeetSlug));
+          const currentMeetName = meetObj?.display_name || selectedMeetSlug || '';
           const createdList = (result.attendees && result.attendees.length > 0)
             ? result.attendees
             : [result];
           const lastCreated = createdList[createdList.length - 1];
+          const createdChar = lastCreated.character_name
+            || result.character_name
+            || (meetObj?.major_character ? (charactersMap.get(meetObj.major_character)?.display_name || charactersMap.get(String(meetObj.major_character))?.display_name) : null)
+            || 'Attendee';
           setLastNewcomer({
             id: lastCreated.attendee_id || result.attendee_id,
             name: lastCreated.attendee_name || result.attendee_name,
             grade: lastCreated.grade ?? '',
             team: lastCreated.team_name ?? '',
             gender: lastCreated.gender ?? result.gender ?? '',
+            character: createdChar,
+            meetSlug: selectedMeetSlug,
+            meetName: currentMeetName,
             gatheringId: result.gathering_id || gatheringId,
             checkedIn: true
           });
@@ -6536,7 +6610,8 @@
         getHighlightedGathering,
         highlightGatheringColumn,
         setLastNewcomer,
-        clearLastNewcomer
+        clearLastNewcomer,
+        getLastNewcomer
       } = useRosterGrid(
         endpoints, 
         filterData, 
@@ -6545,7 +6620,14 @@
         attendingMeetsEditor,
         () => { if (resetFiltersRef.current) resetFiltersRef.current(); }
       );
-      const { initFilterForm, resetFilters } = useRosterFilter(endpoints, filterData, loadData, gridInstanceRef);
+      const { initFilterForm, resetFilters } = useRosterFilter(
+        endpoints, 
+        filterData, 
+        loadData, 
+        gridInstanceRef,
+        clearLastNewcomer,
+        getLastNewcomer
+      );
       resetFiltersRef.current = resetFilters;
       reloadDataRef.current = loadData;
 

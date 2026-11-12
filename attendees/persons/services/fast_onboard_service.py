@@ -833,6 +833,16 @@ class FastOnboardService:
                 "attending_id": attending.id,
                 "attendingmeet_id": attendingmeet.id,
                 "attendance_id": attendance.id if attendance else None,
+                "character_id": (
+                    attendingmeet.character_id
+                    if attendingmeet
+                    else (major_char.id if major_char else None)
+                ),
+                "character_name": (
+                    attendingmeet.character.display_name
+                    if (attendingmeet and attendingmeet.character)
+                    else (major_char.display_name if major_char else None)
+                ),
             })
 
         return created_attendees_info
@@ -1031,6 +1041,8 @@ class FastOnboardService:
             return {
                 "attendee_id": primary["attendee_id"],
                 "attendee_name": primary["attendee_name"],
+                "character_id": primary.get("character_id"),
+                "character_name": primary.get("character_name"),
                 "first_name": primary["first_name"],
                 "last_name": primary["last_name"],
                 "first_name2": primary["first_name2"],

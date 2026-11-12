@@ -1,6 +1,4 @@
 import json
-import time
-from itertools import groupby
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -8,8 +6,8 @@ from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from attendees.occasions.services import GatheringService, RosterService
 from attendees.occasions.serializers import RosterResponseSerializer
+from attendees.occasions.services import GatheringService, RosterService
 from attendees.persons.models import Utility
 
 
@@ -25,8 +23,9 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
 
         Permissions:
             - Requires authenticated user (`login_required`).
-            - Privileged users (belonging to groups configured in `user.organization.infos['groups_see_all_meets_attendees']`,
-              evaluated by `request.user.can_see_all_organizational_meets_attendees()`) can view all attendees in the meet.
+            - Privileged users (belonging to groups configured in
+              `user.organization.infos['groups_see_all_meets_attendees']`, evaluated by
+              `request.user.can_see_all_organizational_meets_attendees()`) can view all attendees in the meet.
             - Standard users are restricted to viewing only attendees in their own family (`FAMILY_CATEGORY` folks)
               or themselves. If the user has no linked attendee profile, 0 rows are returned.
 
@@ -36,10 +35,13 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             finish (str, required): ISO datetime string specifying the finish boundary of gatherings.
             skip (int, optional, default=0): Number of records to skip for pagination.
             take (int, optional, default=40): Number of records to return for pagination.
-            sort (str, optional): JSON string describing sorting criteria (e.g., '[{"selector": "attendee_name", "desc": false}]').
-            group (str, optional): JSON string describing grouping criteria (e.g., '[{"selector": "team__display_name", "desc": false}]').
+            sort (str, optional): JSON string describing sorting criteria
+              (e.g., '[{"selector": "attendee_name", "desc": false}]').
+            group (str, optional): JSON string describing grouping criteria
+              (e.g., '[{"selector": "team__display_name", "desc": false}]').
             searchValue (str, optional): Substring to search attendee names.
-            filter (str, optional): DevExtreme filter JSON expression; parsed as search substring if `searchValue` is not provided.
+            filter (str, optional): DevExtreme filter JSON expression;
+              parsed as search substring if `searchValue` is not provided.
 
         Returns:
             Response: DRF Response with status 200 containing:
@@ -62,7 +64,7 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
             skip = int(request.query_params.get("skip", 0))
         except ValueError:
             skip = 0
-            
+
         try:
             take = int(request.query_params.get("take", 40))
         except ValueError:
@@ -166,4 +168,6 @@ class ApiOrganizationMeetRostersViewSet(viewsets.ViewSet):
         })
 
         return Response(serializer.data)
+
+
 api_organization_meet_rosters_viewset = ApiOrganizationMeetRostersViewSet
