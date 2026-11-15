@@ -632,11 +632,7 @@
           if (rIndex >= 0) {
             const cellEl = gridInstanceRef.value.getCellElement(rIndex, 'total_attendances');
             if (cellEl) {
-              if (cellEl.text) {
-                cellEl.text(String(newTotal));
-              } else if (cellEl[0]) {
-                cellEl[0].innerText = String(newTotal);
-              }
+              cellEl.innerText = String(newTotal);
             }
             const visibleRows = typeof gridInstanceRef.value.getVisibleRows === 'function' ? gridInstanceRef.value.getVisibleRows() : null;
             if (visibleRows && visibleRows[rIndex] && visibleRows[rIndex].data) {
@@ -822,14 +818,18 @@
         container.appendChild(popupEl);
       }
 
-      signaturePopupInstance = $(popupEl).dxPopup({
+      signaturePopupInstance = new DevExpress.ui.dxPopup(popupEl, {
         visible: false,
         contentTemplate: () => {
           const t = document.getElementById('signature-popup-template');
           if (t && t.content && t.content.firstElementChild) {
-            return $(t.content.firstElementChild.cloneNode(true));
+            return t.content.firstElementChild.cloneNode(true);
           }
-          return $('<div style="width: 100%; height: 100px;"><canvas class="signature" style="width: 100%; height: 100px;"></canvas></div>');
+          const div = document.createElement('div');
+          div.style.width = '100%';
+          div.style.height = '100px';
+          div.innerHTML = '<canvas class="signature" style="width: 100%; height: 100px;"></canvas>';
+          return div;
         },
         maxWidth: 400,
         width: '95%',
@@ -922,7 +922,7 @@
             },
           },
         ],
-      }).dxPopup('instance');
+      });
 
       return signaturePopupInstance;
     };
@@ -1665,9 +1665,8 @@
             template: (data, itemElement) => {
               if (currentAttendeeData) {
                 const headerEl = createHeaderElement(currentAttendeeData);
-                const target = (itemElement && itemElement.jquery) ? itemElement[0] : itemElement;
-                if (target && target.appendChild) {
-                  target.appendChild(headerEl);
+                if (itemElement && itemElement.appendChild) {
+                  itemElement.appendChild(headerEl);
                 }
               }
             }
@@ -2222,7 +2221,7 @@
             }
           },
           contentTemplate: (container) => {
-            renderPopupContent(container[0]);
+            renderPopupContent(container);
           }
         });
       } else {
@@ -2245,7 +2244,7 @@
             }
           }
         });
-        const contentEl = popupInstance.content ? popupInstance.content()[0] : null;
+        const contentEl = popupInstance.content ? popupInstance.content() : null;
         if (contentEl) {
           renderPopupContent(contentEl);
         }
@@ -2407,8 +2406,7 @@
           e.component.on('hiding', () => window.removeEventListener('resize', updateWidth));
           e.component.on('disposing', () => window.removeEventListener('resize', updateWidth));
         },
-        contentTemplate: (contentElement) => {
-          const contentEl = (contentElement && contentElement[0]) ? contentElement[0] : contentElement;
+        contentTemplate: (contentEl) => {
           contentEl.innerHTML = `
             <div class="newcomer-card-body p-2">
               <div class="d-flex align-items-center mb-3">
@@ -2597,20 +2595,8 @@
         highlightColumn(colIdx, colMeta);
       });
 
-      if (container.jquery) {
-        container.empty().append(wrapper);
-      } else if (container.length !== undefined && !container.nodeType) {
-        const el = container[0];
-        if (el) {
-          el.innerHTML = '';
-          el.appendChild(wrapper);
-        }
-      } else if (container.innerHTML !== undefined) {
-        container.innerHTML = '';
-        container.appendChild(wrapper);
-      } else if (container.append) {
-        container.append(wrapper);
-      }
+      container.innerHTML = '';
+      container.appendChild(wrapper);
     };
 
 
@@ -4512,7 +4498,7 @@
     };
 
     const renderPopupContent = async (container) => {
-      const targetEl = (container && container[0]) ? container[0] : container;
+      const targetEl = container;
       if (!targetEl) return;
       const { meet, isKidMeet, showInsurer } = getMeetSettings();
       const meetDisplayName = meet ? (meet.display_name || meet.name || selectedMeetSlug) : (selectedMeetSlug || 'Selected Meet');
@@ -6459,8 +6445,7 @@
         },
         onShown: () => {
           setTimeout(() => {
-            const rawContent = popupInstance.content ? popupInstance.content() : null;
-            const content = (rawContent && rawContent[0]) ? rawContent[0] : (rawContent || document.getElementById('add-attendee-popup'));
+            const content = (popupInstance.content ? popupInstance.content() : null) || document.getElementById('add-attendee-popup');
             const searchInput = content ? content.querySelector('.omni-search-box') : null;
             if (searchInput) {
               searchInput.focus();
@@ -6477,8 +6462,7 @@
           }
         },
         contentTemplate: (container) => {
-          const el = (container && container[0]) ? container[0] : container;
-          renderPopupContent(el);
+          renderPopupContent(container);
         }
       });
     };
@@ -6513,8 +6497,7 @@
       if (!popupInstance) {
         initAddAttendeePopup();
       } else {
-        const rawContent = popupInstance.content ? popupInstance.content() : null;
-        const contentEl = (rawContent && rawContent[0]) ? rawContent[0] : rawContent;
+        const contentEl = popupInstance.content ? popupInstance.content() : null;
         if (contentEl) renderPopupContent(contentEl);
       }
       if (popupInstance) {
@@ -6523,8 +6506,7 @@
         }
         popupInstance.show();
         setTimeout(() => {
-          const rawContent = popupInstance.content ? popupInstance.content() : null;
-          const content = (rawContent && rawContent[0]) ? rawContent[0] : (rawContent || document.getElementById('add-attendee-popup'));
+          const content = (popupInstance.content ? popupInstance.content() : null) || document.getElementById('add-attendee-popup');
           const searchInput = content ? content.querySelector('.omni-search-box') : null;
           if (searchInput) {
             searchInput.focus();

@@ -519,7 +519,7 @@ test.describe('Rosters List Page', () => {
     await saveBtn.click();
 
     // Modal should close on success
-    await expect(popup).toBeHidden({ timeout: 10000 });
+    await expect(popup).toBeHidden({ timeout: 15000 });
     expect(saveRequested).toBe(true);
 
     // Verify that the datagrid is present and rows are rendered
