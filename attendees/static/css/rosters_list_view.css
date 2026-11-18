@@ -587,6 +587,27 @@ body div#rosters-filter-form-container .dx-invalid.dx-datebox .dx-texteditor-inp
   right: 2px;
 }
 
+/* Fast onboard form invalid field highlighting */
+.is-invalid,
+.dx-invalid,
+select.form-select.is-invalid,
+input.form-control.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+@keyframes shake-invalid {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.is-invalid,
+.dx-invalid {
+  animation: shake-invalid 0.3s ease-in-out 1;
+}
+
+
 
 
 

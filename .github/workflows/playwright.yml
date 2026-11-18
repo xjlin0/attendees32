@@ -71,6 +71,9 @@ jobs:
       - name: Install JavaScript dependencies
         run: npm ci
 
+      - name: Build frontend bundles
+        run: npm run build
+
       - name: Install ${{ matrix.browser }}
         run: npx playwright install --with-deps ${{ matrix.browser }}
 

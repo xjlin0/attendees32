@@ -63,6 +63,15 @@ services:
     ports:
       - "8025:8025"
 
+  frontend:
+    platform: linux/amd64
+    image: node:22-bookworm-slim
+    container_name: frontend
+    working_dir: /app
+    volumes:
+      - .:/app:z
+    command: npm run watch
+
   redis:
     platform: linux/amd64
     image: redis:6

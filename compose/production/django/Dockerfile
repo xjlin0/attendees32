@@ -1,12 +1,20 @@
 ARG PYTHON_VERSION=3.10.12-slim-bookworm
+ARG NODE_VERSION=22-bookworm-slim
 
-
+# Frontend build stage
+FROM node:${NODE_VERSION} AS frontend-build-stage
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci || npm install
+COPY vite.config.ts tsconfig*.json* ./
+COPY attendees/frontend ./attendees/frontend
+RUN npm run build
 
 # define an alias for the specfic python version used in this file.
-FROM python:${PYTHON_VERSION} as python
+FROM python:${PYTHON_VERSION} AS python
 
 # Python build stage
-FROM python as python-build-stage
+FROM python AS python-build-stage
 ARG BUILD_ENVIRONMENT=production
 
 # Install apt packages
@@ -25,7 +33,7 @@ RUN pip wheel --wheel-dir /usr/src/app/wheels  \
 
 
 # Python 'run' stage
-FROM python as python-run-stage
+FROM python AS python-run-stage
 
 ARG BUILD_ENVIRONMENT=production
 ARG APP_HOME=/app
@@ -85,6 +93,9 @@ RUN chmod +x /start-flower
 
 # copy application code to WORKDIR
 COPY --chown=django:django . ${APP_HOME}
+
+# copy compiled frontend assets from frontend-build-stage
+COPY --from=frontend-build-stage --chown=django:django /app/attendees/static/js/bundles ${APP_HOME}/attendees/static/js/bundles
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
