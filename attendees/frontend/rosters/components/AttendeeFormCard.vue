@@ -20,8 +20,8 @@
               :key="cand.id"
               class="btn-group btn-group-sm rounded-pill border border-danger-subtle shadow-sm me-2 overflow-hidden candidate-pill-group"
               style="font-size: 0.75rem; vertical-align: middle;"
-              :title="getCandidateSubtitle(cand)"
-              @dblclick.prevent="emitAdoptCandidate(cand)"
+              :title="isLinkDisabled(cand) ? getLinkBtnTitle(cand) : getCandidateSubtitle(cand)"
+              @dblclick.prevent="!isLinkDisabled(cand) && emitAdoptCandidate(cand)"
             >
               <a
                 :href="`/persons/attendee/${cand.id}`"
@@ -29,17 +29,19 @@
                 rel="noopener noreferrer"
                 class="btn btn-outline-danger btn-xs py-0 px-2 d-inline-flex align-items-center border-0 bg-white text-danger fw-semibold"
                 style="font-size: 0.75rem; text-decoration: none;"
-                title="Single click: View in new tab; Double click: Link & copy"
+                :title="getCandidateSubtitle(cand)"
                 @click.stop
               >
                 {{ cand.name }} <i class="fas fa-external-link-alt ms-1 text-danger-emphasis" style="font-size: 0.6rem; opacity: 0.75;"></i>
               </a>
               <button
                 type="button"
-                class="btn btn-danger btn-xs py-0 px-2 d-inline-flex align-items-center text-white border-0 link-candidate-btn"
-                style="font-size: 0.72rem;"
-                title="Copy & link to this record"
-                @click.prevent.stop="emitAdoptCandidate(cand)"
+                class="btn btn-xs py-0 px-2 d-inline-flex align-items-center text-white border-0 link-candidate-btn"
+                :class="isLinkDisabled(cand) ? 'btn-secondary' : 'btn-danger'"
+                :disabled="isLinkDisabled(cand)"
+                :style="{ fontSize: '0.72rem', cursor: isLinkDisabled(cand) ? 'not-allowed' : 'pointer' }"
+                :title="getLinkBtnTitle(cand)"
+                @click.prevent.stop="!isLinkDisabled(cand) && emitAdoptCandidate(cand)"
               >
                 <i class="fas fa-link me-1"></i>Link
               </button>
@@ -103,7 +105,7 @@
 
         <div class="col-md-4 col-12">
           <label class="form-label small mb-1 fw-semibold text-secondary att-family-label">
-            <i class="fas fa-home text-secondary me-1"></i>{{ attendeesCount > 1 ? `Attendee ${index + 1} Family` : 'Family' }}
+            {{ attendeesCount > 1 ? `Attendee ${index + 1} Family` : 'Family' }} (Set companion for existing families)
           </label>
           <select v-model="attendee.family_id" class="form-select form-select-sm ob-family">
             <option value="">+ New family (Default)</option>
@@ -322,7 +324,8 @@ import { computed, onMounted } from 'vue';
 import { AttendeeFormItem, FamilyOption } from '../types';
 import {
   getMaxDaysInMonth,
-  getCandidateSubtitle
+  getCandidateSubtitle,
+  getCandidateFamilyId
 } from '../composables/useFastOnboardForm';
 
 const props = defineProps<{
@@ -334,6 +337,9 @@ const props = defineProps<{
   divisionsList: any[];
   attendeeRelationsList: any[];
   availableFamilies: FamilyOption[];
+  hasOtherLinkedFamily?: boolean;
+  linkedFamilyId?: string | null;
+  linkedFamilyName?: string | null;
   gradesList: any[];
   searchEndpoint?: string;
   selectedMeetSlug: string;
@@ -347,6 +353,36 @@ const emit = defineEmits<{
   (e: 'adoptCandidate', cand: any): void;
   (e: 'unlinkCandidate'): void;
 }>();
+
+/**
+ * Checks whether linking a candidate is disabled due to another family already being linked.
+ * The modal allows only one family to be linked at a time.
+ * When another companion or attendee already linked a family, candidate linking is disabled.
+ * @param cand Matched candidate record.
+ */
+const isLinkDisabled = (cand?: any): boolean => {
+  if (props.hasOtherLinkedFamily) {
+    return true;
+  }
+  if (!props.linkedFamilyId) {
+    return false;
+  }
+  const candFamId = cand ? getCandidateFamilyId(cand) : null;
+  return !candFamId || String(candFamId) !== String(props.linkedFamilyId);
+};
+
+/**
+ * Returns tooltip title for candidate's Link button.
+ * Explains reason if disabled.
+ * @param cand Matched candidate record.
+ */
+const getLinkBtnTitle = (cand?: any): string => {
+  if (isLinkDisabled(cand)) {
+    const famName = props.linkedFamilyName ? `the ${props.linkedFamilyName} family` : "other family";
+    return `Cannot link: Only one family can be linked per registration. Unlink ${famName} first.`;
+  }
+  return 'Copy & link to this record';
+};
 
 /**
  * Computes maximum valid days in selected year and month.

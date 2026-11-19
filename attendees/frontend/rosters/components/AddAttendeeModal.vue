@@ -101,6 +101,9 @@
             :divisions-list="divisionsList"
             :attendee-relations-list="attendeeRelationsList"
             :available-families="availableFamilies"
+            :has-other-linked-family="hasOtherLinkedFamilyForAttendee(aIdx)"
+            :linked-family-id="linkedFamilyId"
+            :linked-family-name="linkedFamilyName"
             :grades-list="gradesList"
             :search-endpoint="endpoints.searchAttendees"
             :selected-meet-slug="selectedMeetSlug"
@@ -159,6 +162,9 @@
                 :divisions-list="divisionsList"
                 :companion-relations-list="companionRelationsList"
                 :available-families="availableFamilies"
+                :has-other-linked-family="hasOtherLinkedFamily(cIdx)"
+                :linked-family-id="linkedFamilyId"
+                :linked-family-name="linkedFamilyName"
                 :search-endpoint="endpoints.searchAttendees"
                 :selected-meet-slug="selectedMeetSlug"
                 @remove-companion="onRemoveCompanion"
@@ -246,6 +252,8 @@ const {
   unaccompaniedMinor,
   isSubmitting,
   availableFamilies,
+  linkedFamilyId,
+  linkedFamilyName,
   addAttendee,
   removeAttendee,
   addAttendeeContact,
@@ -587,6 +595,39 @@ const onRemoveCompanion = (idx: number) => {
   } else {
     removeCompanion(idx);
   }
+};
+
+/**
+ * Checks whether any other companion or attendee in the modal already has a linked candidate/family.
+ * Only one family can be linked per registration session.
+ * @param compIdx Current companion card index.
+ */
+const hasOtherLinkedFamily = (compIdx: number): boolean => {
+  const otherCompLinked = companions.value.some((c, idx) =>
+    idx !== compIdx && Boolean(c.attendee_id && (c.family_id || c.linkedCandidate))
+  );
+  if (otherCompLinked) return true;
+
+  const attendeeLinked = attendees.value.some(a =>
+    Boolean(a.attendee_id && (a.family_id || a.linkedCandidate))
+  );
+  return attendeeLinked;
+};
+
+/**
+ * Checks whether any other attendee or companion in the modal already has a linked candidate/family.
+ * @param attIdx Current attendee card index.
+ */
+const hasOtherLinkedFamilyForAttendee = (attIdx: number): boolean => {
+  const otherAttLinked = attendees.value.some((a, idx) =>
+    idx !== attIdx && Boolean(a.attendee_id && (a.family_id || a.linkedCandidate))
+  );
+  if (otherAttLinked) return true;
+
+  const compLinked = companions.value.some(c =>
+    Boolean(c.attendee_id && (c.family_id || c.linkedCandidate))
+  );
+  return compLinked;
 };
 
 /**

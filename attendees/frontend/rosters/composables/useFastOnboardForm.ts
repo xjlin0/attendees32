@@ -118,6 +118,36 @@ export const getCandidateSubtitle = (cand: any): string => {
 };
 
 /**
+ * Resolves the primary family ID from a candidate object.
+ * @param cand Candidate object from search API or linked record.
+ * @returns String family ID or null.
+ */
+export const getCandidateFamilyId = (cand: any): string | null => {
+  if (!cand) return null;
+  if (cand.latest_family_id) return String(cand.latest_family_id);
+  if (Array.isArray(cand.folks)) {
+    const fam = cand.folks.find((f: any) => f.category_id === 0 && f.id);
+    if (fam) return String(fam.id);
+  }
+  return null;
+};
+
+/**
+ * Resolves the primary family display name from a candidate object.
+ * @param cand Candidate object from search API or linked record.
+ * @returns String family name or null.
+ */
+export const getCandidateFamilyName = (cand: any): string | null => {
+  if (!cand) return null;
+  if (cand.latest_family_name) return String(cand.latest_family_name);
+  if (Array.isArray(cand.folks)) {
+    const fam = cand.folks.find((f: any) => f.category_id === 0 && f.name);
+    if (fam) return String(fam.name);
+  }
+  return null;
+};
+
+/**
  * Validates a single contact entry (phone requires >=10 digits, email requires '@' and '.').
  * @param type Contact type (e.g. 'phone', 'email', 'wechat').
  * @param val Contact value string.
@@ -395,6 +425,45 @@ export function useFastOnboardForm(endpoints: Endpoints) {
       return (b.created || '').localeCompare(a.created || '');
     });
     return families;
+  });
+
+  /**
+   * Tracks the currently linked family ID across all companions and attendees in the modal.
+   * Only one family is allowed to be linked at a time.
+   */
+  const linkedFamilyId = computed<string | null>(() => {
+    for (const comp of companions.value) {
+      if (comp.attendee_id) {
+        const fId = getCandidateFamilyId(comp.linkedCandidate) || (comp.family_id && comp.family_id !== '__NEW__' ? String(comp.family_id) : null);
+        if (fId) return fId;
+      }
+    }
+    for (const att of attendees.value) {
+      if (att.attendee_id) {
+        const fId = getCandidateFamilyId(att.linkedCandidate) || (att.family_id && att.family_id !== '__NEW__' ? String(att.family_id) : null);
+        if (fId) return fId;
+      }
+    }
+    return null;
+  });
+
+  /**
+   * Tracks the currently linked family display name for user messaging and tooltips.
+   */
+  const linkedFamilyName = computed<string | null>(() => {
+    for (const comp of companions.value) {
+      if (comp.attendee_id) {
+        const name = getCandidateFamilyName(comp.linkedCandidate);
+        if (name) return name;
+      }
+    }
+    for (const att of attendees.value) {
+      if (att.attendee_id) {
+        const name = getCandidateFamilyName(att.linkedCandidate);
+        if (name) return name;
+      }
+    }
+    return null;
   });
 
   /**
@@ -1013,6 +1082,8 @@ export function useFastOnboardForm(endpoints: Endpoints) {
     unaccompaniedMinor,
     isSubmitting,
     availableFamilies,
+    linkedFamilyId,
+    linkedFamilyName,
     addAttendee,
     removeAttendee,
     addAttendeeContact,
