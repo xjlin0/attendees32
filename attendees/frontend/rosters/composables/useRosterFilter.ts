@@ -94,6 +94,78 @@ export function useRosterFilter(
     }
   };
 
+  /**
+   * Formats recurring schedule rules for selected meets into descriptive help text.
+   * Displays schedule details only when a single meet is selected; returns empty string otherwise.
+   */
+  const formatMeetSchedulesHelpText = (selectedMeets: string[]): string => {
+    if (!selectedMeets || selectedMeets.length !== 1) {
+      return '';
+    }
+
+    const meetSlug = selectedMeets[0];
+    const meet = meetsMap.get(meetSlug);
+    if (!meet) {
+      return '';
+    }
+
+    const timeRules = meet.schedule_rules || [];
+    const noRuleText = 'This meet does not have schedules in EventRelation';
+    if (!timeRules || timeRules.length === 0) {
+      return noRuleText;
+    }
+
+    const newHelpTexts: string[] = [];
+    const meetStart = meet.start ? new Date(meet.start).toDateString() : '';
+    const meetFinish = meet.finish ? new Date(meet.finish).toDateString() : '';
+
+    timeRules.forEach((timeRule: any) => {
+      if (timeRule && timeRule.rule) {
+        const toLocaleStringOpts = (window as any).Attendees?.utilities?.timeRules?.[timeRule.rule] || {
+          weekday: 'long',
+          hour: 'numeric',
+          minute: 'numeric',
+        };
+        const startTime = new Date(timeRule.start);
+        const endTime = new Date(timeRule.end);
+        const startTimeText = !isNaN(startTime.getTime())
+          ? startTime.toLocaleString(navigator.language, toLocaleStringOpts)
+          : '';
+        const endTimeText = !isNaN(endTime.getTime())
+          ? endTime.toLocaleString(navigator.language, toLocaleStringOpts)
+          : '';
+        const locationText = timeRule.location ? `@${timeRule.location}` : '';
+        newHelpTexts.push(`${timeRule.rule} ${startTimeText} ~ ${endTimeText}${locationText}`);
+      } else {
+        newHelpTexts.push(noRuleText);
+      }
+    });
+
+    if (newHelpTexts.length === 0) {
+      return noRuleText;
+    }
+
+    const rangeText = (meetStart && meetFinish) ? ` from ${meetStart} to ${meetFinish}` : '';
+    return newHelpTexts.join(', ') + rangeText;
+  };
+
+  /**
+   * Updates help text on the meets filter item to show schedule information.
+   */
+  const updateMeetsHelpText = (selectedMeets: string[]) => {
+    if (!formInstance) return;
+    const text = formatMeetSchedulesHelpText(selectedMeets);
+    try {
+      formInstance.itemOption('meets', 'helpText', text);
+    } catch (e) {
+      // Ignore if itemOption is not supported on instance
+    }
+    const helpEl = formInstance.element()?.querySelector('.filter-item-meets .dx-field-item-help-text');
+    if (helpEl) {
+      helpEl.textContent = text;
+    }
+  };
+
   const initFilterForm = (filterFormEl: HTMLElement) => {
     formInstance = new (dxForm as any)(filterFormEl, {
       formData: filterData,
@@ -184,6 +256,7 @@ export function useRosterFilter(
               formInstance.itemOption('showSiblings', 'visible', shouldShow);
               formInstance.itemOption('meets', 'colSpan', shouldShow ? 10 : 12);
             }
+            updateMeetsHelpText(selectedMeets);
           }
           if (gridInstanceRef.value && typeof gridInstanceRef.value.columnOption === 'function') {
             gridInstanceRef.value.columnOption('grade', 'visible', shouldShow);
@@ -278,7 +351,12 @@ export function useRosterFilter(
           colSpan: checkHasKidMeet(filterData.meets) ? 10 : 12,
           cssClass: 'filter-item-meets',
           label: { text: 'Meets' },
+          helpText: '',
           editorOptions: {
+            searchEnabled: true,
+            searchExpr: ['display_name', 'slug'],
+            searchMode: 'contains',
+            minSearchLength: 0,
             grouped: true,
             displayExpr: 'display_name',
             valueExpr: 'slug',
@@ -288,7 +366,7 @@ export function useRosterFilter(
               store: new CustomStore({
                 key: 'slug',
                 byKey: (key: string) => {
-                  return { slug: key, display_name: meetsInfoMap.get(key) || key };
+                  return meetsMap.get(key) || { slug: key, display_name: meetsInfoMap.get(key) || key };
                 },
                 load: async () => {
                   const queryParams = new URLSearchParams({
@@ -341,6 +419,7 @@ export function useRosterFilter(
                       formInstance.itemOption('showSiblings', 'visible', shouldShow);
                       formInstance.itemOption('meets', 'colSpan', shouldShow ? 10 : 12);
                     }
+                    updateMeetsHelpText(filterData.meets || []);
                   }
 
                   return rawData;
@@ -368,6 +447,8 @@ export function useRosterFilter(
         }
       ]
     });
+
+    updateMeetsHelpText(filterData.meets || []);
   };
 
   return { initFilterForm, resetFilters };

@@ -342,7 +342,10 @@ export function useAttendanceLogic(
         updateTotalAttendancesCell(rowData, rowIndex, newTotal);
       }
 
-      notify(newCategory === 1 ? 'Check-in cleared' : 'Checked in successfully', newCategory === 1 ? 'info' : 'success', 2000);
+      const attendeeName = rowData?.attendee_name || rowData?.name || '';
+      const actionMsg = newCategory === 1 ? 'Check-in cleared' : 'Checked in successfully';
+      const toastMsg = attendeeName ? `${attendeeName}: ${actionMsg}` : actionMsg;
+      notify(toastMsg, newCategory === 1 ? 'info' : 'success', 2000);
     } catch (err: any) {
       notify(err.message, 'error', WARNING_NOTIFY_TIME);
     } finally {
@@ -608,7 +611,10 @@ export function useAttendanceLogic(
       }
 
       updateGridRowAttendance(rowData, updatedRecord.gathering, normalizedRecord, rowIndex);
-      notify(newFinish ? 'Checked out successfully' : 'Check-out undone', newFinish ? 'success' : 'info', 2000);
+      const attendeeName = rowData?.attendee_name || rowData?.name || '';
+      const actionMsg = newFinish ? 'Checked out successfully' : 'Check-out undone';
+      const toastMsg = attendeeName ? `${attendeeName}: ${actionMsg}` : actionMsg;
+      notify(toastMsg, newFinish ? 'success' : 'info', 2000);
     } catch (err: any) {
       notify(err.message, 'error', WARNING_NOTIFY_TIME);
     }

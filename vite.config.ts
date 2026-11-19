@@ -32,7 +32,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: resolve(__dirname, 'attendees/static/js/bundles'),
+    outDir: resolve(__dirname, 'attendees/static'),
     emptyOutDir: false,
     rollupOptions: {
       input: {
@@ -42,9 +42,14 @@ export default defineConfig({
         // attendances: resolve(__dirname, 'attendees/frontend/attendances/main.ts'),
       },
       output: {
-        entryFileNames: '[name].bundle.js',
-        chunkFileNames: 'chunks/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]',
+        entryFileNames: 'js/bundles/[name].bundle.js',
+        chunkFileNames: 'js/bundles/chunks/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'css/bundles/[name].bundle[extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
         format: 'es',
       },
     },

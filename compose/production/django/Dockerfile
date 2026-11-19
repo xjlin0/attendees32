@@ -96,6 +96,7 @@ COPY --chown=django:django . ${APP_HOME}
 
 # copy compiled frontend assets from frontend-build-stage
 COPY --from=frontend-build-stage --chown=django:django /app/attendees/static/js/bundles ${APP_HOME}/attendees/static/js/bundles
+COPY --from=frontend-build-stage --chown=django:django /app/attendees/static/css/bundles ${APP_HOME}/attendees/static/css/bundles
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}

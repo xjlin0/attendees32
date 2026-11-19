@@ -563,6 +563,52 @@ export function useFastOnboardForm(endpoints: Endpoints) {
   };
 
   /**
+   * Highlights all four name fields with validation error classes (.is-invalid, .dx-invalid)
+   * when none of them is provided.
+   * Clears the invalid styling across all four fields as soon as any of them receives input.
+   */
+  const markNameFieldsInvalid = (blockSelector: string, isCompanion = false) => {
+    const prefix = isCompanion ? '.ob-p-' : '.ob-';
+    const fieldSelectors = [
+      `${blockSelector} ${prefix}first-name`,
+      `${blockSelector} ${prefix}last-name`,
+      `${blockSelector} ${prefix}last-name2`,
+      `${blockSelector} ${prefix}first-name2`
+    ];
+
+    const elements: HTMLElement[] = [];
+    fieldSelectors.forEach((sel) => {
+      const el = document.querySelector(sel) as HTMLElement | null;
+      if (el) {
+        el.classList.add('is-invalid', 'dx-invalid');
+        elements.push(el);
+      }
+    });
+
+    if (elements.length > 0) {
+      elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      try {
+        elements[0].focus();
+      } catch (err) {
+        // Ignore when element is not focusable
+      }
+    }
+
+    const clearAllNameFields = () => {
+      elements.forEach((el) => {
+        el.classList.remove('is-invalid', 'dx-invalid');
+        el.removeEventListener('input', clearAllNameFields);
+        el.removeEventListener('change', clearAllNameFields);
+      });
+    };
+
+    elements.forEach((el) => {
+      el.addEventListener('input', clearAllNameFields, { once: true });
+      el.addEventListener('change', clearAllNameFields, { once: true });
+    });
+  };
+
+  /**
    * Removes validation highlight classes from all elements in the modal.
    */
   const clearAllInvalidFields = () => {
@@ -624,7 +670,7 @@ export function useFastOnboardForm(endpoints: Endpoints) {
 
       if (!firstName && !lastName && !firstName2 && !lastName2) {
         notify(`At least one name (English or other language) is required for ${attLabel}.`, 'warning', WARNING_NOTIFY_TIME);
-        markFieldInvalid(`.attendee-block-${attNum} .ob-first-name`);
+        markNameFieldsInvalid(`.attendee-block-${attNum}`, false);
         return false;
       }
 
@@ -776,7 +822,7 @@ export function useFastOnboardForm(endpoints: Endpoints) {
             if (!hasAnyName || compContacts.length === 0) {
               notify('Companion 1 name and contact information are required.', 'warning', WARNING_NOTIFY_TIME);
               if (!hasAnyName) {
-                markFieldInvalid('.companion-block-1 .ob-p-first-name');
+                markNameFieldsInvalid('.companion-block-1', true);
               } else {
                 markFieldInvalid('.companion-block-1 .ob-p-contact-value');
               }
@@ -785,7 +831,7 @@ export function useFastOnboardForm(endpoints: Endpoints) {
           } else {
             if (!hasAnyName && compContacts.length === 0) {
               notify(`Companion ${compNum} name and contact information are required (or remove it).`, 'warning', WARNING_NOTIFY_TIME);
-              markFieldInvalid(`.companion-block-${compNum} .ob-p-first-name`);
+              markNameFieldsInvalid(`.companion-block-${compNum}`, true);
               return false;
             }
             if (divisionsList.length > 0 && !comp.division_id) {
@@ -796,7 +842,7 @@ export function useFastOnboardForm(endpoints: Endpoints) {
             if (!hasAnyName || compContacts.length === 0) {
               notify(`Companion ${compNum} name and contact information are required.`, 'warning', WARNING_NOTIFY_TIME);
               if (!hasAnyName) {
-                markFieldInvalid(`.companion-block-${compNum} .ob-p-first-name`);
+                markNameFieldsInvalid(`.companion-block-${compNum}`, true);
               } else {
                 markFieldInvalid(`.companion-block-${compNum} .ob-p-contact-value`);
               }
@@ -865,7 +911,7 @@ export function useFastOnboardForm(endpoints: Endpoints) {
 
           if (!hasAnyName) {
             notify(`Companion ${compNum} name is required (or remove it).`, 'warning', WARNING_NOTIFY_TIME);
-            markFieldInvalid(`.companion-block-${compNum} .ob-p-first-name`);
+            markNameFieldsInvalid(`.companion-block-${compNum}`, true);
             return false;
           }
           if (divisionsList.length > 0 && !comp.division_id) {

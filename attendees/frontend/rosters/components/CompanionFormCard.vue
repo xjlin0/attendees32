@@ -155,7 +155,7 @@
         </div>
         <div class="col-md-6 col-12">
           <label class="form-label small mb-1 fw-semibold text-secondary comp-lastname-label">
-            Companion {{ index + 1 }} Last Name (English)
+            Companion {{ index + 1 }} Last Name (English) <span class="text-danger" v-if="index === 0 && isKidMeet">*</span>
           </label>
           <input
             v-model="companion.last_name"
@@ -172,7 +172,7 @@
       <div class="row g-2 mb-2">
         <div class="col-md-6 col-12">
           <label class="form-label small mb-1 fw-semibold text-secondary comp-lastname2-label">
-            Companion {{ index + 1 }} Last Name 2 (Other language)
+            Companion {{ index + 1 }} Last Name 2 (Other language) <span class="text-danger" v-if="index === 0 && isKidMeet">*</span>
           </label>
           <input
             v-model="companion.last_name2"
@@ -185,7 +185,7 @@
         </div>
         <div class="col-md-6 col-12">
           <label class="form-label small mb-1 fw-semibold text-secondary comp-firstname2-label">
-            Companion {{ index + 1 }} First Name 2 (Other language)
+            Companion {{ index + 1 }} First Name 2 (Other language) <span class="text-danger" v-if="index === 0 && isKidMeet">*</span>
           </label>
           <input
             v-model="companion.first_name2"

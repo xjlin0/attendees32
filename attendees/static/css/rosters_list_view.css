@@ -607,6 +607,15 @@ input.form-control.is-invalid {
   animation: shake-invalid 0.3s ease-in-out 1;
 }
 
+/* Schedule rules help text under meets selector */
+.filter-item-meets .dx-field-item-help-text {
+  color: #55595c;
+  font-style: italic;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+
 
 
 

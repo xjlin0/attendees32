@@ -679,7 +679,9 @@
           }
         }
 
-        DevExpress.ui.notify(newCategory !== 1 ? 'Checked in successfully' : 'Check-in undone', 'success', 2000);
+        const attendeeName = rowData && (rowData.attendee_name || rowData.name) || '';
+        const actionMsg = newCategory !== 1 ? 'Checked in successfully' : 'Check-in undone';
+        DevExpress.ui.notify(attendeeName ? `${attendeeName}: ${actionMsg}` : actionMsg, 'success', 2000);
       } catch (err) {
         DevExpress.ui.notify(err.message, 'error', WARNING_NOTIFY_TIME);
       } finally {

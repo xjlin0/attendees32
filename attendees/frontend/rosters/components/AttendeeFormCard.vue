@@ -143,7 +143,7 @@
         </div>
         <div class="col-md-6 col-12">
           <label class="form-label small mb-1 fw-semibold text-secondary att-lastname-label">
-            {{ attendeesCount > 1 ? `Attendee ${index + 1} Last Name (English)` : 'Last Name (English)' }}
+            {{ attendeesCount > 1 ? `Attendee ${index + 1} Last Name (English)` : 'Last Name (English)' }} <span class="text-danger">*</span>
           </label>
           <input
             v-model="attendee.last_name"
@@ -160,7 +160,7 @@
       <div class="row g-2 mb-2">
         <div class="col-md-6 col-12">
           <label class="form-label small mb-1 fw-semibold text-secondary att-lastname2-label">
-            {{ attendeesCount > 1 ? `Attendee ${index + 1} Last Name 2 (Other language)` : 'Last Name 2 (Other language)' }}
+            {{ attendeesCount > 1 ? `Attendee ${index + 1} Last Name 2 (Other language)` : 'Last Name 2 (Other language)' }} <span class="text-danger">*</span>
           </label>
           <input
             v-model="attendee.last_name2"
@@ -173,7 +173,7 @@
         </div>
         <div class="col-md-6 col-12">
           <label class="form-label small mb-1 fw-semibold text-secondary att-firstname2-label">
-            {{ attendeesCount > 1 ? `Attendee ${index + 1} First Name 2 (Other language)` : 'First Name 2 (Other language)' }}
+            {{ attendeesCount > 1 ? `Attendee ${index + 1} First Name 2 (Other language)` : 'First Name 2 (Other language)' }} <span class="text-danger">*</span>
           </label>
           <input
             v-model="attendee.first_name2"

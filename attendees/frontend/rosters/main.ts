@@ -19,6 +19,7 @@ if (typeof window !== 'undefined' && window.addEventListener) {
   };
 }
 
+import './style.css';
 import * as Vue from 'vue';
 
 // DevExtreme UI Widgets
