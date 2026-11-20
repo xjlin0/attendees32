@@ -72,8 +72,8 @@ class TestNoJqueryStaticScan:
     @pytest.mark.parametrize(
         "rel_path",
         [
-            "attendees/static/js/shared/base_without_jquery.js",
-            "attendees/static/js/shared/utilities_without_jquery.js",
+            "attendees/frontend/shared/base.ts",
+            "attendees/frontend/shared/utilities.ts",
             "attendees/static/js/occasions/rosters_list_view.js",
         ],
     )

@@ -57,16 +57,6 @@
       <script defer
               src="{% static 'fontawesome/fontawesome.min.js' %}">
       </script>
-
-    {% compress js %}
-      <script defer
-              src="{% static 'js/shared/base_without_jquery.js' %}">
-      </script>
-      <script defer
-              src="{% static 'js/shared/utilities_without_jquery.js' %}">
-      </script>
-    {% endcompress js %}
-
     {% endblock javascript %}
 
     {% block extra_head %}

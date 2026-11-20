@@ -19,6 +19,9 @@ if (typeof window !== 'undefined' && window.addEventListener) {
   };
 }
 
+import '../shared/base';
+import '../shared/utilities';
+import 'devextreme/dist/css/dx.light.compact.css';
 import './style.css';
 import * as Vue from 'vue';
 

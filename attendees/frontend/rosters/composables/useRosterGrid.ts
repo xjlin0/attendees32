@@ -1357,43 +1357,34 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
           showCheckBoxesMode: 'onLongTap',
         },
         onExporting: async (e) => {
-          const loadScript = (src) => new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.onload = resolve;
-            s.onerror = reject;
-            document.head.appendChild(s);
-          });
+          let excelJsModule = (window as any).ExcelJS;
+          let fileSaver = (window as any).saveAs;
 
-          let excelJs = window.ExcelJS || (typeof ExcelJS !== 'undefined' ? ExcelJS : null);
-          if (!excelJs) {
+          if (!excelJsModule || !fileSaver) {
             try {
-              await loadScript('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js');
-              excelJs = window.ExcelJS;
+              const [excelJsImp, fileSaverImp] = await Promise.all([
+                import('exceljs'),
+                import('file-saver'),
+              ]);
+              excelJsModule = excelJsImp.default || excelJsImp;
+              (window as any).ExcelJS = excelJsModule;
+              fileSaver = fileSaverImp.saveAs || fileSaverImp.default || fileSaverImp;
+              (window as any).saveAs = fileSaver;
             } catch (err) {
-              console.error('Failed to dynamically load ExcelJS:', err);
+              console.error('Failed to dynamically load ExcelJS or FileSaver:', err);
             }
           }
 
-          let fileSaver = window.saveAs || (typeof saveAs !== 'undefined' ? saveAs : null);
-          if (!fileSaver) {
-            try {
-              await loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js');
-              fileSaver = window.saveAs;
-            } catch (err) {
-              console.error('Failed to dynamically load FileSaver:', err);
-            }
-          }
-
-          if (!excelJs || !DevExpress.excelExporter) {
+          const WorkbookCtor = excelJsModule?.Workbook || excelJsModule?.default?.Workbook;
+          if (!WorkbookCtor) {
             DevExpress.ui.notify('ExcelJS library is not loaded', 'error', WARNING_NOTIFY_TIME);
             return;
           }
 
-          const workbook = new excelJs.Workbook();
+          const workbook = new WorkbookCtor();
           const worksheet = workbook.addWorksheet('Rosters');
 
-          DevExpress.excelExporter.exportDataGrid({
+          exportDataGrid({
             component: e.component,
             worksheet,
             selectedRowsOnly: e.selectedRowsOnly,

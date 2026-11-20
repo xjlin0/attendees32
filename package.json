@@ -13,14 +13,25 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install --with-deps chromium"
   },
-  "dependencies": {
+  "_original_dependencies": {
     "devextreme": "23.2.15",
     "devextreme-vue": "23.2.15",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "signature_pad": "^5.1.4",
     "vue": "^3.5.45"
   },
+  "dependencies": {
+    "devextreme": "file:libraries/npm/devextreme-23.2.15.tgz",
+    "devextreme-vue": "file:libraries/npm/devextreme-vue-23.2.15.tgz",
+    "exceljs": "file:libraries/npm/exceljs-4.4.0.tgz",
+    "file-saver": "file:libraries/npm/file-saver-2.0.5.tgz",
+    "signature_pad": "file:libraries/npm/signature_pad-5.1.4.tgz",
+    "vue": "file:libraries/npm/vue-3.5.45.tgz"
+  },
   "devDependencies": {
     "@playwright/test": "1.56.0",
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^22.20.5",
     "@vitejs/plugin-vue": "^5.0.0",
     "typescript": "5.7.2",

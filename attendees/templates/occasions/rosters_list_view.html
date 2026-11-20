@@ -10,46 +10,10 @@
 {% endblock extra_css %}
 
 {% block extra_head %}
-  <!-- DevExtreme 23.2 CSS (external CDN in extra_head to avoid django-compressor) -->
-  <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.2.4/css/dx.light.compact.css">
-
-  <!-- JSZip (for Excel export) -->
-  <script defer
-          src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
-          integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer">
-  </script>
-
-  <!-- ExcelJS (for DevExtreme Excel export) -->
-  <script defer
-          src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"
-          integrity="sha512-UnrKxsCMN9hFk7M56t4I4ckB4N/2HHi0w/7+B/1JsXIX3DmyBcsGpT3/BsuZMZf+6mAr0vP81syWtfynHJ69JA=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer">
-  </script>
-
-  <!-- FileSaver.js (for saving exported Excel files) -->
-  <script defer
-          src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
-          integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer">
-  </script>
-
-  <!-- Vite Bundle: Vue 3 & DevExtreme (ES Module, eliminates dx.web.js & permissions policy violations) -->
+  <!-- Vite Bundle: Vue 3, DevExtreme, and dependencies (ES Module) -->
   <script type="module"
           src="{% static 'js/bundles/rosters.bundle.js' %}">
   </script>
-
-  <!-- Signature Pad (for checkout signature) -->
-  <script defer
-          src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.9/dist/signature_pad.umd.min.js"
-          integrity="sha256-V9L8ML4alT7DUFydZZy5L4hgeRqhv+oj16TmyeMu4m8="
-          crossorigin="anonymous">
-  </script>
-
-  <!-- Application logic bundled into rosters.bundle.js -->
 {% endblock extra_head %}
 
 {% block content %}
