@@ -19,6 +19,7 @@ function eliminateUnloadPlugin(): Plugin {
 }
 
 export default defineConfig({
+  base: '/static/',
   plugins: [vue(), eliminateUnloadPlugin()],
   resolve: {
     alias: {
@@ -47,6 +48,9 @@ export default defineConfig({
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith('.css')) {
             return 'css/bundles/[name].bundle[extname]';
+          }
+          if (/\.(woff2?|ttf|eot)$/.test(assetInfo.name || '')) {
+            return 'fonts/[name][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         },

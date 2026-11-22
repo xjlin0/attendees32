@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './testBase';
 
 test.describe('Attendee Update Page', () => {
 

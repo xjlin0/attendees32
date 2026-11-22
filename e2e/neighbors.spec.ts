@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './testBase';
 
 // Define the URLs we want to test to ensure functional parity during migration.
 // Once you build the Vue version, just add its URL to this array!

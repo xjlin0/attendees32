@@ -1,6 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './testBase';
 
 test.describe('Defensive and Standard 404 Error Pages', () => {
+  test.use({ ignoredErrorPatterns: [/status of 404/] });
 
   test('Should render lightweight 404 page without base navbar before login (no session cookie)', async ({ page }) => {
     // 1. Visit a known public page first to build browsing history for testing history.back()
