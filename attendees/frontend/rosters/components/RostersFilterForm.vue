@@ -214,6 +214,8 @@ const meetsDataSource = new DataSource({
 });
 
 const meetsEditorOptions = {
+  showDropDownButton: true,
+  openOnFieldClick: true,
   grouped: true,
   displayExpr: 'display_name',
   valueExpr: 'slug',

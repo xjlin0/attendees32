@@ -353,6 +353,8 @@ export function useRosterFilter(
           label: { text: 'Meets' },
           helpText: '',
           editorOptions: {
+            showDropDownButton: true,
+            openOnFieldClick: true,
             searchEnabled: true,
             searchExpr: ['display_name', 'slug'],
             searchMode: 'contains',

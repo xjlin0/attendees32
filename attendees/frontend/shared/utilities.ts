@@ -94,7 +94,9 @@ export const validateFastInputPhoneNumber = (val: string): boolean => {
 export const validateFastInputEmail = (val: string): boolean => {
   if (!val || typeof val !== 'string') return false;
   const trimmed = val.trim();
-  return trimmed.length >= 5 && trimmed.includes('.') && trimmed.includes('@');
+  const atIndex = trimmed.indexOf('@');
+  const dotIndex = trimmed.lastIndexOf('.');
+  return trimmed.length >= 5 && atIndex > 0 && dotIndex > atIndex + 1 && dotIndex < trimmed.length - 1;
 };
 
 /**
