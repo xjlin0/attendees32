@@ -145,6 +145,7 @@ typings/
 
 # Output of 'npm pack'
 *.tgz
+!libraries/npm/*.tgz
 
 # Yarn Integrity file
 .yarn-integrity
