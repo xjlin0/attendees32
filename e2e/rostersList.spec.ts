@@ -5,7 +5,7 @@ import { test, expect, Page } from './testBase';
  * Avoids geometric center clicks on tagbox (which hit existing tags instead of opening dropdown),
  * uses the dedicated dropdown editor button, and clears pre-existing tags.
  */
-async function selectMeets(page: Page, count = 1): Promise<string[]> {
+async function selectMeets(page: Page, countOrNames: number | string[] = 1): Promise<string[]> {
   const tagBox = page.locator('.dx-tagbox').first();
   await expect(tagBox).toBeVisible({ timeout: 10000 });
 
@@ -31,6 +31,8 @@ async function selectMeets(page: Page, count = 1): Promise<string[]> {
   }
 
   const selectedNames: string[] = [];
+  const namesToSelect = Array.isArray(countOrNames) ? countOrNames : null;
+  const count = namesToSelect ? namesToSelect.length : countOrNames;
 
   for (let i = 0; i < count; i++) {
     const listItems = page.locator('.dx-list-item:visible');
@@ -44,7 +46,10 @@ async function selectMeets(page: Page, count = 1): Promise<string[]> {
       await page.locator('.dx-list-item').first().waitFor({ state: 'visible', timeout: 15000 });
     }
 
-    const targetItem = page.locator('.dx-list-item:visible').nth(i);
+    const targetItem = namesToSelect
+      ? page.locator('.dx-list-item:visible').filter({ hasText: namesToSelect[i] }).first()
+      : page.locator('.dx-list-item:visible').nth(i);
+
     await targetItem.waitFor({ state: 'visible', timeout: 5000 });
     const text = (await targetItem.innerText()).trim();
     selectedNames.push(text);
@@ -1195,6 +1200,46 @@ test.describe('Rosters List Page', () => {
 
     // Verify popup closes successfully without complaining about companion contact
     await expect(popupWrapper).toBeHidden({ timeout: 15000 });
+  });
+
+  test('Should support server-side pagination and request new pages with skip and take', async ({ page }) => {
+    // 1. Go to the rosters list page
+    await page.goto('/occasions/rosters/');
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // 2. Select meets that have >10 attendees in ci_seed.json
+    await selectMeets(page, ['通訊錄 directory', '中文詩班 Chinese choir']);
+
+    // 3. Wait for datagrid to load rows
+    const dataGrid = page.locator('#rosters-datagrid-container .dx-datagrid');
+    await expect(dataGrid).toBeVisible({ timeout: 15000 });
+    await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // 4. Click page 2 button and verify server-side fetch with skip=10
+    const page2Btn = page.locator('.dx-page').filter({ hasText: '2' }).first();
+    await expect(page2Btn).toBeVisible({ timeout: 5000 });
+    const page2Fetch = page.waitForResponse(
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('skip=10') && resp.status() === 200
+    );
+    await page2Btn.click();
+    const resp = await page2Fetch;
+    const json = await resp.json();
+    expect(json.totalCount).toBeGreaterThanOrEqual(10);
+
+    // Verify page 2 has rendered rows
+    await expect(dataGrid.locator('.dx-data-row').first()).toBeVisible({ timeout: 10000 });
+    expect(await dataGrid.locator('.dx-data-row').count()).toBeGreaterThan(0);
+
+    // 5. Change page size to 20 and verify server-side fetch with take=20
+    const pageSize20 = page.locator('.dx-page-size').filter({ hasText: '20' }).first();
+    await expect(pageSize20).toBeVisible({ timeout: 5000 });
+    const page20Fetch = page.waitForResponse(
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('take=20') && resp.status() === 200
+    );
+    await pageSize20.click();
+    await page20Fetch;
+    await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
   });
 });
 
