@@ -1111,7 +1111,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
             const savedGridState = JSON.parse(window.sessionStorage.getItem(Attendees.utilities.datagridStorageKeys['rostersListView']) || '{}');
             const currentTake = (savedGridState && typeof savedGridState.pageSize === 'number') 
               ? savedGridState.pageSize 
-              : (gridInstanceRef.value && typeof gridInstanceRef.value.pageSize === 'function' ? gridInstanceRef.value.pageSize() : 10);
+              : (gridInstanceRef.value && typeof gridInstanceRef.value.pageSize === 'function' ? gridInstanceRef.value.pageSize() : 40);
 
             const queryParams = new URLSearchParams();
             filterData.meets.forEach(meet => queryParams.append('meets[]', meet));
@@ -1120,7 +1120,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
             if (isValidDate(filterData.endDate)) queryParams.set('finish', new Date(filterData.endDate).toISOString());
 
             queryParams.set('skip', 0);
-            queryParams.set('take', currentTake || 10);
+            queryParams.set('take', currentTake || 40);
 
             const response = await fetch(`${endpoints.rosters}?${queryParams.toString()}`);
             if (!response.ok) throw new Error('Network response was not ok');
@@ -1149,7 +1149,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
                     const cached = preloadedData;
                     preloadedData = null;
                     const rows = cached.data || cached.rows || [];
-                    const takeCount = loadOptions.take || currentTake || 10;
+                    const takeCount = loadOptions.take || currentTake || 40;
                     isStoreLoadCompleted = true;
                     return {
                       data: (takeCount && rows.length > takeCount) ? rows.slice(0, takeCount) : rows,
@@ -1164,7 +1164,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
                   if (isValidDate(filterData.endDate)) pageParams.set('finish', new Date(filterData.endDate).toISOString());
 
                   pageParams.set('skip', loadOptions.skip || 0);
-                  pageParams.set('take', loadOptions.take || currentTake || 10);
+                  pageParams.set('take', loadOptions.take || currentTake || 40);
 
                   if (loadOptions.requireTotalCount !== undefined) {
                     pageParams.set('requireTotalCount', loadOptions.requireTotalCount);
@@ -1337,7 +1337,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
         },
         paging: {
           enabled: true,
-          pageSize: 10,
+          pageSize: 40,
         },
         pager: {
           visible: true,

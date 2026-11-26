@@ -1225,29 +1225,29 @@ test.describe('Rosters List Page', () => {
     await expect(dataGrid).toBeVisible({ timeout: 15000 });
     await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
 
-    // 4. Click page 2 button and verify server-side fetch with skip=10
+    // 4. Click page 2 button and verify server-side fetch with skip=40 (default pageSize is 40)
     const page2Btn = page.locator('.dx-page').filter({ hasText: '2' }).first();
     await expect(page2Btn).toBeVisible({ timeout: 5000 });
     const page2Fetch = page.waitForResponse(
-      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('skip=10') && resp.status() === 200
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('skip=40') && resp.status() === 200
     );
     await page2Btn.click();
     const resp = await page2Fetch;
     const json = await resp.json();
-    expect(json.totalCount).toBeGreaterThanOrEqual(10);
+    expect(json.totalCount).toBeGreaterThanOrEqual(40);
 
     // Verify page 2 has rendered rows
     await expect(dataGrid.locator('.dx-data-row').first()).toBeVisible({ timeout: 10000 });
     expect(await dataGrid.locator('.dx-data-row').count()).toBeGreaterThan(0);
 
-    // 5. Change page size to 20 and verify server-side fetch with take=20
-    const pageSize20 = page.locator('.dx-page-size').filter({ hasText: '20' }).first();
-    await expect(pageSize20).toBeVisible({ timeout: 5000 });
-    const page20Fetch = page.waitForResponse(
-      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('take=20') && resp.status() === 200
+    // 5. Change page size to 100 and verify server-side fetch with take=100
+    const pageSize100 = page.locator('.dx-page-size').filter({ hasText: '100' }).first();
+    await expect(pageSize100).toBeVisible({ timeout: 5000 });
+    const page100Fetch = page.waitForResponse(
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('take=100') && resp.status() === 200
     );
-    await pageSize20.click();
-    await page20Fetch;
+    await pageSize100.click();
+    await page100Fetch;
     await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
   });
 

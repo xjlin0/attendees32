@@ -312,17 +312,47 @@ export function useAttendanceLogic(
 
       // Mutate button DOM if provided
       if (domElements?.checkInBtn) {
-        if (newCategory === 1) {
-          domElements.checkInBtn.className = 'roster-btn';
-          domElements.checkInBtn.innerText = 'Check In';
-          if (domElements.outBtn) {
-            domElements.outBtn.style.display = 'none';
+        if (newCategory !== 1) {
+          if (targetAm && gathering && gathering.start) {
+            const gStart = new Date(gathering.start);
+            const amFinish = targetAm.finish ? new Date(targetAm.finish) : null;
+            if (!amFinish || gStart > amFinish) {
+              const endOfDay = new Date(gathering.start);
+              endOfDay.setHours(23, 59, 59, 999);
+              targetAm.finish = endOfDay.toISOString();
+            }
+          } else if (!targetAm && gathering) {
+            const endOfDay = gathering.start ? new Date(gathering.start) : new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+            const newAm: any = {
+              attending_id: attendingId,
+              meet_id: gathering.meet_id,
+              character_id: characterId,
+              start: gathering.start || new Date().toISOString(),
+              finish: endOfDay.toISOString(),
+            };
+            if (!rowData.attendingmeets) rowData.attendingmeets = [];
+            rowData.attendingmeets.push(newAm);
           }
-        } else {
+
           domElements.checkInBtn.className = 'roster-btn checked-in';
           domElements.checkInBtn.innerText = 'Checked In';
           if (domElements.outBtn) {
             domElements.outBtn.style.display = '';
+            if (normalizedRecord.finish) {
+              domElements.outBtn.className = 'roster-btn roster-btn-out checked-out';
+              domElements.outBtn.innerText = 'Checked Out';
+            } else {
+              domElements.outBtn.className = 'roster-btn roster-btn-out';
+              domElements.outBtn.innerText = 'Out';
+            }
+          }
+        } else {
+          const amStatus = getAttendingMeetStatus(rowData, gathering);
+          domElements.checkInBtn.className = (amStatus === 'active') ? 'roster-btn' : 'roster-btn roster-btn-normal';
+          domElements.checkInBtn.innerText = 'Check In';
+          if (domElements.outBtn) {
+            domElements.outBtn.style.display = 'none';
             domElements.outBtn.className = 'roster-btn roster-btn-out';
             domElements.outBtn.innerText = 'Out';
           }
@@ -340,6 +370,30 @@ export function useAttendanceLogic(
         const newTotal = Math.max(0, (rowData.total_attendances || 0) - 1);
         rowData.total_attendances = newTotal;
         updateTotalAttendancesCell(rowData, rowIndex, newTotal);
+      }
+
+      // Dynamically adjust column width: expand to 150px on check-in, shrink to 100px if all checked out
+      if (gridInstanceRef.value && colName) {
+        if (newCategory !== 1) {
+          const curWidth = gridInstanceRef.value.columnOption(colName, 'width');
+          if (curWidth !== 150) {
+            gridInstanceRef.value.columnOption(colName, 'width', 150);
+            gridInstanceRef.value.columnOption(colName, 'minWidth', 150);
+          }
+        } else {
+          const currentGId = gathering?.id || gatheringId;
+          let anyOtherCheckedIn = false;
+          const visibleRows = typeof gridInstanceRef.value.getVisibleRows === 'function' ? gridInstanceRef.value.getVisibleRows() : null;
+          if (visibleRows && currentGId) {
+            anyOtherCheckedIn = visibleRows.some((vr: any) =>
+              vr.data && vr.data !== rowData && isCheckedIn(vr.data, currentGId)
+            );
+          }
+          if (!anyOtherCheckedIn) {
+            gridInstanceRef.value.columnOption(colName, 'width', 100);
+            gridInstanceRef.value.columnOption(colName, 'minWidth', 100);
+          }
+        }
       }
 
       const attendeeName = rowData?.attendee_name || rowData?.name || '';

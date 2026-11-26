@@ -168,7 +168,7 @@
             v-model="attendee.last_name2"
             type="text"
             class="form-control form-control-sm ob-last-name2"
-            placeholder="姓氏 (e.g., 李)"
+            placeholder="Chinese last name"
             autocomplete="off"
             @input="onNameInput"
           />
@@ -181,7 +181,7 @@
             v-model="attendee.first_name2"
             type="text"
             class="form-control form-control-sm ob-first-name2"
-            placeholder="名字 (e.g., 小明)"
+            placeholder="Chinese first name"
             autocomplete="off"
             @input="onNameInput"
           />
