@@ -38,6 +38,7 @@
       :get-highlighted-gathering="getHighlightedGathering"
       :highlight-gathering-column="highlightGatheringColumn"
       :set-last-newcomer="setLastNewcomer"
+      :locate-attendee-in-grid="locateAttendeeInGrid"
     />
   </div>
 </template>
@@ -130,7 +131,8 @@ const {
   highlightGatheringColumn,
   setLastNewcomer,
   clearLastNewcomer,
-  getLastNewcomer
+  getLastNewcomer,
+  locateAttendeeInGrid
 } = useRosterGrid(
   endpoints,
   filterData,

@@ -61,7 +61,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
       renderFooterNewcomer();
     };
 
-    const locateAttendeeInGrid = (newcomer) => {
+    const locateAttendeeInGrid = async (newcomer) => {
       if (!gridInstanceRef.value || !newcomer) return;
       if (!filterData.meets || filterData.meets.length === 0) {
         DevExpress.ui.notify({
@@ -79,9 +79,10 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
         });
         return;
       }
-      const rawId = newcomer.id != null ? newcomer.id : newcomer.attendee_id;
+      const rawId = newcomer.attendee_id != null ? newcomer.attendee_id : (newcomer.id != null ? newcomer.id : newcomer.attending_id);
       const numId = Number(rawId);
       const targetId = !isNaN(numId) ? numId : rawId;
+      const displayName = newcomer.name || `${newcomer.first_name || ''} ${newcomer.last_name || ''}`.trim() || 'Attendee';
 
       const getRowIndex = () => {
         let idx = gridInstanceRef.value.getRowIndexByKey(targetId);
@@ -116,19 +117,21 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
       const rowIndex = getRowIndex();
       if (rowIndex >= 0) {
         applySelectionAndVisuals();
-        DevExpress.ui.notify(`Located: ${newcomer.name}. Clear search bar to show all attendees.`, 'success', 2000);
+        DevExpress.ui.notify(`Located: ${displayName}`, 'success', 2000);
         return;
       }
 
-      // 2. If not on current page, filter grid to this newcomer
+      // 2. If not on current page, filter grid to this attendee using searchByText
       if (typeof gridInstanceRef.value.searchByText === 'function') {
         const onContentReady = () => {
           gridInstanceRef.value.off('contentReady', onContentReady);
-          applySelectionAndVisuals();
+          setTimeout(() => {
+            applySelectionAndVisuals();
+          }, 100);
         };
         gridInstanceRef.value.on('contentReady', onContentReady);
-        gridInstanceRef.value.searchByText(newcomer.name);
-        DevExpress.ui.notify(`Filtered roster for: ${newcomer.name}`, 'info', 2500);
+        gridInstanceRef.value.searchByText(displayName);
+        DevExpress.ui.notify(`Filtered roster for: ${displayName}`, 'info', 2500);
       }
     };
 
@@ -147,6 +150,11 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
 
       const gradeText = (newcomer.grade !== '' && newcomer.grade !== undefined && newcomer.grade !== null)
         ? (window.Attendees?.utilities?.gradeNames ? window.Attendees.utilities.gradeNames[newcomer.grade] || `Grade ${newcomer.grade}` : `Grade ${newcomer.grade}`)
+        : '';
+
+      const attendeeId = newcomer.attendee_id || newcomer.id;
+      const infoLinkHtml = attendeeId
+        ? `<u><a href="/persons/attendee/${attendeeId}" target="_blank" class="attendee-info-link me-1" title="Click to open a new page of attendee info">(Info)</a></u>`
         : '';
 
       newcomerPopupInstance = new DevExpress.ui.dxPopup(container, {
@@ -178,7 +186,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
                   <i class="fas fa-user-check"></i>
                 </div>
                 <div class="flex-grow-1 overflow-hidden">
-                  <div class="fw-bold text-truncate fs-6" title="${escapeHtml(newcomer.name)}">${escapeHtml(newcomer.name)}</div>
+                  <div class="fw-bold text-truncate fs-6" title="${escapeHtml(newcomer.name)}">${infoLinkHtml}${escapeHtml(newcomer.name)}</div>
                   <div class="text-muted small">${escapeHtml(newcomer.gender || '')}${gradeText ? ` · ${escapeHtml(gradeText)}` : ''}</div>
                 </div>
               </div>
@@ -240,7 +248,6 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
 
         targetEl.innerHTML = `
           <div class="roster-footer-newcomer-pill" title="Last added record, click to view details">
-            <i class="fas fa-address-card text-warning me-1"></i>
             <span class="roster-footer-newcomer-name">${escapeHtml(lastNewcomer.name || 'New Attendee')}</span>
             <span class="badge bg-success text-white ms-1 px-1 py-0" style="font-size: 0.7em;" title="Checked in"><i class="fas fa-check"></i></span>
             <button type="button" class="roster-footer-newcomer-close ms-2" aria-label="Dismiss" title="Dismiss">&times;</button>
@@ -1583,6 +1590,7 @@ export function useRosterGrid(endpoints, filterData, gridInstanceRef, attendance
       highlightGatheringColumn,
       setLastNewcomer,
       clearLastNewcomer,
-      getLastNewcomer: () => lastNewcomer
+      getLastNewcomer: () => lastNewcomer,
+      locateAttendeeInGrid
     };
   }

@@ -242,6 +242,7 @@ const props = defineProps<{
   getHighlightedGathering?: () => any;
   highlightGatheringColumn?: (colIndex: number) => void;
   setLastNewcomer?: (newcomer: any) => void;
+  locateAttendeeInGrid?: (attendee: any) => void;
 }>();
 
 // Form management composable
@@ -676,27 +677,33 @@ const unlinkCandidate = async (item: any) => {
 };
 
 /**
- * Locates and searches for a candidate attendee inside the main DataGrid.
+ * Locates a candidate attendee inside the main DataGrid without polluting the search bar.
  * @param cand Candidate object.
  */
 const locateCandidateInRoster = async (cand: any) => {
   close();
+  if (typeof props.locateAttendeeInGrid === 'function') {
+    props.locateAttendeeInGrid(cand);
+    return;
+  }
+
   const grid = (props.gridInstanceRef && typeof props.gridInstanceRef.searchByText === 'function')
     ? props.gridInstanceRef
     : (props.gridInstanceRef?.value && typeof props.gridInstanceRef.value.searchByText === 'function')
       ? props.gridInstanceRef.value
       : (window as any).DevExpress?.ui?.dxDataGrid?.getInstance(document.getElementById('rosters-datagrid-container'));
 
+  const candId = cand.attending_id || cand.id;
   const targetName = (cand.name || `${cand.first_name || ''} ${cand.last_name || ''}`).replace(/\s+/g, ' ').trim();
 
   if (grid && typeof grid.searchByText === 'function') {
-    grid.searchByText(targetName);
-
-    const candId = cand.attending_id || cand.id;
-    if (candId && typeof grid.selectRows === 'function') {
-      try {
-        await grid.selectRows([candId], false);
-        if (typeof grid.getRowIndexByKey === 'function') {
+    const onContentReady = () => {
+      grid.off('contentReady', onContentReady);
+      setTimeout(() => {
+        if (candId && typeof grid.selectRows === 'function') {
+          grid.selectRows([candId], false);
+        }
+        if (candId && typeof grid.getRowIndexByKey === 'function') {
           const rIdx = grid.getRowIndexByKey(candId);
           if (rIdx >= 0 && typeof grid.getRowElement === 'function') {
             const rowEl = grid.getRowElement(rIdx);
@@ -710,13 +717,15 @@ const locateCandidateInRoster = async (cand: any) => {
             }
           }
         }
-      } catch (e) {
-        console.warn('Error selecting located candidate row:', e);
-      }
-    }
+      }, 100);
+    };
+    grid.on('contentReady', onContentReady);
+    grid.searchByText(targetName);
+    notify(`Filtered roster for: ${targetName}`, 'info', SUCCESS_NOTIFY_TIME);
+    return;
   }
 
-  notify(`Located in roster: ${targetName}. Clear search bar to show all attendees.`, 'info', SUCCESS_NOTIFY_TIME);
+  notify(`Located: ${targetName}`, 'info', SUCCESS_NOTIFY_TIME);
 };
 
 /**
@@ -1029,8 +1038,19 @@ const open = async () => {
   const gatherings = await loadMeetGatherings(selectedMeetSlug.value, m ? m.id : null, props.endpoints.gatherings);
   meetGatherings.value = gatherings;
 
-  if (highlighted && highlighted.id && gatherings.some(g => String(g.id) === String(highlighted.id))) {
-    selectedGatheringId.value = String(highlighted.id);
+  let matchedGathering: Gathering | null = null;
+  if (highlighted) {
+    matchedGathering = gatherings.find((g: Gathering) => {
+      if (highlighted.id && g.id && String(g.id) === String(highlighted.id)) return true;
+      if (highlighted.start && g.start) {
+        return Math.abs(new Date(g.start).getTime() - new Date(highlighted.start).getTime()) < 60000;
+      }
+      return false;
+    }) || null;
+  }
+
+  if (matchedGathering) {
+    selectedGatheringId.value = matchedGathering.id ? String(matchedGathering.id) : (matchedGathering.start ? `start_${matchedGathering.start}` : null);
   } else {
     const upcoming = getUpcomingOrOngoingGathering(gatherings);
     selectedGatheringId.value = upcoming ? (upcoming.id ? String(upcoming.id) : (upcoming.start ? `start_${upcoming.start}` : null)) : (gatherings.length > 0 ? (gatherings[0].id ? String(gatherings[0].id) : (gatherings[0].start ? `start_${gatherings[0].start}` : null)) : null);

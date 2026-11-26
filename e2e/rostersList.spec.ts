@@ -831,6 +831,7 @@ test.describe('Rosters List Page', () => {
     const newcomerPill = page.locator('.roster-footer-newcomer-pill').first();
     await expect(newcomerPill).toBeVisible({ timeout: 10000 });
     await expect(newcomerPill).toContainText(uniqueFirstName);
+    await expect(newcomerPill.locator('.fa-address-card')).toHaveCount(0);
 
     // Verify Attendance label in footer
     const attendanceFooterLabel = page.locator('.roster-footer-label-cell').first();
@@ -838,6 +839,14 @@ test.describe('Rosters List Page', () => {
 
     // Click newcomer pill to open details card and locate in roster
     await newcomerPill.click();
+
+    // Verify (Info) link in Newcomer Added modal
+    const newcomerInfoLink = page.locator('.newcomer-card-popup a.attendee-info-link');
+    await expect(newcomerInfoLink).toBeVisible({ timeout: 5000 });
+    await expect(newcomerInfoLink).toHaveText('(Info)');
+    await expect(newcomerInfoLink).toHaveAttribute('href', /\/persons\/attendee\/.+/);
+    await expect(newcomerInfoLink).toHaveAttribute('target', '_blank');
+
     const locateBtn = page.locator('.btn-locate-in-roster');
     await expect(locateBtn).toBeVisible({ timeout: 5000 });
     await locateBtn.click();
@@ -1240,6 +1249,93 @@ test.describe('Rosters List Page', () => {
     await pageSize20.click();
     await page20Fetch;
     await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+  });
+
+  test('Should filter roster via searchByText when attendee is on another page and locate in roster is clicked', async ({ page }) => {
+    // 1. Go to rosters list page
+    await page.goto('/occasions/rosters/');
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // 2. Select meets with > 10 items so there is a page 2
+    await selectMeets(page, 1);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // Click "+ Attendee" button
+    const addAttendeeBtn = page.locator('button.add-attendee, a.add-attendee').first();
+    await addAttendeeBtn.click();
+
+    // 3. Search for a unique newcomer starting with Zzz so they sort to page 2
+    const uniqueLastName = `Zzz${Date.now()}`;
+    const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+    await searchInput.fill(uniqueLastName);
+    await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
+
+    // 4. Switch to onboard form
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn').first();
+    await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
+    await switchToOnboardBtn.click();
+
+    // Fill attendee details (First name Zack, Last name starting with Zzz)
+    const fnInput = page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-first-name');
+    const lnInput = page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-last-name');
+    await fnInput.fill('Zack');
+    await lnInput.fill(uniqueLastName);
+
+    // Gender
+    const genderSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-gender');
+    await genderSelect.selectOption('MALE');
+
+    // Division if visible
+    const divSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-division');
+    if (await divSelect.isVisible()) {
+      const currentDivVal = await divSelect.inputValue();
+      if (!currentDivVal) {
+        const divOptions = await divSelect.locator('option').all();
+        if (divOptions.length > 1) {
+          await divSelect.selectOption({ index: 1 });
+        }
+      }
+    }
+
+    // Submit form
+    await page.locator('.add-attendee-popup-wrapper button.ob-submit-btn').click();
+    await expect(page.locator('.add-attendee-popup-wrapper')).toBeHidden({ timeout: 15000 });
+
+    // 5. Verify the footer newcomer pill shows the newly added attendee
+    const newcomerPill = page.locator('.roster-footer-newcomer-pill').first();
+    await expect(newcomerPill).toBeVisible({ timeout: 10000 });
+    await expect(newcomerPill).toContainText(uniqueLastName);
+
+    // Grid starts on page 1
+    const activePage1 = page.locator('.dx-page.dx-selection');
+    await expect(activePage1).toHaveText('1');
+
+    // 6. Click newcomer pill to open details card and click "Locate in Roster"
+    await newcomerPill.click();
+    const locateBtn = page.locator('.btn-locate-in-roster');
+    await expect(locateBtn).toBeVisible({ timeout: 5000 });
+
+    // Expect search-by-text filtering request
+    const searchRequest = page.waitForResponse(
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.status() === 200
+    );
+
+    await locateBtn.click();
+    await searchRequest;
+
+    // 7. Verify search panel is populated with attendee name
+    const searchPanelInput = page.locator('.dx-datagrid-search-panel input.dx-texteditor-input');
+    await expect(searchPanelInput).toHaveValue(new RegExp(uniqueLastName), { timeout: 10000 });
+
+    // 8. Verify the attendee row is selected on the filtered grid
+    const selectedRow = page.locator('.dx-datagrid-rowsview .dx-data-row.dx-selection').first();
+    await expect(selectedRow).toBeVisible({ timeout: 10000 });
+    await expect(selectedRow).toContainText(uniqueLastName);
   });
 });
 
