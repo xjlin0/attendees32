@@ -1212,6 +1212,11 @@ test.describe('Rosters List Page', () => {
   });
 
   test('Should support server-side pagination and request new pages with skip and take', async ({ page }) => {
+    // Pre-seed sessionStorage with pageSize: 10 so grid requests pages of 10 items in ci_seed
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('rostersListView', JSON.stringify({ pageSize: 10 }));
+    });
+
     // 1. Go to the rosters list page
     await page.goto('/occasions/rosters/');
     const appContainer = page.locator('#app');
@@ -1225,16 +1230,16 @@ test.describe('Rosters List Page', () => {
     await expect(dataGrid).toBeVisible({ timeout: 15000 });
     await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
 
-    // 4. Click page 2 button and verify server-side fetch with skip=40 (default pageSize is 40)
+    // 4. Click page 2 button and verify server-side fetch with skip=10
     const page2Btn = page.locator('.dx-page').filter({ hasText: '2' }).first();
     await expect(page2Btn).toBeVisible({ timeout: 5000 });
     const page2Fetch = page.waitForResponse(
-      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('skip=40') && resp.status() === 200
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('skip=10') && resp.status() === 200
     );
     await page2Btn.click();
     const resp = await page2Fetch;
     const json = await resp.json();
-    expect(json.totalCount).toBeGreaterThanOrEqual(40);
+    expect(json.totalCount).toBeGreaterThanOrEqual(10);
 
     // Verify page 2 has rendered rows
     await expect(dataGrid.locator('.dx-data-row').first()).toBeVisible({ timeout: 10000 });
@@ -1252,13 +1257,18 @@ test.describe('Rosters List Page', () => {
   });
 
   test('Should filter roster via searchByText when attendee is on another page and locate in roster is clicked', async ({ page }) => {
+    // Pre-seed sessionStorage with pageSize: 10 so grid only shows 10 items per page and newcomer will be on page 2
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('rostersListView', JSON.stringify({ pageSize: 10 }));
+    });
+
     // 1. Go to rosters list page
     await page.goto('/occasions/rosters/');
     const appContainer = page.locator('#app');
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // 2. Select meets with > 10 items so there is a page 2
-    await selectMeets(page, 1);
+    await selectMeets(page, ['通訊錄 directory']);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
