@@ -1,9 +1,13 @@
 {
-  "name": "attendees32-e2e",
-  "version": "0.0.0",
+  "name": "attendees32",
+  "version": "1.3.1",
   "private": true,
-  "description": "Playwright end-to-end suite for attendees32, driven against the golden congregation",
+  "description": "Activities/Attendees Management",
   "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:webkit": "playwright test --project=webkit",
@@ -11,9 +15,31 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install --with-deps chromium"
   },
+  "_original_dependencies": {
+    "devextreme": "23.2.15",
+    "devextreme-vue": "23.2.15",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
+    "signature_pad": "^5.1.4",
+    "vue": "^3.5.45"
+  },
+  "dependencies": {
+    "devextreme": "file:libraries/npm/devextreme-23.2.15.tgz",
+    "devextreme-vue": "file:libraries/npm/devextreme-vue-23.2.15.tgz",
+    "exceljs": "file:libraries/npm/exceljs-4.4.0.tgz",
+    "file-saver": "file:libraries/npm/file-saver-2.0.5.tgz",
+    "signature_pad": "file:libraries/npm/signature_pad-5.1.4.tgz",
+    "vue": "file:libraries/npm/vue-3.5.45.tgz"
+  },
   "devDependencies": {
     "@playwright/test": "1.56.0",
-    "@types/node": "22.10.2",
-    "typescript": "5.7.2"
+    "@types/file-saver": "^2.0.7",
+    "@types/node": "^22.20.5",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/test-utils": "^2.6.0",
+    "happy-dom": "^15.11.7",
+    "typescript": "5.7.2",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.9"
   }
 }

@@ -23,6 +23,12 @@ jobs:
     - name: Install Node dependencies
       run: npm ci
 
+    - name: Build frontend bundles
+      run: npm run build
+
+    - name: Run Vue unit tests
+      run: npm run test:unit
+
     - name: Install Playwright Browsers
       timeout-minutes: 15
       run: npx playwright install --with-deps chromium

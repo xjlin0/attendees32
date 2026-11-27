@@ -1,4 +1,72 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from './testBase';
+
+/**
+ * Helper to reliably select meets from dxTagBox.
+ * Avoids geometric center clicks on tagbox (which hit existing tags instead of opening dropdown),
+ * uses the dedicated dropdown editor button, and clears pre-existing tags.
+ */
+async function selectMeets(page: Page, countOrNames: number | string[] = 1): Promise<string[]> {
+  const tagBox = page.locator('.dx-tagbox').first();
+  await expect(tagBox).toBeVisible({ timeout: 10000 });
+
+  // Wait briefly for Vue reactive state and initial lookups to settle
+  await page.waitForTimeout(500);
+
+  // Remove any pre-existing tags to guarantee a clean state
+  const existingTags = tagBox.locator('.dx-tag');
+  if ((await existingTags.count()) > 0) {
+    await tagBox.hover();
+    const clearBtn = tagBox.locator('.dx-clear-button-area');
+    if (await clearBtn.isVisible()) {
+      await clearBtn.click();
+      await page.waitForTimeout(200);
+    } else {
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const removeBtns = tagBox.locator('.dx-tag-remove-button');
+        if ((await removeBtns.count()) === 0) break;
+        await removeBtns.first().click();
+        await page.waitForTimeout(100);
+      }
+    }
+  }
+
+  const selectedNames: string[] = [];
+  const namesToSelect = Array.isArray(countOrNames) ? countOrNames : null;
+  const count = namesToSelect ? namesToSelect.length : countOrNames;
+
+  for (let i = 0; i < count; i++) {
+    const listItems = page.locator('.dx-list-item:visible');
+    if ((await listItems.count()) === 0) {
+      const dropdownBtn = tagBox.locator('.dx-dropdowneditor-button');
+      if (await dropdownBtn.isVisible()) {
+        await dropdownBtn.click();
+      } else {
+        await tagBox.click();
+      }
+      await page.locator('.dx-list-item').first().waitFor({ state: 'visible', timeout: 15000 });
+    }
+
+    const targetItem = namesToSelect
+      ? page.locator('.dx-list-item:visible').filter({ hasText: namesToSelect[i] }).first()
+      : page.locator('.dx-list-item:visible').nth(i);
+
+    await targetItem.waitFor({ state: 'visible', timeout: 5000 });
+    const text = (await targetItem.innerText()).trim();
+    selectedNames.push(text);
+    await targetItem.click();
+
+    // Brief delay to allow DevExtreme state updates and animation to settle
+    await page.waitForTimeout(300);
+  }
+
+  // Ensure dropdown is closed by clicking outside
+  if ((await page.locator('.dx-list-item:visible').count()) > 0) {
+    await page.mouse.click(0, 0);
+    await page.waitForTimeout(200);
+  }
+
+  return selectedNames;
+}
 
 test.describe('Rosters List Page', () => {
 
@@ -9,6 +77,15 @@ test.describe('Rosters List Page', () => {
     });
     page.on('pageerror', err => {
       console.error(`BROWSER ERROR: ${err.message}`);
+    });
+
+    // Clear sessionStorage before each navigation to avoid state leakage across tests
+    await page.addInitScript(() => {
+      try {
+        window.sessionStorage.clear();
+      } catch (e) {
+        // Ignore if storage is inaccessible
+      }
     });
 
     console.log('--- STARTING LOGIN FLOW ---');
@@ -56,17 +133,7 @@ test.describe('Rosters List Page', () => {
     await page.waitForTimeout(500);
 
     // 4. Select a meet from the dxTagBox
-    // Wait for the tag box input to be ready
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    
-    // Wait for the list items to render and select the first available item
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    
-    // Click outside to close the dropdown if needed
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     // 4. Wait for the DataGrid to load
     const gridContainer = page.locator('.dx-datagrid').first();
@@ -198,12 +265,7 @@ test.describe('Rosters List Page', () => {
     await page.waitForTimeout(500);
 
     // Select meet
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -284,23 +346,10 @@ test.describe('Rosters List Page', () => {
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // Select 2 meets from the dxTagBox
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
+    const selectedMeets = await selectMeets(page, 2);
 
-    const listItems = page.locator('.dx-list-item');
-    await listItems.first().waitFor({ state: 'visible' });
-    const itemCount = await listItems.count();
-
-    if (itemCount >= 2) {
-      const meet1Name = (await listItems.nth(0).innerText()).trim();
-      await listItems.nth(0).click();
-
-      // DevExtreme dxTagBox closes the popup on selection; wait for it to close, then re-open to select meet 2
-      await expect(listItems.first()).toBeHidden({ timeout: 5000 });
-      await tagBox.click();
-      await expect(listItems.first()).toBeVisible({ timeout: 5000 });
-      await listItems.nth(1).click();
-      await page.mouse.click(0, 0);
+    if (selectedMeets.length >= 2) {
+      const meet1Name = selectedMeets[0];
 
       // Wait for DataGrid to load
       const gridContainer = page.locator('.dx-datagrid').first();
@@ -332,23 +381,11 @@ test.describe('Rosters List Page', () => {
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // Select 2 meets from the dxTagBox
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
+    const selectedMeets = await selectMeets(page, 2);
 
-    const listItems = page.locator('.dx-list-item');
-    await listItems.first().waitFor({ state: 'visible' });
-    const itemCount = await listItems.count();
-
-    if (itemCount >= 2) {
-      const meet1Name = (await listItems.nth(0).innerText()).trim();
-      const meet2Name = (await listItems.nth(1).innerText()).trim();
-      await listItems.nth(0).click();
-
-      await expect(listItems.first()).toBeHidden({ timeout: 5000 });
-      await tagBox.click();
-      await expect(listItems.first()).toBeVisible({ timeout: 5000 });
-      await listItems.nth(1).click();
-      await page.mouse.click(0, 0);
+    if (selectedMeets.length >= 2) {
+      const meet1Name = selectedMeets[0];
+      const meet2Name = selectedMeets[1];
 
       // Wait for DataGrid to load
       const gridContainer = page.locator('.dx-datagrid').first();
@@ -413,12 +450,7 @@ test.describe('Rosters List Page', () => {
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // Select 1 meet from tagbox
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -455,19 +487,8 @@ test.describe('Rosters List Page', () => {
     await page.waitForTimeout(500);
 
     // Select 2 meets from tagbox
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItems = page.locator('.dx-list-item');
-    await listItems.first().waitFor({ state: 'visible' });
-    const count = await listItems.count();
-    expect(count).toBeGreaterThanOrEqual(2);
-
-    await listItems.nth(0).click();
-    await expect(listItems.first()).toBeHidden({ timeout: 5000 });
-    await tagBox.click();
-    await expect(listItems.first()).toBeVisible({ timeout: 5000 });
-    await listItems.nth(1).click();
-    await page.mouse.click(0, 0);
+    const selectedMeets = await selectMeets(page, 2);
+    expect(selectedMeets.length).toBeGreaterThanOrEqual(2);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -519,8 +540,9 @@ test.describe('Rosters List Page', () => {
     await saveBtn.click();
 
     // Modal should close on success
-    await expect(popup).toBeHidden({ timeout: 10000 });
+    await expect(popup).toBeHidden({ timeout: 15000 });
     expect(saveRequested).toBe(true);
+    expect(['POST', 'PATCH']).toContain(saveMethod);
 
     // Verify that the datagrid is present and rows are rendered
     await expect(page.locator('.dx-datagrid').first()).toBeVisible();
@@ -533,12 +555,7 @@ test.describe('Rosters List Page', () => {
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // Select meet from tagbox
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -569,7 +586,7 @@ test.describe('Rosters List Page', () => {
     await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
 
     // Should display no results and "Register as New Attendee" button
-    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn').first();
     await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
     await switchToOnboardBtn.click();
 
@@ -689,12 +706,7 @@ test.describe('Rosters List Page', () => {
     await page.waitForTimeout(500);
 
     // Select meet from tagbox
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -738,7 +750,7 @@ test.describe('Rosters List Page', () => {
     await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
 
     // Click Register as New Attendee
-    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn').first();
     await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
     await switchToOnboardBtn.click();
 
@@ -768,8 +780,6 @@ test.describe('Rosters List Page', () => {
     expect(normalizedGenderOptions).toContain('female');
 
     // 4. Verify Responsive layout order: [last_name2] precedes [first_name2]
-    const lastName2Input = page.locator('.add-attendee-popup-wrapper input.ob-last-name2');
-    const firstName2Input = page.locator('.add-attendee-popup-wrapper input.ob-first-name2');
     const isLastName2BeforeFirstName2 = await page.evaluate(() => {
       const ln2 = document.querySelector('.add-attendee-popup-wrapper input.ob-last-name2');
       const fn2 = document.querySelector('.add-attendee-popup-wrapper input.ob-first-name2');
@@ -821,6 +831,7 @@ test.describe('Rosters List Page', () => {
     const newcomerPill = page.locator('.roster-footer-newcomer-pill').first();
     await expect(newcomerPill).toBeVisible({ timeout: 10000 });
     await expect(newcomerPill).toContainText(uniqueFirstName);
+    await expect(newcomerPill.locator('.fa-address-card')).toHaveCount(0);
 
     // Verify Attendance label in footer
     const attendanceFooterLabel = page.locator('.roster-footer-label-cell').first();
@@ -828,6 +839,14 @@ test.describe('Rosters List Page', () => {
 
     // Click newcomer pill to open details card and locate in roster
     await newcomerPill.click();
+
+    // Verify (Info) link in Newcomer Added modal
+    const newcomerInfoLink = page.locator('.newcomer-card-popup a.attendee-info-link');
+    await expect(newcomerInfoLink).toBeVisible({ timeout: 5000 });
+    await expect(newcomerInfoLink).toHaveText('(Info)');
+    await expect(newcomerInfoLink).toHaveAttribute('href', /\/persons\/attendee\/.+/);
+    await expect(newcomerInfoLink).toHaveAttribute('target', '_blank');
+
     const locateBtn = page.locator('.btn-locate-in-roster');
     await expect(locateBtn).toBeVisible({ timeout: 5000 });
     await locateBtn.click();
@@ -855,12 +874,7 @@ test.describe('Rosters List Page', () => {
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // Select meet
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -905,7 +919,7 @@ test.describe('Rosters List Page', () => {
     await searchInput.fill('NonExistentAttendeeEscTest');
     await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
 
-    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn');
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn').first();
     await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
     await switchToOnboardBtn.click();
 
@@ -999,12 +1013,7 @@ test.describe('Rosters List Page', () => {
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // Select meet
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -1106,12 +1115,7 @@ test.describe('Rosters List Page', () => {
     await expect(appContainer).toBeVisible({ timeout: 10000 });
 
     // Select meet
-    const tagBox = page.locator('.dx-tagbox').first();
-    await tagBox.click();
-    const listItem = page.locator('.dx-list-item').first();
-    await listItem.waitFor({ state: 'visible' });
-    await listItem.click();
-    await page.mouse.click(0, 0);
+    await selectMeets(page, 1);
 
     const gridContainer = page.locator('.dx-datagrid').first();
     await expect(gridContainer).toBeVisible({ timeout: 10000 });
@@ -1205,6 +1209,143 @@ test.describe('Rosters List Page', () => {
 
     // Verify popup closes successfully without complaining about companion contact
     await expect(popupWrapper).toBeHidden({ timeout: 15000 });
+  });
+
+  test('Should support server-side pagination and request new pages with skip and take', async ({ page }) => {
+    // Pre-seed sessionStorage with pageSize: 10 so grid requests pages of 10 items in ci_seed
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('rostersListView', JSON.stringify({ pageSize: 10 }));
+    });
+
+    // 1. Go to the rosters list page
+    await page.goto('/occasions/rosters/');
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // 2. Select meets that have >10 attendees in ci_seed.json
+    await selectMeets(page, ['通訊錄 directory', '中文詩班 Chinese choir']);
+
+    // 3. Wait for datagrid to load rows
+    const dataGrid = page.locator('#rosters-datagrid-container .dx-datagrid');
+    await expect(dataGrid).toBeVisible({ timeout: 15000 });
+    await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // 4. Click page 2 button and verify server-side fetch with skip=10
+    const page2Btn = page.locator('.dx-page').filter({ hasText: '2' }).first();
+    await expect(page2Btn).toBeVisible({ timeout: 5000 });
+    const page2Fetch = page.waitForResponse(
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('skip=10') && resp.status() === 200
+    );
+    await page2Btn.click();
+    const resp = await page2Fetch;
+    const json = await resp.json();
+    expect(json.totalCount).toBeGreaterThanOrEqual(10);
+
+    // Verify page 2 has rendered rows
+    await expect(dataGrid.locator('.dx-data-row').first()).toBeVisible({ timeout: 10000 });
+    expect(await dataGrid.locator('.dx-data-row').count()).toBeGreaterThan(0);
+
+    // 5. Change page size to 100 and verify server-side fetch with take=100
+    const pageSize100 = page.locator('.dx-page-size').filter({ hasText: '100' }).first();
+    await expect(pageSize100).toBeVisible({ timeout: 5000 });
+    const page100Fetch = page.waitForResponse(
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.url().includes('take=100') && resp.status() === 200
+    );
+    await pageSize100.click();
+    await page100Fetch;
+    await expect(dataGrid.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+  });
+
+  test('Should filter roster via searchByText when attendee is on another page and locate in roster is clicked', async ({ page }) => {
+    // Pre-seed sessionStorage with pageSize: 10 so grid only shows 10 items per page and newcomer will be on page 2
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('rostersListView', JSON.stringify({ pageSize: 10 }));
+    });
+
+    // 1. Go to rosters list page
+    await page.goto('/occasions/rosters/');
+    const appContainer = page.locator('#app');
+    await expect(appContainer).toBeVisible({ timeout: 10000 });
+
+    // 2. Select meets with > 10 items so there is a page 2
+    await selectMeets(page, ['通訊錄 directory']);
+
+    const gridContainer = page.locator('.dx-datagrid').first();
+    await expect(gridContainer).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.dx-loadpanel')).toBeHidden({ timeout: 15000 });
+
+    // Click "+ Attendee" button
+    const addAttendeeBtn = page.locator('button.add-attendee, a.add-attendee').first();
+    await addAttendeeBtn.click();
+
+    // 3. Search for a unique newcomer starting with Zzz so they sort to page 2
+    const uniqueLastName = `Zzz${Date.now()}`;
+    const searchInput = page.locator('.add-attendee-popup-wrapper input.omni-search-box');
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+    await searchInput.fill(uniqueLastName);
+    await page.locator('.add-attendee-popup-wrapper .search-submit-btn').click();
+
+    // 4. Switch to onboard form
+    const switchToOnboardBtn = page.locator('.add-attendee-popup-wrapper .switch-to-onboard-btn').first();
+    await expect(switchToOnboardBtn).toBeVisible({ timeout: 10000 });
+    await switchToOnboardBtn.click();
+
+    // Fill attendee details (First name Zack, Last name starting with Zzz)
+    const fnInput = page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-first-name');
+    const lnInput = page.locator('.add-attendee-popup-wrapper .attendee-block-1 input.ob-last-name');
+    await fnInput.fill('Zack');
+    await lnInput.fill(uniqueLastName);
+
+    // Gender
+    const genderSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-gender');
+    await genderSelect.selectOption('MALE');
+
+    // Division if visible
+    const divSelect = page.locator('.add-attendee-popup-wrapper .attendee-block-1 select.ob-division');
+    if (await divSelect.isVisible()) {
+      const currentDivVal = await divSelect.inputValue();
+      if (!currentDivVal) {
+        const divOptions = await divSelect.locator('option').all();
+        if (divOptions.length > 1) {
+          await divSelect.selectOption({ index: 1 });
+        }
+      }
+    }
+
+    // Submit form
+    await page.locator('.add-attendee-popup-wrapper button.ob-submit-btn').click();
+    await expect(page.locator('.add-attendee-popup-wrapper')).toBeHidden({ timeout: 15000 });
+
+    // 5. Verify the footer newcomer pill shows the newly added attendee
+    const newcomerPill = page.locator('.roster-footer-newcomer-pill').first();
+    await expect(newcomerPill).toBeVisible({ timeout: 10000 });
+    await expect(newcomerPill).toContainText(uniqueLastName);
+
+    // Grid starts on page 1
+    const activePage1 = page.locator('.dx-page.dx-selection');
+    await expect(activePage1).toHaveText('1');
+
+    // 6. Click newcomer pill to open details card and click "Locate in Roster"
+    await newcomerPill.click();
+    const locateBtn = page.locator('.btn-locate-in-roster');
+    await expect(locateBtn).toBeVisible({ timeout: 5000 });
+
+    // Expect search-by-text filtering request
+    const searchRequest = page.waitForResponse(
+      resp => resp.url().includes('/occasions/api/organization_meet_rosters/') && resp.status() === 200
+    );
+
+    await locateBtn.click();
+    await searchRequest;
+
+    // 7. Verify search panel is populated with attendee name
+    const searchPanelInput = page.locator('.dx-datagrid-search-panel input.dx-texteditor-input');
+    await expect(searchPanelInput).toHaveValue(new RegExp(uniqueLastName), { timeout: 10000 });
+
+    // 8. Verify the attendee row is selected on the filtered grid
+    const selectedRow = page.locator('.dx-datagrid-rowsview .dx-data-row.dx-selection').first();
+    await expect(selectedRow).toBeVisible({ timeout: 10000 });
+    await expect(selectedRow).toContainText(uniqueLastName);
   });
 });
 
